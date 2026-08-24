@@ -133,18 +133,20 @@ export class Cache {
     return count;
   }
 
-  async getOrCompute(key, compute, options = {}) {
+  getOrCompute(key, compute, options = {}) {
     const fullKey = this._fullKey(key);
     if (typeof compute !== 'function') throw new CacheCubeError('INVALID_COMPUTE', 'compute must be a function');
-    const cached = this.get(key);
-    if (cached !== undefined) return cached;
-    if (this.inFlight.has(fullKey)) return this.inFlight.get(fullKey).promise;
 
-    const controller = new AbortController();
     const externalSignal = options.signal;
     if (externalSignal !== undefined && !(externalSignal instanceof AbortSignal)) {
       throw new CacheCubeError('INVALID_SIGNAL', 'signal must be an AbortSignal');
     }
+
+    const cached = this.get(key);
+    if (cached !== undefined) return Promise.resolve(cached);
+    if (this.inFlight.has(fullKey)) return this.inFlight.get(fullKey).promise;
+
+    const controller = new AbortController();
     const abort = () => controller.abort(externalSignal?.reason);
     if (externalSignal) {
       if (externalSignal.aborted) controller.abort(externalSignal.reason);
