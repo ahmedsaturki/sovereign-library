@@ -9,13 +9,22 @@ export class DataCubeError extends Error {
 
 function clone(value) {
   if (value === undefined) return undefined;
-  return JSON.parse(JSON.stringify(value));
+  if (typeof structuredClone === 'function') {
+    try { return structuredClone(value); } catch (cause) {
+      throw new DataCubeError('CLONE_FAILED', 'Value cannot be cloned safely', { cause });
+    }
+  }
+  try { return JSON.parse(JSON.stringify(value)); } catch (cause) {
+    throw new DataCubeError('CLONE_FAILED', 'Value cannot be cloned safely', { cause });
+  }
 }
 
 function pathParts(path) {
   if (Array.isArray(path)) return path;
   if (typeof path !== 'string' || path.length === 0) throw new DataCubeError('INVALID_PATH', 'Path must be a non-empty string or array');
-  return path.split('.').filter(Boolean);
+  const parts = path.split('.').filter(Boolean);
+  if (!parts.length) throw new DataCubeError('INVALID_PATH', 'Path must contain at least one segment');
+  return parts;
 }
 
 export function get(data, path, fallback = undefined) {
@@ -28,12 +37,12 @@ export function get(data, path, fallback = undefined) {
 }
 
 export function set(data, path, value) {
-  if (data == null || typeof data !== 'object') throw new DataCubeError('INVALID_DATA', 'set expects an object');
+  if (data == null || typeof data !== 'object' || Array.isArray(data)) throw new DataCubeError('INVALID_DATA', 'set expects an object');
   const parts = pathParts(path);
   let current = data;
   for (let i = 0; i < parts.length - 1; i += 1) {
     const part = parts[i];
-    if (current[part] == null || typeof current[part] !== 'object') current[part] = {};
+    if (current[part] == null || typeof current[part] !== 'object' || Array.isArray(current[part])) current[part] = {};
     current = current[part];
   }
   current[parts.at(-1)] = value;
@@ -96,6 +105,7 @@ export function normalizeStrings(value, options = {}) {
 
 export function dedupe(items, key = (value) => JSON.stringify(value)) {
   if (!Array.isArray(items)) throw new DataCubeError('INVALID_DATA', 'dedupe expects an array');
+  if (typeof key !== 'function') throw new DataCubeError('INVALID_KEY', 'key must be a function');
   const seen = new Set();
   const output = [];
   for (const item of items) {
@@ -109,9 +119,7 @@ export function dedupe(items, key = (value) => JSON.stringify(value)) {
 
 export function merge(base, overlay, options = {}) {
   const deep = options.deep ?? true;
-  if (!deep || !base || typeof base !== 'object' || Array.isArray(base) || !overlay || typeof overlay !== 'object' || Array.isArray(overlay)) {
-    return { ...base, ...overlay };
-  }
+  if (!deep || !base || typeof base !== 'object' || Array.isArray(base) || !overlay || typeof overlay !== 'object' || Array.isArray(overlay)) return { ...base, ...overlay };
   const output = clone(base);
   for (const [key, value] of Object.entries(overlay)) {
     if (value && typeof value === 'object' && !Array.isArray(value) && output[key] && typeof output[key] === 'object' && !Array.isArray(output[key])) output[key] = merge(output[key], value, options);
@@ -126,5 +134,7 @@ export function canonicalJson(value) {
     if (item && typeof item === 'object') return Object.fromEntries(Object.keys(item).sort().map((key) => [key, sort(item[key])]));
     return item;
   };
-  return JSON.stringify(sort(value));
+  try { return JSON.stringify(sort(value)); } catch (cause) {
+    throw new DataCubeError('CANONICALIZE_FAILED', 'Value cannot be represented as canonical JSON', { cause });
+  }
 }
