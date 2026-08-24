@@ -1,8 +1,10 @@
 # Sovereign Library Roadmap
 
-## v0.1 — Browser Cube foundation
+## Current release — v0.1 Browser Cube
 
-**Goal:** one genuinely usable standalone cube, not a framework skeleton.
+**Objective:** finish one standalone, dependency-free browser product and stop. Do not expand the catalog until this release gate passes.
+
+### Completed
 
 - [x] standalone product contract
 - [x] native Chromium/CDP foundation
@@ -14,13 +16,47 @@
 - [x] deterministic errors
 - [x] cleanup
 - [x] unit tests for contract/lifecycle
-- [ ] platform smoke matrix
-- [ ] release artifact verification
 
-The two unchecked items are release gates, not invitations to expand scope.
+### Remaining release gates
 
-## After v0.1
+- [ ] run full repository tests from a clean checkout/install
+- [ ] platform smoke matrix for Windows/Linux/macOS/WSL where supported
+- [ ] verify example from the README from a clean environment
+- [ ] verify release artifact contents and reproducibility
+- [ ] fix only defects required by the above gates
+- [ ] tag/finalize v0.1
 
-Only after Browser Cube passes its release gate do we start the next standalone product. Candidates are HTTP Client, Data Engine, Scheduler/Task Runner, Filesystem Engine, and Storage Engine.
+## Active milestone
 
-Every candidate follows the same rule: **complete standalone product first; composition second.**
+`BROWSER-V0.1-RELEASE`
+
+**Only immediate goal:** close the remaining release gates above.
+
+## Next cubes — parked until Browser v0.1 is released
+
+1. HTTP Client Cube
+2. Filesystem Cube
+3. Process/Command Cube
+4. Data Engine Cube
+5. Storage Cube
+6. Scheduler/Task Runner Cube
+7. WebSocket Cube
+8. HTTP Server Cube
+9. CLI Cube
+10. Reporting Cube
+11. Search Cube
+12. Workflow Cube
+13. AI Cube
+14. Agent Cube
+
+The order is provisional and can be changed only through an explicit decision after the current cube is released.
+
+## Non-negotiable project rule
+
+**One cube at a time. One active milestone. One immediate next task.**
+
+Every cube follows:
+
+`SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE -> NEXT CUBE`
+
+A cube is not considered complete because the code exists. It is complete only when its release gates pass.
