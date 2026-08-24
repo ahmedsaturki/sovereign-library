@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BrowserCubeError, createSessionState, transition, validateUrl } from './index.js';
+import { BrowserCubeError, createSessionState, transition, validateUrl } from '../src/index.js';
 
 test('validateUrl accepts http and https', () => {
   assert.equal(validateUrl('https://example.com').protocol, 'https:');
