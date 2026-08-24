@@ -36,12 +36,11 @@ test('timeout terminates long-running processes deterministically', async () => 
   );
 });
 
-test('AbortSignal terminates the process', async () => {
+test('AbortSignal terminates the process with a typed error', async () => {
   const controller = new AbortController();
   const promise = run(node, { args: ['-e', 'setTimeout(() => {}, 1000)'], timeoutMs: 5000, signal: controller.signal });
   controller.abort();
-  const result = await promise;
-  assert.equal(result.signal !== null || result.code !== 0, true);
+  await assert.rejects(promise, error => error instanceof ProcessCubeError && error.code === 'ABORTED' && error.retryable === true);
 });
 
 test('output limit terminates noisy processes', async () => {
@@ -52,14 +51,8 @@ test('output limit terminates noisy processes', async () => {
 });
 
 test('invalid arguments are deterministic errors', async () => {
-  await assert.rejects(
-    () => run('', {}),
-    error => error instanceof ProcessCubeError && error.code === 'INVALID_COMMAND'
-  );
-  await assert.rejects(
-    () => run(node, { args: ['-e', '0'], timeoutMs: 0 }),
-    error => error instanceof ProcessCubeError && error.code === 'INVALID_TIMEOUT'
-  );
+  await assert.rejects(() => run('', {}), error => error instanceof ProcessCubeError && error.code === 'INVALID_COMMAND');
+  await assert.rejects(() => run(node, { args: ['-e', '0'], timeoutMs: 0 }), error => error instanceof ProcessCubeError && error.code === 'INVALID_TIMEOUT');
 });
 
 test('missing executable surfaces a typed spawn error', async () => {
