@@ -170,7 +170,7 @@ export class EventBus {
           finish(reject, error);
         }
       };
-      off = this.once(event, listener);
+      off = this.on(event, listener, { signal });
       if (signal) {
         abortHandler = () => finish(reject, new EventCubeError('ABORTED', 'waitFor aborted'));
         if (signal.aborted) abortHandler();
