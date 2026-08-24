@@ -38,14 +38,13 @@ export class EventBus {
     this.maxListeners = maxListeners;
     this.listeners = new Map();
     this.closed = false;
-    this.errorEvent = 'error';
   }
 
   on(event, listener, { once = false, signal } = {}) {
     if (this.closed) throw new EventCubeError('CLOSED', 'event bus is closed');
     validateEventName(event);
     validateListener(listener);
-    if (once !== Boolean(once)) throw new EventCubeError('INVALID_ONCE', 'once must be boolean');
+    if (typeof once !== 'boolean') throw new EventCubeError('INVALID_ONCE', 'once must be boolean');
     if (signal !== undefined && !(signal instanceof AbortSignal)) {
       throw new EventCubeError('INVALID_SIGNAL', 'signal must be an AbortSignal');
     }
@@ -53,8 +52,7 @@ export class EventBus {
     if (this.maxListeners !== 0 && set.size >= this.maxListeners) {
       throw new EventCubeError('LISTENER_LIMIT', `listener limit reached for event: ${event}`);
     }
-
-    const entry = { listener, once: Boolean(once), signal };
+    const entry = { listener, once, signal, abort: null, off: null };
     set.add(entry);
     this.listeners.set(event, set);
     const off = () => {
@@ -70,7 +68,7 @@ export class EventBus {
       if (signal.aborted) off();
       else {
         entry.abort = off;
-        signal.addEventListener('abort', off, { once: true });
+        signal.addEventListener('abort', entry.abort, { once: true });
       }
     }
     return off;
@@ -152,40 +150,34 @@ export class EventBus {
       throw new EventCubeError('INVALID_FILTER', 'filter must be a function');
     }
     return new Promise((resolve, reject) => {
+      let settled = false;
       let timer;
-      const cleanup = () => {
+      let abortHandler;
+      let off = () => false;
+      const finish = (fn, value) => {
+        if (settled) return;
+        settled = true;
         off();
         if (timer !== undefined) clearTimeout(timer);
+        if (signal && abortHandler) signal.removeEventListener('abort', abortHandler);
+        fn(value);
       };
-      const off = this.once(event, payload => {
+      const listener = payload => {
         try {
-          if (filter && !filter(payload)) {
-            this.waitFor(event, { signal, timeoutMs, filter }).then(resolve, reject);
-            return;
-          }
-          cleanup();
-          resolve(payload);
+          if (filter && !filter(payload)) return;
+          finish(resolve, payload);
         } catch (error) {
-          cleanup();
-          reject(error);
+          finish(reject, error);
         }
-      }, { signal });
+      };
+      off = this.once(event, listener);
       if (signal) {
-        if (signal.aborted) {
-          cleanup();
-          reject(new EventCubeError('ABORTED', 'waitFor aborted'));
-          return;
-        }
-        signal.addEventListener('abort', () => {
-          cleanup();
-          reject(new EventCubeError('ABORTED', 'waitFor aborted'));
-        }, { once: true });
+        abortHandler = () => finish(reject, new EventCubeError('ABORTED', 'waitFor aborted'));
+        if (signal.aborted) abortHandler();
+        else signal.addEventListener('abort', abortHandler, { once: true });
       }
       if (timeoutMs !== undefined) {
-        timer = setTimeout(() => {
-          cleanup();
-          reject(new EventCubeError('TIMEOUT', 'waitFor timed out', { retryable: true }));
-        }, timeoutMs);
+        timer = setTimeout(() => finish(reject, new EventCubeError('TIMEOUT', 'waitFor timed out', { retryable: true })), timeoutMs);
       }
     });
   }
@@ -194,7 +186,7 @@ export class EventBus {
     if (this.closed) return false;
     this.closed = true;
     for (const set of this.listeners.values()) {
-      for (const entry of set) entry.off();
+      for (const entry of [...set]) entry.off();
     }
     this.listeners.clear();
     return true;
