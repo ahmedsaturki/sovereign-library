@@ -28,12 +28,19 @@ function startFixtureServer() {
     server.listen(0, '127.0.0.1', () => {
       const address = server.address();
       assert.equal(typeof address, 'object');
-      resolve({
-        server,
-        url: `http://127.0.0.1:${address.port}/`,
-      });
+      resolve({ server, url: `http://127.0.0.1:${address.port}/` });
     });
   });
+}
+
+async function waitForPageReady(browser, timeoutMs = 5000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const readyState = await browser.evaluate('document.readyState');
+    if (readyState === 'complete') return;
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  throw new Error('Browser fixture did not reach readyState=complete');
 }
 
 test('browser smoke: launch, navigate, evaluate, metadata, screenshot, cleanup', { skip: !shouldRun() }, async () => {
@@ -45,6 +52,8 @@ test('browser smoke: launch, navigate, evaluate, metadata, screenshot, cleanup',
 
   try {
     await browser.navigate(fixture.url);
+    await waitForPageReady(browser);
+
     const metadata = await browser.metadata();
     assert.equal(metadata.url, fixture.url);
     assert.equal(metadata.title, 'Sovereign Browser Fixture');
