@@ -1,0 +1,15 @@
+{
+  "name": "@sovereign/browser-cube",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone native Chromium/CDP browser cube",
+  "type": "module",
+  "engines": {"node": ">=24"},
+  "main": "./src/index.js",
+  "exports": {".": "./src/index.js"},
+  "scripts": {
+    "check": "node --check src/index.js",
+    "test": "node --test test/index.test.js",
+    "test:smoke": "node --test test/smoke.test.js"
+  }
+}
