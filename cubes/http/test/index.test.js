@@ -76,8 +76,8 @@ test('303 changes POST to GET and clears a case-insensitive content-length heade
   }, async (base) => {
     const response = await request(`${base}/start`, {
       method: 'POST',
-      body: { hello: 'world' },
-      headers: { 'Content-Length': '999' },
+      body: '{}',
+      headers: { 'Content-Length': '2' },
       maxRedirects: 1
     });
     assert.equal(response.status, 200);
@@ -95,7 +95,7 @@ test('response size limit is enforced', async () => {
 });
 
 test('invalid URL and method are deterministic errors', async () => {
-  assert.throws(() => request('ftp://example.com'), error => error.code === 'UNSUPPORTED_PROTOCOL');
+  await assert.rejects(() => request('ftp://example.com'), error => error.code === 'UNSUPPORTED_PROTOCOL');
   await assert.rejects(() => request('http://127.0.0.1:1', { method: 'TRACE' }), error => error.code === 'INVALID_METHOD');
 });
 
