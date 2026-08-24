@@ -63,6 +63,28 @@ test('redirects are opt-in and bounded', async () => {
   });
 });
 
+test('303 changes POST to GET and clears a case-insensitive content-length header', async () => {
+  await withServer((req, res) => {
+    if (req.url === '/start') {
+      res.writeHead(303, { location: '/done' });
+      res.end();
+      return;
+    }
+    assert.equal(req.method, 'GET');
+    assert.equal(req.headers['content-length'], undefined);
+    res.end('done');
+  }, async (base) => {
+    const response = await request(`${base}/start`, {
+      method: 'POST',
+      body: { hello: 'world' },
+      headers: { 'Content-Length': '999' },
+      maxRedirects: 1
+    });
+    assert.equal(response.status, 200);
+    assert.equal(text(response), 'done');
+  });
+});
+
 test('response size limit is enforced', async () => {
   await withServer((req, res) => res.end('0123456789'), async (base) => {
     await assert.rejects(
