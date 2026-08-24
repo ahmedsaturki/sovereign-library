@@ -85,3 +85,12 @@ test('AbortSignal cancellation is surfaced', async () => {
     await assert.rejects(promise, error => error instanceof HttpCubeError && error.code === 'ABORTED');
   });
 });
+
+test('timeout is surfaced as a deterministic retryable error', async () => {
+  await withServer((req, res) => setTimeout(() => res.end('late'), 250), async (base) => {
+    await assert.rejects(
+      () => get(base, { timeoutMs: 25 }),
+      error => error instanceof HttpCubeError && error.code === 'TIMEOUT' && error.retryable === true
+    );
+  });
+});
