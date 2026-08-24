@@ -44,6 +44,7 @@ export class TaskScheduler {
     this.maxQueueSize = maxQueueSize;
     this.clock = clock;
     this.accepting = true;
+    this.shuttingDown = false;
     this.running = 0;
     this.sequence = 0;
     this.tasks = new Map();
@@ -75,26 +76,11 @@ export class TaskScheduler {
     if (idempotencyKey && this.idempotency.has(idempotencyKey)) return this.idempotency.get(idempotencyKey);
     if (this.getQueueSize() >= this.maxQueueSize) throw new SchedulerCubeError('QUEUE_FULL', 'scheduler queue limit reached');
 
-    const controller = new AbortController();
     const task = {
-      id: randomUUID(),
-      fn,
-      priority,
-      delayMs,
-      retries,
-      retryBackoff: backoff,
-      timeoutMs,
-      idempotencyKey,
-      controller,
-      signal,
-      sequence: this.sequence++,
-      attempt: 0,
-      status: delayMs > 0 ? 'delayed' : 'queued',
-      createdAt: this.clock.now(),
-      handle: null,
-      resolve: null,
-      outcome: null,
-      timer: null
+      id: randomUUID(), fn, priority, delayMs, retries, retryBackoff: backoff, timeoutMs,
+      idempotencyKey, controller: new AbortController(), signal, sequence: this.sequence++, attempt: 0,
+      status: delayMs > 0 ? 'delayed' : 'queued', createdAt: this.clock.now(), handle: null,
+      resolve: null, outcome: null
     };
     task.handle = {
       id: task.id,
@@ -107,9 +93,8 @@ export class TaskScheduler {
     if (idempotencyKey) this.idempotency.set(idempotencyKey, task.handle);
 
     if (signal) {
-      if (signal.aborted) {
-        this.#cancel(task);
-      } else {
+      if (signal.aborted) this.#cancel(task);
+      else {
         task.externalAbort = () => this.#cancel(task);
         signal.addEventListener('abort', task.externalAbort, { once: true });
       }
@@ -128,19 +113,22 @@ export class TaskScheduler {
   }
 
   async shutdown() {
-    if (!this.accepting && this.getQueueSize() === 0 && this.running === 0) return;
+    if (this.shuttingDown) return;
     this.accepting = false;
+    this.shuttingDown = true;
+    if (this.timer !== null) {
+      this.clock.clearTimeout(this.timer);
+      this.timer = null;
+    }
     for (const task of [...this.queue.values()]) this.#cancel(task);
     for (const task of [...this.delayed.values()]) this.#cancel(task);
-    for (const task of this.tasks.values()) {
+    for (const task of [...this.tasks.values()]) {
       if (task.status === 'running') this.#cancel(task);
     }
     this.#notifyIdle();
   }
 
-  getTask(id) {
-    return this.tasks.get(id)?.handle;
-  }
+  getTask(id) { return this.tasks.get(id)?.handle; }
 
   getStats() {
     return {
@@ -155,19 +143,16 @@ export class TaskScheduler {
     };
   }
 
-  getQueueSize() {
-    return this.queue.size + this.delayed.size;
-  }
+  getQueueSize() { return this.queue.size + this.delayed.size; }
 
   #scheduleDelayed(task, delayMs) {
-    const runAt = this.clock.now() + delayMs;
-    task.runAt = runAt;
+    task.runAt = this.clock.now() + delayMs;
     this.delayed.push(task);
     this.#armTimer();
   }
 
   #armTimer() {
-    if (this.timer || this.delayed.size === 0) return;
+    if (this.timer !== null || this.delayed.size === 0 || this.shuttingDown) return;
     const next = this.delayed.peek();
     const delay = Math.max(0, next.runAt - this.clock.now());
     this.timer = this.clock.setTimeout(() => {
@@ -189,6 +174,10 @@ export class TaskScheduler {
   }
 
   #pump() {
+    if (this.shuttingDown) {
+      this.#notifyIdle();
+      return;
+    }
     while (this.running < this.concurrency && this.queue.size > 0) {
       const task = this.queue.pop();
       if (task.status !== 'queued') continue;
@@ -208,14 +197,14 @@ export class TaskScheduler {
     const externalSignal = task.signal;
     const onExternalAbort = () => controller.abort();
     if (externalSignal) externalSignal.addEventListener('abort', onExternalAbort, { once: true });
-    if (task.timeoutMs !== undefined) timeout = this.clock.setTimeout(() => controller.abort(), task.timeoutMs);
+    if (task.timeoutMs !== undefined) timeout = this.clock.setTimeout(() => controller.abort('timeout'), task.timeoutMs);
 
     try {
       const value = await Promise.race([
         Promise.resolve().then(() => task.fn(controller.signal)),
         new Promise((_, reject) => controller.signal.addEventListener('abort', () => reject(new SchedulerCubeError(
-          task.timeoutMs !== undefined ? 'TASK_TIMEOUT' : 'TASK_ABORTED',
-          task.timeoutMs !== undefined ? 'task execution timed out' : 'task execution aborted',
+          controller.signal.reason === 'timeout' ? 'TASK_TIMEOUT' : 'TASK_ABORTED',
+          controller.signal.reason === 'timeout' ? 'task execution timed out' : 'task execution aborted',
           { retryable: true }
         )), { once: true }))
       ]);
@@ -223,7 +212,7 @@ export class TaskScheduler {
     } catch (error) {
       if (task.status !== 'running') return;
       const timeoutError = error instanceof SchedulerCubeError && error.code === 'TASK_TIMEOUT';
-      const aborted = controller.signal.aborted && !timeoutError;
+      const aborted = error instanceof SchedulerCubeError && error.code === 'TASK_ABORTED';
       const canRetry = task.attempt <= task.retries && !aborted;
       if (canRetry) {
         task.status = 'retrying';
@@ -232,7 +221,7 @@ export class TaskScheduler {
         this.#scheduleDelayed(task, delay);
         this.#pump();
       } else if (aborted) {
-        this.#complete(task, { ok: false, error: new SchedulerCubeError('TASK_ABORTED', 'task was aborted', { retryable: true }), attempts: task.attempt, durationMs: this.clock.now() - startedAt });
+        this.#complete(task, { ok: false, error, attempts: task.attempt, durationMs: this.clock.now() - startedAt });
       } else if (timeoutError) {
         this.#complete(task, { ok: false, error, attempts: task.attempt, durationMs: this.clock.now() - startedAt });
       } else {
@@ -262,11 +251,8 @@ export class TaskScheduler {
   #cancel(task) {
     if (TERMINAL.has(task.status)) return false;
     if (task.status === 'queued') this.queue.remove(item => item.id === task.id);
-    if (task.status === 'delayed' || task.status === 'retrying') {
-      this.delayed.remove(item => item.id === task.id);
-      this.#armTimer();
-    }
-    if (task.status === 'running') task.controller.abort();
+    if (task.status === 'delayed' || task.status === 'retrying') this.delayed.remove(item => item.id === task.id);
+    if (task.status === 'running') task.controller.abort('cancel');
     if (task.status !== 'running') {
       this.#complete(task, {
         ok: false,
