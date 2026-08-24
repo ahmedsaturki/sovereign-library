@@ -26,33 +26,35 @@ Implemented with Node.js standard-library `fs/promises` and `path` only. Verifie
 
 Implemented with Node.js standard-library `child_process` only. Verified on Ubuntu, Windows, and macOS with process integration/failure tests and the real Browser smoke test. Release-gate Run 68 passed all jobs.
 
+### Data Engine Cube v0.1 — RELEASED
+
+Implemented with Node.js language/runtime primitives only. Verified on Ubuntu, Windows, and macOS with data unit/failure tests and the real Browser smoke test. Release-gate Run 90 passed all jobs.
+
 ## Active milestone
 
-### Data Engine Cube v0.1
+### Storage Cube v0.1
 
-Target: standalone data-transformation and payload-normalization product using JavaScript/Node.js standard capabilities only.
+Target: standalone local storage product using Node.js standard-library filesystem and serialization primitives only.
 
 Initial scope:
-- nested get/set
-- pick/omit
-- key mapping
-- compacting nullish payload noise
-- recursive string normalization
-- deterministic deduplication
-- isolated deep merge
-- canonical JSON representation
+- namespace/key storage
+- JSON-safe values
+- atomic persistence
+- get/set/delete/has/list
+- TTL metadata with deterministic expiry checks
+- size limits
+- corrupt-record detection
 - deterministic typed errors
-- structured-value-safe cloning
-- local unit/failure tests
+- local integration/failure tests
 - Windows/Linux/macOS verification
 
 Out of scope until v0.2+:
-- database access
-- network fetchers
-- schema registry service
-- ETL orchestration
+- database engines
+- cloud storage
 - external SDKs
-- framework integration
+- network replication
+- distributed locking
+- background compaction workers
 
 ## Parked
 
