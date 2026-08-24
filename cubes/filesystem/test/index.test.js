@@ -10,7 +10,6 @@ import {
 
 const root = await fs.mkdtemp(path.join(os.tmpdir(), 'sovereign-fs-'));
 after(async () => { await fs.rm(root, { recursive: true, force: true }); });
-
 const opts = { cwd: root, root: '.' };
 
 test('write/read/append/stat/exists lifecycle works', async () => {
@@ -46,15 +45,9 @@ test('root containment blocks path traversal', async () => {
 });
 
 test('read and write limits are enforced', async () => {
-  await assert.rejects(
-    () => writeText('limit.txt', '123456', { ...opts, maxBytes: 5 }),
-    error => error instanceof FilesystemCubeError && error.code === 'WRITE_TOO_LARGE'
-  );
+  await assert.rejects(() => writeText('limit.txt', '123456', { ...opts, maxBytes: 5 }), error => error instanceof FilesystemCubeError && error.code === 'WRITE_TOO_LARGE');
   await writeText('limit.txt', '123456', opts);
-  await assert.rejects(
-    () => readText('limit.txt', { ...opts, maxBytes: 5 }),
-    error => error instanceof FilesystemCubeError && error.code === 'READ_TOO_LARGE'
-  );
+  await assert.rejects(() => readText('limit.txt', { ...opts, maxBytes: 5 }), error => error instanceof FilesystemCubeError && error.code === 'READ_TOO_LARGE');
 });
 
 test('invalid and missing paths are deterministic errors', async () => {
