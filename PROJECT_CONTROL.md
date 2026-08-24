@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Cache / Memoization Cube v0.1** and release it before starting another cube.
+Finish **Validation / Schema Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,20 +16,20 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**CACHE-MEMOIZATION-V0.1-RELEASE**
+**VALIDATION-SCHEMA-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Cache / Memoization Cube release gate:
+Complete the Validation / Schema Cube release gate:
 
-1. write and freeze the cache contract
+1. write and freeze the validation contract
 2. run syntax, unit, contract, integration, failure, and recovery tests
-3. verify get/set/has/delete/clear and namespace semantics
-4. verify deterministic TTL with injected clock
-5. verify bounded capacity and deterministic eviction
-6. verify hit/miss statistics and invalidation
-7. verify get-or-compute in-flight de-duplication and cancellation
-8. verify value/key limits and immutable metadata snapshots
+3. verify primitive types, object/array shapes, required/optional fields, and nested paths
+4. verify enums/literals and bounds
+5. verify deterministic custom validators and structured validation results
+6. verify typed errors and deterministic error paths/messages/codes
+7. verify explicit-only coercion and unknown-key handling
+8. verify reusable immutable schema definitions
 9. verify zero runtime third-party dependencies
 10. run the supported cross-platform CI matrix
 11. fix only failures required for the v0.1 gate
@@ -37,32 +37,35 @@ Complete the Cache / Memoization Cube release gate:
 
 ## Scope lock
 
-For Cache / Memoization Cube v0.1, the allowed scope is only:
+For Validation / Schema Cube v0.1, the allowed scope is only:
 
-- typed key/value cache contract
-- namespaces
-- get/set/has/delete/clear
-- TTL with injectable clock
-- bounded capacity
-- deterministic eviction policy
-- hit/miss statistics
-- explicit invalidation
-- get-or-compute with in-flight de-duplication
-- cancellation-aware compute
-- size/value limits
-- immutable metadata snapshots
+- typed primitive validation
+- object and array shape validation
+- required and optional fields
+- nested paths
+- enums and literal constraints
+- string/number bounds
+- array length bounds
+- custom deterministic validators
+- structured validation results
+- typed validation errors
+- coercion only when explicitly requested
+- safe handling of unknown keys
+- deterministic error paths/messages/codes
+- reusable schema definitions
 - documentation
 - tests
 
 Explicitly out of scope for v0.1:
 
-- distributed cache
-- Redis or remote cache clients
-- persistence
-- cache replication
-- cluster coordination
-- network transport
-- third-party cache libraries
+- JSON Schema full standard implementation
+- OpenAPI generation
+- code generation
+- remote schema registries
+- third-party schema libraries
+- ORM validation
+- UI form generation
+- localization framework
 - AI agent runtime
 
 ## Definition of done
