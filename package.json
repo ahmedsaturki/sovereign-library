@@ -6,8 +6,9 @@
   "type": "module",
   "engines": {"node": ">=24"},
   "scripts": {
-    "check": "node --check cubes/browser/src/index.js",
-    "test": "node --test cubes/browser/test/index.test.js",
+    "check": "node --check cubes/browser/src/index.js && node --check cubes/http/src/index.js",
+    "test": "node --test cubes/browser/test/index.test.js cubes/http/test/index.test.js",
+    "test:http": "node --test cubes/http/test/index.test.js",
     "test:browser": "node --test cubes/browser/test/smoke.test.js",
     "verify": "npm run check && npm test && npm run test:browser"
   }
