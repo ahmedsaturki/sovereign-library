@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Task Scheduler / Queue Cube v0.1** and release it before starting another cube.
+Finish **Event / Signal Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,56 +16,48 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**TASK-SCHEDULER-QUEUE-V0.1-RELEASE**
+**EVENT-SIGNAL-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Task Scheduler / Queue Cube release gate:
+Complete the Event / Signal Cube release gate:
 
-1. write and freeze the task/queue contract
-2. run syntax, unit, contract, integration, failure, recovery, and shutdown tests
-3. verify FIFO/priority ordering and bounded concurrency
-4. verify delay, retry, cancellation, timeout, idempotency, backpressure, and queue limits
-5. verify graceful shutdown/drain behavior
-6. verify deterministic clock injection in tests
-7. verify zero runtime third-party dependencies
-8. run the supported cross-platform CI matrix
-9. fix only failures required for the v0.1 gate
-10. mark the release gate complete
+1. write and freeze the event/signal contract
+2. run syntax, unit, contract, integration, failure, and recovery tests
+3. verify subscribe/unsubscribe/once semantics and deterministic ordering
+4. verify cancellation, timeout, listener limits, error isolation, and re-entrancy behavior
+5. verify synchronous and controlled asynchronous dispatch semantics
+6. verify zero runtime third-party dependencies
+7. run the supported cross-platform CI matrix
+8. fix only failures required for the v0.1 gate
+9. mark the release gate complete
 
 ## Scope lock
 
-For Task Scheduler / Queue Cube v0.1, the allowed scope is only:
+For Event / Signal Cube v0.1, the allowed scope is only:
 
-- task contract
-- task lifecycle states
-- in-memory FIFO/priority queue
-- bounded concurrency
-- deterministic scheduling
-- delay/not-before execution
-- retries with explicit retry policy
-- cancellation
-- timeout
-- backpressure and queue limits
-- idempotency keys
-- task result/error capture
-- graceful shutdown and drain
-- deterministic clock injection
+- typed event contract
+- subscribe/unsubscribe
+- once listeners
+- deterministic listener ordering
+- synchronous and controlled asynchronous dispatch modes
+- AbortSignal-based subscription cancellation
+- bounded listener counts
+- event/error isolation
+- safe re-entrancy rules
+- wait-for-event with timeout/cancellation
 - documentation
 - tests
 
 Explicitly out of scope for v0.1:
 
-- distributed queues
+- distributed pub/sub
+- network transport
 - persistence
-- cron parser
-- workflow DAG engine
-- pub/sub
-- distributed locks
-- remote workers
-- Redis clients
-- queue/worker frameworks
-- third-party scheduler packages
+- broker semantics
+- durable event logs
+- workflow orchestration
+- third-party event libraries
 - AI agent runtime
 
 Those become future cubes or future releases only after v0.1 is released.
