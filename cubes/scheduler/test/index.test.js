@@ -39,14 +39,18 @@ test('bounded concurrency prevents over-scheduling', async () => {
   assert.equal(peak, 2);
 });
 
-test('priority ordering is preserved', async () => {
-  const scheduler = new TaskScheduler();
+test('priority ordering is preserved when tasks are actually queued', async () => {
+  const scheduler = new TaskScheduler({ concurrency: 1 });
+  let release;
+  const blocker = scheduler.submit(() => new Promise(resolve => { release = resolve; }));
+  await flush();
   const order = [];
   const tasks = [3, 1, 1, 2].map((priority, index) => scheduler.submit(() => {
     order.push(index);
     return index;
   }, { priority }));
-  await Promise.all(tasks.map(task => task.promise));
+  release();
+  await Promise.all([blocker.promise, ...tasks.map(task => task.promise)]);
   assert.deepEqual(order, [1, 2, 3, 0]);
 });
 
@@ -90,6 +94,7 @@ test('queued cancellation is terminal and prevents execution', async () => {
   const scheduler = new TaskScheduler({ concurrency: 1 });
   let release;
   const blocker = scheduler.submit(() => new Promise(resolve => { release = resolve; }));
+  await flush();
   const task = scheduler.submit(() => assert.fail('cancelled task executed'));
   assert.equal(task.cancel(), true);
   assert.equal(task.status, 'cancelled');
@@ -124,6 +129,7 @@ test('external abort cancels a running task', async () => {
   const task = scheduler.submit(signal => new Promise((_, reject) => {
     signal.addEventListener('abort', () => reject(new Error('stopped')), { once: true });
   }), { signal: controller.signal });
+  await flush();
   controller.abort();
   const result = await task.promise;
   assert.equal(result.ok, false);
@@ -134,6 +140,7 @@ test('drain stops new submissions and waits for existing work', async () => {
   const scheduler = new TaskScheduler({ concurrency: 1 });
   let release;
   const task = scheduler.submit(() => new Promise(resolve => { release = resolve; }));
+  await flush();
   const draining = scheduler.drain();
   assert.throws(() => scheduler.submit(() => 1), error => error instanceof SchedulerCubeError && error.code === 'SHUTTING_DOWN');
   release();
@@ -146,12 +153,13 @@ test('shutdown cancels queued work', async () => {
   const scheduler = new TaskScheduler({ concurrency: 1 });
   let release;
   const running = scheduler.submit(() => new Promise(resolve => { release = resolve; }));
+  await flush();
   const queued = scheduler.submit(() => 2);
   await scheduler.shutdown();
   assert.equal(queued.status, 'cancelled');
   assert.equal((await queued.promise).error.code, 'TASK_CANCELLED');
-  release();
   assert.equal((await running.promise).error.code, 'TASK_ABORTED');
+  release();
 });
 
 test('validation is deterministic', () => {
