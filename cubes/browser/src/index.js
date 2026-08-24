@@ -170,7 +170,7 @@ export class BrowserSession {
     this.profile = this.options.userDataDir || await mkdtemp(join(tmpdir(), 'sovereign-browser-'));
     const executable = this.options.executablePath || BrowserSession.findExecutable();
     if (!executable) throw new BrowserCubeError('BROWSER_NOT_FOUND', 'No Chromium-family browser found. Pass executablePath explicitly.');
-    const args = [`--remote-debugging-port=${this.port}`, `--user-data-dir=${this.profile}`, '--no-first-run', '--no-default-browser-check', '--disable-background-networking', '--disable-sync', ...(this.options.headless ? ['--headless=new'] : []), ...this.options.extraArgs, 'about:blank'];
+    const args = [`--remote-debugging-port=${this.port}`, `--user-data-dir=${this.profile}`, '--no-first-run', '--no-default-browser-check', '--disable-background-networking', '--disable-sync', '--disable-dev-shm-usage', ...(process.platform === 'linux' ? ['--no-sandbox'] : []), ...(this.options.headless ? ['--headless=new'] : []), ...this.options.extraArgs, 'about:blank'];
     this.process = spawn(executable, args, { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true });
     const started = Date.now();
     while (Date.now() - started < this.options.timeoutMs) {
