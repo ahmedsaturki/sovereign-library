@@ -30,31 +30,39 @@ Implemented with Node.js standard-library `child_process` only. Verified on Ubun
 
 Implemented with Node.js language/runtime primitives only. Verified on Ubuntu, Windows, and macOS with data unit/failure tests and the real Browser smoke test. Release-gate Run 90 passed all jobs.
 
+### Storage Cube v0.1 — RELEASED
+
+Implemented with Node.js standard-library filesystem, serialization, and crypto primitives only. Verified on Ubuntu, Windows, and macOS with storage integration/failure tests and the real Browser smoke test. Release-gate Run 98 passed all jobs.
+
 ## Active milestone
 
-### Storage Cube v0.1
+### WebSocket / Transport Cube v0.1
 
-Target: standalone local storage product using Node.js standard-library filesystem and serialization primitives only.
+Target: standalone bidirectional WebSocket client/server transport using native Node.js networking primitives only, without `ws`, Socket.IO, HTTP frameworks, or third-party networking packages.
 
 Initial scope:
-- namespace/key storage
-- JSON-safe values
-- atomic persistence
-- get/set/delete/has/list
-- TTL metadata with deterministic expiry checks
-- size limits
-- corrupt-record detection
+- client connection lifecycle
+- server-side upgrade/accept path
+- WebSocket frame encode/decode
+- masking/unmasking
+- text/binary messages
+- ping/pong
+- close handshake
+- protocol validation
+- payload limits
+- backpressure
 - deterministic typed errors
-- local integration/failure tests
+- local client/server integration tests
+- malformed-frame/failure tests
 - Windows/Linux/macOS verification
 
 Out of scope until v0.2+:
-- database engines
-- cloud storage
-- external SDKs
-- network replication
-- distributed locking
-- background compaction workers
+- automatic reconnection policy
+- pub/sub broker
+- authentication framework
+- distributed presence
+- third-party WebSocket libraries
+- message persistence
 
 ## Parked
 
