@@ -7,12 +7,22 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  verify:
+    name: Node ${{ matrix.node }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [24]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
-      - run: node --check cubes/browser/src/index.js
-      - run: node --test cubes/browser/test/index.test.js
+          node-version: ${{ matrix.node }}
+      - name: Syntax check
+        run: node --check cubes/browser/src/index.js
+      - name: Contract tests
+        run: node --test cubes/browser/test/index.test.js
+      - name: Real browser smoke test
+        run: npm run test:browser
