@@ -1,0 +1,1 @@
+Browser Cube v0.1 release gate: CI must verify syntax, unit tests, and real Chromium smoke on the supported matrix.
