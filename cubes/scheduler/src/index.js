@@ -195,7 +195,7 @@ export class TaskScheduler {
     task.controller = controller;
     let timeout;
     const externalSignal = task.signal;
-    const onExternalAbort = () => controller.abort();
+    const onExternalAbort = () => controller.abort('external');
     if (externalSignal) externalSignal.addEventListener('abort', onExternalAbort, { once: true });
     if (task.timeoutMs !== undefined) timeout = this.clock.setTimeout(() => controller.abort('timeout'), task.timeoutMs);
 
@@ -238,7 +238,8 @@ export class TaskScheduler {
     if (TERMINAL.has(task.status)) return;
     this.running -= 1;
     task.outcome = outcome;
-    task.status = outcome.ok ? 'completed' : (outcome.error.code === 'TASK_ABORTED' ? 'cancelled' : 'failed');
+    const errorCode = outcome.ok ? null : outcome.error.code;
+    task.status = outcome.ok ? 'completed' : (errorCode === 'TASK_CANCELLED' || errorCode === 'TASK_ABORTED' ? 'cancelled' : 'failed');
     if (task.status === 'completed') this.completed += 1;
     else if (task.status === 'cancelled') this.cancelled += 1;
     else this.failed += 1;
