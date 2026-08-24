@@ -133,10 +133,16 @@ export async function atomicWriteBytes(filePath, data, options = {}) {
   try {
     if (options.mkdir) await fs.mkdir(path.dirname(target), { recursive: true });
     await writeBytes(temporary, data, { ...options, mkdir: false });
-    await fs.rename(temporary, target);
+    try {
+      await fs.rename(temporary, target);
+    } catch (error) {
+      if (error?.code !== 'EEXIST' && error?.code !== 'EPERM') throw error;
+      await fs.rm(target, { force: true });
+      await fs.rename(temporary, target);
+    }
   } catch (error) {
     try { await fs.unlink(temporary); } catch {}
-    throw wrapError('ATOMIC_WRITE_FAILED', `Unable to atomically write: ${target}`, error);
+    throw wrapError('ATOMIC_WRITE_FAILED', `Unable to atomically replace: ${target}`, error);
   }
 }
 
