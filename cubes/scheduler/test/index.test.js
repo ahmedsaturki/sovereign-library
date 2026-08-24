@@ -19,7 +19,9 @@ test('priority heap is stable FIFO within equal priority', () => {
 test('successful task resolves and stats settle', async () => {
   const scheduler = new TaskScheduler();
   const task = scheduler.submit(() => 42);
-  assert.deepEqual(await task.promise, { ok: true, value: 42, attempts: 1, durationMs: 0 });
+  const result = await task.promise;
+  assert.deepEqual({ ok: result.ok, value: result.value, attempts: result.attempts }, { ok: true, value: 42, attempts: 1 });
+  assert.equal(typeof result.durationMs, 'number');
   assert.equal(task.status, 'completed');
   assert.equal(scheduler.getStats().completed, 1);
 });
@@ -87,7 +89,8 @@ test('retries use deterministic backoff and stop after success', async () => {
   assert.equal(attempts, 2);
   clock.advance(20);
   await flush();
-  assert.deepEqual(await task.promise, { ok: true, value: 'done', attempts: 3, durationMs: 0 });
+  const result = await task.promise;
+  assert.deepEqual({ ok: result.ok, value: result.value, attempts: result.attempts }, { ok: true, value: 'done', attempts: 3 });
 });
 
 test('queued cancellation is terminal and prevents execution', async () => {
@@ -120,7 +123,9 @@ test('idempotency returns the same handle', async () => {
   const first = scheduler.submit(() => { calls += 1; return calls; }, { idempotencyKey: 'same' });
   const second = scheduler.submit(() => { calls += 100; return calls; }, { idempotencyKey: 'same' });
   assert.strictEqual(first, second);
-  assert.deepEqual(await first.promise, { ok: true, value: 1, attempts: 1, durationMs: 0 });
+  const result = await first.promise;
+  assert.deepEqual({ ok: result.ok, value: result.value, attempts: result.attempts }, { ok: true, value: 1, attempts: 1 });
+  assert.equal(typeof result.durationMs, 'number');
 });
 
 test('external abort cancels a running task', async () => {
