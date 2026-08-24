@@ -43,7 +43,7 @@ async function waitForPageReady(browser, timeoutMs = 5000) {
   throw new Error('Browser fixture did not reach readyState=complete');
 }
 
-test('browser smoke: launch, navigate, evaluate, metadata, screenshot, cleanup', { skip: !shouldRun() }, async () => {
+test('browser smoke: launch, navigate, evaluate, metadata, screenshot, cleanup', { skip: !shouldRun(), timeout: 30000 }, async () => {
   const executablePath = process.env.BROWSER_EXECUTABLE || BrowserSession.findExecutable();
   assert.ok(executablePath, 'A Chromium-family executable must be available for the smoke test');
 
