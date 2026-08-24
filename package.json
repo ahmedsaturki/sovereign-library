@@ -6,8 +6,8 @@
   "type": "module",
   "engines": {"node": ">=24"},
   "scripts": {
-    "check": "node --check cubes/browser/src/index.js && node --check cubes/http/src/index.js && node --check cubes/filesystem/src/index.js && node --check cubes/process/src/index.js && node --check cubes/data/src/index.js && node --check cubes/storage/src/index.js && node --check cubes/websocket/src/index.js && node --check cubes/websocket/src/transport.js && node --check cubes/scheduler/src/index.js && node --check cubes/scheduler/src/clock.js && node --check cubes/scheduler/src/heap.js && node --check cubes/event/src/index.js && node --check cubes/logger/src/index.js",
-    "test": "node --test --test-timeout=10000 cubes/browser/test/index.test.js cubes/http/test/index.test.js cubes/filesystem/test/index.test.js cubes/process/test/index.test.js cubes/data/test/index.test.js cubes/storage/test/index.test.js cubes/websocket/test/index.test.js cubes/websocket/test/transport.test.js cubes/scheduler/test/index.test.js cubes/event/test/index.test.js cubes/logger/test/index.test.js",
+    "check": "node --check cubes/browser/src/index.js && node --check cubes/http/src/index.js && node --check cubes/filesystem/src/index.js && node --check cubes/process/src/index.js && node --check cubes/data/src/index.js && node --check cubes/storage/src/index.js && node --check cubes/websocket/src/index.js && node --check cubes/websocket/src/transport.js && node --check cubes/scheduler/src/index.js && node --check cubes/scheduler/src/clock.js && node --check cubes/scheduler/src/heap.js && node --check cubes/event/src/index.js && node --check cubes/logger/src/index.js && node --check cubes/config/src/index.js",
+    "test": "node --test --test-timeout=10000 cubes/browser/test/index.test.js cubes/http/test/index.test.js cubes/filesystem/test/index.test.js cubes/process/test/index.test.js cubes/data/test/index.test.js cubes/storage/test/index.test.js cubes/websocket/test/index.test.js cubes/websocket/test/transport.test.js cubes/scheduler/test/index.test.js cubes/event/test/index.test.js cubes/logger/test/index.test.js cubes/config/test/index.test.js",
     "test:http": "node --test --test-timeout=10000 cubes/http/test/index.test.js",
     "test:filesystem": "node --test --test-timeout=10000 cubes/filesystem/test/index.test.js",
     "test:process": "node --test --test-timeout=10000 cubes/process/test/index.test.js",
@@ -17,6 +17,7 @@
     "test:scheduler": "node --test --test-timeout=10000 cubes/scheduler/test/index.test.js",
     "test:event": "node --test --test-timeout=10000 cubes/event/test/index.test.js",
     "test:logger": "node --test --test-timeout=10000 cubes/logger/test/index.test.js",
+    "test:config": "node --test --test-timeout=10000 cubes/config/test/index.test.js",
     "test:browser": "node --test --test-timeout=30000 cubes/browser/test/smoke.test.js",
     "verify": "npm run check && npm test && npm run test:browser"
   }
