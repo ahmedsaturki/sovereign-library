@@ -1,115 +1,51 @@
 # Sovereign Library Roadmap
 
-## Released — v0.1 Browser Cube
+## Release discipline
 
-**Status:** RELEASED
-
-Browser Cube v0.1 is the first completed standalone product in the catalog.
-
-Verified gates:
-
-- [x] standalone product contract
-- [x] native Chromium/CDP foundation
-- [x] launch/attach lifecycle
-- [x] navigation
-- [x] page evaluation
-- [x] metadata
-- [x] screenshot
-- [x] deterministic errors
-- [x] cleanup
-- [x] contract/unit tests
-- [x] real browser smoke test
-- [x] Windows CI verification
-- [x] Linux CI verification
-- [x] macOS CI verification
-- [x] CI test path verified from a clean GitHub checkout
-
-The repository remains intentionally dependency-free at runtime: Browser Cube uses Node.js built-ins plus Chromium/CDP and has no Puppeteer, Playwright, Selenium, Axios, Express, or SDK runtime dependency.
-
-## Active milestone
-
-`HTTP-CUBE-V0.1`
-
-**Only immediate goal:** build one complete, standalone native HTTP Client Cube. Do not expand into other cubes until this release gate passes.
-
-### HTTP Cube v0.1 scope
-
-- request lifecycle
-- GET / POST / PUT / PATCH / DELETE / HEAD / OPTIONS
-- URL and method validation
-- request headers
-- request body
-- response status / headers / body
-- text and JSON helpers
-- timeout
-- abort/cancellation
-- response size limits
-- explicit redirect policy
-- correct 301/302/303/307/308 method semantics
-- protocol-change redirect guard
-- basic diagnostics
-- deterministic typed errors
-- unit + integration + failure tests
-- clean example
-- cross-platform CI
-
-### Explicit non-goals for v0.1
-
-- HTTP/2 implementation
-- proxy pool
-- cookie jar automation
-- retries with hidden side effects
-- framework integration
-- authentication SDKs
-- third-party runtime packages
-
-Those are separate future slices only if later proven necessary.
-
-## Lessons extracted from Omni-Agent-Core
-
-The uploaded archive is treated as research material, not as a dependency or a code source of record.
-
-Useful patterns to reimplement natively where justified:
-
-- execution queue / retry / pipeline semantics
-- deterministic task states and execution logs
-- local data normalization, hashing, deduplication, atomic persistence
-- reporting and diagnostics concepts
-- environment/health checks
-
-Explicitly excluded from the Sovereign core:
-
-- Puppeteer/Playwright wrappers
-- Express-based gateways
-- third-party SDK dependencies
-- third-party MCP SDK dependency
-- stealth/evasion implementation
-- unbounded feature aggregation
-
-## Next cubes — parked
-
-1. Filesystem Cube
-2. Process/Command Cube
-3. Data Engine Cube
-4. Storage Cube
-5. Scheduler/Task Runner Cube
-6. WebSocket Cube
-7. HTTP Server Cube
-8. CLI Cube
-9. Reporting Cube
-10. Search Cube
-11. Workflow Cube
-12. AI Cube
-13. Agent Cube
-
-The order changes only through an explicit decision after the active cube is released.
-
-## Non-negotiable project rule
-
-**One cube at a time. One active milestone. One immediate next task.**
-
-Every cube follows:
+One active cube at a time:
 
 `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE -> NEXT CUBE`
 
-A cube is not complete because code exists. It is complete only when its release gates pass.
+A cube is released only after clean syntax checks, unit/contract tests, integration tests, failure/recovery tests, documentation, examples, and GitHub CI across the supported platform matrix pass.
+
+## Released
+
+### Browser Cube v0.1 — RELEASED
+
+Verified on Ubuntu, Windows, and macOS with a real Chromium smoke test.
+
+### HTTP Client Cube v0.1 — RELEASED
+
+Implemented with Node.js standard-library `node:http` and `node:https` only. Verified on Ubuntu, Windows, and macOS with HTTP integration tests and the real Browser smoke test. Release-gate Run 45 passed all jobs.
+
+## Active milestone
+
+### Filesystem Cube v0.1
+
+Target: standalone filesystem product using Node.js standard-library filesystem/path primitives only.
+
+Initial scope:
+- read/write text and bytes
+- atomic writes
+- append
+- copy/move
+- exists/stat
+- directory listing
+- recursive directory operations
+- safe path handling
+- deterministic typed errors
+- limits for read/write sizes
+- cancellation where supported
+- local fixture tests
+- failure/recovery tests
+- Windows/Linux/macOS verification
+
+Out of scope until v0.2+:
+- database semantics
+- virtual filesystem drivers
+- cloud storage SDKs
+- file watching unless required by a proven release-gate use case
+
+## Parked
+
+Ideas discovered during research remain parked until the active cube is released. Do not expand the active cube with unrelated capabilities.
