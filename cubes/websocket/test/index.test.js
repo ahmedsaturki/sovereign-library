@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createAcceptKey, createClientKey, decodeFrames, encodeFrame, frameText, framePing, WebSocketCubeError } from '../src/index.js';
+import { createAcceptKey, createClientKey, decodeFrames, encodeFrame, frameClose, frameText, framePing, WebSocketCubeError } from '../src/index.js';
 
 test('accept key matches RFC6455 example', () => {
   assert.equal(createAcceptKey('dGhlIHNhbXBsZSBub25jZQ=='), 's3pPLMBiTxaQ9kYGzzhZRbK+xOo=');
@@ -54,4 +54,15 @@ test('client rejects masked server frames', () => {
 test('payload limit is enforced before allocation of application message', () => {
   const encoded = framePing(Buffer.alloc(10));
   assert.throws(() => decodeFrames(encoded, { fromClient: false, maxPayloadBytes: 5 }), error => error instanceof WebSocketCubeError && error.code === 'PAYLOAD_TOO_LARGE');
+});
+
+test('invalid opcodes and close payloads are rejected', () => {
+  assert.throws(() => encodeFrame({ opcode: 3, payload: Buffer.alloc(0) }), error => error instanceof WebSocketCubeError && error.code === 'UNSUPPORTED_OPCODE');
+  assert.throws(() => encodeFrame({ opcode: 8, payload: Buffer.from([0]) }), error => error instanceof WebSocketCubeError && error.code === 'INVALID_CLOSE_PAYLOAD');
+  assert.throws(() => frameClose(1005), error => error instanceof WebSocketCubeError && error.code === 'INVALID_CLOSE_CODE');
+});
+
+test('invalid UTF-8 text is rejected', () => {
+  const invalid = encodeFrame({ opcode: 1, payload: Buffer.from([0xff]), mask: false });
+  assert.throws(() => decodeFrames(invalid, { fromClient: false }), error => error instanceof WebSocketCubeError && error.code === 'INVALID_UTF8');
 });
