@@ -1,8 +1,10 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { Buffer } from 'node:buffer';
+import { TextDecoder } from 'node:util';
 
 const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 const MAX_CONTROL_PAYLOAD = 125;
+const decoder = new TextDecoder('utf-8', { fatal: true });
 
 export class WebSocketCubeError extends Error {
   constructor(code, message, options = {}) {
@@ -36,18 +38,35 @@ function ensurePayload(payload) {
   throw new WebSocketCubeError('INVALID_PAYLOAD', 'payload must be string, Buffer, or Uint8Array');
 }
 
+function validateOpcode(opcode) {
+  if (![0, 1, 2, 8, 9, 10].includes(opcode)) {
+    throw new WebSocketCubeError('UNSUPPORTED_OPCODE', `unsupported opcode ${opcode}`);
+  }
+}
+
+function validateClosePayload(payload) {
+  if (payload.length === 0) return;
+  if (payload.length === 1) throw new WebSocketCubeError('INVALID_CLOSE_PAYLOAD', 'close payload must be empty or at least 2 bytes');
+  const code = payload.readUInt16BE(0);
+  if (code === 1004 || code === 1005 || code === 1006 || code === 1015 || (code >= 1016 && code <= 2999) || code < 1000 || code > 4999) {
+    throw new WebSocketCubeError('INVALID_CLOSE_CODE', 'invalid close code');
+  }
+  try { decoder.decode(payload.subarray(2)); } catch (error) {
+    throw new WebSocketCubeError('INVALID_UTF8', 'close reason is not valid UTF-8', { cause: error });
+  }
+}
+
 export function encodeFrame({ opcode = 1, payload = Buffer.alloc(0), fin = true, mask = false, maskingKey = null }) {
   if (!Number.isInteger(opcode) || opcode < 0 || opcode > 0xf) {
     throw new WebSocketCubeError('INVALID_OPCODE', 'opcode must be a 4-bit integer');
   }
+  validateOpcode(opcode);
   const data = ensurePayload(payload);
   const isControl = opcode >= 8;
   if (isControl && (!fin || data.length > MAX_CONTROL_PAYLOAD)) {
     throw new WebSocketCubeError('INVALID_CONTROL_FRAME', 'control frames must be final and <= 125 bytes');
   }
-  if (data.length > Number.MAX_SAFE_INTEGER) {
-    throw new WebSocketCubeError('PAYLOAD_TOO_LARGE', 'payload is too large');
-  }
+  if (opcode === 8) validateClosePayload(data);
   const key = mask ? (maskingKey ? ensurePayload(maskingKey) : randomBytes(4)) : null;
   if (mask && key.length !== 4) throw new WebSocketCubeError('INVALID_MASK', 'masking key must be 4 bytes');
 
@@ -93,6 +112,7 @@ export function decodeFrames(buffer, { fromClient = true, maxPayloadBytes = 16 *
     if (rsv !== 0) throw new WebSocketCubeError('RESERVED_BITS_SET', 'reserved bits require a negotiated extension');
     if (fromClient && !masked) throw new WebSocketCubeError('CLIENT_FRAME_UNMASKED', 'client-to-server frames must be masked');
     if (!fromClient && masked) throw new WebSocketCubeError('SERVER_FRAME_MASKED', 'server-to-client frames must not be masked');
+    validateOpcode(opcode);
 
     const isControl = opcode >= 8;
     if (isControl && (!fin || length > MAX_CONTROL_PAYLOAD)) throw new WebSocketCubeError('INVALID_CONTROL_FRAME', 'invalid control frame');
@@ -100,10 +120,12 @@ export function decodeFrames(buffer, { fromClient = true, maxPayloadBytes = 16 *
       if (offset + 2 > buffer.length) return { frames, remainder: buffer.subarray(start) };
       length = buffer.readUInt16BE(offset);
       offset += 2;
+      if (isControl) throw new WebSocketCubeError('INVALID_CONTROL_FRAME', 'control frames cannot use extended payload lengths');
     } else if (length === 127) {
       if (offset + 8 > buffer.length) return { frames, remainder: buffer.subarray(start) };
       const wide = buffer.readBigUInt64BE(offset);
       offset += 8;
+      if (isControl) throw new WebSocketCubeError('INVALID_CONTROL_FRAME', 'control frames cannot use extended payload lengths');
       if (wide > BigInt(Number.MAX_SAFE_INTEGER)) throw new WebSocketCubeError('PAYLOAD_TOO_LARGE', 'payload length exceeds safe integer range');
       length = Number(wide);
     }
@@ -123,32 +145,20 @@ export function decodeFrames(buffer, { fromClient = true, maxPayloadBytes = 16 *
       for (let i = 0; i < length; i += 1) unmasked[i] = payload[i] ^ maskingKey[i % 4];
       payload = unmasked;
     } else payload = Buffer.from(payload);
+
+    if (opcode === 8) validateClosePayload(payload);
+    if (opcode === 1 && fin) {
+      try { decoder.decode(payload); } catch (error) {
+        throw new WebSocketCubeError('INVALID_UTF8', 'text frame is not valid UTF-8', { cause: error });
+      }
+    }
     frames.push({ fin, opcode, masked, payload });
   }
   return { frames, remainder: buffer.subarray(offset) };
 }
 
-export function frameText(text, options = {}) {
-  return encodeFrame({ ...options, opcode: 1, payload: text });
-}
-
-export function frameBinary(data, options = {}) {
-  return encodeFrame({ ...options, opcode: 2, payload: data });
-}
-
-export function framePing(data = Buffer.alloc(0), options = {}) {
-  return encodeFrame({ ...options, opcode: 9, payload: data });
-}
-
-export function framePong(data = Buffer.alloc(0), options = {}) {
-  return encodeFrame({ ...options, opcode: 10, payload: data });
-}
-
-export function frameClose(code = 1000, reason = '', options = {}) {
-  if (!Number.isInteger(code) || code < 1000 || code > 4999) throw new WebSocketCubeError('INVALID_CLOSE_CODE', 'invalid close code');
-  const reasonBytes = Buffer.from(reason, 'utf8');
-  const payload = Buffer.allocUnsafe(2 + reasonBytes.length);
-  payload.writeUInt16BE(code, 0);
-  reasonBytes.copy(payload, 2);
-  return encodeFrame({ ...options, opcode: 8, payload });
-}
+export function frameText(text, options = {}) { return encodeFrame({ ...options, opcode: 1, payload: text }); }
+export function frameBinary(data, options = {}) { return encodeFrame({ ...options, opcode: 2, payload: data }); }
+export function framePing(data = Buffer.alloc(0), options = {}) { return encodeFrame({ ...options, opcode: 9, payload: data }); }
+export function framePong(data = Buffer.alloc(0), options = {}) { return encodeFrame({ ...options, opcode: 10, payload: data }); }
+export function frameClose(code = 1000, reason = '', options = {}) { return encodeFrame({ ...options, opcode: 8, payload: (() => { const reasonBytes = Buffer.from(reason, 'utf8'); const payload = Buffer.allocUnsafe(2 + reasonBytes.length); payload.writeUInt16BE(code, 0); reasonBytes.copy(payload, 2); return payload; })() }); }
