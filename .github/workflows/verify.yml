@@ -22,7 +22,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Syntax check
         run: npm run check
-      - name: Contract and HTTP integration tests
+      - name: Contract and integration tests
         run: npm test
       - name: Real browser smoke test
         run: npm run test:browser
