@@ -43,36 +43,42 @@ Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, a
 ### Configuration / Environment Cube v0.1 — RELEASED
 Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with configuration contract/integration/failure tests and the real Browser smoke test. Release-gate Run 155 passed all jobs.
 
+### Cache / Memoization Cube v0.1 — RELEASED
+Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with cache contract/integration/failure tests and the real Browser smoke test. Release-gate Run 161 passed all jobs.
+
 ## Active milestone
 
-### Cache / Memoization Cube v0.1
+### Validation / Schema Cube v0.1
 
-Target: standalone bounded in-memory cache primitives with deterministic TTL, LRU-style eviction, namespaces, invalidation, and safe concurrency semantics using only Node.js runtime primitives.
+Target: standalone validation and schema primitives that normalize and validate structured inputs without third-party schema frameworks, designed to compose with the Data Engine and Configuration Cube while remaining independently reusable.
 
 Initial scope:
-- typed key/value cache contract
-- namespaces
-- get/set/has/delete/clear
-- TTL with injectable clock
-- bounded capacity
-- deterministic eviction policy
-- hit/miss statistics
-- explicit invalidation
-- get-or-compute with in-flight de-duplication
-- cancellation-aware compute
-- size/value limits
-- immutable metadata snapshots
+- typed primitive validation
+- object and array shape validation
+- required and optional fields
+- nested paths
+- enums and literal constraints
+- string/number bounds
+- array length bounds
+- custom deterministic validators
+- structured validation results
+- typed validation errors
+- coercion only when explicitly requested
+- safe handling of unknown keys
+- deterministic error paths/messages/codes
+- reusable schema definitions
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- distributed cache
-- Redis or remote cache clients
-- persistence
-- cache replication
-- cluster coordination
-- network transport
-- third-party cache libraries
+- JSON Schema full standard implementation
+- OpenAPI generation
+- code generation
+- remote schema registries
+- third-party schema libraries
+- ORM validation
+- UI form generation
+- localization framework
 
 ## Parked
 
