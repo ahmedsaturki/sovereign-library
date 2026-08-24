@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Configuration / Environment Cube v0.1** and release it before starting another cube.
+Finish **Cache / Memoization Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,52 +16,53 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**CONFIGURATION-ENVIRONMENT-V0.1-RELEASE**
+**CACHE-MEMOIZATION-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Configuration / Environment Cube release gate:
+Complete the Cache / Memoization Cube release gate:
 
-1. write and freeze the configuration contract
+1. write and freeze the cache contract
 2. run syntax, unit, contract, integration, failure, and recovery tests
-3. verify precedence, defaults, required/optional values, namespaces, and strict coercion
-4. verify immutable snapshots and bounded input sizes
-5. verify deterministic parsing and typed errors
-6. verify secret redaction helpers for diagnostics/logging
-7. verify testable source abstraction for environment/config inputs
-8. verify zero runtime third-party dependencies
-9. run the supported cross-platform CI matrix
-10. fix only failures required for the v0.1 gate
-11. mark the release gate complete
+3. verify get/set/has/delete/clear and namespace semantics
+4. verify deterministic TTL with injected clock
+5. verify bounded capacity and deterministic eviction
+6. verify hit/miss statistics and invalidation
+7. verify get-or-compute in-flight de-duplication and cancellation
+8. verify value/key limits and immutable metadata snapshots
+9. verify zero runtime third-party dependencies
+10. run the supported cross-platform CI matrix
+11. fix only failures required for the v0.1 gate
+12. mark the release gate complete
 
 ## Scope lock
 
-For Configuration / Environment Cube v0.1, the allowed scope is only:
+For Cache / Memoization Cube v0.1, the allowed scope is only:
 
-- typed configuration contract
-- environment variable access
-- immutable configuration snapshots
-- explicit defaults
-- required/optional values
-- strict type coercion and validation
-- deterministic precedence rules
-- namespaced keys
-- secret redaction helpers
-- bounded input sizes
-- deterministic parsing and typed errors
-- testable configuration source abstraction
+- typed key/value cache contract
+- namespaces
+- get/set/has/delete/clear
+- TTL with injectable clock
+- bounded capacity
+- deterministic eviction policy
+- hit/miss statistics
+- explicit invalidation
+- get-or-compute with in-flight de-duplication
+- cancellation-aware compute
+- size/value limits
+- immutable metadata snapshots
 - documentation
 - tests
 
 Explicitly out of scope for v0.1:
 
-- remote configuration services
-- secret-management SaaS
-- encrypted secret vaults
-- configuration UI
-- hot reload/watchers
-- schema compiler frameworks
-- third-party configuration packages
+- distributed cache
+- Redis or remote cache clients
+- persistence
+- cache replication
+- cluster coordination
+- network transport
+- third-party cache libraries
 - AI agent runtime
 
 ## Definition of done
