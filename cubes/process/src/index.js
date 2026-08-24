@@ -15,33 +15,19 @@ export class ProcessCubeError extends Error {
 
 function validateOptions(options) {
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
-    throw new ProcessCubeError('INVALID_TIMEOUT', 'timeoutMs must be a positive safe integer');
-  }
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) throw new ProcessCubeError('INVALID_TIMEOUT', 'timeoutMs must be a positive safe integer');
   const maxOutputBytes = options.maxOutputBytes ?? DEFAULT_MAX_OUTPUT_BYTES;
-  if (!Number.isSafeInteger(maxOutputBytes) || maxOutputBytes <= 0) {
-    throw new ProcessCubeError('INVALID_OUTPUT_LIMIT', 'maxOutputBytes must be a positive safe integer');
-  }
-  if (options.args != null && (!Array.isArray(options.args) || options.args.some((value) => typeof value !== 'string'))) {
-    throw new ProcessCubeError('INVALID_ARGS', 'args must be an array of strings');
-  }
-  if (options.env != null && (typeof options.env !== 'object' || Array.isArray(options.env))) {
-    throw new ProcessCubeError('INVALID_ENV', 'env must be an object');
-  }
+  if (!Number.isSafeInteger(maxOutputBytes) || maxOutputBytes <= 0) throw new ProcessCubeError('INVALID_OUTPUT_LIMIT', 'maxOutputBytes must be a positive safe integer');
+  if (options.args != null && (!Array.isArray(options.args) || options.args.some((value) => typeof value !== 'string'))) throw new ProcessCubeError('INVALID_ARGS', 'args must be an array of strings');
+  if (options.env != null && (typeof options.env !== 'object' || Array.isArray(options.env))) throw new ProcessCubeError('INVALID_ENV', 'env must be an object');
   return { timeoutMs, maxOutputBytes };
 }
 
 export function run(command, options = {}) {
-  if (typeof command !== 'string' || command.length === 0) {
-    return Promise.reject(new ProcessCubeError('INVALID_COMMAND', 'command must be a non-empty string'));
-  }
+  if (typeof command !== 'string' || command.length === 0) return Promise.reject(new ProcessCubeError('INVALID_COMMAND', 'command must be a non-empty string'));
 
   let limits;
-  try {
-    limits = validateOptions(options);
-  } catch (error) {
-    return Promise.reject(error);
-  }
+  try { limits = validateOptions(options); } catch (error) { return Promise.reject(error); }
 
   const args = options.args ?? [];
   const shell = options.shell === true;
@@ -51,6 +37,7 @@ export function run(command, options = {}) {
   return new Promise((resolve, reject) => {
     let settled = false;
     let timedOut = false;
+    let aborted = Boolean(options.signal?.aborted);
     let outputExceeded = false;
     const stdout = [];
     const stderr = [];
@@ -68,6 +55,7 @@ export function run(command, options = {}) {
     const finishError = (error) => {
       if (settled) return;
       settled = true;
+      clearTimeout(timer);
       reject(error instanceof ProcessCubeError ? error : new ProcessCubeError('SPAWN_FAILED', error.message || 'Process failed to start', { cause: error }));
     };
 
@@ -95,15 +83,9 @@ export function run(command, options = {}) {
       clearTimeout(timer);
       if (settled) return;
       settled = true;
-
-      if (timedOut) {
-        reject(new ProcessCubeError('TIMEOUT', `Process exceeded ${limits.timeoutMs}ms`, { retryable: true }));
-        return;
-      }
-      if (outputExceeded) {
-        reject(new ProcessCubeError('OUTPUT_TOO_LARGE', `Process output exceeded ${limits.maxOutputBytes} bytes`));
-        return;
-      }
+      if (timedOut) return reject(new ProcessCubeError('TIMEOUT', `Process exceeded ${limits.timeoutMs}ms`, { retryable: true }));
+      if (aborted) return reject(new ProcessCubeError('ABORTED', 'Process was aborted', { retryable: true }));
+      if (outputExceeded) return reject(new ProcessCubeError('OUTPUT_TOO_LARGE', `Process output exceeded ${limits.maxOutputBytes} bytes`));
 
       resolve({
         command,
@@ -121,7 +103,10 @@ export function run(command, options = {}) {
       if (options.signal.aborted) {
         child.kill(options.killSignal ?? 'SIGTERM');
       } else {
-        options.signal.addEventListener('abort', () => child.kill(options.killSignal ?? 'SIGTERM'), { once: true });
+        options.signal.addEventListener('abort', () => {
+          aborted = true;
+          child.kill(options.killSignal ?? 'SIGTERM');
+        }, { once: true });
       }
     }
   });
