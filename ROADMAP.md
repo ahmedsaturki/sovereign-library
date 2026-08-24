@@ -34,35 +34,41 @@ Implemented with Node.js language/runtime primitives only. Verified on Ubuntu, W
 
 Implemented with Node.js standard-library filesystem, serialization, and crypto primitives only. Verified on Ubuntu, Windows, and macOS with storage integration/failure tests and the real Browser smoke test. Release-gate Run 98 passed all jobs.
 
+### WebSocket / Transport Cube v0.1 — RELEASED
+
+Implemented with Node.js standard-library networking and crypto primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with WebSocket contract/integration tests and the real Browser smoke test. Release-gate Run 122 passed all jobs.
+
 ## Active milestone
 
-### WebSocket / Transport Cube v0.1
+### Task Scheduler / Queue Cube v0.1
 
-Target: standalone bidirectional WebSocket client/server transport using native Node.js networking primitives only, without `ws`, Socket.IO, HTTP frameworks, or third-party networking packages.
+Target: standalone deterministic task scheduling and in-memory queue primitives using Node.js runtime primitives only, without workflow frameworks, queue packages, Redis clients, cron libraries, or third-party dependencies.
 
 Initial scope:
-- client connection lifecycle
-- server-side upgrade/accept path
-- WebSocket frame encode/decode
-- masking/unmasking
-- text/binary messages
-- ping/pong
-- close handshake
-- protocol validation
-- payload limits
-- backpressure
-- deterministic typed errors
-- local client/server integration tests
-- malformed-frame/failure tests
-- Windows/Linux/macOS verification
+- task contract and lifecycle states
+- FIFO queue with explicit priorities
+- bounded concurrency
+- deterministic scheduling
+- delay/not-before execution
+- retries with explicit retry policy
+- cancellation and timeout
+- backpressure and queue limits
+- idempotency keys
+- task result/error capture
+- graceful shutdown and drain
+- deterministic clock injection for tests
+- local integration/failure/recovery tests
+- cross-platform verification
 
 Out of scope until v0.2+:
-- automatic reconnection policy
-- pub/sub broker
-- authentication framework
-- distributed presence
-- third-party WebSocket libraries
-- message persistence
+- distributed queues
+- persistence
+- cron parser
+- workflow DAG engine
+- pub/sub
+- distributed locks
+- remote workers
+- third-party queue services
 
 ## Parked
 
