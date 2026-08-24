@@ -17,6 +17,7 @@ adapters/       optional environment/external adapters
 examples/       runnable examples
 specs/          cube specifications and definition-of-done gates
 tests/          repository verification
+docs/           research and extraction notes
 ```
 
 ## Dependency policy
