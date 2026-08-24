@@ -37,39 +37,39 @@ Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, a
 ### Event / Signal Cube v0.1 — RELEASED
 Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with event contract/integration/failure/recovery tests and the real Browser smoke test. Release-gate Run 139 passed all jobs.
 
+### Logger / Diagnostics Cube v0.1 — RELEASED
+Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with logger contract/integration/failure tests and the real Browser smoke test. Release-gate Run 150 passed all jobs.
+
 ## Active milestone
 
-### Logger / Diagnostics Cube v0.1
+### Configuration / Environment Cube v0.1
 
-Target: standalone structured logging and diagnostics primitives for all cubes, using only Node.js runtime primitives and with deterministic behavior in tests.
+Target: standalone configuration loading, validation, normalization, and environment access primitives using only Node.js runtime primitives, with deterministic precedence and safe handling of sensitive values.
 
 Initial scope:
-- typed log records
-- levels: trace/debug/info/warn/error/fatal
-- deterministic record shape
-- context fields
-- correlation/request/task identifiers
-- pluggable sinks via a tiny native contract
-- console sink
-- in-memory sink for tests
-- minimum-level filtering
-- error normalization
-- safe serialization limits
-- timestamp/monotonic timing separation
-- child logger context
-- graceful sink failure isolation
+- typed configuration contract
+- environment variable access
+- immutable configuration snapshots
+- explicit defaults
+- required/optional values
+- type coercion with strict validation
+- precedence rules
+- namespaced keys
+- redaction helpers for secrets in diagnostics/logging
+- bounded input sizes
+- deterministic parsing and errors
+- testable source abstraction for environment/config inputs
 - local unit/integration/failure tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- remote log transport
-- distributed tracing backend
-- OpenTelemetry SDKs
-- third-party logging frameworks
-- persistence
-- log aggregation/query engine
-- metrics backend
-- external observability SaaS
+- remote configuration services
+- secret-management SaaS
+- encrypted secret vaults
+- config UI
+- hot reload/watchers
+- schema compiler frameworks
+- third-party configuration packages
 
 ## Parked
 
