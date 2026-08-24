@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Event / Signal Cube v0.1** and release it before starting another cube.
+Finish **Logger / Diagnostics Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,51 +16,55 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**EVENT-SIGNAL-V0.1-RELEASE**
+**LOGGER-DIAGNOSTICS-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Event / Signal Cube release gate:
+Complete the Logger / Diagnostics Cube release gate:
 
-1. write and freeze the event/signal contract
+1. write and freeze the log/diagnostics contract
 2. run syntax, unit, contract, integration, failure, and recovery tests
-3. verify subscribe/unsubscribe/once semantics and deterministic ordering
-4. verify cancellation, timeout, listener limits, error isolation, and re-entrancy behavior
-5. verify synchronous and controlled asynchronous dispatch semantics
-6. verify zero runtime third-party dependencies
-7. run the supported cross-platform CI matrix
-8. fix only failures required for the v0.1 gate
-9. mark the release gate complete
+3. verify level filtering, deterministic record shape, context inheritance, and child logger semantics
+4. verify error normalization, serialization limits, and sink failure isolation
+5. verify console and in-memory sink behavior
+6. verify timestamp versus monotonic duration semantics
+7. verify zero runtime third-party dependencies
+8. run the supported cross-platform CI matrix
+9. fix only failures required for the v0.1 gate
+10. mark the release gate complete
 
 ## Scope lock
 
-For Event / Signal Cube v0.1, the allowed scope is only:
+For Logger / Diagnostics Cube v0.1, the allowed scope is only:
 
-- typed event contract
-- subscribe/unsubscribe
-- once listeners
-- deterministic listener ordering
-- synchronous and controlled asynchronous dispatch modes
-- AbortSignal-based subscription cancellation
-- bounded listener counts
-- event/error isolation
-- safe re-entrancy rules
-- wait-for-event with timeout/cancellation
+- typed log records
+- trace/debug/info/warn/error/fatal levels
+- deterministic record shape
+- context fields
+- correlation/request/task identifiers
+- native pluggable sinks
+- console sink
+- in-memory sink for tests
+- minimum-level filtering
+- error normalization
+- safe serialization limits
+- wall-clock timestamp and monotonic duration separation
+- child logger context
+- sink failure isolation
 - documentation
 - tests
 
 Explicitly out of scope for v0.1:
 
-- distributed pub/sub
-- network transport
+- remote log transport
+- distributed tracing backends
+- OpenTelemetry SDKs
+- third-party logging frameworks
 - persistence
-- broker semantics
-- durable event logs
-- workflow orchestration
-- third-party event libraries
+- log aggregation/query engines
+- metrics backends
+- external observability SaaS
 - AI agent runtime
-
-Those become future cubes or future releases only after v0.1 is released.
 
 ## Definition of done
 
