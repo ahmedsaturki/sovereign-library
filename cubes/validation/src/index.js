@@ -10,7 +10,7 @@ export class ValidationError extends Error {
 const TYPES = new Set(['string', 'number', 'integer', 'boolean', 'bigint', 'object', 'array', 'null', 'any']);
 
 function freeze(value, seen = new WeakSet()) {
-  if (!value || typeof value !== 'object' || seen.has(value) || Object.isFrozen(value)) return value;
+  if (!value || typeof value !== 'object' || seen.has(value)) return value;
   seen.add(value);
   for (const item of Array.isArray(value) ? value : Object.values(value)) freeze(item, seen);
   return Object.freeze(value);
@@ -36,6 +36,22 @@ function coerceValue(value, type) {
   return value;
 }
 
+function matchesType(value, expected) {
+  if (expected === 'any') return true;
+  if (expected === 'null') return value === null;
+  if (expected === 'array') return Array.isArray(value);
+  if (expected === 'object') return value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (expected === 'integer') return typeof value === 'number' && Number.isSafeInteger(value);
+  return typeof value === expected;
+}
+
+function actualType(value) {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'array';
+  if (typeof value === 'number' && Number.isSafeInteger(value)) return 'integer';
+  return typeof value;
+}
+
 function validateNode(schema, value, path, issues, options) {
   if (value === undefined) {
     if (schema.required) issues.push(issue(path, 'REQUIRED', 'value is required'));
@@ -44,11 +60,11 @@ function validateNode(schema, value, path, issues, options) {
   }
 
   let current = options.coerce ? coerceValue(value, schema.type) : value;
-  const actualType = current === null ? 'null' : Array.isArray(current) ? 'array' : typeof current;
   const expected = schema.type;
 
-  if (expected && expected !== 'any' && actualType !== expected) {
-    issues.push(issue(path, 'TYPE', `expected ${expected}, received ${actualType}`, { expected, received: actualType }));
+  if (expected && !matchesType(current, expected)) {
+    const received = actualType(current);
+    issues.push(issue(path, 'TYPE', `expected ${expected}, received ${received}`, { expected, received }));
     return undefined;
   }
 
@@ -84,11 +100,6 @@ function validateNode(schema, value, path, issues, options) {
   }
 
   if (expected === 'object') {
-    if (!current || Object.getPrototypeOf(current) !== Object.prototype) {
-      issues.push(issue(path, 'OBJECT', 'expected a plain object'));
-      return undefined;
-    }
-
     const shape = schema.shape || {};
     const out = {};
     for (const [key, child] of Object.entries(shape)) {
@@ -104,9 +115,7 @@ function validateNode(schema, value, path, issues, options) {
       for (const key of unknown) issues.push(issue(pathJoin(path, key), 'UNKNOWN_KEY', 'unknown key is not allowed'));
     }
 
-    if (policy !== 'strip') {
-      for (const key of unknown) out[key] = current[key];
-    }
+    if (policy !== 'strip') for (const key of unknown) out[key] = current[key];
     current = out;
   }
 
@@ -124,13 +133,10 @@ function validateNode(schema, value, path, issues, options) {
 function validateDefinition(definition) {
   if (!definition || typeof definition !== 'object' || Array.isArray(definition)) throw new TypeError('schema definition must be an object');
   if (definition.type && !TYPES.has(definition.type)) throw new TypeError(`unsupported validation type: ${definition.type}`);
-  if (definition.type === 'array' && definition.items instanceof Schema === false && definition.items !== undefined) validateDefinition(definition.items);
+  if (definition.type === 'array' && definition.items !== undefined && !(definition.items instanceof Schema)) validateDefinition(definition.items);
   if (definition.type === 'object' && definition.shape) {
     if (typeof definition.shape !== 'object' || Array.isArray(definition.shape)) throw new TypeError('object shape must be an object');
-    for (const child of Object.values(definition.shape)) {
-      if (child instanceof Schema) continue;
-      validateDefinition(child);
-    }
+    for (const child of Object.values(definition.shape)) if (!(child instanceof Schema)) validateDefinition(child);
   }
 }
 
@@ -170,7 +176,7 @@ export const validators = Object.freeze({
   integer: options => schema({ type: 'integer', ...(options ?? {}) }),
   boolean: options => schema({ type: 'boolean', ...(options ?? {}) }),
   array: (items, options = {}) => schema({ type: 'array', items: normalizeSchema(items), ...options }),
-  object: (shape, options = {}) => schema({ type: 'object', shape: Object.fromEntries(Object.entries(shape).map(([key, value]) => [key, normalizeSchema(value)])), ...options }),
+  object: (shape, options = {}) => schema({ type: 'object', shape: Object.fromEntries(Object.entries(shape).map(([key, value]) => [key, normalizeSchema(value)]),), ...options }),
   literal: value => schema({ type: 'any', literal: value })
 });
 
