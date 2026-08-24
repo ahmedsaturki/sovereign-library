@@ -176,7 +176,7 @@ export const validators = Object.freeze({
   integer: options => schema({ type: 'integer', ...(options ?? {}) }),
   boolean: options => schema({ type: 'boolean', ...(options ?? {}) }),
   array: (items, options = {}) => schema({ type: 'array', items: normalizeSchema(items), ...options }),
-  object: (shape, options = {}) => schema({ type: 'object', shape: Object.fromEntries(Object.entries(shape).map(([key, value]) => [key, normalizeSchema(value)]),), ...options }),
+  object: (shape, options = {}) => schema({ type: 'object', shape: Object.fromEntries(Object.entries(shape).map(([key, value]) => [key, normalizeSchema(value)])), ...options }),
   literal: value => schema({ type: 'any', literal: value })
 });
 
