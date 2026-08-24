@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Logger / Diagnostics Cube v0.1** and release it before starting another cube.
+Finish **Configuration / Environment Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,54 +16,52 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**LOGGER-DIAGNOSTICS-V0.1-RELEASE**
+**CONFIGURATION-ENVIRONMENT-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Logger / Diagnostics Cube release gate:
+Complete the Configuration / Environment Cube release gate:
 
-1. write and freeze the log/diagnostics contract
+1. write and freeze the configuration contract
 2. run syntax, unit, contract, integration, failure, and recovery tests
-3. verify level filtering, deterministic record shape, context inheritance, and child logger semantics
-4. verify error normalization, serialization limits, and sink failure isolation
-5. verify console and in-memory sink behavior
-6. verify timestamp versus monotonic duration semantics
-7. verify zero runtime third-party dependencies
-8. run the supported cross-platform CI matrix
-9. fix only failures required for the v0.1 gate
-10. mark the release gate complete
+3. verify precedence, defaults, required/optional values, namespaces, and strict coercion
+4. verify immutable snapshots and bounded input sizes
+5. verify deterministic parsing and typed errors
+6. verify secret redaction helpers for diagnostics/logging
+7. verify testable source abstraction for environment/config inputs
+8. verify zero runtime third-party dependencies
+9. run the supported cross-platform CI matrix
+10. fix only failures required for the v0.1 gate
+11. mark the release gate complete
 
 ## Scope lock
 
-For Logger / Diagnostics Cube v0.1, the allowed scope is only:
+For Configuration / Environment Cube v0.1, the allowed scope is only:
 
-- typed log records
-- trace/debug/info/warn/error/fatal levels
-- deterministic record shape
-- context fields
-- correlation/request/task identifiers
-- native pluggable sinks
-- console sink
-- in-memory sink for tests
-- minimum-level filtering
-- error normalization
-- safe serialization limits
-- wall-clock timestamp and monotonic duration separation
-- child logger context
-- sink failure isolation
+- typed configuration contract
+- environment variable access
+- immutable configuration snapshots
+- explicit defaults
+- required/optional values
+- strict type coercion and validation
+- deterministic precedence rules
+- namespaced keys
+- secret redaction helpers
+- bounded input sizes
+- deterministic parsing and typed errors
+- testable configuration source abstraction
 - documentation
 - tests
 
 Explicitly out of scope for v0.1:
 
-- remote log transport
-- distributed tracing backends
-- OpenTelemetry SDKs
-- third-party logging frameworks
-- persistence
-- log aggregation/query engines
-- metrics backends
-- external observability SaaS
+- remote configuration services
+- secret-management SaaS
+- encrypted secret vaults
+- configuration UI
+- hot reload/watchers
+- schema compiler frameworks
+- third-party configuration packages
 - AI agent runtime
 
 ## Definition of done
