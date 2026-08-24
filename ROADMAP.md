@@ -35,7 +35,7 @@ The repository remains intentionally dependency-free at runtime: Browser Cube us
 ### HTTP Cube v0.1 scope
 
 - request lifecycle
-- GET / POST / PUT / PATCH / DELETE
+- GET / POST / PUT / PATCH / DELETE / HEAD / OPTIONS
 - URL and method validation
 - request headers
 - request body
@@ -43,10 +43,12 @@ The repository remains intentionally dependency-free at runtime: Browser Cube us
 - text and JSON helpers
 - timeout
 - abort/cancellation
-- deterministic error model
 - response size limits
-- redirect policy
+- explicit redirect policy
+- correct 301/302/303/307/308 method semantics
+- protocol-change redirect guard
 - basic diagnostics
+- deterministic typed errors
 - unit + integration + failure tests
 - clean example
 - cross-platform CI
@@ -56,12 +58,33 @@ The repository remains intentionally dependency-free at runtime: Browser Cube us
 - HTTP/2 implementation
 - proxy pool
 - cookie jar automation
-- multipart abstraction beyond the minimum native capability
 - retries with hidden side effects
 - framework integration
+- authentication SDKs
 - third-party runtime packages
 
 Those are separate future slices only if later proven necessary.
+
+## Lessons extracted from Omni-Agent-Core
+
+The imported archive is treated as research material, not as a dependency or a code source of record.
+
+Useful patterns to reimplement natively where justified:
+
+- execution queue / retry / pipeline semantics
+- deterministic task states and execution logs
+- local data normalization, hashing, deduplication, atomic persistence
+- reporting and diagnostics concepts
+- environment/health checks
+
+Explicitly excluded from the Sovereign core:
+
+- Puppeteer/Playwright wrappers
+- Express-based gateways
+- third-party SDK dependencies
+- third-party MCP SDK dependency
+- stealth/evasion implementation
+- unbounded feature aggregation
 
 ## Next cubes — parked
 
