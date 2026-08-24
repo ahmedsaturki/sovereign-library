@@ -15,8 +15,9 @@ test('compact and string normalization remove common payload noise', () => {
   assert.deepEqual(normalizeStrings(compact(value), { case: 'lower' }), { c: 'hello world', d: ['', 'x'] });
 });
 
-test('dedupe preserves first occurrence', () => {
+test('dedupe preserves first occurrence and validates key function', () => {
   assert.deepEqual(dedupe([{ id: 1 }, { id: 1 }, { id: 2 }], item => item.id), [{ id: 1 }, { id: 2 }]);
+  assert.throws(() => dedupe([], null), error => error instanceof DataCubeError && error.code === 'INVALID_KEY');
 });
 
 test('merge performs isolated deep merge', () => {
@@ -26,8 +27,17 @@ test('merge performs isolated deep merge', () => {
   assert.deepEqual(base, { user: { name: 'A', flags: { a: true } } });
 });
 
-test('canonical JSON sorts object keys recursively', () => {
+test('clone-backed operations preserve supported structured values', () => {
+  const value = { bigint: 123n, nested: { ok: true } };
+  assert.deepEqual(pick(value, ['bigint']), value);
+  const result = merge(value, { nested: { added: true } });
+  assert.equal(result.bigint, 123n);
+  assert.deepEqual(result.nested, { ok: true, added: true });
+});
+
+test('canonical JSON sorts object keys recursively and rejects non-JSON values', () => {
   assert.equal(canonicalJson({ b: 1, a: { d: 2, c: 3 } }), '{"a":{"c":3,"d":2},"b":1}');
+  assert.throws(() => canonicalJson({ value: 1n }), error => error instanceof DataCubeError && error.code === 'CANONICALIZE_FAILED');
 });
 
 test('invalid inputs produce typed errors', () => {
