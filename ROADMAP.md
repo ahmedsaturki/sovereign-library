@@ -38,37 +38,38 @@ Implemented with Node.js standard-library filesystem, serialization, and crypto 
 
 Implemented with Node.js standard-library networking and crypto primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with WebSocket contract/integration tests and the real Browser smoke test. Release-gate Run 122 passed all jobs.
 
+### Task Scheduler / Queue Cube v0.1 — RELEASED
+
+Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with scheduler contract/integration/failure/recovery tests and the real Browser smoke test. Release-gate Run 132 passed all jobs.
+
 ## Active milestone
 
-### Task Scheduler / Queue Cube v0.1
+### Event / Signal Cube v0.1
 
-Target: standalone deterministic task scheduling and in-memory queue primitives using Node.js runtime primitives only, without workflow frameworks, queue packages, Redis clients, cron libraries, or third-party dependencies.
+Target: standalone in-process event and signal primitives for connecting independent cubes without introducing a framework or third-party runtime dependency.
 
 Initial scope:
-- task contract and lifecycle states
-- FIFO queue with explicit priorities
-- bounded concurrency
-- deterministic scheduling
-- delay/not-before execution
-- retries with explicit retry policy
-- cancellation and timeout
-- backpressure and queue limits
-- idempotency keys
-- task result/error capture
-- graceful shutdown and drain
-- deterministic clock injection for tests
-- local integration/failure/recovery tests
+- typed event contract
+- subscribe/unsubscribe
+- once listeners
+- deterministic listener ordering
+- synchronous and controlled asynchronous dispatch modes
+- AbortSignal-based subscription cancellation
+- bounded listener counts
+- event/error isolation
+- safe re-entrancy rules
+- wait-for-event primitive with timeout/cancellation
+- local unit/integration/failure tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- distributed queues
+- distributed pub/sub
+- network transport
 - persistence
-- cron parser
-- workflow DAG engine
-- pub/sub
-- distributed locks
-- remote workers
-- third-party queue services
+- broker semantics
+- durable event logs
+- workflow orchestration
+- third-party event libraries
 
 ## Parked
 
