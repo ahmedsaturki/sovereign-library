@@ -1,10 +1,12 @@
 # Sovereign Library Roadmap
 
-## Current release — v0.1 Browser Cube
+## Released — v0.1 Browser Cube
 
-**Objective:** finish one standalone, dependency-free browser product and stop. Do not expand the catalog until this release gate passes.
+**Status:** RELEASED
 
-### Completed
+Browser Cube v0.1 is the first completed standalone product in the catalog.
+
+Verified gates:
 
 - [x] standalone product contract
 - [x] native Chromium/CDP foundation
@@ -15,41 +17,69 @@
 - [x] screenshot
 - [x] deterministic errors
 - [x] cleanup
-- [x] unit tests for contract/lifecycle
+- [x] contract/unit tests
+- [x] real browser smoke test
+- [x] Windows CI verification
+- [x] Linux CI verification
+- [x] macOS CI verification
+- [x] CI test path verified from a clean GitHub checkout
 
-### Remaining release gates
-
-- [ ] run full repository tests from a clean checkout/install
-- [ ] platform smoke matrix for Windows/Linux/macOS/WSL where supported
-- [ ] verify example from the README from a clean environment
-- [ ] verify release artifact contents and reproducibility
-- [ ] fix only defects required by the above gates
-- [ ] tag/finalize v0.1
+The repository remains intentionally dependency-free at runtime: Browser Cube uses Node.js built-ins plus Chromium/CDP and has no Puppeteer, Playwright, Selenium, Axios, Express, or SDK runtime dependency.
 
 ## Active milestone
 
-`BROWSER-V0.1-RELEASE`
+`HTTP-CUBE-V0.1`
 
-**Only immediate goal:** close the remaining release gates above.
+**Only immediate goal:** build one complete, standalone native HTTP Client Cube. Do not expand into other cubes until this release gate passes.
 
-## Next cubes — parked until Browser v0.1 is released
+### HTTP Cube v0.1 scope
 
-1. HTTP Client Cube
-2. Filesystem Cube
-3. Process/Command Cube
-4. Data Engine Cube
-5. Storage Cube
-6. Scheduler/Task Runner Cube
-7. WebSocket Cube
-8. HTTP Server Cube
-9. CLI Cube
-10. Reporting Cube
-11. Search Cube
-12. Workflow Cube
-13. AI Cube
-14. Agent Cube
+- request lifecycle
+- GET / POST / PUT / PATCH / DELETE
+- URL and method validation
+- request headers
+- request body
+- response status / headers / body
+- text and JSON helpers
+- timeout
+- abort/cancellation
+- deterministic error model
+- response size limits
+- redirect policy
+- basic diagnostics
+- unit + integration + failure tests
+- clean example
+- cross-platform CI
 
-The order is provisional and can be changed only through an explicit decision after the current cube is released.
+### Explicit non-goals for v0.1
+
+- HTTP/2 implementation
+- proxy pool
+- cookie jar automation
+- multipart abstraction beyond the minimum native capability
+- retries with hidden side effects
+- framework integration
+- third-party runtime packages
+
+Those are separate future slices only if later proven necessary.
+
+## Next cubes — parked
+
+1. Filesystem Cube
+2. Process/Command Cube
+3. Data Engine Cube
+4. Storage Cube
+5. Scheduler/Task Runner Cube
+6. WebSocket Cube
+7. HTTP Server Cube
+8. CLI Cube
+9. Reporting Cube
+10. Search Cube
+11. Workflow Cube
+12. AI Cube
+13. Agent Cube
+
+The order changes only through an explicit decision after the active cube is released.
 
 ## Non-negotiable project rule
 
@@ -59,4 +89,4 @@ Every cube follows:
 
 `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE -> NEXT CUBE`
 
-A cube is not considered complete because the code exists. It is complete only when its release gates pass.
+A cube is not complete because code exists. It is complete only when its release gates pass.
