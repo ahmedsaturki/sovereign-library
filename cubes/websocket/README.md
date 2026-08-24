@@ -2,6 +2,8 @@
 
 Standalone RFC 6455 WebSocket transport for Node.js using only built-in modules.
 
+Runtime dependencies: none.
+
 ## Included
 
 - client/server handshake helpers
@@ -15,6 +17,7 @@ Standalone RFC 6455 WebSocket transport for Node.js using only built-in modules.
 - backpressure signal
 - deterministic typed protocol errors
 - native `node:http`, `node:net`, `node:tls`, and `node:crypto`
+- bounded lifecycle tests and cleanup guarantees
 
 ## Not included in v0.1
 
