@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **WebSocket / Transport Cube v0.1** and release it before starting another cube.
+Finish **Task Scheduler / Queue Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,48 +16,56 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**WEBSOCKET-TRANSPORT-V0.1-RELEASE**
+**TASK-SCHEDULER-QUEUE-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the WebSocket / Transport Cube release gate:
+Complete the Task Scheduler / Queue Cube release gate:
 
-1. run the repository test suite
-2. run platform smoke checks on Ubuntu, Windows, and macOS
-3. verify native client/server handshake and lifecycle behavior
-4. verify cleanup, timeout, masking, fragmentation, close, and payload-limit behavior
-5. verify zero runtime third-party dependencies
-6. fix only failures required for the v0.1 gate
-7. mark the release gate complete
+1. write and freeze the task/queue contract
+2. run syntax, unit, contract, integration, failure, recovery, and shutdown tests
+3. verify FIFO/priority ordering and bounded concurrency
+4. verify delay, retry, cancellation, timeout, idempotency, backpressure, and queue limits
+5. verify graceful shutdown/drain behavior
+6. verify deterministic clock injection in tests
+7. verify zero runtime third-party dependencies
+8. run the supported cross-platform CI matrix
+9. fix only failures required for the v0.1 gate
+10. mark the release gate complete
 
 ## Scope lock
 
-For WebSocket / Transport Cube v0.1, the allowed scope is only:
+For Task Scheduler / Queue Cube v0.1, the allowed scope is only:
 
-- RFC 6455 framing
-- masking/unmasking validation
-- HTTP upgrade handshake
-- native client/server transport
-- text/binary messages
-- fragmentation assembly
-- ping/pong
-- close handshake
-- payload limits
-- deterministic protocol errors
-- lifecycle timeout/cleanup
+- task contract
+- task lifecycle states
+- in-memory FIFO/priority queue
+- bounded concurrency
+- deterministic scheduling
+- delay/not-before execution
+- retries with explicit retry policy
+- cancellation
+- timeout
+- backpressure and queue limits
+- idempotency keys
+- task result/error capture
+- graceful shutdown and drain
+- deterministic clock injection
 - documentation
 - tests
 
 Explicitly out of scope for v0.1:
 
-- Socket.IO
-- third-party WebSocket packages
-- compression/extensions
-- broker/pubsub
-- distributed state
-- authentication framework
-- reconnection orchestration
-- workflow engine
+- distributed queues
+- persistence
+- cron parser
+- workflow DAG engine
+- pub/sub
+- distributed locks
+- remote workers
+- Redis clients
+- queue/worker frameworks
+- third-party scheduler packages
 - AI agent runtime
 
 Those become future cubes or future releases only after v0.1 is released.
