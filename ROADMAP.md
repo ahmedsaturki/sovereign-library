@@ -30,28 +30,29 @@ Implemented with Node.js standard-library `child_process` only. Verified on Ubun
 
 ### Data Engine Cube v0.1
 
-Target: standalone data-processing product using Node.js language/runtime primitives only.
+Target: standalone data-transformation and payload-normalization product using JavaScript/Node.js standard capabilities only.
 
 Initial scope:
 - nested get/set
 - pick/omit
-- compact values
-- string normalization
+- key mapping
+- compacting nullish payload noise
+- recursive string normalization
 - deterministic deduplication
-- deep merge
-- canonical JSON serialization
+- isolated deep merge
+- canonical JSON representation
 - deterministic typed errors
-- isolated pure transformations
-- unit/failure tests
+- structured-value-safe cloning
+- local unit/failure tests
 - Windows/Linux/macOS verification
 
 Out of scope until v0.2+:
-- databases
-- ORM
-- network ingestion
+- database access
+- network fetchers
 - schema registry service
-- third-party data-processing packages
-- persistent workers
+- ETL orchestration
+- external SDKs
+- framework integration
 
 ## Parked
 
