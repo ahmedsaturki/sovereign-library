@@ -79,6 +79,14 @@ function requestOnce(url, options) {
   return new Promise((resolve, reject) => {
     const startedAt = Date.now();
     const transport = url.protocol === 'https:' ? httpsRequest : httpRequest;
+    let settled = false;
+
+    const fail = (error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
+
     const requestOptions = {
       protocol: url.protocol,
       hostname: url.hostname,
@@ -96,15 +104,20 @@ function requestOnce(url, options) {
       const max = options.maxResponseBytes;
 
       res.on('data', (chunk) => {
+        if (settled) return;
         size += chunk.length;
         if (size > max) {
-          req.destroy(new HttpCubeError('RESPONSE_TOO_LARGE', `Response exceeded ${max} bytes`));
+          const error = new HttpCubeError('RESPONSE_TOO_LARGE', `Response exceeded ${max} bytes`);
+          fail(error);
+          res.destroy();
           return;
         }
         chunks.push(chunk);
       });
 
       res.on('end', () => {
+        if (settled) return;
+        settled = true;
         const body = Buffer.concat(chunks, size);
         resolve({
           status: res.statusCode ?? 0,
@@ -116,15 +129,19 @@ function requestOnce(url, options) {
           redirected: false
         });
       });
+
+      res.on('error', (error) => {
+        fail(new HttpCubeError('NETWORK_ERROR', error.message || 'HTTP response failed', { retryable: true, cause: error }));
+      });
     });
 
     req.on('timeout', () => req.destroy(new HttpCubeError('TIMEOUT', `Request timed out after ${options.timeoutMs}ms`, { retryable: true })));
     req.on('error', (error) => {
-      if (error instanceof HttpCubeError) return reject(error);
+      if (error instanceof HttpCubeError) return fail(error);
       if (error.name === 'AbortError' || error.code === 'ABORT_ERR') {
-        return reject(new HttpCubeError('ABORTED', 'Request was aborted', { cause: error }));
+        return fail(new HttpCubeError('ABORTED', 'Request was aborted', { cause: error }));
       }
-      reject(new HttpCubeError('NETWORK_ERROR', error.message || 'HTTP request failed', { retryable: true, cause: error }));
+      fail(new HttpCubeError('NETWORK_ERROR', error.message || 'HTTP request failed', { retryable: true, cause: error }));
     });
 
     if (options.body) req.write(options.body);
