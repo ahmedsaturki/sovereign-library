@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { accessSync } from 'node:fs';
+import { tmpdir, release } from 'node:os';
 import { join } from 'node:path';
 import { createServer } from 'node:net';
 import { request } from 'node:http';
@@ -39,13 +40,18 @@ export function transition(state, next) {
   return { ...state, state: next };
 }
 
+function isWsl() {
+  return process.platform === 'linux' && /microsoft|wsl/i.test(release());
+}
+
 async function freePort(host = '127.0.0.1') {
   return await new Promise((resolve, reject) => {
     const server = createServer();
     server.once('error', reject);
     server.listen(0, host, () => {
-      const port = server.address().port;
-      server.close(() => resolve(port));
+      const address = server.address();
+      const port = typeof address === 'object' && address ? address.port : null;
+      server.close(() => port ? resolve(port) : reject(new BrowserCubeError('PORT_DISCOVERY_FAILED', 'Could not discover a free port')));
     });
   });
 }
@@ -189,11 +195,27 @@ export class BrowserSession {
 
   static findExecutable() {
     const candidates = process.platform === 'win32'
-      ? [process.env.PROGRAMFILES && join(process.env.PROGRAMFILES, 'Google/Chrome/Application/chrome.exe'), process.env['PROGRAMFILES(X86)'] && join(process.env['PROGRAMFILES(X86)'], 'Google/Chrome/Application/chrome.exe'), process.env.LOCALAPPDATA && join(process.env.LOCALAPPDATA, 'Google/Chrome/Application/chrome.exe'), process.env.PROGRAMFILES && join(process.env.PROGRAMFILES, 'Microsoft/Edge/Application/msedge.exe')]
-      : process.platform === 'darwin'
-        ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge']
-        : ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/microsoft-edge'];
-    return candidates.find(Boolean) || null;
+      ? [
+          process.env.PROGRAMFILES && join(process.env.PROGRAMFILES, 'Google/Chrome/Application/chrome.exe'),
+          process.env['PROGRAMFILES(X86)'] && join(process.env['PROGRAMFILES(X86)'], 'Google/Chrome/Application/chrome.exe'),
+          process.env.LOCALAPPDATA && join(process.env.LOCALAPPDATA, 'Google/Chrome/Application/chrome.exe'),
+          process.env.PROGRAMFILES && join(process.env.PROGRAMFILES, 'Microsoft/Edge/Application/msedge.exe')
+        ]
+      : isWsl()
+        ? [
+            '/mnt/c/Program Files/Google/Chrome/Application/chrome.exe',
+            '/mnt/c/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+            '/mnt/c/Program Files/Microsoft/Edge/Application/msedge.exe',
+            '/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+            '/usr/bin/google-chrome',
+            '/usr/bin/chromium'
+          ]
+        : process.platform === 'darwin'
+          ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge']
+          : ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/microsoft-edge', '/snap/bin/chromium'];
+    return candidates.filter(Boolean).find(path => {
+      try { accessSync(path); return true; } catch { return false; }
+    }) || null;
   }
 
   async #enablePageDomains() {
