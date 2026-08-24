@@ -40,36 +40,39 @@ Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, a
 ### Logger / Diagnostics Cube v0.1 — RELEASED
 Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with logger contract/integration/failure tests and the real Browser smoke test. Release-gate Run 150 passed all jobs.
 
+### Configuration / Environment Cube v0.1 — RELEASED
+Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with configuration contract/integration/failure tests and the real Browser smoke test. Release-gate Run 155 passed all jobs.
+
 ## Active milestone
 
-### Configuration / Environment Cube v0.1
+### Cache / Memoization Cube v0.1
 
-Target: standalone configuration loading, validation, normalization, and environment access primitives using only Node.js runtime primitives, with deterministic precedence and safe handling of sensitive values.
+Target: standalone bounded in-memory cache primitives with deterministic TTL, LRU-style eviction, namespaces, invalidation, and safe concurrency semantics using only Node.js runtime primitives.
 
 Initial scope:
-- typed configuration contract
-- environment variable access
-- immutable configuration snapshots
-- explicit defaults
-- required/optional values
-- type coercion with strict validation
-- precedence rules
-- namespaced keys
-- redaction helpers for secrets in diagnostics/logging
-- bounded input sizes
-- deterministic parsing and errors
-- testable source abstraction for environment/config inputs
-- local unit/integration/failure tests
+- typed key/value cache contract
+- namespaces
+- get/set/has/delete/clear
+- TTL with injectable clock
+- bounded capacity
+- deterministic eviction policy
+- hit/miss statistics
+- explicit invalidation
+- get-or-compute with in-flight de-duplication
+- cancellation-aware compute
+- size/value limits
+- immutable metadata snapshots
+- local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- remote configuration services
-- secret-management SaaS
-- encrypted secret vaults
-- config UI
-- hot reload/watchers
-- schema compiler frameworks
-- third-party configuration packages
+- distributed cache
+- Redis or remote cache clients
+- persistence
+- cache replication
+- cluster coordination
+- network transport
+- third-party cache libraries
 
 ## Parked
 
