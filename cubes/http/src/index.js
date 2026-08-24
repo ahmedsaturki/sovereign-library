@@ -68,6 +68,13 @@ function getHeader(headers, name) {
   return key == null ? undefined : headers[key];
 }
 
+function deleteHeader(headers, name) {
+  const wanted = name.toLowerCase();
+  for (const key of Object.keys(headers)) {
+    if (key.toLowerCase() === wanted) delete headers[key];
+  }
+}
+
 function requestOnce(url, options) {
   return new Promise((resolve, reject) => {
     const startedAt = Date.now();
@@ -114,7 +121,9 @@ function requestOnce(url, options) {
     req.on('timeout', () => req.destroy(new HttpCubeError('TIMEOUT', `Request timed out after ${options.timeoutMs}ms`, { retryable: true })));
     req.on('error', (error) => {
       if (error instanceof HttpCubeError) return reject(error);
-      if (error.name === 'AbortError') return reject(new HttpCubeError('ABORTED', 'Request was aborted', { cause: error })));
+      if (error.name === 'AbortError' || error.code === 'ABORT_ERR') {
+        return reject(new HttpCubeError('ABORTED', 'Request was aborted', { cause: error }));
+      }
       reject(new HttpCubeError('NETWORK_ERROR', error.message || 'HTTP request failed', { retryable: true, cause: error }));
     });
 
@@ -129,9 +138,15 @@ function redirectLocation(response) {
   return value;
 }
 
+function nextRedirectMethod(status, method) {
+  if (status === 303) return method === 'HEAD' ? 'HEAD' : 'GET';
+  if ((status === 301 || status === 302) && method === 'POST') return 'GET';
+  return method;
+}
+
 export async function request(urlValue, options = {}) {
   let url = validateUrl(urlValue);
-  const method = String(options.method || (options.body == null ? 'GET' : 'POST')).toUpperCase();
+  let method = String(options.method || (options.body == null ? 'GET' : 'POST')).toUpperCase();
   if (!METHODS.has(method)) throw new HttpCubeError('INVALID_METHOD', `Unsupported HTTP method: ${method}`);
 
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -174,9 +189,11 @@ export async function request(urlValue, options = {}) {
       throw new HttpCubeError('REDIRECT_PROTOCOL_CHANGE', 'Redirect changed protocol and allowProtocolChange is false');
     }
 
-    if (response.status === 303 || ((response.status === 301 || response.status === 302) && method === 'POST')) {
+    const nextMethod = nextRedirectMethod(response.status, method);
+    if (nextMethod !== method) {
+      method = nextMethod;
       body = null;
-      delete headers['content-length'];
+      deleteHeader(headers, 'content-length');
     }
 
     url = nextUrl;
