@@ -60,7 +60,7 @@ function parseValue(raw, type) {
   try {
     return JSON.parse(raw);
   } catch (error) {
-    throw new ConfigCubeError('INVALID_JSON', `invalid JSON value`, { cause: error });
+    throw new ConfigCubeError('INVALID_JSON', 'invalid JSON value', { cause: error });
   }
 }
 
@@ -137,7 +137,7 @@ export class ConfigBuilder {
   build() {
     const result = {};
     for (const [key, entry] of this.schema) {
-      const sourceKey = entry.namespace ? `${entry.namespace}.${key}` : key;
+      const sourceKey = entry.namespace ? `${entry.namespace}_${key}` : key;
       let raw;
       for (let index = this.sources.length - 1; index >= 0; index -= 1) {
         const candidate = this.sources[index]?.get(sourceKey);
