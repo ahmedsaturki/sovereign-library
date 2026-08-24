@@ -67,7 +67,7 @@ Those are separate future slices only if later proven necessary.
 
 ## Lessons extracted from Omni-Agent-Core
 
-The imported archive is treated as research material, not as a dependency or a code source of record.
+The uploaded archive is treated as research material, not as a dependency or a code source of record.
 
 Useful patterns to reimplement natively where justified:
 
