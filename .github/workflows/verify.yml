@@ -21,8 +21,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Syntax check
-        run: node --check cubes/browser/src/index.js
-      - name: Contract tests
-        run: node --test cubes/browser/test/index.test.js
+        run: npm run check
+      - name: Contract and HTTP integration tests
+        run: npm test
       - name: Real browser smoke test
         run: npm run test:browser
