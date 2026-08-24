@@ -29,7 +29,7 @@ test('merge performs isolated deep merge', () => {
 
 test('clone-backed operations preserve supported structured values', () => {
   const value = { bigint: 123n, nested: { ok: true } };
-  assert.deepEqual(pick(value, ['bigint']), value);
+  assert.deepEqual(pick(value, ['bigint']), { bigint: 123n });
   const result = merge(value, { nested: { added: true } });
   assert.equal(result.bigint, 123n);
   assert.deepEqual(result.nested, { ok: true, added: true });
