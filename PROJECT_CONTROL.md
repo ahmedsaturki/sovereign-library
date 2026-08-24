@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Browser Cube v0.1** and release it before starting another cube.
+Finish **WebSocket / Transport Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,49 +16,48 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**BROWSER-V0.1-RELEASE**
+**WEBSOCKET-TRANSPORT-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Browser Cube release gate:
+Complete the WebSocket / Transport Cube release gate:
 
 1. run the repository test suite
-2. run platform smoke checks where available
-3. verify clean install/run instructions
-4. verify release artifact contents
-5. fix only failures required for the v0.1 gate
-6. mark the release gate complete
+2. run platform smoke checks on Ubuntu, Windows, and macOS
+3. verify native client/server handshake and lifecycle behavior
+4. verify cleanup, timeout, masking, fragmentation, close, and payload-limit behavior
+5. verify zero runtime third-party dependencies
+6. fix only failures required for the v0.1 gate
+7. mark the release gate complete
 
 ## Scope lock
 
-For Browser Cube v0.1, the allowed scope is only:
+For WebSocket / Transport Cube v0.1, the allowed scope is only:
 
-- Chromium-family browser launch
-- CDP connection
-- session lifecycle
-- navigation
-- JavaScript evaluation
-- metadata
-- screenshot
-- deterministic errors
-- cleanup
+- RFC 6455 framing
+- masking/unmasking validation
+- HTTP upgrade handshake
+- native client/server transport
+- text/binary messages
+- fragmentation assembly
+- ping/pong
+- close handshake
+- payload limits
+- deterministic protocol errors
+- lifecycle timeout/cleanup
 - documentation
 - tests
 
 Explicitly out of scope for v0.1:
 
-- selector engine
-- click/type/input APIs
-- downloads/uploads
-- advanced network interception
-- stealth/anti-bot evasion
-- CAPTCHA solving
-- credential extraction
-- account takeover or unauthorized automation
-- multi-browser orchestration
+- Socket.IO
+- third-party WebSocket packages
+- compression/extensions
+- broker/pubsub
+- distributed state
+- authentication framework
+- reconnection orchestration
 - workflow engine
-- HTTP server
-- MCP server
 - AI agent runtime
 
 Those become future cubes or future releases only after v0.1 is released.
@@ -86,6 +85,20 @@ A milestone is DONE only when:
 - Do not expand scope because a competitor has more features.
 - Do not call a cube production-ready from source inspection alone.
 - If a problem is outside the active scope, park it and continue.
+
+## Lessons-learned rule
+
+Every blocking bug or CI failure must produce all of the following before release:
+
+- root-cause identification
+- minimal fix
+- regression test
+- CI protection when applicable
+- documentation or control update when the lesson affects future work
+
+## Clean-repository rule
+
+`main` is the product branch. Temporary verification branches and PRs must not become runtime artifacts. Release merges should prefer a clean, single-purpose history. No marker files, generated dependency trees, vendor directories, or unused compatibility layers belong in the product.
 
 ## Decision rule
 

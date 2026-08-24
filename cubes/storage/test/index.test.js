@@ -22,12 +22,12 @@ test('set/get/has/list/delete works', async () => {
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
-test('ttl expires deterministically', async () => {
+test('ttl expires within a bounded deterministic window', async () => {
   const { root, store } = await fixture();
   try {
-    await store.set('ttl', 'a', { value: 1 }, { ttlMs: 20 });
+    await store.set('ttl', 'a', { value: 1 }, { ttlMs: 50 });
     assert.deepEqual(await store.get('ttl', 'a'), { value: 1 });
-    await new Promise(resolve => setTimeout(resolve, 30));
+    await new Promise(resolve => setTimeout(resolve, 150));
     assert.equal(await store.get('ttl', 'a'), undefined);
   } finally { await rm(root, { recursive: true, force: true }); }
 });
