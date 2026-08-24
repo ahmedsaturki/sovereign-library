@@ -14,6 +14,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
       - run: node --check cubes/browser/src/index.js
       - run: node --test cubes/browser/test/index.test.js
