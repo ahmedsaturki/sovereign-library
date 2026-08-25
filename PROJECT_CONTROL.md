@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Circuit Breaker / Health Gate Cube v0.1** and release it before starting another cube.
+Finish **Timeout / Deadline Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,20 +16,20 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**CIRCUIT-BREAKER-HEALTH-GATE-V0.1-RELEASE**
+**TIMEOUT-DEADLINE-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Circuit Breaker / Health Gate Cube release gate:
+Complete the Timeout / Deadline Cube release gate:
 
-1. write and freeze the state-machine and classification contract
-2. define closed/open/half-open transitions
-3. verify failure threshold and recovery success threshold
-4. verify deterministic cooldown timing and probe admission
-5. verify manual reset and close semantics
-6. verify Result/Error-based failure classification
-7. verify immutable state/statistics snapshots
-8. verify AbortSignal-safe probe execution and cleanup
+1. write and freeze the deadline contract
+2. define duration and absolute monotonic deadline creation
+3. define remaining-time semantics
+4. verify AbortSignal integration
+5. verify deterministic clock behavior
+6. verify timeout/cancellation/completion races
+7. verify child deadline derivation
+8. verify immutable snapshots and cleanup
 9. run syntax, unit, contract, integration, failure, and recovery tests
 10. verify zero runtime third-party dependencies
 11. run the supported cross-platform CI matrix
@@ -38,29 +38,28 @@ Complete the Circuit Breaker / Health Gate Cube release gate:
 
 ## Scope lock
 
-For Circuit Breaker / Health Gate Cube v0.1, the allowed scope is only:
+For Timeout / Deadline Cube v0.1, the allowed scope is only:
 
-- closed/open/half-open state machine
-- configurable failure threshold
-- configurable recovery success threshold
-- deterministic cooldown clock
-- half-open probe admission limit
-- manual reset
-- Result/Error-based failure classification
-- immutable state/statistics snapshots
-- AbortSignal-safe probe execution
-- cleanup and close semantics
+- deadline creation from duration or absolute monotonic deadline
+- remaining-time calculation
+- AbortSignal integration
+- deterministic clock support
+- timeout error with explicit deadline metadata
+- race-safe completion/timeout/cancellation semantics
+- child deadline derivation
+- immutable deadline snapshots
+- cleanup and timer lifecycle
 - documentation
 - local unit/integration/failure/recovery tests
 
 Explicitly out of scope for v0.1:
 
-- distributed circuit state
+- distributed deadlines
+- tracing backend
 - remote coordination
-- adaptive ML policies
-- external telemetry backend
-- third-party resilience libraries
-- service discovery
+- adaptive timeouts
+- third-party timeout libraries
+- workflow orchestration
 - AI agent runtime
 
 ## Definition of done
