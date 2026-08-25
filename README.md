@@ -82,12 +82,13 @@ Released through v0.1:
 - AI / Inference Runtime
 - Agent Runtime
 - Policy / Capability Security
+- Execution Engine
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Execution Engine v0.1** — standalone deterministic local execution engine for immutable task definitions, dependency ordering, explicit lifecycle states and outcomes, bounded execution, deterministic retry/recovery semantics, and immutable execution snapshots/results.
+**Release / Verification Harness v0.1** — standalone deterministic local verification orchestrator for safe stage execution, bounded process output, retry/timeout/cancellation semantics, deterministic aggregation, and immutable machine-readable release verdicts.
 
 ## License
 
