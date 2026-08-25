@@ -95,12 +95,13 @@ Released through v0.1:
 - Artifact Reconciliation / Consistency Checker
 - Artifact Audit / Drift Reporter
 - Artifact Compliance / Policy Evaluator
+- Artifact Admission Gate / Release Eligibility
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Admission Gate / Release Eligibility v0.1** — standalone deterministic local gate for explicit artifact records and explicit caller-supplied admission clauses, without mutation, discovery, orchestration, or external policy engines.
+**Artifact Release Plan / Deterministic Publication Plan v0.1** — standalone deterministic local dry-run release-plan builder for explicit eligible artifacts, dependencies, and release constraints, with no publication side effects.
 
 ## License
 
