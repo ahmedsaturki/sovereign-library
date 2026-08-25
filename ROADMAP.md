@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Release Publication Confirmation / Outcome Receipt v0.1
+
+PR #77 was squash-merged as `ee642ac4f760da6ee6263faa5e82bf7d197fa78d`. Pre-merge Run 573 passed on Ubuntu, Windows, and macOS-15-Intel after a minimal regression-fixture correction. Post-merge Run 574 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
+
+The release hardened exact five-field closure identity linkage, deterministic plan/outcome linkage, bounded immutable confirmations, caller-supplied evidence/timestamps, optional bounded metadata, strict ISO-8601 normalization without system-clock access, SPC1 integrity protection, and fail-closed malformed/accessor/circular/oversized input handling.
+
 ### Artifact Release Publication Executor / Boundary v0.1
 
 PR #76 was squash-merged as `23cf7b06e9162201683eb613d6c71c241cb5e34e`. Pre-merge Run 561 passed on Ubuntu, Windows, and macOS-15-Intel after a minimal accessor-regression fixture correction. Post-merge Run 562 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
@@ -90,33 +96,17 @@ Earlier cubes remain released at their recorded immutable SHAs.
 
 ## Active milestone
 
-### Artifact Release Publication Confirmation / Outcome Receipt v0.1
+### NEXT-CUBE-SELECTION
 
-Target: a standalone deterministic confirmation receipt that converts one explicit executed publication outcome into an immutable, auditable handoff record for downstream reconciliation and audit cubes.
+The previous active cube is fully released and frozen. The control plane now intentionally stops implementation until exactly one next standalone cube is selected and specified.
 
-Initial scope:
-- explicit publication outcome snapshot
-- explicit originating closure receipt identity
-- deterministic outcome/intent/destination linkage validation
-- bounded immutable confirmation records
-- caller-supplied commit evidence and timestamps only
-- duplicate/mismatch/conflict detection
-- fail-closed malformed/accessor/circular/oversized input handling
-- deterministic checksum-protected confirmation serialization
-- unit, contract, failure, recovery, idempotency, and cross-platform verification
-- zero runtime third-party dependencies
+Immediate task:
+- identify one non-overlapping, independently valuable cube from parked work or a justified repository gap
+- record its scope, public contract, limits, failure/recovery model, cross-platform target, and definition of done in a SPEC
+- only then advance to IMPLEMENT
 
-Explicitly out of scope for v0.1:
-- executing publication side effects
-- external audit/reconciliation services
-- destination discovery
-- signing/trust-chain generation or verification
-- scheduler/orchestration
-- automatic retries
-- credential management
-- GUI/admin console
-- billing or cost accounting
+No new cube implementation starts before the SPEC gate is complete.
 
 ## Parked
 
-Further capabilities remain parked until the active cube is released. Do not expand the active cube with unrelated capabilities.
+Further capabilities remain parked until the next cube is selected and specified. Do not expand the frozen release or begin unrelated work.
