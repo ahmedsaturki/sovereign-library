@@ -15,8 +15,19 @@ function rejectAccessors(value, label) {
   if (!isRecord(value)) fail('INVALID_DEFINITION', `${label} must be an object`);
   for (const key of Reflect.ownKeys(value)) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
-    if (!descriptor || !('value' in descriptor)) fail('INVALID_DEFINITION', `${label} contains an accessor`);
+    if (typeof key === 'symbol' || !descriptor || !('value' in descriptor)) fail('INVALID_DEFINITION', `${label} contains an accessor or symbol key`);
   }
+}
+function stableJsonValue(value, label = 'value') {
+  if (Array.isArray(value)) return value.map((item, index) => stableJsonValue(item, `${label}[${index}]`));
+  if (isRecord(value)) {
+    rejectAccessors(value, label);
+    const output = {};
+    for (const key of Object.getOwnPropertyNames(value).sort()) output[key] = stableJsonValue(value[key], `${label}.${key}`);
+    return output;
+  }
+  if (value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') return value;
+  fail('UNSUPPORTED_VALUE', `${label} contains an unsupported value`);
 }
 function limitsOf(input = {}) {
   rejectAccessors(input, 'limits');
@@ -33,10 +44,10 @@ function normalizePath(input, limits) {
   return input;
 }
 function normalizeMetadata(metadata, limits) {
-  rejectAccessors(metadata, 'metadata');
-  const text = JSON.stringify(metadata);
+  const value = stableJsonValue(metadata, 'metadata');
+  const text = JSON.stringify(value);
   if (byteLength(text) > limits.maxMetadataBytes) fail('LIMIT_EXCEEDED', 'Metadata exceeds limit');
-  return JSON.parse(text);
+  return value;
 }
 function entryFromBytes(input, limits) {
   rejectAccessors(input, 'entry');
@@ -74,7 +85,8 @@ function validateManifest(manifest, limits) {
     const bytes = Buffer.from(entry.data, 'base64');
     if (bytes.length > limits.maxEntryBytes) fail('LIMIT_EXCEEDED', 'Entry exceeds limit');
     if (!Number.isSafeInteger(entry.size) || entry.size !== bytes.length) fail('INTEGRITY_MISMATCH', `Invalid size for ${pathValue}`);
-    if (typeof entry.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(entry.sha256) || entry.sha256 !== sha256(bytes)) fail('INTEGRITY_MISMATCH', `Invalid digest for ${pathValue}`);
+    if (typeof entry.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(entry.sha256)) fail('INVALID_BUNDLE', `Invalid digest encoding for ${pathValue}`);
+    if (entry.sha256 !== sha256(bytes)) fail('INTEGRITY_MISMATCH', `Digest mismatch for ${pathValue}`);
     return Object.freeze({ path: pathValue, size: entry.size, sha256: entry.sha256, data: entry.data });
   }).sort((a, b) => a.path.localeCompare(b.path, 'en', { numeric: false }));
   return Object.freeze({ format: MAGIC, version: 1, metadata: normalizeMetadata(manifest.metadata ?? {}, limits), entries: Object.freeze(entries) });
