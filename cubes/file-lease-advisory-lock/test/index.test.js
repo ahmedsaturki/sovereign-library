@@ -118,6 +118,18 @@ test('release cannot remove a successor owner after lock replacement', async () 
   } finally { await cleanup(root); }
 });
 
+test('malformed quarantine identifiers fail closed before any quarantine path mutation', async () => {
+  const root = await tempRoot();
+  const c = clock();
+  const lockPath = join(root, 'lease.lock');
+  try {
+    const first = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 10, staleRecovery: true, clock: c, uuid: uuidSequence('owner-0001') });
+    c.advance(11);
+    await assert.rejects(() => acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 100, staleRecovery: true, clock: c, uuid: uuidSequence('../escape') }), (error) => error.code === 'INVALID_LEASE_ID');
+    assert.equal(first.lockPath, lockPath);
+  } finally { await cleanup(root); }
+});
+
 test('rejects malformed, accessor, circular, oversized, and invalid capability inputs before filesystem mutation', async () => {
   const root = await tempRoot();
   const lockPath = join(root, 'lease.lock');
