@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Bundle / Reproducible Package v0.1
+
+PR #62 was squash-merged as `a1d2655e7d48b63ce6ded71e4e449ea2c3a841dd`. Pre-merge Run 458 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 399 tests, and the real-browser smoke gate. Post-merge Run 459 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
+The release provides deterministic SAB1 bundles, canonical metadata and paths, bounded entries, native SHA-256 integrity descriptors, safe verification/extraction, typed fail-closed errors, and zero runtime third-party dependencies.
+
 ### Content-Addressed Storage / CAS v0.1
 
 PR #61 was squash-merged as `63ba1b7e684857e95303b02864c91627a6c601e0`. Pre-merge Run 450 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 451 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -20,15 +26,13 @@ The release provides native SHA-256 content addressing, bounded local object sto
 
 PR #59 was squash-merged as `d1e33a2cfb12303cfe7e810e17241636ffa998db`. Pre-merge Run 437 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 390 tests, and the real-browser smoke gate. Post-merge Run 438 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
 
-The release provides deterministic versioned manifests, native SHA-256 content descriptors, immutable integrity verification reports, bounded local inputs, safe path validation, and zero runtime third-party dependencies.
-
 ### Release / Verification Harness v0.1
 
-PR #58 was squash-merged as `6e60d151691639948fabceaec1ee28964d40d881`. Pre-merge Run 430 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 431 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #58 was squash-merged as `6e60d151691639948fabceaec1ee28964d40d881` after cross-platform verification.
 
 ### Execution Engine v0.1
 
-PR #57 was squash-merged as `739798bb3de3d50884dc7b3f28bada7e4f58f1a2`. Pre-merge Run 424 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 425 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #57 was squash-merged as `739798bb3de3d50884dc7b3f28bada7e4f58f1a2` after cross-platform verification.
 
 ### Policy / Capability Security v0.1
 
@@ -92,32 +96,32 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Bundle / Reproducible Package v0.1
+### Local Artifact Catalog / Package Index v0.1
 
-Target: a standalone deterministic local bundle/package component for reproducible file ordering, versioned serialization, bounded archives, native integrity descriptors, and safe deterministic verification/extraction.
+Target: a standalone deterministic local catalog/index for artifact/package records, exact and prefix/tag/version queries, bounded local state, atomic mutation and recovery, immutable snapshots, and deterministic backup/restore serialization.
 
 Initial scope:
-- deterministic file ordering and normalized bundle paths
-- reproducible bundle metadata and stable serialization
-- bounded entry count, path length, per-entry size, and total bundle size
-- native local bundle generation without a network service
-- explicit versioned format and integrity descriptors
-- safe path validation and traversal rejection
-- immutable bundle manifests and verification results
-- fail-closed malformed bundles, duplicates, unsupported metadata, and corrupt content
-- deterministic extraction/verification without arbitrary command execution
+- canonical artifact records and stable identifiers
+- deterministic package/version metadata normalization
+- bounded catalog size, record size, identifier length, and query output
+- atomic add/update/remove semantics with recovery
+- deterministic exact/prefix/tag/version queries
+- immutable snapshots and typed fail-closed errors
+- duplicate/conflicting record rejection
+- corruption detection for persisted index state
+- deterministic serialization suitable for backup/restore
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 - remote registries
 - package publishing
-- signing/key management
-- remote replication
-- GUI/admin console
 - network transport
-- installer generation
-- operating-system package formats
+- remote dependency resolution
+- signing/key management
+- GUI/admin console
+- full semantic-version solver
+- background synchronization
 
 ## Parked
 
