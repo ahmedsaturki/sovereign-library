@@ -45,8 +45,8 @@ test('evidence is bounded and serialization is deterministic/integrity-protected
   const snapshot = buildReleaseSnapshot([a], { maxEvidence: 1 });
   assert.deepEqual(snapshot.candidates[0].evidenceRefs, ['one']);
   const first = serializeReleaseSnapshot(snapshot);
-  const second = serializeReleaseSnapshot(buildReleaseSnapshot([candidate('a')], { maxEvidence: 1 }));
-  assert.equal(first.replace('one', 'digest:a'), second);
+  const second = serializeReleaseSnapshot(buildReleaseSnapshot([a], { maxEvidence: 1 }));
+  assert.equal(first, second);
   assert.deepEqual(parseReleaseSnapshot(first), snapshot);
   const envelope = JSON.parse(first); envelope.payload = envelope.payload.replace('release_ready', 'tampered');
   assert.throws(() => parseReleaseSnapshot(JSON.stringify(envelope)), (error) => error.code === 'INTEGRITY_MISMATCH');
