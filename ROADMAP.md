@@ -10,13 +10,17 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Provenance / Lineage Ledger v0.1
+
+PR #67 was squash-merged as `d1b2795d3a638100a6fbf657cbebeb5ef7aaae82`. Pre-merge Run 497 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 498 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
 ### Artifact Reference Resolver / Locator v0.1
 
-PR #66 was squash-merged as `7cb477e1e11ea5c5f9b145cf6eba1527482a4b57`. Pre-merge Run 485 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 486 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #66 was squash-merged as `7cb477e1e11ea5c5f9b145cf6eba1527482a4b57`.
 
 ### Artifact Lifecycle / Retention Index v0.1
 
-PR #65 was squash-merged as `da1f4992c0f84422f9e43a5c5037af1e28e85fc9`. Pre-merge Run 480 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 481 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #65 was squash-merged as `da1f4992c0f84422f9e43a5c5037af1e28e85fc9`.
 
 ### Artifact Dependency Graph / Relationship Index v0.1
 
@@ -108,29 +112,26 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Provenance / Lineage Ledger v0.1
+### Artifact Reconciliation / Consistency Checker v0.1
 
-Target: a standalone deterministic local provenance and lineage ledger for artifact references and transformation events, with bounded traversal, append-only local history, immutable snapshots, and checksum-protected persistence.
+Target: a standalone deterministic checker for comparing explicit artifact snapshots and reporting missing, extra, duplicate, identity/digest/version conflicts, lineage inconsistencies, and lifecycle mismatches without mutating source data.
 
 Initial scope:
-- canonical provenance records and stable artifact/event identity
-- explicit parent/child and derived-from lineage relationships
-- deterministic append-only event ordering
-- bounded ancestry/descendant traversal
-- actor/action/source metadata validation
-- atomic append and recovery semantics
-- immutable snapshots and replay-safe reads
-- deterministic serialization with checksum and corruption detection
+- canonical explicit snapshot normalization
+- deterministic identity and digest consistency checks
+- lifecycle and lineage consistency checks from supplied records
+- bounded mismatch reports and deterministic severity/category ordering
+- immutable reports and fail-closed invalid input handling
+- checksum-protected report serialization
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- remote provenance stores
-- network transport
-- distributed consensus or locks
-- signature/certificate infrastructure
-- automatic filesystem/registry discovery
-- cryptographic trust policy engines
+- remote synchronization
+- automatic network/filesystem/registry discovery
+- automatic repair or mutation of source snapshots
+- distributed reconciliation protocols
+- trust/signature policy engines
 - GUI/admin console
 - background scheduler integration
 - billing or cost accounting
