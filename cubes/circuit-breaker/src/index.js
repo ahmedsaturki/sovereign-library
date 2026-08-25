@@ -51,11 +51,12 @@ export class CircuitBreaker {
     this.successes = 0;
     this.openedAt = null;
     this.probes = 0;
-    this.closed = false;
+    this.lifecycleClosed = false;
     this.stats = { calls: 0, successes: 0, failures: 0, rejections: 0, opens: 0, halfOpen: 0, resets: 0 };
   }
 
   getState() {
+    if (this.lifecycleClosed) return 'CLOSED';
     if (this.state === 'OPEN' && this.clock.now() - this.openedAt >= this.cooldownMs) this.#enterHalfOpen();
     return this.state;
   }
@@ -71,32 +72,32 @@ export class CircuitBreaker {
       failureThreshold: this.failureThreshold,
       successThreshold: this.successThreshold,
       halfOpenMaxProbes: this.halfOpenMaxProbes,
-      closed: this.closed,
+      closed: this.lifecycleClosed,
       ...this.stats,
     });
   }
 
   canExecute() {
+    if (this.lifecycleClosed) return false;
     const state = this.getState();
-    if (this.closed) return false;
     if (state === 'CLOSED') return true;
     if (state === 'OPEN') return false;
     return this.probes < this.halfOpenMaxProbes;
   }
 
   reset() {
-    if (this.closed) return;
+    if (this.lifecycleClosed) return;
     this.#setClosed();
     this.stats.resets += 1;
   }
 
   close() {
-    this.closed = true;
+    this.lifecycleClosed = true;
   }
 
   async execute(operation, options = {}) {
     if (typeof operation !== 'function') throw new TypeError('operation must be a function');
-    if (this.closed) throw new CircuitBreakerError('CLOSED', 'Circuit breaker is closed for new operations');
+    if (this.lifecycleClosed) throw new CircuitBreakerError('CLOSED', 'Circuit breaker is closed for new operations');
     const state = this.getState();
     if (state === 'OPEN') {
       this.stats.rejections += 1;
@@ -137,8 +138,7 @@ export class CircuitBreaker {
 
   #recordFailure(state, error) {
     this.stats.failures += 1;
-    const classified = this.isFailure(error);
-    if (!classified) return;
+    if (!this.isFailure(error)) return;
     if (state === 'HALF_OPEN') {
       this.probes = Math.max(0, this.probes - 1);
       this.#setOpen();
