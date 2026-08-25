@@ -30,7 +30,7 @@ test('keeps recursive semantics segment-bound and rejects embedded double stars 
 test('supports explicit escaping and rejects incomplete escapes', () => {
   assert.equal(matchGlob(compileGlob('literal/\\*.txt'), 'literal/*.txt'), true);
   assert.equal(matchGlob(compileGlob('literal/\\?.txt'), 'literal/?.txt'), true);
-  assert.equal(matchGlob(compileGlob('literal/\\\\.txt'), 'literal/\\.txt'), true);
+  assert.equal(matchGlob(compileGlob('literal/\\\\.txt', { separatorNormalization: false }), 'literal/\\.txt', { separatorNormalization: false }), true);
   expectCode(() => compileGlob('literal/abc\\'), 'INVALID_ESCAPE');
 });
 
