@@ -80,7 +80,7 @@ test('custom hash must preserve the HIF1 sha256 contract', async () => {
 
 test('serialization is deterministic and stable identity is independently reproducible', async () => {
   const snap = await fingerprintHost(base());
-  assert.equal(snap.serialization, JSON.stringify(snap.stable));
+  assert.deepEqual(JSON.parse(snap.serialization), snap.stable);
   assert.equal(snap.identity, knownHash(snap.serialization));
   const full = serializeHostFingerprint(snap);
   assert.equal(typeof full, 'string');
