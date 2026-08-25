@@ -10,11 +10,7 @@ const MAX_MANIFEST_BYTES = 8 * 1024 * 1024;
 const MAX_WARNINGS = 1024;
 const MAX_WARNING = 512;
 const MAX_FILE_DIGEST_BYTES = 64 * 1024 * 1024;
-const DEFAULT_OPTIONS = Object.freeze({
-  symlinkPolicy: 'record-only',
-  mutationPolicy: 'record-warning',
-  digest: null,
-});
+const DEFAULT_OPTIONS = Object.freeze({ symlinkPolicy: 'record-only', mutationPolicy: 'record-warning', digest: null });
 
 export class DirectorySnapshotError extends Error {
   constructor(code, message, details = null) {
@@ -28,6 +24,7 @@ export class DirectorySnapshotError extends Error {
 
 function fail(code, message, details = null) { throw new DirectorySnapshotError(code, message, details); }
 function capability(value, label) { if (typeof value !== 'function') fail('INVALID_CAPABILITY', `${label} must be a function`); return value; }
+function stableCompare(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 
 function validatePlainInput(value, label, seen = new Set(), depth = 0) {
   if (depth > 10) fail('LIMIT_EXCEEDED', `${label} exceeds maximum nesting depth`);
@@ -49,10 +46,21 @@ function validatePlainInput(value, label, seen = new Set(), depth = 0) {
   seen.delete(value);
 }
 
+function validateTopLevelOptions(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) fail('INVALID_OPTIONS', 'options must be a plain object');
+  const proto = Object.getPrototypeOf(input);
+  if (proto !== Object.prototype && proto !== null) fail('INVALID_OPTIONS', 'options must be a plain object');
+  for (const key of Reflect.ownKeys(input)) {
+    if (typeof key !== 'string') fail('UNSUPPORTED_INPUT', 'options contains symbol keys');
+    const descriptor = Object.getOwnPropertyDescriptor(input, key);
+    if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', `options.${key} is accessor-backed`);
+  }
+}
+
 function canonicalize(value) {
   validatePlainInput(value, 'value');
   return JSON.stringify(value, (_, item) => item && typeof item === 'object' && !Array.isArray(item)
-    ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]]))
+    ? Object.fromEntries(Object.keys(item).sort(stableCompare).map((key) => [key, item[key]]))
     : item);
 }
 
@@ -64,8 +72,9 @@ function freezeDeep(value) {
 
 function normalizeOptions(raw) {
   const input = raw ?? {};
-  validatePlainInput(input, 'options');
+  validateTopLevelOptions(input);
   const options = { ...DEFAULT_OPTIONS, ...input };
+
   if (!['record-only', 'reject', 'follow-contained'].includes(options.symlinkPolicy)) fail('INVALID_OPTIONS', 'unsupported symlinkPolicy');
   if (!['fail-fast', 'record-warning', 'skip-vanished'].includes(options.mutationPolicy)) fail('INVALID_OPTIONS', 'unsupported mutationPolicy');
   if (options.maxDepth !== undefined && (!Number.isInteger(options.maxDepth) || options.maxDepth < 0 || options.maxDepth > MAX_DEPTH)) fail('INVALID_OPTIONS', `maxDepth must be 0..${MAX_DEPTH}`);
@@ -73,18 +82,37 @@ function normalizeOptions(raw) {
   if (options.maxManifestBytes !== undefined && (!Number.isInteger(options.maxManifestBytes) || options.maxManifestBytes < 1024 || options.maxManifestBytes > MAX_MANIFEST_BYTES)) fail('INVALID_OPTIONS', `maxManifestBytes must be 1024..${MAX_MANIFEST_BYTES}`);
   if (options.maxWarnings !== undefined && (!Number.isInteger(options.maxWarnings) || options.maxWarnings < 1 || options.maxWarnings > MAX_WARNINGS)) fail('INVALID_OPTIONS', `maxWarnings must be 1..${MAX_WARNINGS}`);
   if (options.maxFileDigestBytes !== undefined && (!Number.isInteger(options.maxFileDigestBytes) || options.maxFileDigestBytes < 1 || options.maxFileDigestBytes > MAX_FILE_DIGEST_BYTES)) fail('INVALID_OPTIONS', `maxFileDigestBytes must be 1..${MAX_FILE_DIGEST_BYTES}`);
+
   const clock = options.clock ?? { now: () => Date.now() };
-  if (!clock || typeof clock.now !== 'function') fail('INVALID_CAPABILITY', 'clock.now must be a function');
+  validateTopLevelOptions(clock);
+  capability(clock.now, 'clock.now');
+
   const fsOps = options.fsOps ?? { lstat, readdir, readFile, realpath };
+  validateTopLevelOptions(fsOps);
   for (const name of ['lstat', 'readdir', 'readFile', 'realpath']) capability(fsOps[name], `fsOps.${name}`);
+
   const digest = options.digest ?? null;
   if (digest !== null) {
-    if (!digest || typeof digest.algorithm !== 'string' || !/^[a-z0-9-]{1,32}$/i.test(digest.algorithm)) fail('INVALID_DIGEST', 'digest.algorithm is invalid');
+    validateTopLevelOptions(digest);
+    if (typeof digest.algorithm !== 'string' || !/^[a-z0-9-]{1,32}$/i.test(digest.algorithm)) fail('INVALID_DIGEST', 'digest.algorithm is invalid');
     capability(digest.hashBuffer, 'digest.hashBuffer');
   }
+
   const serialize = options.serialize ?? canonicalize;
   capability(serialize, 'serialize');
-  return { ...options, maxDepth: options.maxDepth ?? MAX_DEPTH, maxEntries: options.maxEntries ?? MAX_ENTRIES, maxManifestBytes: options.maxManifestBytes ?? MAX_MANIFEST_BYTES, maxWarnings: options.maxWarnings ?? MAX_WARNINGS, maxFileDigestBytes: options.maxFileDigestBytes ?? MAX_FILE_DIGEST_BYTES, clock, fsOps, digest, serialize };
+
+  return {
+    ...options,
+    maxDepth: options.maxDepth ?? MAX_DEPTH,
+    maxEntries: options.maxEntries ?? MAX_ENTRIES,
+    maxManifestBytes: options.maxManifestBytes ?? MAX_MANIFEST_BYTES,
+    maxWarnings: options.maxWarnings ?? MAX_WARNINGS,
+    maxFileDigestBytes: options.maxFileDigestBytes ?? MAX_FILE_DIGEST_BYTES,
+    clock,
+    fsOps,
+    digest,
+    serialize,
+  };
 }
 
 function canonicalRelativePath(path) {
@@ -145,7 +173,7 @@ async function walkDirectory(root, current, depth, entries, warnings, options, v
     if (options.mutationPolicy === 'record-warning' || options.mutationPolicy === 'skip-vanished') { addWarning(warnings, options, 'DIRECTORY_READ_FAILURE', rel, error?.message ?? 'directory could not be read'); return; }
     fail(error?.code === 'EACCES' ? 'PERMISSION_DENIED' : 'DIRECTORY_READ_FAILURE', `directory could not be read: ${rel}`);
   }
-  const sorted = [...names].map((item) => String(item)).sort((a, b) => a.localeCompare(b));
+  const sorted = [...names].map((item) => String(item)).sort(stableCompare);
   for (const name of sorted) {
     if (entries.length >= options.maxEntries) fail('LIMIT_EXCEEDED', 'entry limit exceeded');
     const absolute = resolve(current, name);
@@ -223,7 +251,7 @@ export async function snapshotDirectory(rootPath, rawOptions = {}) {
   const capturedAt = new Date(options.clock.now()).toISOString();
   const visitedDirectories = new Set([resolve(root)]);
   await walkDirectory(root, root, 0, entries, warnings, options, visitedDirectories);
-  entries.sort((a, b) => a.path.localeCompare(b.path) || a.type.localeCompare(b.type));
+  entries.sort((a, b) => stableCompare(a.path, b.path) || stableCompare(a.type, b.type));
 
   const logical = { format: FORMAT, root, capturedAt, entries, warnings };
   const serialized = options.serialize(logical);
