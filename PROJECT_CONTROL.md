@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Audit / Drift Reporter Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Compliance / Policy Evaluator Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Reconciliation / Consistency Checker v0.1**
-- Release PR: **#68**, squash-merged
-- Release commit: `9dfb6833299cbfc42c82afdef5fcf2d3a6175833`
-- Pre-merge verification: **Run 504**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 505**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Reconciliation / Consistency Checker v0.1 is therefore **FROZEN**.
-- The release provides deterministic explicit snapshot normalization, missing/extra/duplicate detection, identity/digest/version/lifecycle/lineage consistency checks, bounded immutable mismatch reports, typed fail-closed errors, checksum-protected report serialization, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Audit / Drift Reporter v0.1**
+- Release PR: **#69**, squash-merged
+- Release commit: `f939f13437412682600aad691998cae9d5218606`
+- Pre-merge verification: **Run 511**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 512**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Audit / Drift Reporter v0.1 is therefore **FROZEN**.
+- The release provides deterministic baseline/current artifact comparison, unchanged/changed/added/removed classification, digest/version/lifecycle/lineage drift detection, bounded immutable findings, typed fail-closed errors, checksum-protected serialization, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,45 +26,45 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-AUDIT-DRIFT-REPORTER-V0.1-SPEC**
+**ARTIFACT-COMPLIANCE-POLICY-EVALUATOR-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic local artifact audit / drift reporter:
+Implement the public contract for a standalone deterministic artifact compliance/policy evaluator:
 
-1. accept explicit local artifact records or snapshots only
-2. validate stable artifact identity, digest, version, lifecycle, and lineage fields
-3. detect drift classes deterministically without mutating source data
-4. produce bounded severity/category audit findings with stable ordering
-5. support baseline-versus-current comparisons and unchanged/changed/added/removed classification
-6. support immutable audit snapshots and replay-safe reads
-7. fail closed on malformed, accessor, circular, duplicate, or oversized inputs
-8. serialize audit reports deterministically with checksum/integrity protection
-9. no network, filesystem discovery, registry lookup, or external SDK required
+1. accept only explicit artifact records and explicit policy rules supplied by the caller
+2. normalize policy rules into a stable deterministic form
+3. evaluate identity, digest, version, lifecycle, lineage, metadata, and bounded numeric/string constraints
+4. classify each violation by stable rule id, severity, and category
+5. support deny/allow style predicates without an external policy engine
+6. produce bounded immutable compliance reports with deterministic ordering
+7. fail closed on malformed, accessor, circular, duplicate-rule, invalid-regex, and oversized inputs
+8. provide deterministic report serialization with checksum/integrity protection
+9. no network, filesystem discovery, registry lookup, or automatic repair
 10. zero runtime third-party dependencies
 11. unit, contract, failure, recovery, and cross-platform verification
 12. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Audit / Drift Reporter v0.1, allowed scope is only:
+For Artifact Compliance / Policy Evaluator v0.1, allowed scope is only:
 
-- explicit local artifact audit input
-- deterministic drift classification
-- baseline/current comparison
-- bounded immutable findings and reports
+- explicit local artifact data
+- explicit local compliance rules
+- deterministic normalization and evaluation
+- bounded immutable compliance findings and reports
 - typed fail-closed errors
-- deterministic checksum-protected serialization
+- deterministic checksum-protected report serialization
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- remote synchronization
-- automatic network/filesystem/registry discovery
+- remote policy retrieval
+- network/filesystem/registry discovery
 - automatic repair or mutation of source artifacts
-- distributed audit protocols
-- trust/signature policy engines
+- distributed policy evaluation
+- signature/trust-chain verification
 - GUI/admin console
 - background scheduler integration
 - billing or cost accounting
