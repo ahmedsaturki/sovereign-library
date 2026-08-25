@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Release Plan / Deterministic Publication Plan Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Release Snapshot / Candidate Set Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Admission Gate / Release Eligibility v0.1**
-- Release PR: **#71**, squash-merged
-- Release commit: `29be5dc41556cb7aafa5fc0a4cd1ccb08ef2c157`
-- Pre-merge verification: **Run 530**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 531**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Admission Gate / Release Eligibility v0.1 is therefore **FROZEN**.
-- The release provides deterministic required/optional admission clauses, release eligibility verdicts, immutable blocking/non-blocking reasons, typed fail-closed errors, SAG1 checksum-protected serialization, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Release Plan / Deterministic Publication Plan v0.1**
+- Release PR: **#72**, squash-merged
+- Release commit: `80c1dcc1a653da8247fdabc0849ecf7d9139259c`
+- Pre-merge verification: **Run 536**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 537**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Release Plan / Deterministic Publication Plan v0.1 is therefore **FROZEN**.
+- The release provides deterministic dependency-first ordering, explicit admission enforcement, bounded immutable dry-run steps, compact evidence references, typed fail-closed errors, SRP1 checksum-protected serialization, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,46 +26,46 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-RELEASE-PLAN-DETERMINISTIC-PUBLICATION-PLAN-V0.1-SPEC**
+**ARTIFACT-RELEASE-SNAPSHOT-CANDIDATE-SET-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic artifact release-plan builder:
+Implement the public contract for a standalone deterministic release candidate snapshot:
 
-1. accept an explicit set of eligible artifact records and an explicit release-plan configuration only
-2. validate uniqueness, dependencies, required admission verdicts, and deterministic release constraints
-3. compute stable release ordering without network access, mutation, or hidden discovery
-4. emit bounded immutable release-plan steps and dependency evidence
-5. detect dependency cycles and impossible release prerequisites fail-closed
-6. support deterministic dry-run plans with no publication side effects
-7. serialize and parse plans deterministically with checksum/integrity protection
-8. preserve evidence references without copying unbounded artifact payloads
-9. no network, filesystem discovery, registry lookup, scheduler, or actual publication
+1. accept only explicit artifact candidate records supplied by the caller
+2. normalize candidate identity, version, digest, admission verdict, and evidence references into a stable form
+3. reject duplicates, malformed/accessor/circular/oversized inputs, invalid identities, and inconsistent candidate fields
+4. produce a deterministic candidate ordering independent of input insertion order
+5. compute a bounded immutable snapshot with exact candidate counts and stable identity records
+6. prevent duplicate artifact identities or conflicting versions/digests from entering one snapshot
+7. serialize and parse the snapshot with deterministic checksum/integrity protection
+8. never mutate artifacts and never discover candidates externally
+9. no network, filesystem discovery, registry lookup, scheduler, or publication
 10. zero runtime third-party dependencies
 11. unit, contract, failure, recovery, and cross-platform verification
 12. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Release Plan / Deterministic Publication Plan v0.1, allowed scope is only:
+For Artifact Release Snapshot / Candidate Set v0.1, allowed scope is only:
 
-- explicit local artifact data
-- explicit release-plan configuration
-- deterministic dependency validation and ordering
-- immutable dry-run release plans
+- explicit local candidate artifact data
+- deterministic identity/version/digest normalization
+- immutable candidate snapshots
+- bounded evidence references
 - typed fail-closed errors
-- deterministic checksum-protected plan serialization
+- deterministic checksum-protected snapshot serialization
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- actual publication or deployment
-- network/filesystem/registry discovery
-- remote release APIs
-- background scheduling/orchestration
+- external candidate discovery
+- network/filesystem/registry scanning
+- publication/deployment
 - signing/trust-chain verification
-- automatic artifact mutation or repair
+- automatic mutation or repair
+- scheduling/orchestration
 - GUI/admin console
 - billing or cost accounting
 
