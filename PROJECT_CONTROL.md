@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Content-Addressed Storage / CAS Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Bundle / Reproducible Package Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Release Manifest / Integrity v0.1**
-- Release PR: **#59**, squash-merged
-- Release commit: `d1e33a2cfb12303cfe7e810e17241636ffa998db`
-- Pre-merge verification: **Run 437**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 390 tests, and real-browser smoke.
-- Post-merge verification: **Run 438**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Release Manifest / Integrity v0.1 is therefore **FROZEN**.
-- The release provides deterministic versioned manifests, native SHA-256 content descriptors, immutable verification reports, bounded local inputs, and zero runtime third-party dependencies.
+- Last released cube: **Content-Addressed Storage / CAS v0.1**
+- Release PR: **#61**, squash-merged
+- Release commit: `63ba1b7e684857e95303b02864c91627a6c601e0`
+- Pre-merge verification: **Run 450**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 451**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Content-Addressed Storage / CAS v0.1 is therefore **FROZEN**.
+- The release provides native SHA-256 content addressing, bounded local object storage, atomic writes, corruption detection, immutable-by-copy reads, bounded metadata, and typed fail-closed errors with zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,50 +26,50 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**CONTENT-ADDRESSED-STORAGE-V0.1-SPEC**
+**ARTIFACT-BUNDLE-REPRODUCIBLE-PACKAGE-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze and implement the public contract for a standalone deterministic content-addressed storage component:
+Freeze and implement the public contract for a standalone deterministic package/bundle component:
 
-1. canonical content-to-address mapping with native digest primitives
-2. immutable put/get/has/delete semantics
-3. deterministic address validation and normalization
-4. atomic write and collision-safe existing-object handling
-5. bounded object size, object count, address length, and metadata size
-6. safe namespace separation and path traversal rejection
-7. immutable object metadata and snapshots
-8. fail-closed corruption and malformed-address handling
-9. recovery behavior after rejected writes and corrupted records
-10. zero runtime third-party dependencies and no network requirement
+1. deterministic file ordering and normalized bundle paths
+2. reproducible bundle metadata and stable serialization
+3. bounded entry count, path length, per-entry size, and total bundle size
+4. native local archive/bundle generation without a network service
+5. explicit versioned bundle format and integrity descriptors
+6. safe path validation and traversal rejection
+7. immutable bundle manifests and verification results
+8. fail-closed malformed bundles, duplicates, unsupported metadata, and corrupt content
+9. deterministic extraction/verification behavior without arbitrary command execution
+10. zero runtime third-party dependencies
 11. unit, contract, failure, recovery, and cross-platform verification
 12. standalone SPEC, README, and runnable example before release
 
 ## Scope lock
 
-For Content-Addressed Storage / CAS Cube v0.1, allowed scope is only:
+For Artifact Bundle / Reproducible Package v0.1, allowed scope is only:
 
-- local content-addressed storage
-- native digest-based addressing
-- deterministic CRUD semantics
-- bounded objects and metadata
-- immutable metadata/snapshots
-- corruption detection
-- safe namespace and path handling
-- atomic persistence and recovery
+- local deterministic bundle generation
+- canonical path normalization and stable entry ordering
+- versioned bundle format and metadata
+- bounded archive inputs and outputs
+- native integrity descriptors
+- deterministic verification and safe extraction
+- immutable public snapshots
 - typed fail-closed errors
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
+- remote registries
+- package publishing
+- signing/key management
 - remote replication
-- distributed consensus
-- object locking service
-- encryption/key management
-- HTTP/network transport
 - GUI/admin console
-- package registry or publishing service
+- network transport
+- installer generation
+- operating-system package formats
 
 ## Definition of done
 
