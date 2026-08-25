@@ -41,10 +41,12 @@ test('normalizes separators deterministically without touching the filesystem', 
   expectCode(() => normalizeCandidatePath('src//tools/index.js'), 'INVALID_PATH');
 });
 
-test('keeps absolute and relative paths distinct by default', () => {
+test('keeps absolute and relative paths distinct by default and anchors absolute roots', () => {
   assert.equal(matchGlob(compileGlob('/src/*.js'), '/src/app.js'), true);
   assert.equal(matchGlob(compileGlob('/src/*.js'), 'src/app.js'), false);
   assert.equal(matchGlob(compileGlob('src/*.js'), '/src/app.js'), false);
+  assert.equal(matchGlob(compileGlob('C:/src/*.js'), 'C:/src/app.js'), true);
+  assert.equal(matchGlob(compileGlob('C:/src/*.js'), 'D:/src/app.js'), false);
 });
 
 test('case behavior is explicit and does not depend on host OS defaults', () => {
