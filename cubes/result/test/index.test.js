@@ -60,6 +60,15 @@ test('serializeError preserves code flags and nested causes safely', () => {
   assert.equal(Object.isFrozen(serialized), true);
 });
 
+test('serializeError handles circular cause chains deterministically', () => {
+  const first = new Error('first');
+  const second = new Error('second', { cause: first });
+  first.cause = second;
+  const serialized = serializeError(first);
+  assert.equal(serialized.cause.message, 'second');
+  assert.equal(serialized.cause.cause.message, '[circular cause]');
+});
+
 test('match and ensure are exhaustive and deterministic', () => {
   const result = Result.ok(5);
   assert.equal(Result.match(result, { ok: value => value + 1, err: () => 0 }), 6);
