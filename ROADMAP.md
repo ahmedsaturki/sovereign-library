@@ -10,15 +10,23 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Host Identity / Environment Fingerprint v0.1
+
+PR #86 was squash-merged as `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`.
+
+Pre-merge **Run 644** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, HIF tests, and real-browser smoke.
+
+Post-merge **Run 645** passed on Windows and macOS-15-Intel on the original attempt. Ubuntu browser smoke experienced a transient runner hang; the Ubuntu job was rerun independently on the same release commit and passed syntax, full repository tests, and real-browser smoke.
+
+The release provides privacy-safe stable and volatile host identity fields, deterministic normalization and canonical serialization, explicit comparison semantics, bounded output, injectable capability seams, fail-closed malformed/accessor/circular input handling, and zero runtime third-party dependencies.
+
+The cube is **FROZEN** at `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`.
+
 ### Directory Snapshot / Tree Manifest v0.1
 
 PR #85 was squash-merged as `c01cc08e97404d1528fb93d6728fd2ae272871c3`.
 
-Pre-merge **Run 633** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-
-Post-merge **Run 635** passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-
-The release provides deterministic recursive inventory, explicit file/directory/symlink representation, record/reject/follow-contained symlink policy, cycle protection, bounded traversal, optional injected content digesting, mutation/error policies, canonical serialization and snapshot identity, read-only semantics, and zero runtime third-party dependencies.
+Pre-merge **Run 633** and post-merge **Run 635** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
 
 The cube is **FROZEN** at `c01cc08e97404d1528fb93d6728fd2ae272871c3`.
 
@@ -70,34 +78,37 @@ Earlier released cubes remain pinned to their recorded immutable SHAs.
 
 ## Active milestone
 
-### HOST-IDENTITY-FINGERPRINT-V0.1-SPEC
+### GLOB-PATH-MATCHER-V0.1-SPEC
 
-The Directory Snapshot / Tree Manifest release is complete and frozen.
+The Host Identity / Environment Fingerprint release is complete and frozen.
 
 The next selected standalone product is:
 
-**Host Identity / Environment Fingerprint v0.1**
+**Glob / Path Matcher v0.1**
 
 Rationale:
 
-- local environment identity is a distinct capability not owned by Runtime Capability Inspector, Configuration, Process, or Directory Snapshot
-- it is useful for cache keys, reproducibility records, diagnostics, compatibility reports, test matrices, and local agent/environment attribution
-- the safe boundary is read-only and privacy-first: stable non-secret attributes only, with explicit volatile fields kept separate
-- native platform APIs and environment primitives are sufficient for the core without third-party runtime dependencies
+- pure path-pattern matching is a distinct capability not owned by Filesystem, Directory Snapshot, URL/Query, or Shell/Process cubes
+- a filesystem-independent matcher is reusable for ignore rules, routing, packaging, selectors, policy scopes, artifact selection, and test filtering
+- deterministic cross-platform semantics are valuable because OS-native glob behavior differs in separators, case rules, and recursive matching
+- the pure core can remain zero-runtime-dependency and free of filesystem side effects
 
 ### Immediate next task
 
-Write and commit the complete SPEC at `specs/host-identity-environment-fingerprint-v0.1.md` before implementation begins.
+Write and commit the complete SPEC at `specs/glob-path-matcher-v0.1.md` before implementation begins.
 
 The SPEC must lock:
 
-- stable vs volatile identity fields
-- privacy-safe defaults
-- deterministic normalization and serialization
-- comparison semantics
-- platform/missing-capability behavior
-- bounded output size
-- capability seams and failure model
+- explicit glob grammar and segment semantics
+- separator normalization and platform-independent matching rules
+- literal escaping and special-character handling
+- `*`, `?`, and recursive `**` semantics with bounded complexity
+- absolute/relative path behavior and root anchoring
+- explicit case-sensitivity policy
+- path traversal and dot-segment safety semantics
+- deterministic include/exclude evaluation and rule precedence
+- bounded pattern/path lengths and failure/recovery behavior
+- pure matcher boundary with no filesystem access in the core
 - Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
 - zero-runtime-third-party-dependency boundary
 
