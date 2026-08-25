@@ -38,7 +38,7 @@ test('runPipeline awaits sink writes and finalizes once', async () => {
 
 test('bounded chunks reject oversized input and output', async () => {
   await assert.rejects(() => collect(sourceOf('12345'), { maxChunkBytes: 4 }), error => error instanceof StreamError && error.code === 'CHUNK_TOO_LARGE');
-  await assert.rejects(() => collect(sourceOf('a'), [null], { maxChunkBytes: 4 }), error => error instanceof StreamError && error.code === 'INVALID_TRANSFORMS');
+  assert.throws(() => createPipeline(sourceOf('a'), [null], { maxChunkBytes: 4 }), error => error instanceof StreamError && error.code === 'INVALID_TRANSFORM');
   const pipeline = createPipeline(sourceOf('a'), [() => '12345'], { maxChunkBytes: 4 });
   await assert.rejects(() => collect(pipeline), error => error instanceof StreamError && error.code === 'CHUNK_TOO_LARGE');
 });
@@ -61,11 +61,10 @@ test('source, transform, and sink failures are typed', async () => {
   await assert.rejects(() => collect(brokenTransform), error => error instanceof StreamError && error.code === 'TRANSFORM_FAILED');
 
   const failed = [];
-  const sinkFailure = await assert.rejects(() => runPipeline(sourceOf('x'), [], {
+  await assert.rejects(() => runPipeline(sourceOf('x'), [], {
     async write() { throw new Error('sink boom'); },
     async fail(error) { failed.push(error.code); },
   }), error => error instanceof StreamError && error.code === 'SINK_FAILED');
-  assert.equal(sinkFailure, undefined);
   assert.deepEqual(failed, ['SINK_FAILED']);
 });
 
