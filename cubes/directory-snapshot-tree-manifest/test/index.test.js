@@ -184,11 +184,11 @@ test('rejects circular manifest values at the data serialization boundary', () =
   assert.throws(() => serializeDirectorySnapshot(circular), (error) => error.code === 'CIRCULAR_INPUT');
 });
 
-test('rejects invalid roots and path/manifest limits', async () => {
+test('rejects invalid roots and manifest-size limits', async () => {
   await assert.rejects(snapshotDirectory('/definitely/missing/path', baseOptions()), (error) => error.code === 'INVALID_ROOT');
   const root = await tempRoot();
   try {
-    await writeFile(join(root, 'long.txt'), 'x'.repeat(64));
+    for (let index = 0; index < 40; index += 1) await writeFile(join(root, `entry-${index.toString().padStart(2, '0')}.txt`), 'x'.repeat(64));
     await assert.rejects(snapshotDirectory(root, baseOptions({ maxManifestBytes: 1024 })), (error) => error.code === 'LIMIT_EXCEEDED');
   } finally { await cleanup(root); }
 });
