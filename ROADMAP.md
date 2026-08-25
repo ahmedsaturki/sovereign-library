@@ -10,6 +10,10 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Release Publication Executor / Boundary v0.1
+
+PR #76 was squash-merged as `23cf7b06e9162201683eb613d6c71c241cb5e34e`. Pre-merge Run 561 passed on Ubuntu, Windows, and macOS-15-Intel after a minimal accessor-regression fixture correction. Post-merge Run 562 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
+
 ### Artifact Release Closure Receipt / Finalization v0.1
 
 PR #75 was squash-merged as `0e1adc1fc41924c4df14c5b10aa5ed1278297b90`. Pre-merge Run 555 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 556 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates. The Windows browser gate initially cancelled and was rerun independently; the rerun passed fully.
@@ -86,30 +90,30 @@ Earlier cubes remain released at their recorded immutable SHAs.
 
 ## Active milestone
 
-### Artifact Release Publication Executor / Boundary v0.1
+### Artifact Release Publication Confirmation / Outcome Receipt v0.1
 
-Target: a standalone deterministic publication boundary that consumes one explicit frozen closure receipt and executes only explicitly authorized publication intents against explicitly declared destinations.
+Target: a standalone deterministic confirmation receipt that converts one explicit executed publication outcome into an immutable, auditable handoff record for downstream reconciliation and audit cubes.
 
 Initial scope:
-- explicit frozen closure receipt identity and status validation
-- explicit publication intent records
-- explicit destination capability contracts
-- deterministic intent normalization and ordering
-- duplicate/conflict detection
-- bounded immutable publication plan and execution outcomes
-- explicit side-effect boundaries
-- idempotency and recovery semantics
-- typed fail-closed errors
-- unit, contract, failure, recovery, idempotency, rollback-safety, and cross-platform verification
+- explicit publication outcome snapshot
+- explicit originating closure receipt identity
+- deterministic outcome/intent/destination linkage validation
+- bounded immutable confirmation records
+- caller-supplied commit evidence and timestamps only
+- duplicate/mismatch/conflict detection
+- fail-closed malformed/accessor/circular/oversized input handling
+- deterministic checksum-protected confirmation serialization
+- unit, contract, failure, recovery, idempotency, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
+- executing publication side effects
+- external audit/reconciliation services
 - destination discovery
-- implicit credential acquisition
-- automatic network/filesystem/registry scanning
-- global orchestration/scheduling
 - signing/trust-chain generation or verification
-- broad deployment-platform integrations
+- scheduler/orchestration
+- automatic retries
+- credential management
 - GUI/admin console
 - billing or cost accounting
 
