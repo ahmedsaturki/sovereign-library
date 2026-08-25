@@ -14,7 +14,10 @@ const plan = [{
 }];
 const outcomeSnapshot = {
   mode: 'publication_outcome',
-  closure: { receiptId: 'closure-1' },
+  closure: {
+    receiptId: 'closure-1', snapshotId: 'snapshot-1', snapshotChecksum: digest,
+    approvalId: 'approval-1', approvalChecksum: digest, status: 'closed',
+  },
   outcomes: [{
     intentId: 'publish-1', idempotencyKey: 'publish-1', destinationId: 'local-demo',
     artifactId: 'artifact-1', artifactDigest: digest, state: 'succeeded',
@@ -23,5 +26,10 @@ const outcomeSnapshot = {
   }],
 };
 
-const receipt = buildPublicationConfirmation({ closureReceipt, outcomeSnapshot, plan });
+const receipt = buildPublicationConfirmation({
+  closureReceipt,
+  outcomeSnapshot,
+  plan,
+  metadata: { example: true, source: 'standalone-demo' },
+});
 console.log(serializePublicationConfirmation(receipt));
