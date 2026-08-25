@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Lifecycle / Retention Index Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Reference Resolver / Locator Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Dependency Graph / Relationship Index v0.1**
-- Release PR: **#64**, squash-merged
-- Release commit: `2616a058f90ae1469561dc508eaea812e43e0f99`
-- Pre-merge verification: **Run 471**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 472**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Dependency Graph / Relationship Index v0.1 is therefore **FROZEN**.
-- The release provides deterministic node/edge identity, bounded adjacency and path queries, cycle detection, atomic mutations, checksum-protected persistence, immutable snapshots, typed fail-closed errors, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Lifecycle / Retention Index v0.1**
+- Release PR: **#65**, squash-merged
+- Release commit: `da1f4992c0f84422f9e43a5c5037af1e28e85fc9`
+- Pre-merge verification: **Run 480**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 481**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Lifecycle / Retention Index v0.1 is therefore **FROZEN**.
+- The release provides deterministic lifecycle records, explicit live/retained/expired/tombstoned/deleted states, bounded retention evaluation, atomic transitions, dry-run retention/purge planning, checksum-protected persistence, immutable snapshots, typed fail-closed errors, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,51 +26,48 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-LIFECYCLE-RETENTION-INDEX-V0.1-SPEC**
+**ARTIFACT-REFERENCE-RESOLVER-LOCATOR-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic local artifact lifecycle/retention index:
+Implement the public contract for a standalone deterministic local artifact reference resolver/locator:
 
-1. canonical lifecycle records and stable artifact identity references
-2. explicit states for live, retained, expired, tombstoned, and deleted
-3. deterministic retention policy evaluation from bounded local inputs
-4. atomic state transitions with recovery
-5. deterministic age/tag/reference queries and bounded purge planning
-6. immutable snapshots and typed fail-closed errors
-7. conflict/invalid-transition rejection
-8. deterministic serialization with checksum and corruption detection
-9. dry-run purge planning without destructive side effects
-10. no required network service or external SDK
-11. zero runtime third-party dependencies
-12. unit, contract, failure, recovery, and cross-platform verification
-13. standalone SPEC, README, changelog, and runnable example before release
+1. canonical artifact reference grammar for name, version, digest, and tag forms
+2. deterministic normalization and validation of local references
+3. resolution across an explicit bounded in-memory candidate set
+4. exact, alias, and version-range-free deterministic matching only
+5. explicit ambiguity and not-found outcomes with typed errors
+6. bounded candidate/result limits and fail-closed invalid input handling
+7. immutable resolution snapshots and stable result ordering
+8. no hidden network access, filesystem scanning, registry lookup, or external SDK
+9. zero runtime third-party dependencies
+10. unit, contract, failure, recovery, and cross-platform verification
+11. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Lifecycle / Retention Index v0.1, allowed scope is only:
+For Artifact Reference Resolver / Locator v0.1, allowed scope is only:
 
-- local lifecycle state
-- deterministic retention policy evaluation
-- bounded records and query/purge-plan output
-- atomic lifecycle mutations and recovery
-- dry-run purge planning
+- local artifact reference parsing and normalization
+- bounded explicit candidate resolution
+- deterministic exact/alias matching
+- ambiguity/not-found reporting
 - immutable snapshots
-- deterministic serialization and corruption detection
 - typed fail-closed errors
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- destructive physical deletion from arbitrary storage backends
-- remote synchronization
+- remote registries
 - network transport
-- distributed locks
-- billing or cost accounting
+- implicit filesystem discovery
+- semantic version range solving
+- dependency installation
+- destructive lifecycle operations
 - GUI/admin console
 - background scheduler integration
-- legal/compliance retention policy engines
+- billing or cost accounting
 
 ## Definition of done
 
