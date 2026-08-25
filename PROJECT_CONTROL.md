@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Release Approval / Decision Record Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Release Publication Executor / Boundary Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Release Approval / Decision Record v0.1**
-- Release PR: **#74**, squash-merged
-- Release commit: `8f05e628d326c23c3d877742c2f2b7bd05c22aa9`
-- Pre-merge verification: **Run 549**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 550**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Release Approval / Decision Record v0.1 is therefore **FROZEN**.
-- The release provides deterministic required/optional approval scopes, conflict detection, approve/reject/pending status evaluation, bounded immutable decision evidence, SAD1 checksum-protected serialization, typed fail-closed errors, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Release Closure Receipt v0.1**
+- Release PR: **#75**, squash-merged
+- Release commit: `0e1adc1fc41924c4df14c5b10aa5ed1278297b90`
+- Pre-merge verification: **Run 555**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 556**, push on `main` for the release commit, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke. The Windows browser gate initially cancelled and was rerun independently; the rerun completed successfully.
+- Artifact Release Closure Receipt v0.1 is therefore **FROZEN**.
+- The release provides exact snapshot/approval linkage, approved-status enforcement, bounded immutable closure metadata/evidence, SRC1 checksum-protected serialization, typed fail-closed errors, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,47 +26,50 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-RELEASE-CLOSURE-RECEIPT-V0.1-SPEC**
+**ARTIFACT-RELEASE-PUBLICATION-EXECUTOR-BOUNDARY-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic release closure receipt:
+Implement the public contract for a standalone deterministic publication boundary that consumes one frozen closure receipt and executes only explicitly authorized publication intents:
 
-1. accept one explicit frozen release snapshot identity plus one explicit approved decision record
-2. validate exact snapshot/approval linkage and status compatibility
-3. normalize closure metadata and evidence references deterministically
-4. reject mismatched snapshot ids/checksums, non-approved decisions, duplicate receipt ids, and invalid closure metadata
-5. produce a bounded immutable closure receipt suitable for later publication systems to consume
-6. serialize and parse the receipt with deterministic checksum/integrity protection
-7. never publish, mutate artifacts, or call external services
-8. no network, filesystem discovery, registry lookup, scheduler, signing, or publication side effects
-9. zero runtime third-party dependencies
-10. unit, contract, failure, recovery, and cross-platform verification
-11. standalone SPEC, README, changelog, and runnable example before release
+1. accept one explicit frozen closure receipt plus explicit publication intent records
+2. validate exact closure receipt identity/status before any side effect
+3. require an explicit destination capability and operation allowlist
+4. normalize publication intents and destination metadata deterministically
+5. reject duplicate/conflicting intents, unsupported destinations, malformed/accessor/circular inputs, and oversized payload metadata
+6. plan and execute publication steps with bounded immutable outcomes and typed failures
+7. make each side-effect boundary explicit, auditable, and fail-closed
+8. never discover destinations or mutate unrelated artifacts
+9. no implicit network/filesystem/registry scanning, scheduler, signing, or credential acquisition
+10. zero runtime third-party dependencies in the core cube
+11. unit, contract, failure, recovery, idempotency, rollback-safety, and cross-platform verification
+12. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Release Closure Receipt v0.1, allowed scope is only:
+For Artifact Release Publication Executor / Boundary v0.1, allowed scope is only:
 
-- explicit frozen snapshot identity
-- explicit approved decision record identity
-- deterministic linkage validation
-- immutable bounded closure metadata and evidence
+- explicit frozen closure receipt input
+- explicit publication intent records
+- explicit destination capability contracts
+- deterministic intent normalization and validation
+- bounded immutable publication plans/outcomes
 - typed fail-closed errors
-- deterministic checksum-protected receipt serialization
+- explicit side-effect boundaries
+- idempotency and recovery semantics
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- publication/deployment
-- external release services
-- network/filesystem/registry discovery
-- signing/trust-chain verification
-- automatic mutation or repair
-- scheduling/orchestration
+- destination discovery
+- secret/credential management
+- automatic retries across unknown systems
+- scheduler/orchestration
+- trust-chain/signature generation or verification
 - GUI/admin console
 - billing or cost accounting
+- broad deployment platform integration
 
 ## Definition of done
 
