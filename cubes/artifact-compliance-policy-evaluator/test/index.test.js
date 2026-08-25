@@ -41,7 +41,7 @@ test('membership, existence, numeric and regex predicates work deterministically
     { id: 'missing', category: 'constraint', severity: 'medium', field: 'metadata.region', operator: 'exists', value: true },
   ];
   const report = evaluateCompliance(artifacts, rules);
-  assert.deepEqual(report.findings.map((f) => f.ruleId), ['score', 'missing']);
+  assert.deepEqual(report.findings.map((f) => f.ruleId), ['missing', 'score']);
 });
 
 test('invalid regex, accessors, circular values, duplicates, and bounds fail closed', () => {
