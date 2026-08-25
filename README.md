@@ -77,12 +77,13 @@ Released through v0.1:
 - CLI / Command Runtime
 - Search / Index
 - Workflow / Durable Orchestration
+- Storage Persistence / Snapshot
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Storage Persistence / Snapshot v0.1** — standalone deterministic local persistence and snapshot product for Sovereign-compatible data, with versioned envelopes, integrity verification, atomic writes, crash-safe recovery, bounded payloads, immutable loaded snapshots, and zero runtime third-party dependencies.
+**Reporting / Export Cube v0.1** — standalone deterministic local reporting/export engine for immutable report snapshots, stable JSON/CSV output, deterministic aggregation/grouping/order, bounded streaming, cancellation-aware output, and zero runtime third-party dependencies.
 
 ## License
 
