@@ -10,6 +10,10 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Release Approval / Decision Record v0.1
+
+PR #74 was squash-merged as `8f05e628d326c23c3d877742c2f2b7bd05c22aa9`. Pre-merge Run 549 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 550 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
 ### Artifact Release Snapshot / Candidate Set v0.1
 
 PR #73 was squash-merged as `62009ced973107cae4ef81c77f535d800e8692fe`. Pre-merge Run 543 passed on Ubuntu, Windows, and macOS-15-Intel after the deterministic serialization-test fix. Post-merge Run 544 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
@@ -26,137 +30,77 @@ PR #71 was squash-merged as `29be5dc41556cb7aafa5fc0a4cd1ccb08ef2c157`. Pre-merg
 
 PR #70 was squash-merged as `10ea69e80865fda16e385a635fa7bdde17162769`. Pre-merge Run 524 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 525 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
 
-### Artifact Audit / Drift Reporter v0.1
-
-PR #69 was squash-merged as `f939f13437412682600aad691998cae9d5218606` after cross-platform verification.
-
-### Artifact Reconciliation / Consistency Checker v0.1
-
-PR #68 was squash-merged as `9dfb6833299cbfc42c82afdef5fcf2d3a6175833` after cross-platform verification.
-
-### Artifact Provenance / Lineage Ledger v0.1
-
-PR #67 was squash-merged as `d1b2795d3a638100a6fbf657cbebeb5ef7aaae82` after cross-platform verification.
-
-### Artifact Reference Resolver / Locator v0.1
-
-PR #66 was squash-merged as `7cb477e1e11ea5c5f9b145cf6eba1527482a4b57`.
-
-### Artifact Lifecycle / Retention Index v0.1
-
-PR #65 was squash-merged as `da1f4992c0f84422f9e43a5c5037af1e28e85fc9`.
-
-### Artifact Dependency Graph / Relationship Index v0.1
-
-PR #64 was squash-merged as `2616a058f90ae1469561dc508eaea812e43e0f99`.
-
-### Local Artifact Catalog / Package Index v0.1
-
-PR #63 was squash-merged as `58fdd97ed36bf058843c83e2ad226a20d85fb446`.
-
-### Artifact Bundle / Reproducible Package v0.1
-
-PR #62 was squash-merged as `a1d2655e7d48b63ce6ded71e4e449ea2c3a841dd` after full cross-platform verification.
-
-### Content-Addressed Storage / CAS v0.1
-
-PR #61 was squash-merged as `63ba1b7e684857e95303b02864c91627a6c601e0` after full cross-platform verification.
-
-### Release Manifest / Integrity v0.1
-
-PR #59 was squash-merged as `d1e33a2cfb12303cfe7e810e17241636ffa998db` after full cross-platform verification.
-
-### Release / Verification Harness v0.1
-
-PR #58 was squash-merged as `6e60d151691639948fabceaec1ee28964d40d881` after cross-platform verification.
-
-### Execution Engine v0.1
-
-PR #57 was squash-merged as `739798bb3de3d50884dc7b3f28bada7e4f58f1a2` after cross-platform verification.
-
-### Policy / Capability Security v0.1
-
-PR #56 was squash-merged as `a1067431f06d20ad2bdce321590ded9e79471d02` after cross-platform verification.
-
-### Agent Runtime v0.1
-
-PR #55 was squash-merged as `8d4608e012176a55bdc1822d3aea65add7aa7669` after cross-platform verification.
-
-### AI / Inference Runtime v0.1
-
-PR #54 was squash-merged as `83e076c3b0d8e0bc5e7f25c35e865cb9655121e9` after cross-platform verification.
-
-### Reporting / Export v0.1
-
-PR #53 was squash-merged as `5f55612ca772d53a87de4e852e6695b71dba7a69` after cross-platform verification.
-
-### Storage Persistence / Snapshot v0.1
-
-PR #52 was squash-merged as `6ed90856cc66c9894ae948731769d23d0e9a40a5` after cross-platform verification.
-
-### Workflow / Durable Orchestration v0.1
-
-PR #51 was squash-merged as `f3b38368b7865aafd85e69b98f11f076f53b01be` after cross-platform verification.
-
-### Search / Index v0.1
-
-PR #50 was squash-merged as `e124f7cfa59880c0c0381863a5215f3bc2bd08f4` after cross-platform verification.
-
-### CLI / Command Runtime v0.1
-
-Released at `61eac767bca438e63d28a28892ffcc0dab956e36` after cross-platform release verification.
-
-### Canonical JSON / Normalization v0.1
-
-PR #49 was squash-merged as `66f9329182792d879dfb7bcfd2d49c6513d918b9` after cross-platform verification.
-
-### Diff / Patch v0.1
-
-PR #48 was squash-merged as `e1acaeea3ec0b02da8998ac30a2f910e64aa2ade` after cross-platform verification.
-
-### Redaction / Secret Safety v0.1
-
-PR #45 was squash-merged as `e1040a0464f10f6e20d2ed39b5dd2e9097edae83` after release verification.
-
 ### Earlier released cubes
 
-Metrics / Telemetry `3c6f171f0469b34a055008b9594d043acb680f6c`
+Artifact Audit / Drift Reporter `f939f13437412682600aad691998cae9d5218606`
 
-Worker Pool / Parallel Execution `073ab5b9a27f03d7441bec8549786cd8e8f28f57`
+Artifact Reconciliation / Consistency Checker `9dfb6833299cbfc42c82afdef5fcf2d3a6175833`
 
-Serialization / Binary Codec `4e4ebf0bd503e72ec27d1984237b41ad47a56adb`
+Artifact Provenance / Lineage Ledger `d1b2795d3a638100a6fbf657cbebeb5ef7aaae82`
 
-Digest / Hash `0500948a6a7c62492ca50ed2d93777baf760480`
+Artifact Reference Resolver / Locator `7cb477e1e11ea5c5f9b145cf6eba1527482a4b57`
 
-Stream / Pipeline `9ac578f0ebee01dc2825672a096daf3a4539ffe7`
+Artifact Lifecycle / Retention Index `da1f4992c0f84422f9e43a5c5037af1e28e85fc9`
 
-Content-Encoding / Compression `ec31bec3c41804ec34d4ee961ef1b745aa306d61`
+Artifact Dependency Graph / Relationship Index `2616a058f90ae1469561dc508eaea812e43e0f99`
 
-URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
+Local Artifact Catalog / Package Index `58fdd97ed36bf058843c83e2ad226a20d85fb446`
+
+Artifact Bundle / Reproducible Package `a1d2655e7d48b63ce6ded71e4e449ea2c3a841dd`
+
+Content-Addressed Storage / CAS `63ba1b7e684857e95303b02864c91627a6c601e0`
+
+Release Manifest / Integrity `d1e33a2cfb12303cfe7e810e17241636ffa998db`
+
+Release / Verification Harness `6e60d151691639948fabceaec1ee28964d40d881`
+
+Execution Engine `739798bb3de3d50884dc7b3f28bada7e4f58f1a2`
+
+Policy / Capability Security `a1067431f06d20ad2bdce321590ded9e79471d02`
+
+Agent Runtime `8d4608e012176a55bdc1822d3aea65add7aa7669`
+
+AI / Inference Runtime `83e076c3b0d8e0bc5e7f25c35e865cb9655121e9`
+
+Reporting / Export `5f55612ca772d53a87de4e852e6695b71dba7a69`
+
+Storage Persistence / Snapshot `6ed90856cc66c9894ae948731769d23d0e9a40a5`
+
+Workflow / Durable Orchestration `f3b38368b7865aafd85e69b98f11f076f53b01be`
+
+Search / Index `e124f7cfa59880c0c0381863a5215f3bc2bd08f4`
+
+CLI / Command Runtime `61eac767bca438e63d28a28892ffcc0dab956e36`
+
+Canonical JSON / Normalization `66f9329182792d879dfb7bcfd2d49c6513d918b9`
+
+Diff / Patch `e1acaeea3ec0b02da8998ac30a2f910e64aa2ade`
+
+Redaction / Secret Safety `e1040a0464f10f6e20d2ed39b5dd2e9097edae83`
+
+Earlier cubes remain released at their recorded immutable SHAs.
 
 ## Active milestone
 
-### Artifact Release Approval / Decision Record v0.1
+### Artifact Release Closure Receipt v0.1
 
-Target: a standalone deterministic local approval record bound to one explicit frozen release snapshot and a finite set of explicit approval decisions, without external approval services or publication side effects.
+Target: a standalone deterministic closure receipt linking one explicit frozen release snapshot to one explicit approved decision record, without publishing or mutating artifacts.
 
 Initial scope:
-- explicit frozen snapshot identity
-- explicit decision records with stable decision ids and reviewer ids
-- required/optional approval scopes
-- deterministic decision normalization and ordering
-- conflict/duplicate detection per scope
-- deterministic overall approval status
-- immutable bounded decision/evidence summaries
-- fail-closed malformed/accessor/circular/invalid/oversized input handling
-- deterministic checksum-protected decision serialization
+- explicit snapshot identity and checksum
+- explicit approval record identity and status
+- deterministic snapshot/approval linkage validation
+- bounded closure metadata and evidence references
+- immutable receipt records
+- fail-closed mismatch/invalid/duplicate/accessor/circular/oversized input handling
+- deterministic checksum-protected receipt serialization
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- external approval services
-- network/filesystem/registry discovery
 - publication/deployment
+- external release services
+- network/filesystem/registry discovery
 - signing/trust-chain verification
 - automatic mutation or repair
 - scheduling/orchestration
