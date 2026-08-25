@@ -33,7 +33,7 @@ test('fixed algorithm helpers return bytes', () => {
 
 test('HMAC SHA-256 and SHA-512 match known vectors', () => {
   assert.equal(hmacHex('sha256', 'key', 'The quick brown fox jumps over the lazy dog'), 'f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8');
-  assert.equal(hmacHex('sha512', 'key', 'The quick brown fox jumps over the lazy dog'), 'b42af09057bac1e2d73f6811f1e3e6d1c8f44a7a6f4d0f0c8d8f8e6f0a4e1f11d7d7d6c5f2e9d7b1d2b8a3a8f9f0f3b4c4f0f6d2f6c1f8c1d4c6e3c4b5b5d4c4b7d4f3f1d4e0f7e4e7f0');
+  assert.equal(hmacHex('sha512', 'key', 'The quick brown fox jumps over the lazy dog'), 'b42af09057bac1e2d41708e48a902e09b5ff7f12ab428a4fe86653c73dd248fb82f948a549f7b791a5b41915ee4d1ec3935357e4e2317250d0372afa2ebeeb3a');
   assert.equal(hmacSha256('key', 'abc').byteLength, 32);
   assert.equal(hmacSha512('key', 'abc').byteLength, 64);
 });
