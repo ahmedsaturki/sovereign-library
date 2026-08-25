@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Serialization / Binary Codec Cube v0.1** and release it before starting another cube.
+Finish **Metrics / Telemetry Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,53 +16,53 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**SERIALIZATION-BINARY-CODEC-V0.1-RELEASE**
+**METRICS-TELEMETRY-V0.1-RELEASE**
 
 ### Immediate next task
 
-Build and release a native bounded binary serialization primitive:
+Build and release a standalone native instrumentation product:
 
-1. freeze supported value types and wire-format rules
-2. implement deterministic encoding with explicit type tags
-3. implement bounded decoding with depth and payload limits
-4. reject unsupported values before encoding
-5. normalize decode/encode failures into deterministic typed errors
-6. guarantee round-trip fidelity for supported values
-7. verify zero runtime third-party dependencies
-8. run the supported cross-platform CI matrix
-9. fix only failures required for the v0.1 gate
-10. squash-merge the release PR
-11. update ROADMAP before starting another cube
+1. freeze metric naming and label contracts
+2. implement monotonic counters and explicit gauges
+3. implement bounded histograms with deterministic buckets
+4. enforce metric-name, label, and cardinality limits
+5. expose immutable snapshots and JSON-safe export
+6. provide high-resolution timing helpers using native Node timing primitives
+7. define reset/close lifecycle semantics
+8. guarantee metric recording does not throw on expected operational paths
+9. verify zero runtime third-party dependencies
+10. run the supported cross-platform CI matrix
+11. fix only failures required for the v0.1 gate
+12. squash-merge the release PR
+13. update ROADMAP before starting another cube
 
 ## Scope lock
 
-For Serialization / Binary Codec Cube v0.1, the allowed scope is only:
+For Metrics / Telemetry Cube v0.1, the allowed scope is only:
 
-- null/boolean/number/string values
-- bounded arrays
-- bounded plain objects with string keys
-- explicit type tags
-- deterministic key ordering
-- bounded nesting depth
-- bounded encoded payload size
-- deterministic typed encode/decode errors
-- immutable configuration snapshots
-- byte-oriented APIs
+- counters
+- gauges
+- bounded histograms
+- metric names and label validation
+- bounded label cardinality
+- immutable snapshots
+- JSON-safe export
+- high-resolution timing helpers
+- reset/close lifecycle
+- deterministic typed configuration errors
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Explicitly out of scope for v0.1:
 
-- arbitrary class instances
-- functions
-- symbols
-- WeakMap/WeakSet
-- executable or eval-based decoding
-- schema registry
-- compression
-- encryption
-- third-party serialization packages
-- distributed protocol negotiation
+- network exporters
+- Prometheus/OpenTelemetry protocol clients
+- distributed aggregation
+- persistent metric storage
+- tracing/span correlation
+- third-party metrics packages
+- dashboards
+- alerting rules
 
 ## Definition of done
 
