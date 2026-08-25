@@ -4,8 +4,10 @@ const FORMAT = 'SPC1';
 const MAX_RECORDS = 256;
 const MAX_EVIDENCE = 32;
 const MAX_STRING = 2048;
+const MAX_METADATA = 8 * 1024;
 const MAX_PAYLOAD = 64 * 1024;
 const STATES = new Set(['succeeded', 'skipped_idempotent', 'failed']);
+const ISO_8601 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/;
 
 export class PublicationConfirmationError extends Error {
   constructor(code, message) {
@@ -59,8 +61,9 @@ function digestValue(value, label) {
 
 function timestampValue(value, label) {
   stringValue(value, label, 64);
+  if (!ISO_8601.test(value)) fail('INVALID_TIMESTAMP', `${label} must be an explicit ISO-8601 timestamp`);
   const date = new Date(value);
-  if (Number.isNaN(date.getTime()) || !value.includes('T')) fail('INVALID_TIMESTAMP', `${label} must be an explicit ISO-8601 timestamp`);
+  if (Number.isNaN(date.getTime())) fail('INVALID_TIMESTAMP', `${label} must be a valid ISO-8601 timestamp`);
   return date.toISOString();
 }
 
@@ -131,20 +134,38 @@ function normalizeOutcome(outcome, index) {
   };
 }
 
-export function buildPublicationConfirmation({ closureReceipt, outcomeSnapshot, plan }) {
+function normalizeMetadata(metadata) {
+  if (metadata === undefined) return null;
+  validateSafe(metadata, 'metadata');
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) fail('INVALID_METADATA', 'metadata must be a plain object');
+  const normalized = clone(metadata);
+  if (Buffer.byteLength(canonicalize(normalized), 'utf8') > MAX_METADATA) fail('LIMIT_EXCEEDED', `metadata exceeds ${MAX_METADATA} bytes`);
+  return normalized;
+}
+
+function assertExactClosure(outcomeClosure, expectedClosure) {
+  validateSafe(outcomeClosure, 'outcomeSnapshot.closure');
+  if (!outcomeClosure || typeof outcomeClosure !== 'object') fail('CLOSURE_MISMATCH', 'outcome snapshot must reference its originating closure receipt');
+  const candidate = closureIdentity({ ...outcomeClosure, status: 'closed' });
+  for (const field of Object.keys(expectedClosure)) {
+    if (candidate[field] !== expectedClosure[field]) fail('CLOSURE_MISMATCH', `outcome closure ${field} does not match the originating closure receipt`);
+  }
+}
+
+export function buildPublicationConfirmation({ closureReceipt, outcomeSnapshot, plan, metadata }) {
   const closure = closureIdentity(closureReceipt);
   validateSafe(outcomeSnapshot, 'outcomeSnapshot');
   if (!outcomeSnapshot || outcomeSnapshot.mode !== 'publication_outcome') fail('INVALID_OUTCOME', 'outcomeSnapshot must be publication_outcome');
   if (!Array.isArray(plan)) fail('INVALID_PLAN', 'plan must be an array');
   if (!Array.isArray(outcomeSnapshot.outcomes)) fail('INVALID_OUTCOME', 'outcomeSnapshot.outcomes must be an array');
   if (outcomeSnapshot.outcomes.length > MAX_RECORDS || plan.length > MAX_RECORDS) fail('LIMIT_EXCEEDED', 'confirmation input exceeds maximum size');
+  assertExactClosure(outcomeSnapshot.closure, closure);
   const planMap = new Map();
   for (let index = 0; index < plan.length; index += 1) {
     const normalized = normalizePlanIntent(plan[index], `plan[${index}]`);
     if (planMap.has(normalized.intentId)) fail('DUPLICATE_PLAN_INTENT', `duplicate plan intent ${normalized.intentId}`);
     planMap.set(normalized.intentId, normalized);
   }
-  if (outcomeSnapshot.closure?.receiptId !== closure.receiptId) fail('CLOSURE_MISMATCH', 'outcome closure receipt id does not match');
   const seen = new Set();
   const confirmations = outcomeSnapshot.outcomes.map(normalizeOutcome).sort((left, right) => left.intentId.localeCompare(right.intentId));
   for (const record of confirmations) {
@@ -160,12 +181,14 @@ export function buildPublicationConfirmation({ closureReceipt, outcomeSnapshot, 
     format: FORMAT,
     mode: 'publication_confirmation',
     closure,
+    metadata: normalizeMetadata(metadata),
     confirmations,
   });
 }
 
 export function serializePublicationConfirmation(receipt) {
   const payload = canonicalize(receipt);
+  if (Buffer.byteLength(payload, 'utf8') > MAX_PAYLOAD) fail('LIMIT_EXCEEDED', `serialized payload exceeds ${MAX_PAYLOAD} bytes`);
   return canonicalize({ format: FORMAT, checksum: checksum(payload), payload });
 }
 
