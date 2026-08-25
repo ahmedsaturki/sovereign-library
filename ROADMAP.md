@@ -10,27 +10,29 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Ephemeral Workspace / Scratch Directory v0.1
+
+PR #81 was squash-merged as `33b98771c4702a02dbdc3ce267af516bfbd8e43c`.
+
+Pre-merge **Run 613** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
+
+Post-merge **Run 614** initially experienced a transient macOS-15-Intel runner hang/cancellation during contract tests while Ubuntu and Windows completed successfully. The macOS job was re-run independently on the identical release commit and passed syntax checks, full repository tests, and real-browser smoke. No code or workflow changes were required for the rerun.
+
+The release provides atomic unique workspace creation, immutable identity and bounded owner metadata, EWC1 integrity-protected workspace records, exact-owner idempotent cleanup, path/symlink boundary protection, optional TTL without implicit deletion, conservative explicit-token stale recovery, deterministic filesystem/clock/identity seams, and zero runtime third-party dependencies.
+
+The cube is **FROZEN** at `33b98771c4702a02dbdc3ce267af516bfbd8e43c`.
+
 ### File Lease / Advisory Lock v0.1
 
 PR #80 was squash-merged as `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868`.
 
-Pre-merge **Run 607** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 522/522 full repository tests, and the real-browser smoke gate.
-
-Post-merge **Run 608** passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
-
-The release provides atomic sidecar-directory advisory ownership, bounded immutable lease identity and owner metadata, optional TTL/renewal, conservative stale recovery, successor-owner-safe release semantics, FLC1 checksum-protected lock records, deterministic capability seams, fail-closed input handling, and zero runtime third-party dependencies.
-
-The cube is **FROZEN** at `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868`.
+Pre-merge **Run 607** and post-merge **Run 608** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 522/522 full repository tests, and real-browser smoke.
 
 ### Filesystem Watcher / Change Stream v0.1
 
 PR #79 was merged as `239e418e620d06de5d25a9c40905f6efc42334b3`.
 
-Post-merge **Run 598** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
-
-The release provides a read-only native filesystem change stream, deterministic injected event sources, immutable bounded events, explicit overflow policies, lifecycle/recovery behavior, bounded debounce with terminal-event draining, root/path containment, and Windows native watch-path hardening with zero runtime third-party dependencies.
-
-The cube is **FROZEN** at `239e418e620d06de5d25a9c40905f6efc42334b3`.
+Post-merge **Run 598** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
 
 ### Runtime Capability Inspector / Preflight v0.1
 
@@ -50,35 +52,37 @@ Earlier released cubes remain pinned to their recorded immutable SHAs.
 
 ## Active milestone
 
-### EPHEMERAL-WORKSPACE-SCRATCH-DIRECTORY-V0.1-SPEC
+### ATOMIC-FILE-WRITER-SAFE-REPLACE-V0.1-SPEC
 
-The File Lease / Advisory Lock release is complete and frozen. The next selected standalone product is:
+The Ephemeral Workspace / Scratch Directory release is complete and frozen. The next selected standalone product is:
 
-**Ephemeral Workspace / Scratch Directory v0.1**
+**Atomic File Writer / Safe Replace v0.1**
 
 Rationale:
 
-- local temporary workspace management is a distinct lifecycle capability not owned by File Lease or Filesystem Watcher
-- the capability is useful to build systems, agents, document pipelines, browser/task isolation, and one-shot automations
-- the boundary is independent: create, identify, contain, clean up, expire, and recover a local ephemeral workspace
+- safe replacement is a distinct capability not owned by Filesystem, Storage, Serialization, or Ephemeral Workspace
+- it provides a reusable crash-conscious primitive for configuration writes, manifests, generated artifacts, checkpoints, and local application state
+- the boundary is narrow: write complete candidate content into the destination directory, validate it, then atomically replace one destination when the platform/filesystem allows
 - native filesystem primitives are sufficient for the core without third-party runtime dependencies
-- ownership and cleanup semantics can remain content-neutral and do not require a database or network service
+- failure behavior can be explicit about cross-device moves, permissions, symlinks, cleanup, and durability limitations
 
 ### Immediate next task
 
-Write and commit the complete SPEC at `specs/ephemeral-workspace-scratch-directory-v0.1.md` before implementation begins.
+Write and commit the complete SPEC at `specs/atomic-file-writer-safe-replace-v0.1.md` before implementation begins.
 
 The SPEC must lock:
 
-- standalone workspace lifecycle and public API
-- safe unique workspace creation without following attacker-controlled paths
-- bounded ownership metadata and workspace identity
-- cleanup and idempotent release behavior
-- optional TTL/expiry semantics without timestamp-only ownership claims
-- conservative stale/orphan recovery rules
-- path containment and symlink boundary behavior
-- deterministic test seams for filesystem, clock, and identity capabilities
-- Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification boundaries
+- single-file atomic replace contract
+- destination-directory temporary creation
+- complete candidate write before replacement
+- optional digest validation
+- permission/mode policy
+- crash/failure cleanup semantics
+- same-filesystem and cross-device behavior
+- symlink/path safety
+- deterministic capability seams
+- bounded input and cleanup behavior
+- Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
 - zero-runtime-third-party-dependency boundary
 
 No unrelated cube implementation starts before the SPEC gate is complete.
