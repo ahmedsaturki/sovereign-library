@@ -10,17 +10,27 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Atomic File Writer / Safe Replace v0.1
+
+Initial PR #82 was squash-merged as `f6bb8d515eade8ac3bd158b851732070c5a9d470`.
+
+Post-merge **Run 620** exposed a real Node 24 compatibility defect: `fsync` had been imported from `node:fs/promises`, where it is not exported. The defect was isolated before freeze.
+
+Corrective PR #84 was squash-merged as `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`.
+
+Corrective pre-merge **Run 622** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
+
+Corrective post-merge **Run 623** passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
+
+The final release provides same-directory atomic candidate creation and replacement, complete-write-before-replace semantics, optional SHA-256 digest verification, bounded streaming input, explicit mode/permission policy, destination symlink/path safety, explicit durability semantics without overclaiming crash guarantees, deterministic capability seams, fail-closed cleanup, and zero runtime third-party dependencies.
+
+The cube is **FROZEN** at `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`.
+
 ### Ephemeral Workspace / Scratch Directory v0.1
 
 PR #81 was squash-merged as `33b98771c4702a02dbdc3ce267af516bfbd8e43c`.
 
-Pre-merge **Run 613** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
-
-Post-merge **Run 614** initially experienced a transient macOS-15-Intel runner hang/cancellation during contract tests while Ubuntu and Windows completed successfully. The macOS job was re-run independently on the identical release commit and passed syntax checks, full repository tests, and real-browser smoke. No code or workflow changes were required for the rerun.
-
-The release provides atomic unique workspace creation, immutable identity and bounded owner metadata, EWC1 integrity-protected workspace records, exact-owner idempotent cleanup, path/symlink boundary protection, optional TTL without implicit deletion, conservative explicit-token stale recovery, deterministic filesystem/clock/identity seams, and zero runtime third-party dependencies.
-
-The cube is **FROZEN** at `33b98771c4702a02dbdc3ce267af516bfbd8e43c`.
+Pre-merge **Run 613** passed on Ubuntu, Windows, and macOS-15-Intel. Post-merge **Run 614** initially experienced a transient macOS runner cancellation; an independent rerun on the identical commit passed all gates.
 
 ### File Lease / Advisory Lock v0.1
 
@@ -32,13 +42,13 @@ Pre-merge **Run 607** and post-merge **Run 608** passed on Ubuntu, Windows, and 
 
 PR #79 was merged as `239e418e620d06de5d25a9c40905f6efc42334b3`.
 
-Post-merge **Run 598** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+Post-merge **Run 598** passed on Ubuntu, Windows, and macOS-15-Intel.
 
 ### Runtime Capability Inspector / Preflight v0.1
 
 PR #78 was squash-merged as `139a7d6c824b7fe522712c65e1b9ffcf605e134f4`.
 
-Pre-merge **Run 580** and post-merge **Run 581** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+Pre-merge **Run 580** and post-merge **Run 581** passed on Ubuntu, Windows, and macOS-15-Intel.
 
 ### Previous release chain
 
@@ -52,36 +62,34 @@ Earlier released cubes remain pinned to their recorded immutable SHAs.
 
 ## Active milestone
 
-### ATOMIC-FILE-WRITER-SAFE-REPLACE-V0.1-SPEC
+### DIRECTORY-SNAPSHOT-TREE-MANIFEST-V0.1-SPEC
 
-The Ephemeral Workspace / Scratch Directory release is complete and frozen. The next selected standalone product is:
+The Atomic File Writer / Safe Replace release is complete, including its Node 24 corrective fix, and is frozen. The next selected standalone product is:
 
-**Atomic File Writer / Safe Replace v0.1**
+**Directory Snapshot / Tree Manifest v0.1**
 
 Rationale:
 
-- safe replacement is a distinct capability not owned by Filesystem, Storage, Serialization, or Ephemeral Workspace
-- it provides a reusable crash-conscious primitive for configuration writes, manifests, generated artifacts, checkpoints, and local application state
-- the boundary is narrow: write complete candidate content into the destination directory, validate it, then atomically replace one destination when the platform/filesystem allows
+- deterministic directory inventory is a distinct local capability not owned by Filesystem, Filesystem Watcher, Atomic File Writer, File Lease, or Content-Addressed Storage
+- it provides a reusable foundation for audit, indexing, change comparison, build inputs, artifact manifests, agent workspaces, and reproducibility tooling
+- the boundary is content-neutral: enumerate filesystem entries, represent type/metadata, optionally digest files, and emit a deterministic manifest
 - native filesystem primitives are sufficient for the core without third-party runtime dependencies
-- failure behavior can be explicit about cross-device moves, permissions, symlinks, cleanup, and durability limitations
+- explicit mutation/error semantics can avoid pretending a live filesystem tree is transactionally consistent during capture
 
 ### Immediate next task
 
-Write and commit the complete SPEC at `specs/atomic-file-writer-safe-replace-v0.1.md` before implementation begins.
+Write and commit the complete SPEC at `specs/directory-snapshot-tree-manifest-v0.1.md` before implementation begins.
 
 The SPEC must lock:
 
-- single-file atomic replace contract
-- destination-directory temporary creation
-- complete candidate write before replacement
-- optional digest validation
-- permission/mode policy
-- crash/failure cleanup semantics
-- same-filesystem and cross-device behavior
-- symlink/path safety
+- deterministic traversal and stable ordering
+- file/directory/symlink representation
+- symlink traversal policy
+- bounded recursion and manifest size
+- optional content digest capability
+- vanished/permission-denied/concurrently-mutated entry behavior
+- snapshot identity and canonical serialization
 - deterministic capability seams
-- bounded input and cleanup behavior
 - Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
 - zero-runtime-third-party-dependency boundary
 
