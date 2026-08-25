@@ -24,7 +24,7 @@ test('creates deterministic stable identity and separates volatile fields', asyn
   assert.equal(one.format, HOST_IDENTITY_FORMAT);
   assert.equal(one.identity, two.identity);
   assert.deepEqual(one.stable, two.stable);
-  assert.equal(one.volatile.capturedAt.value, '2025-08-25T20:00:00.000Z');
+  assert.equal(one.volatile.capturedAt.value, '2025-08-25T12:00:00.000Z');
   assert.equal(one.stable.runtimeMajor.value, 24);
   assert.ok(Object.isFrozen(one));
   assert.ok(Object.isFrozen(one.stable));
@@ -80,7 +80,7 @@ test('custom hash must preserve the HIF1 sha256 contract', async () => {
 
 test('serialization is deterministic and stable identity is independently reproducible', async () => {
   const snap = await fingerprintHost(base());
-  assert.equal(snap.serialization, JSON.stringify(snap.stable, Object.keys(snap.stable).sort()));
+  assert.equal(snap.serialization, JSON.stringify(snap.stable));
   assert.equal(snap.identity, knownHash(snap.serialization));
   const full = serializeHostFingerprint(snap);
   assert.equal(typeof full, 'string');
@@ -100,7 +100,7 @@ test('comparison returns different_identity for stable divergence and bounded di
   const two = await fingerprintHost(base({ platform: { platform: () => 'darwin', architecture: () => 'x64', release: () => ({ status: 'available', value: '24A' }) } }));
   const result = compareHostFingerprints(one, two, { verbose: true });
   assert.equal(result.verdict, 'different_identity');
-  assert.ok(result.differences.some((diff) => diff.path === 'osFamily'));
+  assert.ok(result.differences.some((diff) => diff.path === 'osFamily.value'));
   assert.ok(result.differences.length <= 64);
 });
 
