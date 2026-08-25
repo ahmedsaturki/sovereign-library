@@ -100,12 +100,13 @@ Released through v0.1:
 - Artifact Release Snapshot / Candidate Set
 - Artifact Release Approval / Decision Record
 - Artifact Release Closure Receipt
+- Artifact Release Publication Executor / Boundary
 
-Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate. The latest Closure Receipt release is `0e1adc1fc41924c4df14c5b10aa5ed1278297b90`; its post-merge Run 556 passed after an independent Windows rerun of the initially cancelled browser gate.
+Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate. The latest Publication Executor release is `23cf7b06e9162201683eb613d6c71c241cb5e34e`; its pre-merge Run 561 and post-merge Run 562 passed across the supported matrix after a minimal test-fixture correction.
 
 ## Active milestone
 
-**Artifact Release Publication Executor / Boundary v0.1** — standalone deterministic publication boundary that consumes one explicit frozen closure receipt and executes only explicitly authorized publication intents against explicitly declared destinations.
+**Artifact Release Publication Confirmation / Outcome Receipt v0.1** — standalone deterministic confirmation receipt that converts an explicit executed publication outcome into an immutable, auditable handoff record for downstream reconciliation and audit cubes.
 
 ## License
 
