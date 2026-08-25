@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Select and specify the next standalone Sovereign product after freezing **Directory Snapshot / Tree Manifest v0.1**.
+Select and specify the next standalone Sovereign product after freezing **Host Identity / Environment Fingerprint v0.1**.
 
 ## Current repository state
 
-- Last released cube: **Directory Snapshot / Tree Manifest v0.1**
-- Release PR: **#85**, squash-merged
-- Release commit: `c01cc08e97404d1528fb93d6728fd2ae272871c3`
-- Pre-merge verification: **Run 633**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 635**, passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Directory Snapshot / Tree Manifest v0.1 is **FROZEN** at `c01cc08e97404d1528fb93d6728fd2ae272871c3`.
-- During the release cycle, the cube was hardened against capability/data boundary confusion, manifest-size test fixture error, Windows namespace paths, macOS canonical-root aliases, and contained symlink cycles. The final release keeps the read-only public contract unchanged.
+- Last released cube: **Host Identity / Environment Fingerprint v0.1**
+- Release PR: **#86**, squash-merged
+- Release commit: `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`
+- Pre-merge verification: **Run 644**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, HIF tests, and real-browser smoke.
+- Post-merge verification: **Run 645**, Windows and macOS-15-Intel passed on the original attempt; Ubuntu browser smoke experienced a transient runner hang. The Ubuntu job was rerun independently on the same release commit and passed syntax, full repository tests, and real-browser smoke.
+- Host Identity / Environment Fingerprint v0.1 is **FROZEN** at `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`.
+- The freeze decision records the runner anomaly and successful same-commit rerun; no product or workflow changes were required.
 
 ## The one-current-task rule
 
@@ -26,31 +26,33 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**HOST-IDENTITY-FINGERPRINT-V0.1-SPEC**
+**GLOB-PATH-MATCHER-V0.1-SPEC**
 
 ### Immediate next task
 
-Write and commit the complete SPEC for **Host Identity / Environment Fingerprint v0.1** before implementation begins.
+Write and commit the complete SPEC for **Glob / Path Matcher v0.1** before implementation begins.
 
 The SPEC must lock:
 
-1. standalone local host/environment fingerprint API
-2. explicit stable vs volatile identity fields
-3. privacy-preserving default field set with no secrets or credentials
-4. deterministic normalization and canonical serialization
-5. explicit platform coverage and missing-capability behavior
-6. bounded output size and field cardinality
-7. injectable identity, clock, filesystem, and environment capability seams
-8. reproducibility rules and comparison semantics
-9. fail-closed handling of malformed/accessor/circular inputs
-10. Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
-11. zero-runtime-third-party-dependency boundary
+1. standalone cross-platform path-pattern matching API
+2. explicit glob grammar and segment semantics
+3. separator normalization and platform-independent matching rules
+4. literal escaping and special-character handling
+5. `*`, `?`, and recursive `**` semantics with bounded complexity
+6. absolute/relative path behavior and root anchoring
+7. case-sensitivity policy as an explicit option, never an implicit OS guess
+8. path traversal and dot-segment safety semantics
+9. deterministic include/exclude evaluation and ordered rule precedence
+10. bounded pattern/path lengths and failure/recovery behavior
+11. injectable filesystem/path capability seams only where needed; no filesystem access in the pure matcher core
+12. Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
+13. zero-runtime-third-party-dependency boundary
 
 No implementation starts before the SPEC exists on the control plane.
 
 ## Scope lock
 
-The next cube owns local environment fingerprint construction and comparison-safe identity data. It does not own secret discovery, credential extraction, network inventory, remote host discovery, process supervision, runtime capability probing, or persistent storage.
+The next cube owns pure path-pattern compilation and matching plus an optional small rule-evaluation layer. It does not own filesystem traversal, directory snapshots, filesystem watching, archive extraction, shell glob expansion, shell command execution, or persistent storage.
 
 ## Definition of done
 
