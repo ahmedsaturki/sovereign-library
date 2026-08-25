@@ -26,7 +26,7 @@ test('compliance findings are deterministic and immutable', () => {
   ];
   const report = evaluateCompliance(artifacts, rules);
   assert.equal(report.verdict, 'non_compliant');
-  assert.deepEqual(report.findings.map((f) => [f.ruleId, f.artifactId]), [['r-live', 'b'], ['r-digest', 'b']]);
+  assert.deepEqual(report.findings.map((f) => [f.ruleId, f.artifactId]), [['r-live', 'b'], ['r-digest', 'b'], ['r-version', 'b']]);
   assert.equal(Object.isFrozen(report), true);
   assert.throws(() => report.findings.push({}), TypeError);
   assert.equal(artifacts[0].version, 1);
