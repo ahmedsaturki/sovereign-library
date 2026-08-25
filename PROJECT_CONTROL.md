@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Select and specify the next standalone Sovereign cube after freezing **Runtime Capability Inspector / Preflight v0.1**.
+Build the **Filesystem Watcher / Change Stream v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
@@ -16,6 +16,7 @@ Select and specify the next standalone Sovereign cube after freezing **Runtime C
 - Pre-merge verification: **Run 580**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
 - Post-merge verification: **Run 581**, passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
 - Runtime Capability Inspector / Preflight v0.1 is **FROZEN**.
+- Next cube SPEC is committed at `specs/filesystem-watcher-change-stream-v0.1.md`.
 
 ## The one-current-task rule
 
@@ -25,38 +26,47 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**NEXT-CUBE-SELECTION**
+**FILESYSTEM-WATCHER-CHANGE-STREAM-V0.1-SPEC**
 
 ### Immediate next task
 
-Define the next standalone product as **Filesystem Watcher / Change Stream v0.1** and write its SPEC before implementation.
+Implement the public contract defined in `specs/filesystem-watcher-change-stream-v0.1.md`:
 
-Selection rationale:
-
-- the repository already has filesystem read/write primitives, but no standalone temporal observation/change-stream product
-- the cube has an independent product boundary: observe changes, normalize events, control lifecycle, and provide bounded backpressure/recovery
-- it does not require the Filesystem cube internally and must remain usable as a standalone product
-- native platform APIs can provide the capability without a runtime third-party package
-- it is valuable for agents, editors, sync engines, caches, build systems, and automation while remaining explicitly read-only with respect to watched targets
-
-SPEC gate must define:
-
-1. normalized create/change/remove/rename event semantics
-2. lifecycle, close, error, and recovery behavior
-3. debounce/coalescing policy as explicit opt-in behavior
-4. bounded queue/backpressure semantics
-5. recursive watching semantics and platform limitations
-6. symlink and path containment rules
-7. duplicate/noise suppression without inventing events
-8. deterministic test hooks and injected event source where needed
-9. cross-platform contract across Ubuntu, Windows, macOS-15-Intel, and WSL
-10. zero-runtime-third-party-dependency boundary
-
-No implementation of the next cube begins before this SPEC gate is complete.
+1. normalize create/change/remove/rename events
+2. implement explicit lifecycle, close, error, and recovery behavior
+3. support opt-in deterministic debounce/coalescing
+4. enforce bounded queue and explicit overflow/backpressure policy
+5. implement recursive watching with documented platform limitations
+6. enforce symlink and root containment rules
+7. suppress only documented native noise/duplicates without inventing events
+8. provide a deterministic injected event source for contract tests
+9. verify Ubuntu, Windows, macOS-15-Intel, and WSL boundaries
+10. remain zero-runtime-third-party-dependency and fully documented/tested
 
 ## Scope lock
 
-Runtime Capability Inspector / Preflight v0.1 is released and frozen. No additional feature work may be added to that cube outside a separately authorized future version.
+Allowed scope for Filesystem Watcher / Change Stream v0.1:
+
+- read-only observation of explicitly configured filesystem roots
+- native filesystem event adapters
+- normalized immutable event stream
+- bounded queue/backpressure and overflow diagnostics
+- lifecycle/resource management
+- recursive watching within explicit finite bounds
+- optional debounce/coalescing
+- deterministic injected-source testing
+
+Explicitly out of scope:
+
+- synchronizing or copying files
+- modifying watched targets
+- executing commands or child processes
+- network calls
+- persistent databases/indexes
+- cloud brokers
+- telemetry uploads
+- GUI/admin console
+- content parsing of changed files
 
 ## Definition of done
 
@@ -66,7 +76,7 @@ A milestone is DONE only when implementation, public API documentation, normal a
 
 - Do not redesign the whole architecture during a cube release.
 - Do not add a dependency to solve a local problem without recording the decision.
-- Do not start a second cube while the current cube is unfinished.
+- Do not start a second cube because the current cube is difficult.
 - Do not expand scope because a competitor has more features.
 - Do not call a cube production-ready from source inspection alone.
 - Park out-of-scope work and continue.
