@@ -27,7 +27,7 @@ test('gzip and gunzip round-trip text deterministically', () => {
 test('deflate and inflate round-trip binary bytes', () => {
   const source = Uint8Array.from({ length: 256 }, (_, index) => index);
   const compressed = deflateSync(source);
-  assert.deepEqual(inflateSync(compressed), source);
+  assert.deepEqual(Uint8Array.from(inflateSync(compressed)), source);
 });
 
 test('sync and async APIs produce compatible results', async () => {
