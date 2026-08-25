@@ -91,12 +91,13 @@ Released through v0.1:
 - Artifact Dependency Graph / Relationship Index
 - Artifact Lifecycle / Retention Index
 - Artifact Reference Resolver / Locator
+- Artifact Provenance / Lineage Ledger
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Provenance / Lineage Ledger v0.1** — standalone deterministic local provenance and lineage ledger for artifact references and transformation events, with bounded traversal, append-only history, immutable snapshots, and checksum-protected persistence.
+**Artifact Reconciliation / Consistency Checker v0.1** — standalone deterministic checker for explicit artifact snapshots, reporting identity/digest/version/lifecycle/lineage inconsistencies without mutating source data.
 
 ## License
 
