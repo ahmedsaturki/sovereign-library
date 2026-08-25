@@ -44,6 +44,13 @@ function validateSafe(value, label, seen = new Set(), depth = 0) {
   seen.delete(value);
 }
 
+function readDataProperty(object, key, label) {
+  const descriptor = Object.getOwnPropertyDescriptor(object, key);
+  if (!descriptor) return undefined;
+  if (!('value' in descriptor)) fail('ACCESSOR_INPUT', `${label}.${key} is accessor-backed`);
+  return descriptor.value;
+}
+
 function stringValue(value, label, max = MAX_NAME) {
   if (typeof value !== 'string' || value.length === 0) fail('INVALID_INPUT', `${label} must be a non-empty string`);
   if (value.length > max) fail('LIMIT_EXCEEDED', `${label} exceeds ${max} characters`);
@@ -57,8 +64,7 @@ function listValue(value, label, max = MAX_LIST) {
 }
 
 function normalizeOs(value) {
-  const raw = value === 'win32' ? 'win32' : value;
-  return OS_FAMILIES.has(raw) ? raw : 'other';
+  return OS_FAMILIES.has(value) ? value : 'other';
 }
 
 function normalizeArch(value) {
@@ -102,15 +108,15 @@ function clone(value) {
   return JSON.parse(canonicalize(value));
 }
 
-function windowsCandidates(name, envPathExt) {
-  if (process.platform !== 'win32') return [name];
+function windowsCandidates(name, envPathExt, platform) {
+  if (platform !== 'win32') return [name];
   if (/\.[A-Za-z0-9]+$/.test(name)) return [name];
   const extensions = String(envPathExt || '.COM;.EXE;.BAT;.CMD').split(';').filter(Boolean);
   return extensions.map((extension) => `${name}${extension}`);
 }
 
-function executableAvailable(name, envPath, pathExt) {
-  const candidates = windowsCandidates(name, pathExt);
+function executableAvailable(name, envPath, pathExt, platform) {
+  const candidates = windowsCandidates(name, pathExt, platform);
   for (const directory of envPath) {
     for (const candidate of candidates) {
       const fullPath = directory ? `${directory}/${candidate}` : candidate;
@@ -118,7 +124,7 @@ function executableAvailable(name, envPath, pathExt) {
         accessSync(fullPath, fsConstants.X_OK);
         return true;
       } catch {
-        try { accessSync(fullPath, fsConstants.F_OK); if (process.platform === 'win32') return true; } catch { /* absent */ }
+        try { accessSync(fullPath, fsConstants.F_OK); if (platform === 'win32') return true; } catch { /* absent */ }
       }
     }
   }
@@ -136,30 +142,34 @@ function normalizeExecutableRequests(requests) {
   return unique;
 }
 
-function capturePaths(envPath) {
+function capturePaths(envPath, platform) {
   const raw = typeof envPath === 'string' ? envPath : '';
-  const entries = raw.split(process.platform === 'win32' ? ';' : ':').filter(Boolean);
+  const entries = raw.split(platform === 'win32' ? ';' : ':').filter(Boolean);
   if (entries.length > MAX_PATH_ENTRIES) fail('LIMIT_EXCEEDED', `PATH exceeds ${MAX_PATH_ENTRIES} entries`);
   return entries;
 }
 
 export function inspectRuntime(options = {}) {
   validateSafe(options, 'options');
-  const executables = normalizeExecutableRequests(options.executables);
-  const env = options.env === undefined ? process.env : options.env;
+  const executables = normalizeExecutableRequests(readDataProperty(options, 'executables', 'options') ?? []);
+  const env = readDataProperty(options, 'env', 'options') ?? process.env;
   validateSafe(env, 'env');
   if (!env || typeof env !== 'object' || Array.isArray(env)) fail('INVALID_ENV', 'env must be a plain object');
-  const pathEntries = capturePaths(env.PATH ?? env.Path ?? '');
-  const nodeRuntime = parseNodeVersion(options.nodeVersion ?? process.version);
-  const platform = normalizeOs(options.platform ?? process.platform);
-  const architecture = normalizeArch(options.arch ?? process.arch);
-  const cpuCount = Number.isInteger(options.cpuCount) ? options.cpuCount : os.cpus().length;
-  const memoryBytes = Number.isSafeInteger(options.totalMemoryBytes) ? options.totalMemoryBytes : os.totalmem();
+  const platform = normalizeOs(readDataProperty(options, 'platform', 'options') ?? process.platform);
+  const architecture = normalizeArch(readDataProperty(options, 'arch', 'options') ?? process.arch);
+  const nodeRuntime = parseNodeVersion(readDataProperty(options, 'nodeVersion', 'options') ?? process.version);
+  const envPath = readDataProperty(env, 'PATH', 'env') ?? readDataProperty(env, 'Path', 'env') ?? '';
+  const pathExt = readDataProperty(env, 'PATHEXT', 'env');
+  const pathEntries = capturePaths(envPath, platform);
+  const cpuCount = Number.isInteger(readDataProperty(options, 'cpuCount', 'options')) ? readDataProperty(options, 'cpuCount', 'options') : os.cpus().length;
+  const memoryValue = readDataProperty(options, 'totalMemoryBytes', 'options');
+  const memoryBytes = Number.isSafeInteger(memoryValue) ? memoryValue : os.totalmem();
   if (!Number.isInteger(cpuCount) || cpuCount < 1 || cpuCount > 65536) fail('INVALID_RUNTIME', 'cpuCount is invalid');
   if (!Number.isSafeInteger(memoryBytes) || memoryBytes < 0) fail('INVALID_RUNTIME', 'totalMemoryBytes is invalid');
 
-  const executableResults = executables.map((name) => Object.freeze({ name, available: executableAvailable(name, pathEntries, env.PATHEXT) }));
-  const release = String(options.release ?? os.release());
+  const executableResults = executables.map((name) => Object.freeze({ name, available: executableAvailable(name, pathEntries, pathExt, platform) }));
+  const releaseValue = readDataProperty(options, 'release', 'options') ?? os.release();
+  const release = String(releaseValue);
   stringValue(release, 'release', 1024);
 
   return deepFreeze({
