@@ -90,12 +90,13 @@ Released through v0.1:
 - Local Artifact Catalog / Package Index
 - Artifact Dependency Graph / Relationship Index
 - Artifact Lifecycle / Retention Index
+- Artifact Reference Resolver / Locator
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Reference Resolver / Locator v0.1** — standalone deterministic local resolver for canonical artifact references against an explicit bounded candidate set, with no hidden registry/network/filesystem discovery.
+**Artifact Provenance / Lineage Ledger v0.1** — standalone deterministic local provenance and lineage ledger for artifact references and transformation events, with bounded traversal, append-only history, immutable snapshots, and checksum-protected persistence.
 
 ## License
 
