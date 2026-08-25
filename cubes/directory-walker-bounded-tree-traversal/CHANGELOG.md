@@ -9,3 +9,4 @@
 - cancellation, deadline, work, depth, entry, path, and directory budgets
 - capability seam validation with executable/data separation
 - immutable results and partial traversal mode
+- corrected the cube test harness to import the native `node:test` runner explicitly
