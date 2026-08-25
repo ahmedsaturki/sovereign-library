@@ -10,31 +10,27 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Bounded File Content Reader / Safe Content Access v0.1
+
+PR #94 was merged as `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`.
+
+Pre-merge **Run 693** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, **661/661 tests**, and real-browser smoke.
+
+Post-merge **Run 694** passed on the release commit. Mainline Push verification **Run 695** experienced a transient macOS-15-Intel Node.js test-runner hang: the original job and two reruns timed out after the test suite itself reported passing, while the third fresh-run attempt (**macOS Job 98006586509**) passed in 34s with syntax, contract/integration tests, browser smoke, and complete job all green. Ubuntu Job `98006587887` and Windows Job `98006587516` also passed. No product-code or workflow changes were required.
+
+The cube is **FROZEN** at `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`.
+
 ### Filesystem Metadata / Stat Normalizer v0.1
 
-PR #93 was squash-merged as `44f1acc2f277a2016013146423bd97a7a4e15057`.
-
-Pre-merge **Run 681** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 641 repository tests, and real-browser smoke. Post-merge **Run 682** passed on all three platforms with the same gates.
-
-Run 680 exposed a real Linux timestamp-shape issue: native `birthtimeMs` and related fields may carry valid fractional milliseconds. The implementation now truncates finite non-negative timestamps within the safe range and rejects only unsafe/invalid values.
-
-The cube is **FROZEN** at `44f1acc2f277a2016013146423bd97a7a4e15057`.
+PR #93 — `44f1acc2f277a2016013146423bd97a7a4e15057`
 
 ### Directory Walker / Bounded Tree Traversal v0.1
 
-PR #92 was squash-merged as `4d64f6610286524799ebe809021279a7b7be3d40`.
-
-Pre-merge **Run 674** and post-merge **Run 675** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-
-The cube is **FROZEN** at `4d64f6610286524799ebe809021279a7b7be3d40`.
+PR #92 — `4d64f6610286524799ebe809021279a7b7be3d40`
 
 ### Safe Path Resolver / Containment Boundary v0.1
 
-PR #90 was squash-merged as `0216f3acd81331c031ac0ae023bfc1322f9064bc`.
-
-Exact-SHA external verification at `b52473ee8f4148932ec3d8526bbfe3ef5abac14c` passed: 400+ repository tests, 14/14 cube-specific tests, and browser smoke 1/1. Pre-merge **Run 664** passed on Ubuntu, Windows, and macOS-15-Intel. Post-merge **Run 665**, attempt 2, passed on all three platforms after a transient macOS runner hang on attempt 1.
-
-The cube is **FROZEN** at `0216f3acd81331c031ac0ae023bfc1322f9064bc`.
+PR #90 — `0216f3acd81331c031ac0ae023bfc1322f9064bc`
 
 ### Prior release chain
 
@@ -58,45 +54,26 @@ Earlier Artifact Release cubes remain pinned to their recorded immutable SHAs.
 
 ## Active milestone
 
-### BOUNDED-FILE-CONTENT-READER-V0.1-SPEC
+### FILESYSTEM-LEASE-AND-LOCK-REVIEW
 
-Filesystem Metadata / Stat Normalizer v0.1 is complete and frozen.
+Bounded File Content Reader / Safe Content Access v0.1 is complete and frozen.
 
-The next selected standalone product is:
+The immediate next task is a **review of the already-released File Lease / Advisory Lock v0.1** using the current Sovereign release bar and lessons learned from Safe Path, Metadata, Directory Walker, and Reader.
 
-**Bounded File Content Reader / Safe Content Access v0.1**
+The review must verify:
 
-Rationale:
+- public API and standalone usability
+- cross-platform locking semantics on Ubuntu, Windows, macOS-15-Intel, and relevant WSL
+- stale-owner and abnormal-termination recovery
+- timeout, cancellation, acquisition race, release, and cleanup semantics
+- deterministic failure codes and privacy-safe diagnostics
+- capability-seam boundaries and accessor safety
+- documentation, examples, tests, and zero-runtime-dependency compliance
 
-- provides a reusable safe primitive for bounded file-content access without absorbing traversal or indexing
-- separates byte/text decoding semantics from metadata and directory walking
-- makes memory, offset, cancellation, and decoding behavior explicit
-- integrates Safe Path Resolver for root containment and Metadata Normalizer for stable entry context without re-owning either concern
-- supports streaming and collected modes while preventing unbounded content disclosure through errors
+If a concrete gap is found, create a scoped corrective task/PR. If the release is already compliant, close the review and select the next unreleased standalone cube, then write its SPEC before implementation.
 
-### Immediate next task
-
-Write and commit the complete SPEC at `specs/bounded-file-content-reader-safe-content-access-v0.1.md` before implementation begins.
-
-The SPEC must lock:
-
-- bounded byte/text APIs
-- binary versus UTF-8 semantics
-- Safe Path Resolver integration
-- byte/line/work/time budgets
-- streaming/chunked/collected memory behavior
-- offset/length and EOF rules
-- symlink policies
-- BOM/newline/decoder policies
-- filesystem capability seams and cleanup
-- cancellation/deadline/backpressure
-- changing-file semantics
-- immutable deterministic results and privacy-safe diagnostics
-- Ubuntu, Windows, macOS-15-Intel and relevant WSL verification
-- zero-runtime-third-party-dependency boundary
-
-No unrelated cube implementation starts before the SPEC gate is complete.
+No unrelated cube implementation starts before this review gate is complete.
 
 ## Parked
 
-All other capabilities remain parked until the current cube is released and frozen. New ideas must not bypass the one-current-task rule.
+All other capabilities remain parked until the current review and subsequent cube release are complete. New ideas must not bypass the one-current-task rule.
