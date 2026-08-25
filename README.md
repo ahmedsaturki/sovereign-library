@@ -102,12 +102,15 @@ Released through v0.1:
 - Artifact Release Closure Receipt
 - Artifact Release Publication Executor / Boundary
 - Artifact Release Publication Confirmation / Outcome Receipt
+- Runtime Capability Inspector / Preflight
+- Filesystem Watcher / Change Stream
+- File Lease / Advisory Lock
 
-The latest release is **Artifact Release Publication Confirmation / Outcome Receipt v0.1**, squash-merged as `ee642ac4f760da6ee6263faa5e82bf7d197fa78d` via PR #77. Pre-merge Run 573 and post-merge Run 574 passed across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
+The latest release is **File Lease / Advisory Lock v0.1**, squash-merged as `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868` via PR #80. Pre-merge Run 607 and post-merge Run 608 passed across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
 
 ## Active milestone
 
-**Runtime Capability Inspector v0.1** — standalone local runtime preflight and capability-report cube. It observes bounded host/runtime facts, checks explicit executable availability without running programs, evaluates declarative requirements, and emits deterministic integrity-protected reports. No network, installation, command execution, credential access, or external service calls.
+**Ephemeral Workspace / Scratch Directory v0.1 SPEC** — the next standalone product. It will own safe ephemeral workspace creation, bounded identity/ownership metadata, cleanup, expiry, stale/orphan recovery, path containment, and deterministic test seams without becoming a general filesystem or locking framework.
 
 ## License
 
