@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Concurrency / Bulkhead Cube v0.1** and release it before starting another cube.
+Finish **Circuit Breaker / Health Gate Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,51 +16,51 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**CONCURRENCY-BULKHEAD-V0.1-RELEASE**
+**CIRCUIT-BREAKER-HEALTH-GATE-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Concurrency / Bulkhead Cube release gate:
+Complete the Circuit Breaker / Health Gate Cube release gate:
 
-1. write and freeze the concurrency admission and lease contract
-2. define immediate admission and bounded FIFO waiting
-3. verify fair waiter ordering
-4. verify cancellation and queue cleanup via AbortSignal
-5. verify release lifecycle and double-release protection
-6. verify queue overflow and shutdown behavior
-7. verify immutable statistics snapshots and deterministic state
-8. run syntax, unit, contract, integration, failure, and recovery tests
-9. verify zero runtime third-party dependencies
-10. run the supported cross-platform CI matrix
-11. fix only failures required for the v0.1 gate
-12. mark the release gate complete
+1. write and freeze the state-machine and classification contract
+2. define closed/open/half-open transitions
+3. verify failure threshold and recovery success threshold
+4. verify deterministic cooldown timing and probe admission
+5. verify manual reset and close semantics
+6. verify Result/Error-based failure classification
+7. verify immutable state/statistics snapshots
+8. verify AbortSignal-safe probe execution and cleanup
+9. run syntax, unit, contract, integration, failure, and recovery tests
+10. verify zero runtime third-party dependencies
+11. run the supported cross-platform CI matrix
+12. fix only failures required for the v0.1 gate
+13. mark the release gate complete
 
 ## Scope lock
 
-For Concurrency / Bulkhead Cube v0.1, the allowed scope is only:
+For Circuit Breaker / Health Gate Cube v0.1, the allowed scope is only:
 
-- configurable concurrency limit
-- immediate/non-blocking admission check
-- bounded FIFO waiting queue
-- fair waiter ordering
-- queued cancellation via AbortSignal
-- release/lease lifecycle with double-release protection
-- queue overflow behavior
-- deterministic clock integration where waiting timers are required
-- immutable statistics snapshots
-- cleanup and shutdown semantics
+- closed/open/half-open state machine
+- configurable failure threshold
+- configurable recovery success threshold
+- deterministic cooldown clock
+- half-open probe admission limit
+- manual reset
+- Result/Error-based failure classification
+- immutable state/statistics snapshots
+- AbortSignal-safe probe execution
+- cleanup and close semantics
 - documentation
 - local unit/integration/failure/recovery tests
 
 Explicitly out of scope for v0.1:
 
-- distributed semaphore state
-- remote coordination or Redis
-- priority scheduling
-- work stealing
-- adaptive ML-based concurrency
-- third-party concurrency libraries
-- tracing/telemetry backend
+- distributed circuit state
+- remote coordination
+- adaptive ML policies
+- external telemetry backend
+- third-party resilience libraries
+- service discovery
 - AI agent runtime
 
 ## Definition of done
