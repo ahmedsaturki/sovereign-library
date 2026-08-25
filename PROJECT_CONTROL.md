@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Result / Error Cube v0.1** and release it before starting another cube.
+Finish **Rate Limiter / Backpressure Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,19 +16,19 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**RESULT-ERROR-V0.1-RELEASE**
+**RATE-LIMITER-BACKPRESSURE-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Result / Error Cube release gate:
+Complete the Rate Limiter / Backpressure Cube release gate:
 
-1. write and freeze the Result/Outcome contract
-2. define typed error base and deterministic error codes
-3. verify Result success/failure construction and immutable snapshots
-4. verify map/flatMap/branch helpers and exhaustive outcome handling
-5. verify cause chaining and retryable/cancelled/timeout classification
-6. verify serialization-safe diagnostics and normalization helpers
-7. verify cross-cube interoperability without introducing runtime dependencies
+1. write and freeze the rate-limit/backpressure contract
+2. define the deterministic native algorithm and clock interface
+3. verify immediate admission and wait-duration calculation
+4. verify burst capacity and refill behavior
+5. verify bounded waiting and fairness
+6. verify queued cancellation and AbortSignal cleanup
+7. verify overflow behavior and immutable statistics snapshots
 8. run syntax, unit, contract, integration, failure, and recovery tests
 9. verify zero runtime third-party dependencies
 10. run the supported cross-platform CI matrix
@@ -37,28 +37,31 @@ Complete the Result / Error Cube release gate:
 
 ## Scope lock
 
-For Result / Error Cube v0.1, the allowed scope is only:
+For Rate Limiter / Backpressure Cube v0.1, the allowed scope is only:
 
-- Result success/failure contract
-- typed error base and error codes
-- deterministic serialization-safe diagnostics
-- cause chaining
-- retryable/cancelled/timeout classification
-- error normalization helpers
-- Result mapping/flatMap helpers
-- exhaustive outcome branching helpers
-- immutable result/error snapshots
-- cross-cube interoperability tests
+- deterministic native rate-limiting algorithm
+- configurable refill rate
+- configurable burst capacity
+- immediate/non-blocking admission check
+- bounded waiting queue
+- fair waiter ordering
+- queue cancellation via AbortSignal
+- queue overflow behavior
+- retry-after / wait-duration calculation
+- deterministic clock integration
+- immutable statistics snapshots
+- local unit/integration/failure/recovery tests
 - documentation
-- tests
 
 Explicitly out of scope for v0.1:
 
-- remote error telemetry
-- localization framework
-- tracing backend
-- distributed error registry
-- third-party result/error libraries
+- distributed rate limiting
+- Redis or remote stores
+- cross-process coordination
+- adaptive ML-based throttling
+- third-party limiter libraries
+- HTTP middleware framework
+- external telemetry backend
 - AI agent runtime
 
 ## Definition of done
