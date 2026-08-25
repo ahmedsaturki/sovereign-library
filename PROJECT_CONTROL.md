@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Metrics / Telemetry Cube v0.1** and release it before starting another cube.
+Finish **Redaction / Secret Safety Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,53 +16,51 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**METRICS-TELEMETRY-V0.1-RELEASE**
+**REDACTION-SECRET-SAFETY-V0.1-RELEASE**
 
 ### Immediate next task
 
-Build and release a standalone native instrumentation product:
+Build and release a standalone native redaction/safety product:
 
-1. freeze metric naming and label contracts
-2. implement monotonic counters and explicit gauges
-3. implement bounded histograms with deterministic buckets
-4. enforce metric-name, label, and cardinality limits
-5. expose immutable snapshots and JSON-safe export
-6. provide high-resolution timing helpers using native Node timing primitives
-7. define reset/close lifecycle semantics
-8. guarantee metric recording does not throw on expected operational paths
-9. verify zero runtime third-party dependencies
-10. run the supported cross-platform CI matrix
-11. fix only failures required for the v0.1 gate
-12. squash-merge the release PR
-13. update ROADMAP before starting another cube
+1. freeze sensitive-key and custom-rule matching semantics
+2. implement bounded recursive plain-object/array traversal
+3. implement deterministic string-pattern redaction
+4. enforce depth/node/input/output bounds
+5. detect circular references before unsafe recursion
+6. guarantee source immutability
+7. expose immutable redacted output and safe diagnostics
+8. verify zero runtime third-party dependencies
+9. run the supported cross-platform CI matrix
+10. fix only failures required for the v0.1 gate
+11. squash-merge the release PR
+12. update ROADMAP before starting another cube
 
 ## Scope lock
 
-For Metrics / Telemetry Cube v0.1, the allowed scope is only:
+For Redaction / Secret Safety Cube v0.1, the allowed scope is only:
 
-- counters
-- gauges
-- bounded histograms
-- metric names and label validation
-- bounded label cardinality
-- immutable snapshots
-- JSON-safe export
-- high-resolution timing helpers
-- reset/close lifecycle
-- deterministic typed configuration errors
+- deterministic sensitive-key matching
+- configurable key rules
+- configurable string secret-pattern rules
+- recursive plain objects and arrays
+- bounded depth/node/string/input/output sizes
+- circular-reference detection
+- source immutability
+- immutable redacted output
+- deterministic replacement strings
+- path-aware safe diagnostics that never include secret values
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Explicitly out of scope for v0.1:
 
-- network exporters
-- Prometheus/OpenTelemetry protocol clients
-- distributed aggregation
-- persistent metric storage
-- tracing/span correlation
-- third-party metrics packages
-- dashboards
-- alerting rules
+- secret storage
+- key management
+- encryption/decryption
+- credential rotation
+- network policy enforcement
+- external DLP services
+- third-party redaction packages
 
 ## Definition of done
 
