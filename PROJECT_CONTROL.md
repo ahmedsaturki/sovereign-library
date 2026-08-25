@@ -17,8 +17,7 @@ Finish **AI / Inference Runtime Cube v0.1** and release it before starting anoth
 - Post-merge verification: **Run 398**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
 - Reporting / Export v0.1 is therefore **FROZEN**.
 - The release provides deterministic report snapshots, stable JSON/CSV exports, bounded async CSV streaming, deterministic filtering/order/grouping/aggregation, immutable results, typed fail-closed diagnostics, and zero runtime third-party dependencies.
-- The current CI/release history includes prior cross-platform stability hardening for Worker Pool timing and repeated snapshot/report boundary checks.
-- `ROADMAP.md` and `README.md` must now record Reporting as released and activate AI / Inference Runtime.
+- `ROADMAP.md` and `README.md` now record Reporting as released and activate AI / Inference Runtime.
 - Duplicate Redaction PR #47 remains closed as superseded by PR #45.
 
 ## The one-current-task rule
@@ -33,21 +32,22 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ### Immediate next task
 
-Freeze the public contract for a standalone provider-neutral local inference runtime:
+Freeze and implement the public contract for a standalone provider-neutral local inference runtime:
 
-1. define bounded request/message and response contracts
-2. define deterministic system/user/assistant message normalization
-3. define provider-neutral generation options without model-specific SDK coupling
-4. define immutable request/response snapshots
-5. define synchronous result and streaming delta event semantics
-6. define cancellation and timeout behavior
-7. define bounded context, output, event, and diagnostic work
-8. define a native process/stdio adapter contract without shell execution
-9. define malformed adapter output and provider failure recovery semantics
-10. define typed fail-closed errors without arbitrary payload copying
-11. verify zero runtime third-party dependencies
-12. define unit, contract, integration, failure, recovery, and cross-platform gates
-13. write the standalone cube specification before implementation
+1. bounded ordered `system` / `user` / `assistant` message records
+2. deterministic request normalization and immutable request snapshots
+3. provider-neutral generation options with explicit size limits
+4. immutable synchronous inference result contract
+5. ordered `start` / `delta` / `done` streaming event contract
+6. cancellation and timeout semantics that abort owned work
+7. bounded context, output, event, line, stderr, and diagnostic work
+8. native child-process/stdio NDJSON adapter using `node:child_process.spawn` with `shell:false`
+9. bounded stdout/stderr parsing and malformed-output rejection
+10. adapter/process failure and recovery semantics
+11. typed fail-closed `InferenceError` without arbitrary prompt/response copies
+12. zero runtime third-party dependencies
+13. unit, contract, integration, failure, recovery, and cross-platform gates
+14. public standalone SPEC plus README/example before release
 
 ## Scope lock
 
@@ -71,13 +71,12 @@ For AI / Inference Runtime Cube v0.1, the allowed scope is only:
 Explicitly out of scope for v0.1:
 
 - model weights
-- model training/fine-tuning
+- training/fine-tuning
 - network provider clients
-- OpenAI/Anthropic/Gemini SDK wrappers
-- agent planning and tool orchestration
+- provider SDK wrappers
+- agent planning/tool orchestration
 - RAG/vector databases
-- embeddings/search ranking
-- prompt marketplace/templates
+- embeddings/ranking
 - multi-agent workflows
 - GUI/chat application
 
