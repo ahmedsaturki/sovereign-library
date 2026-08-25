@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
+// CAS v0.1: native, deterministic content-addressed object storage.
 const DEFAULT_LIMITS = Object.freeze({ maxObjectBytes: 16 * 1024 * 1024, maxObjects: 4096, maxAddressBytes: 128, maxMetadataBytes: 16 * 1024 });
 class CasError extends Error { constructor(code, message) { super(message); this.name = 'CasError'; this.code = code; Object.freeze(this); } }
 const fail = (code, message) => { throw new CasError(code, message); };
