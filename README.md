@@ -76,12 +76,13 @@ Released through v0.1:
 - Canonical JSON / Normalization
 - CLI / Command Runtime
 - Search / Index
+- Workflow / Durable Orchestration
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Workflow / Durable Orchestration Cube v0.1** — standalone deterministic local workflow engine for sequential/parallel/conditional steps, replayable execution history, retries, timeouts, cancellation, idempotency, immutable snapshots, bounded work, and zero runtime third-party dependencies.
+**Storage Persistence / Snapshot v0.1** — standalone deterministic local persistence and snapshot product for Sovereign-compatible data, with versioned envelopes, integrity verification, atomic writes, crash-safe recovery, bounded payloads, immutable loaded snapshots, and zero runtime third-party dependencies.
 
 ## License
 
