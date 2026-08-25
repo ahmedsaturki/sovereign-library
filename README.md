@@ -86,12 +86,13 @@ Released through v0.1:
 - Release / Verification Harness
 - Release Manifest / Integrity
 - Content-Addressed Storage / CAS
+- Artifact Bundle / Reproducible Package
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Bundle / Reproducible Package v0.1** — standalone deterministic local bundle/package component for reproducible path ordering, versioned serialization, bounded archives, native integrity descriptors, and safe verification/extraction.
+**Local Artifact Catalog / Package Index v0.1** — standalone deterministic local catalog/index for artifact/package records, stable identifiers, exact/prefix/tag/version queries, bounded state, atomic recovery, immutable snapshots, and deterministic serialization.
 
 ## License
 
