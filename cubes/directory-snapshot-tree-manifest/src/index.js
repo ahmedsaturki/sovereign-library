@@ -82,7 +82,6 @@ function normalizeOptions(raw) {
 
   const clock = options.clock ?? { now: () => Date.now() };
   if (!clock || typeof clock.now !== 'function') fail('INVALID_CAPABILITY', 'clock.now must be a function');
-  capability(options.idGenerator ?? (() => null), 'idGenerator');
   const fsOps = options.fsOps ?? { lstat, readdir, readFile, realpath };
   for (const name of ['lstat', 'readdir', 'readFile', 'realpath']) capability(fsOps[name], `fsOps.${name}`);
   const digest = options.digest ?? null;
@@ -112,8 +111,10 @@ function canonicalRelativePath(path) {
 }
 
 function isContained(root, candidate) {
-  const rel = relative(root, candidate);
-  return rel === '' || (rel !== '..' && !rel.startsWith(`..${sep}`) && !resolve(candidate).startsWith(`${resolve(root)}${sep}`) ? false : true);
+  const rootResolved = resolve(root);
+  const targetResolved = resolve(candidate);
+  const rel = relative(rootResolved, targetResolved);
+  return rel === '' || (!rel.startsWith('..') && !targetResolved.startsWith(`${rootResolved}${sep}`) ? false : !rel.startsWith('..'));
 }
 
 function addWarning(warnings, options, code, path, message) {
@@ -146,11 +147,11 @@ async function statEntry(fsOps, path, relativePath, options, warnings) {
 async function digestFile(fsOps, filePath, options, relativePath) {
   if (!options.digest) return null;
   let statBefore;
-  try { statBefore = await fsOps.lstat(filePath); } catch (error) { fail('DIGEST_FAILURE', `file disappeared before digest: ${relativePath}`); }
+  try { statBefore = await fsOps.lstat(filePath); } catch { fail('DIGEST_FAILURE', `file disappeared before digest: ${relativePath}`); }
   if (!statBefore.isFile?.()) fail('DIGEST_FAILURE', `not a regular file: ${relativePath}`);
   if (statBefore.size > options.maxFileDigestBytes) fail('LIMIT_EXCEEDED', `file exceeds digest size limit: ${relativePath}`);
   let buffer;
-  try { buffer = await fsOps.readFile(filePath); } catch (error) { fail('DIGEST_FAILURE', `file could not be read: ${relativePath}`); }
+  try { buffer = await fsOps.readFile(filePath); } catch { fail('DIGEST_FAILURE', `file could not be read: ${relativePath}`); }
   let statAfter;
   try { statAfter = await fsOps.lstat(filePath); } catch { fail('CONCURRENT_MUTATION', `file changed during digest: ${relativePath}`); }
   if (statAfter.size !== statBefore.size || statAfter.mtimeMs !== statBefore.mtimeMs) fail('CONCURRENT_MUTATION', `file changed during digest: ${relativePath}`);
@@ -159,7 +160,7 @@ async function digestFile(fsOps, filePath, options, relativePath) {
   return `${options.digest.algorithm}:${value.toLowerCase()}`;
 }
 
-async function walkDirectory(root, current, depth, entries, warnings, options) {
+async function walkDirectory(root, current, depth, entries, warnings, options, visitedDirectories) {
   if (entries.length > options.maxEntries) fail('LIMIT_EXCEEDED', 'entry limit exceeded');
   let names;
   try { names = await options.fsOps.readdir(current); }
@@ -184,7 +185,10 @@ async function walkDirectory(root, current, depth, entries, warnings, options) {
     if (stat.isDirectory?.()) {
       entries.push({ path: rel, type: 'directory', size: 0, mode: stat.mode & 0o7777, mtimeMs: Number.isFinite(stat.mtimeMs) ? stat.mtimeMs : null });
       if (depth >= options.maxDepth) fail('LIMIT_EXCEEDED', `maximum depth exceeded at ${rel}`);
-      await walkDirectory(root, absolute, depth + 1, entries, warnings, options);
+      const childKey = resolve(absolute);
+      if (visitedDirectories.has(childKey)) fail('CONCURRENT_MUTATION', `directory cycle detected at ${rel}`);
+      visitedDirectories.add(childKey);
+      await walkDirectory(root, absolute, depth + 1, entries, warnings, options, visitedDirectories);
       continue;
     }
 
@@ -197,19 +201,22 @@ async function walkDirectory(root, current, depth, entries, warnings, options) {
           if (!isContained(root, target)) fail('PATH_CONTAINMENT', `symlink escapes root: ${rel}`);
           const targetStat = await options.fsOps.lstat(target);
           if (targetStat.isDirectory?.()) {
-            entries.push({ path: rel, type: 'symlink', target: canonicalRelativePath(relative(root, target)), followed: true });
+            const targetKey = resolve(target);
+            entries.push({ path: rel, type: 'symlink', target: canonicalRelativePath(relative(root, target)), followed: !visitedDirectories.has(targetKey), cycle: visitedDirectories.has(targetKey) });
+            if (visitedDirectories.has(targetKey)) continue;
             if (depth >= options.maxDepth) fail('LIMIT_EXCEEDED', `maximum depth exceeded at ${rel}`);
-            await walkDirectory(root, target, depth + 1, entries, warnings, options);
+            visitedDirectories.add(targetKey);
+            await walkDirectory(root, target, depth + 1, entries, warnings, options, visitedDirectories);
             continue;
           }
-          entries.push({ path: rel, type: 'symlink', target: canonicalRelativePath(relative(root, target)), followed: false });
+          entries.push({ path: rel, type: 'symlink', target: canonicalRelativePath(relative(root, target)), followed: false, cycle: false });
           continue;
         } catch (error) {
           if (error instanceof DirectorySnapshotError) throw error;
           fail('PATH_CONTAINMENT', `symlink target could not be resolved: ${rel}`);
         }
       }
-      entries.push({ path: rel, type: 'symlink', target, followed: false });
+      entries.push({ path: rel, type: 'symlink', target, followed: false, cycle: false });
       continue;
     }
 
@@ -242,7 +249,8 @@ export async function snapshotDirectory(rootPath, rawOptions = {}) {
   const warnings = [];
   const entries = [];
   const capturedAt = new Date(options.clock.now()).toISOString();
-  await walkDirectory(root, root, 0, entries, warnings, options);
+  const visitedDirectories = new Set([resolve(root)]);
+  await walkDirectory(root, root, 0, entries, warnings, options, visitedDirectories);
   entries.sort((a, b) => a.path.localeCompare(b.path) || a.type.localeCompare(b.type));
 
   const logical = { format: FORMAT, root, capturedAt, entries, warnings };
@@ -251,27 +259,12 @@ export async function snapshotDirectory(rootPath, rawOptions = {}) {
   if (Buffer.byteLength(serialized, 'utf8') > options.maxManifestBytes) fail('LIMIT_EXCEEDED', 'manifest exceeds maximum size');
   const snapshotId = `sha256:${createHash('sha256').update(serialized, 'utf8').digest('hex')}`;
 
-  return freezeDeep({
-    format: FORMAT,
-    root,
-    capturedAt,
-    snapshotId,
-    entries,
-    warnings,
-    serialized,
-  });
+  return freezeDeep({ format: FORMAT, root, capturedAt, snapshotId, entries, warnings, serialized });
 }
 
 export function serializeDirectorySnapshot(snapshot) {
   validatePlainInput(snapshot, 'snapshot');
-  return canonicalize({
-    format: snapshot.format,
-    root: snapshot.root,
-    capturedAt: snapshot.capturedAt,
-    snapshotId: snapshot.snapshotId,
-    entries: snapshot.entries,
-    warnings: snapshot.warnings,
-  });
+  return canonicalize({ format: snapshot.format, root: snapshot.root, capturedAt: snapshot.capturedAt, snapshotId: snapshot.snapshotId, entries: snapshot.entries, warnings: snapshot.warnings });
 }
 
 export const DIRECTORY_SNAPSHOT_FORMAT = FORMAT;
