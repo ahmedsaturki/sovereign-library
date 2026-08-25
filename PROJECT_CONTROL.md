@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Release Manifest / Integrity Cube v0.1** as the next standalone Sovereign product.
+Build the **Content-Addressed Storage / CAS Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Release / Verification Harness v0.1**
-- Release PR: **#58**, squash-merged
-- Release commit: `6e60d151691639948fabceaec1ee28964d40d881`
-- Pre-merge verification: **Run 430**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 431**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Release / Verification Harness v0.1 is therefore **FROZEN**.
-- The release provides deterministic local release-stage execution, safe native command invocation, bounded process output and diagnostics, timeout/cancellation/retry semantics, deterministic required/optional verdict aggregation, immutable machine-readable verification snapshots, and zero runtime third-party dependencies.
+- Last released cube: **Release Manifest / Integrity v0.1**
+- Release PR: **#59**, squash-merged
+- Release commit: `d1e33a2cfb12303cfe7e810e17241636ffa998db`
+- Pre-merge verification: **Run 437**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 390 tests, and real-browser smoke.
+- Post-merge verification: **Run 438**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Release Manifest / Integrity v0.1 is therefore **FROZEN**.
+- The release provides deterministic versioned manifests, native SHA-256 content descriptors, immutable verification reports, bounded local inputs, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,48 +26,50 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**RELEASE-MANIFEST-INTEGRITY-V0.1-SPEC**
+**CONTENT-ADDRESSED-STORAGE-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze and implement the public contract for a standalone deterministic release-manifest/integrity component:
+Freeze and implement the public contract for a standalone deterministic content-addressed storage component:
 
-1. canonical manifest normalization with stable ordering
-2. deterministic file/entry descriptors and content digests
-3. explicit manifest schema and versioning
-4. reproducible manifest generation from bounded local inputs
-5. integrity verification with precise mismatch reporting
-6. immutable manifest and verification snapshots
-7. fail-closed malformed manifests, unsafe paths, duplicates, and unsupported values
-8. bounded entry count, path length, metadata size, and total manifest size
-9. no hosted service, registry, signing provider, or external SDK requirement
-10. zero runtime third-party dependencies
+1. canonical content-to-address mapping with native digest primitives
+2. immutable put/get/has/delete semantics
+3. deterministic address validation and normalization
+4. atomic write and collision-safe existing-object handling
+5. bounded object size, object count, address length, and metadata size
+6. safe namespace separation and path traversal rejection
+7. immutable object metadata and snapshots
+8. fail-closed corruption and malformed-address handling
+9. recovery behavior after rejected writes and corrupted records
+10. zero runtime third-party dependencies and no network requirement
 11. unit, contract, failure, recovery, and cross-platform verification
 12. standalone SPEC, README, and runnable example before release
 
 ## Scope lock
 
-For Release Manifest / Integrity Cube v0.1, allowed scope is only:
+For Content-Addressed Storage / CAS Cube v0.1, allowed scope is only:
 
-- local deterministic manifest generation
-- canonical entry ordering and versioned manifest format
-- content digest computation using native primitives
-- integrity verification and deterministic mismatch reports
-- bounded paths, entries, metadata, and payloads
-- immutable public snapshots
+- local content-addressed storage
+- native digest-based addressing
+- deterministic CRUD semantics
+- bounded objects and metadata
+- immutable metadata/snapshots
+- corruption detection
+- safe namespace and path handling
+- atomic persistence and recovery
 - typed fail-closed errors
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- cryptographic signing or key management
-- remote registries
-- package publishing
-- hosted artifact storage
-- CI-provider integrations
+- remote replication
+- distributed consensus
+- object locking service
+- encryption/key management
+- HTTP/network transport
 - GUI/admin console
-- network transport
+- package registry or publishing service
 
 ## Definition of done
 
