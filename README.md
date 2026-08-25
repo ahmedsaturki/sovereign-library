@@ -18,17 +18,17 @@ Windows, Linux, macOS, and WSL where the capability is supported.
 
 ## Latest release
 
-**Host Identity / Environment Fingerprint v0.1** — PR #86, release commit `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`.
+**Glob / Path Matcher v0.1** — PR #87, release commit `c9a3d330a16a488e00c28311085204363bab2fc7`.
 
-Pre-merge Run #644 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, HIF tests, and real-browser smoke. Post-merge Run #645 passed on Windows and macOS-15-Intel; its Ubuntu browser-smoke job experienced a transient runner hang and then passed when that exact job was independently rerun on the same release commit.
+Pre-merge Run #654 and post-merge Run #655 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
 
-The release provides privacy-safe stable and volatile host identity fields, deterministic normalization and canonical serialization, explicit comparison semantics, bounded output, injectable capability seams, fail-closed malformed/accessor/circular input handling, and zero runtime third-party dependencies.
+The release provides pure cross-platform pattern compilation and matching, explicit `*`, `?`, and segment-level `**` semantics, escaping, separator normalization, explicit case and dotfile policies, traversal-safe normalization, deterministic rule precedence, bounded inputs, immutable matchers, and GPM1 integrity-protected serialization with zero runtime third-party dependencies.
 
-Earlier released cubes include Directory Snapshot / Tree Manifest, Atomic File Writer / Safe Replace, Ephemeral Workspace / Scratch Directory, File Lease / Advisory Lock, Filesystem Watcher / Change Stream, Runtime Capability Inspector / Preflight, and the preceding Artifact Release series, all pinned in `ROADMAP.md`.
+Earlier released cubes include Host Identity / Environment Fingerprint, Directory Snapshot / Tree Manifest, Atomic File Writer / Safe Replace, Ephemeral Workspace / Scratch Directory, File Lease / Advisory Lock, Filesystem Watcher / Change Stream, Runtime Capability Inspector / Preflight, and the preceding Artifact Release series, all pinned in `ROADMAP.md`.
 
 ## Active milestone
 
-**Glob / Path Matcher v0.1 SPEC** — the next standalone product. It will own pure cross-platform path-pattern compilation and matching with explicit grammar, separator normalization, recursive `**` semantics, deterministic include/exclude precedence, explicit case policy, bounded complexity, and no filesystem side effects.
+**Safe Path Resolver / Containment Boundary v0.1 SPEC** — the next standalone product. It will own deterministic lexical and filesystem-aware path resolution, explicit root containment, traversal rejection, symlink policies, drive/UNC/namespace handling, and narrow filesystem capability seams without turning the pure comparison core into a filesystem walker.
 
 ## Repository shape
 
