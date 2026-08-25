@@ -6,17 +6,18 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Workflow / Durable Orchestration Cube v0.1** and release it before starting another cube.
+Finish **Storage Persistence / Snapshot v0.1** and release it before starting another cube.
 
 ## Current repository state
 
-- Last released cube: **Search / Index v0.1**
-- Release PR: **#50**, squash-merged
-- Release commit: `e124f7cfa59880c0c0381863a5215f3bc2bd08f4`
-- Pre-merge verification: **Run 371**, passed after a macOS-only timing-sensitive Worker Pool failure was rerun successfully; Search-specific tests remained green.
-- Post-merge verification: **Run 372**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Search / Index v0.1 is therefore **FROZEN**.
-- `ROADMAP.md` and `README.md` were updated to record the release and activate Workflow / Durable Orchestration.
+- Last released cube: **Workflow / Durable Orchestration v0.1**
+- Release PR: **#51**, squash-merged
+- Release commit: `f3b38368b7865aafd85e69b98f11f076f53b01be`
+- Pre-merge verification: **Run 379**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 380**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Workflow / Durable Orchestration v0.1 is therefore **FROZEN**.
+- A repeated macOS Worker Pool timeout-test flake was converted into a deterministic recovery assertion and the full Worker Pool suite was restored before release.
+- `ROADMAP.md` and `README.md` were updated to record the release and activate Storage Persistence / Snapshot.
 - Duplicate Redaction PR #47 remains closed as superseded by PR #45.
 
 ## The one-current-task rule
@@ -27,58 +28,55 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**WORKFLOW-DURABLE-ORCHESTRATION-V0.1-SPEC**
+**STORAGE-PERSISTENCE-SNAPSHOT-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze the public contract for a standalone native Workflow / Durable Orchestration product:
+Freeze the public contract for a standalone native persistence/snapshot product:
 
-1. define workflow and step contracts
-2. define deterministic execution state and transition rules
-3. define sequential, parallel, and conditional step composition
-4. define durable event/history records and replay semantics
-5. define retry, timeout, cancellation, and compensation boundaries
-6. define deterministic scheduling and idempotency rules
-7. define bounded history, steps, payloads, fan-out, retries, and replay work
-8. define immutable snapshots and source immutability
-9. define typed fail-closed errors without arbitrary payload copying
-10. define crash/restart recovery and replay behavior
+1. define versioned snapshot envelope and format identity
+2. define deterministic encode/decode semantics over Sovereign-compatible data
+3. define atomic save/load behavior using standard filesystem primitives only
+4. define checksum/integrity verification and corruption detection
+5. define crash-safe temporary-file and rename recovery semantics
+6. define bounded snapshot size, record count, and nesting work
+7. define immutable loaded snapshots and source immutability
+8. define typed fail-closed errors without arbitrary payload copying
+9. define explicit format versioning and forward-incompatibility behavior
+10. define recovery behavior after truncated or partially written snapshots
 11. verify zero runtime third-party dependencies
 12. define unit, contract, integration, failure, and recovery gates
 13. write the standalone cube specification before implementation
 
 ## Scope lock
 
-For Workflow / Durable Orchestration Cube v0.1, the allowed scope is only:
+For Storage Persistence / Snapshot v0.1, the allowed scope is only:
 
-- local in-process workflow definitions
-- deterministic step state machine
-- sequential and bounded parallel step execution
-- deterministic conditional branching
-- durable in-memory execution history
-- replay from history
-- retry and timeout policy
-- cancellation propagation
-- idempotent step execution keys
-- bounded fan-out and history/payload sizes
-- immutable execution snapshots/results
+- local filesystem persistence
+- deterministic versioned snapshot envelope
+- native binary or text encoding built from standard APIs
+- checksum/integrity verification
+- atomic write via temporary file + rename semantics
+- load, validate, and recover from interrupted writes
+- bounded snapshot size, records, nesting, and payloads
+- immutable loaded snapshots
 - source immutability
 - typed fail-closed diagnostics
-- local unit, contract, integration, failure, and recovery tests
+- unit/contract/integration/failure/recovery tests
 - cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- network workflow orchestration
-- distributed workers
-- external durable databases
-- cron/scheduled triggers
-- third-party workflow engines
-- remote task queues
-- BPMN/visual editors
-- external service integrations
-- learned planning or agent behavior
+- remote/object storage
+- distributed consensus
+- databases
+- compression formats beyond native standard APIs where already available
+- encryption/key management
+- filesystem watching
+- synchronization/replication
+- third-party serialization packages
+- network transport
 
 ## Definition of done
 
