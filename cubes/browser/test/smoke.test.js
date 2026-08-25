@@ -65,7 +65,7 @@ test('browser smoke: launch, navigate, evaluate, metadata, screenshot, cleanup',
     assert.equal(metadata.readyState, 'complete');
 
     const bodyText = await browser.evaluate('document.body.innerText');
-    assert.match(bodyText, /Sovereign Browser Fixture/);
+    assert.match(bodyText, /Sovereign Browser Cube OK/);
 
     const png = await browser.screenshot();
     assert.ok(Buffer.isBuffer(png));
