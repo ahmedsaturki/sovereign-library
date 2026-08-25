@@ -10,6 +10,10 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Release Closure Receipt / Finalization v0.1
+
+PR #75 was squash-merged as `0e1adc1fc41924c4df14c5b10aa5ed1278297b90`. Pre-merge Run 555 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 556 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates. The Windows browser gate initially cancelled and was rerun independently; the rerun passed fully.
+
 ### Artifact Release Approval / Decision Record v0.1
 
 PR #74 was squash-merged as `8f05e628d326c23c3d877742c2f2b7bd05c22aa9`. Pre-merge Run 549 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 550 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -82,28 +86,30 @@ Earlier cubes remain released at their recorded immutable SHAs.
 
 ## Active milestone
 
-### Artifact Release Closure Receipt v0.1
+### Artifact Release Publication Executor / Boundary v0.1
 
-Target: a standalone deterministic closure receipt linking one explicit frozen release snapshot to one explicit approved decision record, without publishing or mutating artifacts.
+Target: a standalone deterministic publication boundary that consumes one explicit frozen closure receipt and executes only explicitly authorized publication intents against explicitly declared destinations.
 
 Initial scope:
-- explicit snapshot identity and checksum
-- explicit approval record identity and status
-- deterministic snapshot/approval linkage validation
-- bounded closure metadata and evidence references
-- immutable receipt records
-- fail-closed mismatch/invalid/duplicate/accessor/circular/oversized input handling
-- deterministic checksum-protected receipt serialization
-- unit, contract, failure, recovery, and cross-platform verification
+- explicit frozen closure receipt identity and status validation
+- explicit publication intent records
+- explicit destination capability contracts
+- deterministic intent normalization and ordering
+- duplicate/conflict detection
+- bounded immutable publication plan and execution outcomes
+- explicit side-effect boundaries
+- idempotency and recovery semantics
+- typed fail-closed errors
+- unit, contract, failure, recovery, idempotency, rollback-safety, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- publication/deployment
-- external release services
-- network/filesystem/registry discovery
-- signing/trust-chain verification
-- automatic mutation or repair
-- scheduling/orchestration
+- destination discovery
+- implicit credential acquisition
+- automatic network/filesystem/registry scanning
+- global orchestration/scheduling
+- signing/trust-chain generation or verification
+- broad deployment-platform integrations
 - GUI/admin console
 - billing or cost accounting
 
