@@ -10,6 +10,7 @@ const DEFAULTS = Object.freeze({
 
 const isObject = (value) => value !== null && typeof value === 'object';
 const utf8Bytes = (value) => Buffer.byteLength(value, 'utf8');
+const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
 export class CliError extends Error {
   constructor(code, message, options = {}) {
@@ -37,7 +38,7 @@ function normalizeLimits(input = {}) {
 }
 
 function cloneDefinition(value, path = 'config') {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') return value;
+  if (value === undefined || value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') return value;
   if (!isObject(value)) fail('INVALID_CONFIG', 'Unsupported configuration value', { path });
   if (Array.isArray(value)) return Object.freeze(value.map((item, i) => cloneDefinition(item, `${path}[${i}]`)));
   const out = {};
@@ -70,7 +71,8 @@ function createOptionTable(options, limits, commandPath) {
     const type = option.type ?? 'boolean';
     if (!['string', 'boolean', 'integer', 'number', 'enum'].includes(type)) fail('INVALID_CONFIG', 'Unsupported option type', { path: commandPath });
     const repeatable = option.repeatable === true;
-    if (repeatable && option.default !== undefined && !Array.isArray(option.default)) fail('INVALID_CONFIG', 'Repeatable default must be an array', { path: commandPath });
+    if (repeatable && hasOwn(option, 'default') && option.default !== undefined && !Array.isArray(option.default)) fail('INVALID_CONFIG', 'Repeatable default must be an array', { path: commandPath });
+    const normalizedDefault = hasOwn(option, 'default') ? cloneDefinition(option.default, `${commandPath}.${option.name}.default`) : undefined;
     const normalizedOption = Object.freeze({
       name: option.name,
       short: option.short,
@@ -78,9 +80,10 @@ function createOptionTable(options, limits, commandPath) {
       required: option.required === true,
       repeatable,
       enum: type === 'enum' ? Object.freeze([...(option.enum ?? [])]) : undefined,
-      default: cloneDefinition(option.default, `${commandPath}.${option.name}.default`),
+      default: normalizedDefault,
     });
     if (type === 'enum' && (!Array.isArray(normalizedOption.enum) || normalizedOption.enum.length === 0)) fail('INVALID_CONFIG', 'Enum option requires values', { path: commandPath });
+    if (byLong.has(normalizedOption.name)) fail('AMBIGUOUS_CONFIG', 'Duplicate option', { path: commandPath });
     byLong.set(normalizedOption.name, normalizedOption);
     if (normalizedOption.short) byShort.set(normalizedOption.short, normalizedOption);
     normalized.push(normalizedOption);
@@ -100,16 +103,16 @@ function normalizeCommands(commands, limits, parent = '') {
     const optionTable = createOptionTable(command.options ?? [], limits, path);
     if (typeof command.handler !== 'function') fail('INVALID_CONFIG', 'Command handler must be a function', { path });
     const children = normalizeCommands(command.commands ?? [], limits, path);
+    const positional = Object.freeze({ min: command.positional?.min ?? 0, max: command.positional?.max ?? Number.MAX_SAFE_INTEGER });
+    if (!Number.isSafeInteger(positional.min) || positional.min < 0 || !Number.isSafeInteger(positional.max) || positional.max < positional.min) fail('INVALID_CONFIG', 'Invalid positional bounds', { path });
     const normalizedCommand = Object.freeze({
       name: command.name,
-      description: command.description ?? '',
-      positional: Object.freeze({ min: command.positional?.min ?? 0, max: command.positional?.max ?? Number.MAX_SAFE_INTEGER }),
+      description: typeof command.description === 'string' ? command.description : '',
+      positional,
       options: optionTable,
       commands: children,
       handler: command.handler,
     });
-    if (!Number.isSafeInteger(normalizedCommand.positional.min) || normalizedCommand.positional.min < 0 || !Number.isSafeInteger(normalizedCommand.positional.max) || normalizedCommand.positional.max < normalizedCommand.positional.min) fail('INVALID_CONFIG', 'Invalid positional bounds', { path });
-    for (const child of children) if (byName.has(child.name)) fail('AMBIGUOUS_CONFIG', 'Duplicate subcommand name', { path });
     byName.set(command.name, normalizedCommand);
     normalized.push(normalizedCommand);
   }
@@ -119,13 +122,12 @@ function normalizeCommands(commands, limits, parent = '') {
 function convertValue(option, raw, path) {
   if (option.type === 'string') return raw;
   if (option.type === 'boolean') {
-    if (raw === true || raw === undefined) return true;
-    if (raw === 'true') return true;
+    if (raw === true || raw === undefined || raw === 'true') return true;
     if (raw === 'false') return false;
     fail('INVALID_VALUE', 'Invalid boolean option value', { path });
   }
   if (option.type === 'integer') {
-    if (!/^[+-]?\d+$/u.test(raw)) fail('INVALID_VALUE', 'Invalid integer option value', { path });
+    if (!/^[+-]?\d+$/u.test(String(raw))) fail('INVALID_VALUE', 'Invalid integer option value', { path });
     const value = Number(raw);
     if (!Number.isSafeInteger(value)) fail('INVALID_VALUE', 'Integer option value is out of range', { path });
     return value;
@@ -149,7 +151,9 @@ function parseArgv(argv, command, limits) {
     if (utf8Bytes(token) > limits.maxTokenBytes) fail('ARG_LIMIT', 'Argument token exceeds configured limit', { exitCode: 2 });
   }
   const options = {};
-  for (const def of command.options.options) if (def.default !== undefined) options[def.name] = def.repeatable ? [...def.default] : def.default;
+  for (const def of command.options.options) {
+    if (def.default !== undefined) options[def.name] = def.repeatable ? [...def.default] : def.default;
+  }
   const positionals = [];
   let i = 0;
   let endOptions = false;
@@ -204,8 +208,14 @@ function parseArgv(argv, command, limits) {
 function renderHelp(config, command) {
   const lines = [`${config.name}${config.version ? ` v${config.version}` : ''}`, command.description || '', 'Usage:'];
   lines.push(`  ${config.name} ${command.name}${command.options.options.length ? ' [options]' : ''}`);
-  if (command.commands.commands.length) { lines.push('', 'Commands:'); for (const child of command.commands.commands) lines.push(`  ${child.name}\t${child.description}`); }
-  if (command.options.options.length) { lines.push('', 'Options:'); for (const option of command.options.options) lines.push(`  --${option.name}${option.short ? `, -${option.short}` : ''}${option.type === 'boolean' ? '' : ` <${option.type}>`}\t${option.required ? 'required' : 'optional'}`); }
+  if (command.commands.commands.length) {
+    lines.push('', 'Commands:');
+    for (const child of command.commands.commands) lines.push(`  ${child.name}\t${child.description}`);
+  }
+  if (command.options.options.length) {
+    lines.push('', 'Options:');
+    for (const option of command.options.options) lines.push(`  --${option.name}${option.short ? `, -${option.short}` : ''}${option.type === 'boolean' ? '' : ` <${option.type}>`}\t${option.required ? 'required' : 'optional'}`);
+  }
   lines.push('', '  -h, --help\tShow help', '  --version\tShow version');
   return `${lines.join('\n')}\n`;
 }
@@ -229,6 +239,17 @@ function makeIo(io, maxOutputBytes) {
   });
 }
 
+function rootCommand(config, limits) {
+  return Object.freeze({
+    name: config.name,
+    description: '',
+    options: createOptionTable([], limits, 'root'),
+    commands: config.commands,
+    positional: Object.freeze({ min: 0, max: Number.MAX_SAFE_INTEGER }),
+    handler: async () => ({ code: 0 }),
+  });
+}
+
 export function createCli(definition) {
   if (!isObject(definition)) fail('INVALID_CONFIG', 'CLI definition must be an object');
   assertName(definition.name ?? '', 'CLI');
@@ -238,18 +259,18 @@ export function createCli(definition) {
 
   async function run(argv = [], context = {}) {
     const tokens = [...argv];
-    let command = { name: config.name, description: '', options: createOptionTable([], limits, 'root'), commands: normalizeCommands([], limits), positional: { min: 0, max: 0 }, handler: async () => ({ code: 0 }) };
+    let command = rootCommand(config, limits);
     const consumed = [];
-    while (tokens.length && command.commands.byName.has(tokens[0])) {
-      const next = command.commands.byName.get(tokens.shift());
-      command = next;
+
+    if (tokens.length && config.commands.byName.has(tokens[0])) {
+      command = config.commands.byName.get(tokens.shift());
       consumed.push(command.name);
-    }
-    if (consumed.length === 0 && config.commands.commands.length) {
-      const first = tokens[0];
-      if (first && config.commands.byName.has(first)) { command = config.commands.byName.get(tokens.shift()); consumed.push(command.name); }
-      else if (first && first.startsWith('-')) { command = { name: config.name, description: '', options: createOptionTable([], limits, 'root'), commands: config.commands, positional: { min: 0, max: Number.MAX_SAFE_INTEGER }, handler: async () => ({ code: 0 }) }; }
-      else fail('UNKNOWN_COMMAND', 'Unknown command', { exitCode: 2 });
+      while (tokens.length && command.commands.byName.has(tokens[0])) {
+        command = command.commands.byName.get(tokens.shift());
+        consumed.push(command.name);
+      }
+    } else if (tokens.length && !tokens[0].startsWith('-')) {
+      fail('UNKNOWN_COMMAND', 'Unknown command', { exitCode: 2 });
     }
 
     const parsed = parseArgv(tokens, command, limits);
@@ -288,7 +309,7 @@ export function createCli(definition) {
       await io.writeStderr(stderr);
       return Object.freeze({ code, stdout, stderr });
     } catch (error) {
-      if (error instanceof CliError) return Object.freeze({ code: error.exitCode, stdout: '', stderr: `${error.code}\n` , error });
+      if (error instanceof CliError) return Object.freeze({ code: error.exitCode, stdout: '', stderr: `${error.code}\n`, error });
       return Object.freeze({ code: 1, stdout: '', stderr: 'COMMAND_FAILURE\n', error });
     }
   }
