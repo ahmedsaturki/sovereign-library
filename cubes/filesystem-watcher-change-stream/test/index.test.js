@@ -67,6 +67,17 @@ test('supports all overflow policies with bounded queue', async () => {
   }
 });
 
+test('injected sources are capability hooks and are never frozen or traversed as configuration data', async () => {
+  const source = sourceOf([{ rootId: 'root-1', type: 'created', path: 'x.txt' }]);
+  assert.equal(Object.isFrozen(source), false);
+  const watcher = createWatcher({ roots: [root], source });
+  assert.equal(Object.isFrozen(source), false);
+  await watcher.start();
+  assert.equal((await watcher.next()).value.path, 'x.txt');
+  assert.equal(Object.isFrozen(source), false);
+  await watcher.close();
+});
+
 test('close is idempotent and next terminates cleanly', async () => {
   const watcher = injected([]);
   await watcher.start();
