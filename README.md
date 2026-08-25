@@ -75,12 +75,13 @@ Released through v0.1:
 - Diff / Patch
 - Canonical JSON / Normalization
 - CLI / Command Runtime
+- Search / Index
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Search / Index Cube v0.1** — standalone deterministic in-memory text search and inverted-index engine for local document collections, with bounded exact-term/boolean/prefix/phrase queries, predictable relevance ordering, immutable results, and zero runtime third-party dependencies.
+**Workflow / Durable Orchestration Cube v0.1** — standalone deterministic local workflow engine for sequential/parallel/conditional steps, replayable execution history, retries, timeouts, cancellation, idempotency, immutable snapshots, bounded work, and zero runtime third-party dependencies.
 
 ## License
 
