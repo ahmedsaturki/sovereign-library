@@ -22,7 +22,7 @@ const byteLength = (value) => Buffer.byteLength(value, 'utf8');
 
 function assertPlainObject(value, label) {
   if (!isPlainObject(value)) fail('INVALID_DEFINITION', `${label} must be an object`);
-  for (const key of Object.keys(value)) {
+  for (const key of Reflect.ownKeys(value)) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
     if (!descriptor || !('value' in descriptor)) fail('INVALID_DEFINITION', `${label} contains accessor property`);
   }
