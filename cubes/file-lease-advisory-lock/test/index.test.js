@@ -110,8 +110,7 @@ test('release cannot remove a successor owner after lock replacement', async () 
     const old = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 10, staleRecovery: true, clock: c, uuid: uuidSequence('old-owner-01', 'quarantine-01') });
     c.advance(11);
     const successor = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 1000, staleRecovery: true, clock: c, uuid: uuidSequence('new-owner-01') });
-    const oldRelease = await old.release();
-    assert.equal(oldRelease.state, 'released');
+    await assert.rejects(() => old.release(), (error) => error.code === 'OWNERSHIP_LOST');
     const record = parseLeaseRecord(await readFile(join(lockPath, `owner-${successor.leaseId}.json`), 'utf8'));
     assert.equal(record.leaseId, 'new-owner-01');
     await successor.release();
