@@ -98,7 +98,6 @@ export function createRedactor(options = {}) {
   assertPositiveInteger(config.maxStringBytes, 'maxStringBytes');
   assertPositiveInteger(config.maxOutputBytes, 'maxOutputBytes');
   if (typeof config.replacement !== 'string' || config.replacement.length === 0) throw new RedactionError('INVALID_REPLACEMENT', 'replacement must be a non-empty string');
-  if (utf8Bytes(config.replacement) > config.maxStringBytes) throw new RedactionError('REPLACEMENT_TOO_LARGE', 'replacement exceeds maxStringBytes');
 
   const keyRules = compileKeyRules(options.sensitiveKeys, options.keyPatterns);
   const stringRules = normalizeStringRules(options.stringRules);
