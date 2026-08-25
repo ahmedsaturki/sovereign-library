@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Provenance / Lineage Ledger Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Reconciliation / Consistency Checker Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Reference Resolver / Locator v0.1**
-- Release PR: **#66**, squash-merged
-- Release commit: `7cb477e1e11ea5c5f9b145cf6eba1527482a4b57`
-- Pre-merge verification: **Run 485**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 486**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Reference Resolver / Locator v0.1 is therefore **FROZEN**.
-- The release provides canonical reference parsing/normalization, deterministic bounded candidate resolution, exact and alias matching, explicit ambiguity/not-found outcomes, immutable snapshots, typed fail-closed errors, no hidden discovery, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Provenance / Lineage Ledger v0.1**
+- Release PR: **#67**, squash-merged
+- Release commit: `d1b2795d3a638100a6fbf657cbebeb5ef7aaae82`
+- Pre-merge verification: **Run 497**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 498**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Provenance / Lineage Ledger v0.1 is therefore **FROZEN**.
+- The release provides deterministic append-only provenance events, explicit lineage relationships, bounded ancestry/descendant traversal, immutable snapshots, typed fail-closed errors, checksum-protected serialization, corruption detection, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,48 +26,46 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-PROVENANCE-LINEAGE-LEDGER-V0.1-SPEC**
+**ARTIFACT-RECONCILIATION-CONSISTENCY-CHECKER-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic local artifact provenance / lineage ledger:
+Implement the public contract for a standalone deterministic artifact reconciliation/consistency checker:
 
-1. canonical provenance records with stable artifact/event identity
-2. explicit parent/child and derived-from lineage relationships
-3. deterministic append-only event ordering with bounded local storage
-4. actor/action/source metadata with fail-closed validation
-5. deterministic ancestry/descendant traversal with depth and result bounds
-6. immutable snapshots and replay-safe reads
-7. atomic append/recovery semantics without partial writes
-8. deterministic serialization with checksum and corruption detection
-9. no network, registry, filesystem discovery, or external SDK required
+1. canonical normalization of explicit artifact records from independent snapshots
+2. deterministic detection of missing, extra, duplicated, and conflicting records
+3. explicit identity, digest, version, lineage, and lifecycle consistency checks
+4. bounded comparison inputs and bounded mismatch reports
+5. deterministic severity/category classification without external policy engines
+6. immutable reconciliation reports and stable ordering
+7. fail-closed malformed/accessor/circular input rejection with recovery
+8. deterministic serialization of reports with checksum/integrity protection
+9. no network, filesystem discovery, registry lookup, or external SDK required
 10. zero runtime third-party dependencies
 11. unit, contract, failure, recovery, and cross-platform verification
 12. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Provenance / Lineage Ledger v0.1, allowed scope is only:
+For Artifact Reconciliation / Consistency Checker v0.1, allowed scope is only:
 
-- local provenance records and stable artifact/event identity
-- explicit lineage relationships
-- deterministic append-only event ordering
-- bounded ancestry/descendant traversal
-- immutable snapshots and replay-safe reads
+- explicit local snapshot comparison
+- deterministic artifact identity and digest consistency checks
+- lifecycle and lineage consistency checks from supplied data
+- bounded mismatch reporting
+- immutable reports
 - typed fail-closed errors
-- atomic append/recovery behavior
-- deterministic serialization and corruption detection
+- checksum-protected report serialization
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- remote provenance stores
-- network transport
-- distributed consensus or locks
-- signature/certificate infrastructure
-- automatic filesystem/registry discovery
-- cryptographic trust policy engines
+- remote synchronization
+- automatic network/filesystem/registry discovery
+- automatic repair or mutation of source snapshots
+- distributed reconciliation protocols
+- trust/signature policy engines
 - GUI/admin console
 - background scheduler integration
 - billing or cost accounting
