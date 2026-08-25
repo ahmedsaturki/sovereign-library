@@ -39,7 +39,6 @@ function normalizeLimits(input = {}) {
 
 function normalizeScalar(value, label, limits) {
   if (!(typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null)) fail('INVALID_CONTEXT', `${label} must be scalar`);
-  if (typeof value === 'number' && !Number.isFinite(value)) fail('INVALID_CONTEXT', `${label} must be a finite number`);
   if (bytes(value) > limits.maxContextValueBytes) fail('LIMIT_EXCEEDED', `${label} exceeds size limit`);
   return value;
 }
@@ -57,7 +56,7 @@ function splitPattern(pattern, limits) {
   if (typeof pattern !== 'string' || !pattern || bytes(pattern) > limits.maxPatternBytes) fail('INVALID_POLICY', 'Invalid pattern');
   const segments = pattern.split('/');
   if (segments.some(s => s === '' || s.includes('***'))) fail('INVALID_POLICY', 'Malformed pattern');
-  if (segments.filter(s => s === '**').length > 1) fail('INVALID_POLICY', 'Only one recursive wildcard is allowed per pattern');
+  if (segments.filter(s => s === '**').length > 1) fail('INVALID_POLICY', 'Malformed pattern');
   return segments;
 }
 
@@ -89,8 +88,6 @@ function normalizeRule(rule, limits) {
   validatePlainObject(rule, 'rule');
   if (typeof rule.id !== 'string' || !rule.id) fail('INVALID_POLICY', 'Rule id is required');
   if (!['allow', 'deny'].includes(rule.effect)) fail('INVALID_POLICY', 'Rule effect must be allow or deny');
-  if (rule.action !== undefined && typeof rule.action !== 'string') fail('INVALID_POLICY', 'Rule action must be a string');
-  if (rule.resource !== undefined && typeof rule.resource !== 'string') fail('INVALID_POLICY', 'Rule resource must be a string');
   const action = String(rule.action ?? '');
   const resource = String(rule.resource ?? '');
   splitPattern(action, limits); splitPattern(resource, limits);
@@ -129,27 +126,17 @@ function createAuditRecord(input) {
   return Object.freeze(record);
 }
 
-function snapshotRule(rule) {
+function toPublicRule(rule) {
+  const when = {};
+  for (const predicate of rule.when) when[predicate.key] = predicate.value;
   return Object.freeze({
     id: rule.id,
     effect: rule.effect,
     action: rule.action,
     resource: rule.resource,
     priority: rule.priority,
-    when: Object.freeze(rule.when.map(predicate => Object.freeze({ ...predicate }))),
+    when: Object.freeze(when),
   });
-}
-
-function restoreRule(snapshot) {
-  const when = Object.fromEntries(snapshot.when.map(predicate => [predicate.key, predicate.value]));
-  return {
-    id: snapshot.id,
-    effect: snapshot.effect,
-    action: snapshot.action,
-    resource: snapshot.resource,
-    priority: snapshot.priority,
-    when,
-  };
 }
 
 function createPolicyEngine(config = {}) {
@@ -195,15 +182,14 @@ function createPolicyEngine(config = {}) {
   }
 
   function snapshot() {
-    return Object.freeze({ rules: Object.freeze(frozenRules.map(snapshotRule)) });
+    return Object.freeze({
+      rules: Object.freeze(frozenRules.map(toPublicRule)),
+    });
   }
 
   function compose(other) {
     if (!other || typeof other.snapshot !== 'function') fail('INVALID_POLICY', 'Invalid policy composition source');
-    const source = other.snapshot();
-    validatePlainObject(source, 'policy snapshot');
-    if (!Array.isArray(source.rules)) fail('INVALID_POLICY', 'Invalid policy snapshot rules');
-    const combined = [...frozenRules.map(snapshotRule), ...source.rules.map(restoreRule)];
+    const combined = [...frozenRules.map(toPublicRule), ...other.snapshot().rules];
     return createPolicyEngine({ rules: combined, limits });
   }
 
