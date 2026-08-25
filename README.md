@@ -84,12 +84,13 @@ Released through v0.1:
 - Policy / Capability Security
 - Execution Engine
 - Release / Verification Harness
+- Release Manifest / Integrity
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Release Manifest / Integrity v0.1** — standalone deterministic local manifest and integrity component for versioned canonical manifests, native content digests, bounded generation, deterministic integrity verification, and immutable mismatch reports.
+**Content-Addressed Storage / CAS v0.1** — standalone deterministic local content-addressed storage for native digest-based addressing, bounded CRUD, corruption detection, immutable metadata, and recovery-safe persistence.
 
 ## License
 
