@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Reconciliation / Consistency Checker Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Audit / Drift Reporter Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Provenance / Lineage Ledger v0.1**
-- Release PR: **#67**, squash-merged
-- Release commit: `d1b2795d3a638100a6fbf657cbebeb5ef7aaae82`
-- Pre-merge verification: **Run 497**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 498**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Provenance / Lineage Ledger v0.1 is therefore **FROZEN**.
-- The release provides deterministic append-only provenance events, explicit lineage relationships, bounded ancestry/descendant traversal, immutable snapshots, typed fail-closed errors, checksum-protected serialization, corruption detection, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Reconciliation / Consistency Checker v0.1**
+- Release PR: **#68**, squash-merged
+- Release commit: `9dfb6833299cbfc42c82afdef5fcf2d3a6175833`
+- Pre-merge verification: **Run 504**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 505**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Reconciliation / Consistency Checker v0.1 is therefore **FROZEN**.
+- The release provides deterministic explicit snapshot normalization, missing/extra/duplicate detection, identity/digest/version/lifecycle/lineage consistency checks, bounded immutable mismatch reports, typed fail-closed errors, checksum-protected report serialization, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,20 +26,20 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-RECONCILIATION-CONSISTENCY-CHECKER-V0.1-SPEC**
+**ARTIFACT-AUDIT-DRIFT-REPORTER-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic artifact reconciliation/consistency checker:
+Implement the public contract for a standalone deterministic local artifact audit / drift reporter:
 
-1. canonical normalization of explicit artifact records from independent snapshots
-2. deterministic detection of missing, extra, duplicated, and conflicting records
-3. explicit identity, digest, version, lineage, and lifecycle consistency checks
-4. bounded comparison inputs and bounded mismatch reports
-5. deterministic severity/category classification without external policy engines
-6. immutable reconciliation reports and stable ordering
-7. fail-closed malformed/accessor/circular input rejection with recovery
-8. deterministic serialization of reports with checksum/integrity protection
+1. accept explicit local artifact records or snapshots only
+2. validate stable artifact identity, digest, version, lifecycle, and lineage fields
+3. detect drift classes deterministically without mutating source data
+4. produce bounded severity/category audit findings with stable ordering
+5. support baseline-versus-current comparisons and unchanged/changed/added/removed classification
+6. support immutable audit snapshots and replay-safe reads
+7. fail closed on malformed, accessor, circular, duplicate, or oversized inputs
+8. serialize audit reports deterministically with checksum/integrity protection
 9. no network, filesystem discovery, registry lookup, or external SDK required
 10. zero runtime third-party dependencies
 11. unit, contract, failure, recovery, and cross-platform verification
@@ -47,15 +47,14 @@ Implement the public contract for a standalone deterministic artifact reconcilia
 
 ## Scope lock
 
-For Artifact Reconciliation / Consistency Checker v0.1, allowed scope is only:
+For Artifact Audit / Drift Reporter v0.1, allowed scope is only:
 
-- explicit local snapshot comparison
-- deterministic artifact identity and digest consistency checks
-- lifecycle and lineage consistency checks from supplied data
-- bounded mismatch reporting
-- immutable reports
+- explicit local artifact audit input
+- deterministic drift classification
+- baseline/current comparison
+- bounded immutable findings and reports
 - typed fail-closed errors
-- checksum-protected report serialization
+- deterministic checksum-protected serialization
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
@@ -63,8 +62,8 @@ Explicitly out of scope for v0.1:
 
 - remote synchronization
 - automatic network/filesystem/registry discovery
-- automatic repair or mutation of source snapshots
-- distributed reconciliation protocols
+- automatic repair or mutation of source artifacts
+- distributed audit protocols
 - trust/signature policy engines
 - GUI/admin console
 - background scheduler integration
