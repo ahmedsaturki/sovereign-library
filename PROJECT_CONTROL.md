@@ -10,13 +10,13 @@ Build the **Artifact Release Approval / Decision Record Cube v0.1** as the next 
 
 ## Current repository state
 
-- Last released cube: **Artifact Release Snapshot / Candidate Set v0.1**
-- Release PR: **#73**, squash-merged
-- Release commit: `62009ced973107cae4ef81c77f535d800e8692fe`
-- Pre-merge verification: **Run 543**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 544**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Release Snapshot / Candidate Set v0.1 is therefore **FROZEN**.
-- The release provides deterministic candidate identity/version/digest/admission normalization, duplicate rejection, bounded immutable snapshots, SCS1 checksum-protected serialization, typed fail-closed errors, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Release Approval / Decision Record v0.1**
+- Release PR: **#74**, squash-merged
+- Release commit: `8f05e628d326c23c3d877742c2f2b7bd05c22aa9`
+- Pre-merge verification: **Run 549**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 550**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Release Approval / Decision Record v0.1 is therefore **FROZEN**.
+- The release provides deterministic required/optional approval scopes, conflict detection, approve/reject/pending status evaluation, bounded immutable decision evidence, SAD1 checksum-protected serialization, typed fail-closed errors, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,43 +26,42 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-RELEASE-APPROVAL-DECISION-RECORD-V0.1-SPEC**
+**ARTIFACT-RELEASE-CLOSURE-RECEIPT-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic release approval/decision record:
+Implement the public contract for a standalone deterministic release closure receipt:
 
-1. accept one explicit frozen release snapshot identity plus explicit approval decisions only
-2. validate decision identity, reviewer/actor id, decision state, scope, and evidence references
-3. normalize decisions into stable deterministic ordering
-4. reject duplicate/conflicting decisions for the same approval scope
-5. compute deterministic approval status from required decision scopes
-6. produce bounded immutable decision records without copying unbounded payloads
-7. serialize and parse the record with deterministic checksum/integrity protection
-8. never mutate the referenced snapshot or perform publication side effects
-9. no network, filesystem discovery, registry lookup, scheduler, signing, or external approval service
-10. zero runtime third-party dependencies
-11. unit, contract, failure, recovery, and cross-platform verification
-12. standalone SPEC, README, changelog, and runnable example before release
+1. accept one explicit frozen release snapshot identity plus one explicit approved decision record
+2. validate exact snapshot/approval linkage and status compatibility
+3. normalize closure metadata and evidence references deterministically
+4. reject mismatched snapshot ids/checksums, non-approved decisions, duplicate receipt ids, and invalid closure metadata
+5. produce a bounded immutable closure receipt suitable for later publication systems to consume
+6. serialize and parse the receipt with deterministic checksum/integrity protection
+7. never publish, mutate artifacts, or call external services
+8. no network, filesystem discovery, registry lookup, scheduler, signing, or publication side effects
+9. zero runtime third-party dependencies
+10. unit, contract, failure, recovery, and cross-platform verification
+11. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Release Approval / Decision Record v0.1, allowed scope is only:
+For Artifact Release Closure Receipt v0.1, allowed scope is only:
 
 - explicit frozen snapshot identity
-- explicit approval decision records
-- deterministic scope evaluation
-- immutable bounded approval status and decision evidence
+- explicit approved decision record identity
+- deterministic linkage validation
+- immutable bounded closure metadata and evidence
 - typed fail-closed errors
-- deterministic checksum-protected decision serialization
+- deterministic checksum-protected receipt serialization
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- external approval services
-- network/filesystem/registry discovery
 - publication/deployment
+- external release services
+- network/filesystem/registry discovery
 - signing/trust-chain verification
 - automatic mutation or repair
 - scheduling/orchestration
