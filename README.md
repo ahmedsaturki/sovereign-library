@@ -105,12 +105,13 @@ Released through v0.1:
 - Runtime Capability Inspector / Preflight
 - Filesystem Watcher / Change Stream
 - File Lease / Advisory Lock
+- Ephemeral Workspace / Scratch Directory
 
-The latest release is **File Lease / Advisory Lock v0.1**, squash-merged as `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868` via PR #80. Pre-merge Run 607 and post-merge Run 608 passed across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
+The latest release is **Ephemeral Workspace / Scratch Directory v0.1**, squash-merged as `33b98771c4702a02dbdc3ce267af516bfbd8e43c` via PR #81. Pre-merge Run 613 passed across Ubuntu, Windows, and macOS-15-Intel. Post-merge Run 614 initially experienced a transient macOS-15-Intel runner hang; the same job was rerun on the identical commit and then passed syntax checks, full repository tests, and real-browser smoke. No code or workflow changes were required.
 
 ## Active milestone
 
-**Ephemeral Workspace / Scratch Directory v0.1 SPEC** — the next standalone product. It will own safe ephemeral workspace creation, bounded identity/ownership metadata, cleanup, expiry, stale/orphan recovery, path containment, and deterministic test seams without becoming a general filesystem or locking framework.
+**Atomic File Writer / Safe Replace v0.1 SPEC** — the next standalone product. It will own safe replacement of one local file, complete candidate writes before replacement, bounded digest verification, path/symlink safety, explicit same-filesystem/cross-device semantics, and deterministic filesystem capability seams without becoming a general sync or storage framework.
 
 ## License
 
