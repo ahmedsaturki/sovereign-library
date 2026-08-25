@@ -31,9 +31,9 @@ test('retention evaluation is pure and deterministic', () => {
 
 test('dry-run retention and purge plans are bounded and non-destructive', async () => {
   const index = await new ArtifactLifecycleIndex().open();
-  await index.add(record('a', { updatedAt: 100 }));
-  await index.add(record('b', { state: 'expired', updatedAt: 200 }));
-  await index.add(record('c', { state: 'tombstoned', updatedAt: 300 }));
+  await index.add(record('a', { createdAt: 100, updatedAt: 1000 }));
+  await index.add(record('b', { state: 'expired', createdAt: 100, updatedAt: 200 }));
+  await index.add(record('c', { state: 'tombstoned', createdAt: 100, updatedAt: 300 }));
   assert.deepEqual(index.purgePlan({ olderThan: 250 }).map((item) => item.id), ['b']);
   assert.deepEqual(index.retentionPlan({ expireAfterMs: 50 }, 2000).map((item) => item.id), ['a']);
   assert.equal(index.get('b').state, 'expired');
@@ -43,7 +43,7 @@ test('dry-run retention and purge plans are bounded and non-destructive', async 
 test('query supports state/tag/age filters deterministically', async () => {
   const index = await new ArtifactLifecycleIndex().open();
   await index.add(record('b', { state: 'retained', tags: ['stable'] }));
-  await index.add(record('a', { state: 'expired', tags: ['prod'], updatedAt: 50 }));
+  await index.add(record('a', { state: 'expired', tags: ['prod'], createdAt: 50, updatedAt: 50 }));
   assert.deepEqual(index.query({ state: 'expired' }).map((r) => r.id), ['a']);
   assert.deepEqual(index.query({ tag: 'stable' }).map((r) => r.id), ['b']);
   assert.deepEqual(index.query({ olderThan: 100 }).map((r) => r.id), ['a']);
