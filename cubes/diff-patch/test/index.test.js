@@ -21,13 +21,13 @@ test('diff is deterministic and patch reproduces the target', () => {
   const after = { nested: { a: 'new', c: null }, list: [1, 9], added: 'yes' };
   const operations = diff(before, after);
   assert.deepEqual(operations, [
+    { op: 'remove', path: '/z' },
+    { op: 'add', path: '/added', value: 'yes' },
+    { op: 'replace', path: '/list/1', value: 9 },
+    { op: 'remove', path: '/list/2' },
     { op: 'remove', path: '/nested/b' },
     { op: 'replace', path: '/nested/a', value: 'new' },
-    { op: 'remove', path: '/list/2' },
-    { op: 'replace', path: '/list/1', value: 9 },
-    { op: 'remove', path: '/z' },
     { op: 'add', path: '/nested/c', value: null },
-    { op: 'add', path: '/added', value: 'yes' },
   ]);
   assert.deepEqual(applyPatch(before, operations), after);
   assert.deepEqual(diff(before, after), diff(before, after));
@@ -91,7 +91,7 @@ test('unsupported values and circular references fail closed', () => {
   assert.throws(() => diff({ date: new Date() }, { date: 'x' }), (error) => error.code === 'UNSUPPORTED_OBJECT');
   const cycle = {};
   cycle.self = cycle;
-  assert.throws(() => diff(cycle, {}), (error) => error.code === 'UNSUPPORTED_OBJECT' || error.code === 'NODE_LIMIT');
+  assert.throws(() => diff(cycle, {}), (error) => error.code === 'CIRCULAR_REFERENCE');
 });
 
 test('bounds are deterministic', () => {
