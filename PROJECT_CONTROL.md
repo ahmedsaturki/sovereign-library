@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Select and specify the next standalone Sovereign product after freezing **Host Identity / Environment Fingerprint v0.1**.
+Select and specify the next standalone Sovereign product after freezing **Glob / Path Matcher v0.1**.
 
 ## Current repository state
 
-- Last released cube: **Host Identity / Environment Fingerprint v0.1**
-- Release PR: **#86**, squash-merged
-- Release commit: `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`
-- Pre-merge verification: **Run 644**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, HIF tests, and real-browser smoke.
-- Post-merge verification: **Run 645**, Windows and macOS-15-Intel passed on the original attempt; Ubuntu browser smoke experienced a transient runner hang. The Ubuntu job was rerun independently on the same release commit and passed syntax, full repository tests, and real-browser smoke.
-- Host Identity / Environment Fingerprint v0.1 is **FROZEN** at `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`.
-- The freeze decision records the runner anomaly and successful same-commit rerun; no product or workflow changes were required.
+- Last released cube: **Glob / Path Matcher v0.1**
+- Release PR: **#87**, squash-merged
+- Release commit: `c9a3d330a16a488e00c28311085204363bab2fc7`
+- Pre-merge verification: **Run 654**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 655**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Glob / Path Matcher v0.1 is **FROZEN** at `c9a3d330a16a488e00c28311085204363bab2fc7`.
+- Blocking fixes included escape-tokenization ordering and explicit absolute-root anchoring; regression coverage was added and the final platform matrix passed without workflow bypasses.
 
 ## The one-current-task rule
 
@@ -26,25 +26,25 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**GLOB-PATH-MATCHER-V0.1-SPEC**
+**SAFE-PATH-RESOLVER-V0.1-SPEC**
 
 ### Immediate next task
 
-Write and commit the complete SPEC for **Glob / Path Matcher v0.1** before implementation begins.
+Write and commit the complete SPEC for **Safe Path Resolver / Containment Boundary v0.1** before implementation begins.
 
 The SPEC must lock:
 
-1. standalone cross-platform path-pattern matching API
-2. explicit glob grammar and segment semantics
-3. separator normalization and platform-independent matching rules
-4. literal escaping and special-character handling
-5. `*`, `?`, and recursive `**` semantics with bounded complexity
-6. absolute/relative path behavior and root anchoring
-7. case-sensitivity policy as an explicit option, never an implicit OS guess
-8. path traversal and dot-segment safety semantics
-9. deterministic include/exclude evaluation and ordered rule precedence
-10. bounded pattern/path lengths and failure/recovery behavior
-11. injectable filesystem/path capability seams only where needed; no filesystem access in the pure matcher core
+1. standalone cross-platform path resolution and containment API
+2. lexical normalization versus filesystem-aware canonicalization semantics
+3. absolute, relative, drive, UNC, and root behavior
+4. explicit base/root scope anchoring
+5. traversal (`..`) handling and escape rejection
+6. symlink-aware versus lexical-only resolution policies
+7. Windows namespace and volume-boundary handling
+8. deterministic comparison semantics independent of host OS defaults
+9. bounded path length, segment count, and recursion limits
+10. capability seams for filesystem-aware resolution without leaking executable objects into data validation
+11. failure/recovery behavior and non-mutating guarantees
 12. Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
 13. zero-runtime-third-party-dependency boundary
 
@@ -52,7 +52,7 @@ No implementation starts before the SPEC exists on the control plane.
 
 ## Scope lock
 
-The next cube owns pure path-pattern compilation and matching plus an optional small rule-evaluation layer. It does not own filesystem traversal, directory snapshots, filesystem watching, archive extraction, shell glob expansion, shell command execution, or persistent storage.
+The next cube owns safe path resolution, containment, and comparison semantics. It does not own glob matching, directory traversal, snapshotting, filesystem watching, archive extraction, shell expansion, shell execution, or persistent storage.
 
 ## Definition of done
 
