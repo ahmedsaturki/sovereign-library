@@ -31,8 +31,9 @@ test('Base64 and Base64URL round-trip deterministically', () => {
   const encoded = base64Encode('hello');
   assert.equal(encoded, 'aGVsbG8=');
   assert.deepEqual(base64Decode(encoded), Uint8Array.from(Buffer.from('hello')));
-  const url = base64UrlEncode('a?b/c');
-  assert.deepEqual(base64UrlDecode(url), utf8Encode('a?b/c'));
+  const source = utf8Encode('a?b/c');
+  const url = base64UrlEncode(source);
+  assert.deepEqual(base64UrlDecode(url), source);
 });
 
 test('path segments use strict component encoding', () => {
