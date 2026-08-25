@@ -19,9 +19,7 @@ export class DiffPatchError extends Error {
   }
 }
 
-function fail(code, message, options = {}) {
-  throw new DiffPatchError(code, message, options);
-}
+function fail(code, message, options = {}) { throw new DiffPatchError(code, message, options); }
 
 function assertPositiveInteger(value, name) {
   if (!Number.isSafeInteger(value) || value < 1) fail('INVALID_LIMIT', `${name} must be a safe integer >= 1`);
@@ -34,7 +32,6 @@ function isPlainObject(value) {
 }
 
 function utf8Bytes(value) { return Buffer.byteLength(value, 'utf8'); }
-
 function escapeToken(token) { return token.replaceAll('~', '~0').replaceAll('/', '~1'); }
 
 function unescapeToken(token) {
@@ -67,19 +64,25 @@ function cloneAndValidate(value, state, depth = 0, path = '') {
   }
   if (!isObject(value)) fail('UNSUPPORTED_VALUE', 'Unsupported value type', { path });
   if (!Array.isArray(value) && !isPlainObject(value)) fail('UNSUPPORTED_OBJECT', 'Only arrays and plain objects are supported', { path });
+  if (state.active.has(value)) fail('CIRCULAR_REFERENCE', 'Circular reference detected', { path });
 
-  if (Array.isArray(value)) {
-    const output = value.map((item, index) => cloneAndValidate(item, state, depth + 1, `${path}/${index}`));
+  state.active.add(value);
+  try {
+    if (Array.isArray(value)) {
+      const output = value.map((item, index) => cloneAndValidate(item, state, depth + 1, `${path}/${index}`));
+      return Object.freeze(output);
+    }
+
+    const output = {};
+    for (const key of Object.keys(value).sort(compare)) {
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (!descriptor || !('value' in descriptor)) fail('UNSUPPORTED_OBJECT', 'Accessor properties are not supported', { path: formatPath(path, key) });
+      output[key] = cloneAndValidate(descriptor.value, state, depth + 1, formatPath(path, key));
+    }
     return Object.freeze(output);
+  } finally {
+    state.active.delete(value);
   }
-
-  const output = {};
-  for (const key of Object.keys(value).sort(compare)) {
-    const descriptor = Object.getOwnPropertyDescriptor(value, key);
-    if (!descriptor || !('value' in descriptor)) fail('UNSUPPORTED_OBJECT', 'Accessor properties are not supported', { path: formatPath(path, key) });
-    output[key] = cloneAndValidate(descriptor.value, state, depth + 1, formatPath(path, key));
-  }
-  return Object.freeze(output);
 }
 
 function valueBytes(value) {
@@ -102,7 +105,7 @@ export function createDiffEngine(options = {}) {
   for (const [name, value] of Object.entries(config)) assertPositiveInteger(value, name);
 
   function validateRoot(value) {
-    const state = { config, nodes: 0 };
+    const state = { config, nodes: 0, active: new WeakSet() };
     const clone = cloneAndValidate(value, state);
     if (valueBytes(clone) > config.maxValueBytes) fail('VALUE_LIMIT', 'Value exceeds the configured serialized size limit', { statusCode: 413 });
     return clone;
@@ -174,13 +177,13 @@ function normalizeOperation(operation, operationIndex, config) {
   if (!['add', 'remove', 'replace'].includes(operation.op)) fail('INVALID_OPERATION', 'Operation type is unsupported', { operationIndex });
   const path = operation.path;
   try { parsePointer(path); } catch (error) {
-    if (error instanceof DiffPatchError) throw new DiffPatchError(error.code, error.message, { path: null, operationIndex, statusCode: error.statusCode });
+    if (error instanceof DiffPatchError) throw new DiffPatchError(error.code, error.message, { operationIndex, statusCode: error.statusCode });
     throw error;
   }
   if (path === '' && operation.op !== 'replace') fail('INVALID_OPERATION', 'Root add/remove operations are not supported', { path, operationIndex });
   const normalized = { op: operation.op, path, index: operationIndex };
   if (operation.op !== 'remove') {
-    const state = { config, nodes: 0 };
+    const state = { config, nodes: 0, active: new WeakSet() };
     normalized.value = cloneAndValidate(operation.value, state, 0, path);
     if (valueBytes(normalized.value) > config.maxValueBytes) fail('VALUE_LIMIT', 'Operation value exceeds the configured serialized size limit', { path, operationIndex, statusCode: 413 });
   }
@@ -247,7 +250,7 @@ function rebuildAt(root, tokens, operation, depth = 0) {
 
 function applyOne(root, operation, config) {
   const tokens = parsePointer(operation.path);
-  if (tokens.length === 0) return cloneAndValidate(operation.value, { config, nodes: 0 });
+  if (tokens.length === 0) return cloneAndValidate(operation.value, { config, nodes: 0, active: new WeakSet() });
   return rebuildAt(root, tokens, operation);
 }
 
