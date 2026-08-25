@@ -67,12 +67,13 @@ Released through v0.1:
 - URL / Query / Encoding
 - Content-Encoding / Compression
 - Stream / Pipeline
+- Digest / Hash
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Digest / Hash Cube v0.1** — native hashing, HMAC, constant-time byte comparison, and bounded AsyncIterable hashing using Node.js `node:crypto` only.
+**Serialization / Binary Codec Cube v0.1** — native bounded binary serialization helpers built from Node.js runtime primitives, with explicit type/size/error contracts and no third-party runtime dependency.
 
 ## License
 
