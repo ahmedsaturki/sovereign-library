@@ -10,7 +10,11 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
-All previously released cubes remain frozen on `main`, including URL / Query / Encoding v0.1 and Content-Encoding / Compression v0.1.
+### Stream / Pipeline v0.1
+
+Release-gate Run 294 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `9ac578f0ebee01dc2825672a096daf3a4539ffe7`.
+
+The release provides lazy AsyncIterable pipelines, ordered transforms, bounded chunk sizing, pull-based backpressure, cancellation propagation, typed source/transform/sink failures, and cleanup hooks without runtime third-party dependencies.
 
 ### Content-Encoding / Compression v0.1
 
@@ -26,31 +30,33 @@ The release also fixed a real Base64 defect: UTF-8 `Uint8Array` values must be c
 
 ## Active milestone
 
-### Stream / Pipeline Cube v0.1
+### Digest / Hash Cube v0.1
 
-Target: a standalone native bounded streaming/pipeline primitive reusable by HTTP, MIME, compression, storage, and process-oriented cubes without third-party stream frameworks.
+Target: a standalone native integrity primitive reusable by HTTP metadata, ETag handling, storage, content addressing, caching, and future authentication layers without third-party crypto packages.
 
 Initial scope:
-- AsyncIterable source/sink adapters
-- ordered transform stages
-- bounded buffering
-- explicit backpressure
-- cancellation propagation
-- deterministic error propagation
-- cleanup/finalization hooks
-- simple tee/merge only if required by the core contract
+- SHA-256
+- SHA-512
+- HMAC-SHA256
+- HMAC-SHA512
+- hex and byte digest outputs
+- bounded synchronous input sizes
+- bounded AsyncIterable hashing
+- constant-time same-length byte comparison
+- deterministic typed crypto errors
+- immutable configuration snapshots
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- distributed streaming
-- message brokers
-- reactive programming frameworks
-- third-party stream libraries
-- persistent queues
-- workflow DAGs
-- HTTP policy/negotiation
-- archive formats
+- password hashing / KDFs
+- public-key cryptography
+- signatures
+- key generation
+- encryption/decryption
+- authentication protocols
+- certificate handling
+- third-party crypto packages
 
 ## Parked
 
