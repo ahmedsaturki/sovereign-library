@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Release / Verification Harness Cube v0.1** as the next standalone Sovereign product.
+Build the **Release Manifest / Integrity Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Execution Engine v0.1**
-- Release PR: **#57**, squash-merged
-- Release commit: `739798bb3de3d50884dc7b3f28bada7e4f58f1a2`
-- Pre-merge verification: **Run 424**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 425**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Execution Engine v0.1 is therefore **FROZEN**.
-- The release provides deterministic dependency-aware local task execution, explicit success/failure/cancel/timeout/skipped outcomes, bounded execution, retry/recovery, immutable snapshots/results, typed fail-closed errors, and zero runtime third-party dependencies.
+- Last released cube: **Release / Verification Harness v0.1**
+- Release PR: **#58**, squash-merged
+- Release commit: `6e60d151691639948fabceaec1ee28964d40d881`
+- Pre-merge verification: **Run 430**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 431**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Release / Verification Harness v0.1 is therefore **FROZEN**.
+- The release provides deterministic local release-stage execution, safe native command invocation, bounded process output and diagnostics, timeout/cancellation/retry semantics, deterministic required/optional verdict aggregation, immutable machine-readable verification snapshots, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,49 +26,48 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**RELEASE-VERIFICATION-HARNESS-V0.1-SPEC**
+**RELEASE-MANIFEST-INTEGRITY-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze and implement the public contract for a standalone deterministic release-verification harness:
+Freeze and implement the public contract for a standalone deterministic release-manifest/integrity component:
 
-1. explicit verification stage definitions and normalized commands
-2. deterministic stage ordering and lifecycle states
-3. native child-process execution without shell dependence
-4. bounded stdout/stderr capture and diagnostic limits
-5. per-stage timeout, cancellation, retry, and terminal outcomes
-6. deterministic aggregation of stage results into a release verdict
-7. immutable verification snapshots and machine-readable reports
-8. fail-closed malformed definitions and unsafe command configuration
-9. no network service or CI-provider SDK requirement
+1. canonical manifest normalization with stable ordering
+2. deterministic file/entry descriptors and content digests
+3. explicit manifest schema and versioning
+4. reproducible manifest generation from bounded local inputs
+5. integrity verification with precise mismatch reporting
+6. immutable manifest and verification snapshots
+7. fail-closed malformed manifests, unsafe paths, duplicates, and unsupported values
+8. bounded entry count, path length, metadata size, and total manifest size
+9. no hosted service, registry, signing provider, or external SDK requirement
 10. zero runtime third-party dependencies
 11. unit, contract, failure, recovery, and cross-platform verification
 12. standalone SPEC, README, and runnable example before release
 
 ## Scope lock
 
-For Release / Verification Harness Cube v0.1, allowed scope is only:
+For Release Manifest / Integrity Cube v0.1, allowed scope is only:
 
-- local deterministic release-stage orchestration
-- native child-process execution
-- bounded output and diagnostics
-- timeout/cancellation/retry semantics
-- deterministic pass/fail/skip aggregation
-- immutable verification reports
+- local deterministic manifest generation
+- canonical entry ordering and versioned manifest format
+- content digest computation using native primitives
+- integrity verification and deterministic mismatch reports
+- bounded paths, entries, metadata, and payloads
+- immutable public snapshots
 - typed fail-closed errors
-- safe command allowlisting and argument validation
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- hosted CI control planes
-- GitHub/Azure/GitLab provider SDKs
-- remote execution
-- distributed agents
-- secrets management
+- cryptographic signing or key management
+- remote registries
+- package publishing
+- hosted artifact storage
+- CI-provider integrations
 - GUI/admin console
-- browser automation implementation
+- network transport
 
 ## Definition of done
 
