@@ -5,194 +5,215 @@
 **Name:** Safe Path Resolver / Containment Boundary
 **Version:** v0.1
 **Format:** SPR1
-**Primary goal:** provide a small, standalone, deterministic path-resolution and containment boundary that callers can use to answer: “What path does this input denote under this root, and is it safely contained?”
+**Primary goal:** provide a standalone, deterministic path-resolution and containment boundary for applications that must answer “what path does this input denote under this root, and is it contained?” without filesystem side effects in the lexical core.
 
 The cube is independent of directory walking, glob matching, file watching, archive extraction, shell execution, and persistence.
 
 ## 2. Product boundary
 
-The cube exposes two related modes:
+The cube has two modes:
 
-1. **Lexical mode:** resolves path syntax only. It does not touch the filesystem and cannot observe symlinks.
-2. **Filesystem-aware mode:** optionally canonicalizes existing path components through injected filesystem capabilities, then applies the same containment rules.
+1. **Lexical mode** — pure normalization, resolution, comparison, and containment. No filesystem access.
+2. **Filesystem-aware mode** — optional canonicalization through injected capabilities, followed by the same structural containment rules.
 
-No API may silently switch modes because of the host operating system.
+The mode must never change implicitly because of the host operating system.
 
-## 3. Core operations
+## 3. Public API
 
-The public API must provide:
+The implementation provides:
 
 - `normalizePath(input, options)` — deterministic lexical normalization.
-- `resolvePath(base, input, options)` — resolves a relative input against an explicit base.
-- `isContained(path, root, options)` — returns immutable deterministic containment result.
-- `resolveContained(root, input, options)` — resolves and returns a path only when it is safely contained.
-- `canonicalizePath(input, capabilities, options)` — filesystem-aware canonicalization using narrow injected capabilities.
-- `comparePaths(left, right, options)` — explicit, host-independent equality/ordering semantics.
-- deterministic SPR1 serialization/parsing for resolver outputs and containment reports.
+- `resolvePath(base, input, options)` — resolves a relative input against an explicit absolute base.
+- `isContained(path, root, options)` — returns an immutable structural containment report.
+- `resolveContained(root, input, options)` — resolves and returns the result only when it is contained.
+- `canonicalizePath(input, root, capabilities, options)` — filesystem-aware canonicalization using narrow injected capabilities.
+- `comparePaths(left, right, options)` — explicit host-independent ordering/equality semantics.
+- `serializeReport(report)` / `parseReport(serialized)` — deterministic SPR1 serialization with integrity verification.
 
 ## 4. Path model
 
-Supported path classes:
+Supported classes:
 
-- POSIX absolute paths: `/a/b`.
-- POSIX relative paths: `a/b`.
-- Windows drive-qualified paths: `C:/a/b`.
-- Windows drive-relative paths are rejected by default because `C:foo` depends on process state.
-- UNC paths: `//server/share/a/b`.
-- Windows namespace paths such as `//?/C:/a` and `//?/UNC/server/share/a` are normalized to an explicit namespace representation and never silently converted to another volume.
+- POSIX absolute: `/a/b`
+- POSIX relative: `a/b`
+- Windows drive-qualified: `C:/a/b`
+- UNC: `//server/share/a/b`
+- Windows namespace drive: `//?/C:/a/b`
+- Windows namespace UNC: `//?/UNC/server/share/a/b`
 
-The implementation must not inspect `process.cwd()` to resolve ambiguity. Callers must provide an explicit base for relative inputs.
+Drive-relative values such as `C:foo` are rejected because their meaning depends on process state.
+
+Relative resolution never consults `process.cwd()`; callers must supply an explicit absolute base.
+
+Roots are structural identities, not string prefixes. Different drives, UNC shares, and namespace roots cannot compare as contained.
 
 ## 5. Lexical normalization
 
-Default separator normalization converts `\\` to `/` only when `separatorNormalization=true`.
+Default `separatorNormalization=true` converts backslashes to `/` while preserving explicit UNC/namespace prefixes.
 
-The following semantics are required:
-
-- `.` segments are removed only when `normalizeDotSegments=true`.
-- `..` removes one prior normal segment when allowed.
-- an absolute path may never walk above its root.
-- a relative path may not escape its supplied base scope when containment-safe resolution is requested.
-- repeated separators are rejected when separator normalization is enabled and the repeated separator is not part of an explicit UNC or namespace prefix.
-- empty input is rejected.
-- control characters and NUL are rejected.
+- `.` segments are removed when `normalizeDotSegments=true`.
+- `..` removes one prior normal segment when legal.
+- absolute roots cannot traverse above their root.
+- relative inputs used for safe resolution cannot escape their caller-defined base.
+- empty input and NUL-containing input are rejected.
+- input and normalized segment counts are bounded.
 
 ## 6. Containment semantics
 
-Containment is segment-aware, never string-prefix based.
+Containment is segment-aware and never string-prefix based.
 
-`/root/app` contains `/root/app/file.txt` but does not contain `/root/application`.
+Example:
 
-A result must expose one of:
+- `/root/app` contains `/root/app/file.txt`.
+- `/root/app` does not contain `/root/application`.
+
+Containment results are immutable and expose:
 
 - `contained`
 - `outside`
-- `invalid`
-- `indeterminate` (filesystem-aware mode only when a requested canonicalization capability is unavailable and policy allows non-fatal uncertainty)
 
-The default security policy is fail-closed: missing capability, ambiguity, or unresolved symlink behavior yields `invalid` or `indeterminate`, never `contained` by assumption.
+A different root identity reports `reason: root-mismatch`.
 
-## 7. Root anchoring
+Security-sensitive filesystem-aware operations fail closed when required capabilities are missing or when canonical targets escape the root.
+
+## 7. Root anchoring and case policy
 
 Every containment-safe operation requires an explicit root/base.
 
-A path with a different drive, volume, UNC share, or namespace root cannot be contained by a root from another identity.
+Root comparison is structural:
 
-Comparison of Windows roots is structural:
+- `C:/x` and `D:/x` are different.
+- `//server/share/x` and `//server/other/x` are different.
+- `//?/C:/x` has a distinct namespace identity from `C:/x` unless an explicit normalization policy is added later.
 
-- `C:/x` and `D:/x` are different roots.
-- `//server/share/x` and `//server/other/x` are different roots.
-- `//?/C:/x` and `C:/x` may compare equal only after an explicit normalization policy declares them the same identity.
+Default `caseMode` is `sensitive`.
 
-No locale-sensitive string comparison may decide root identity.
+`caseMode: insensitive` uses fixed `en-US` lowercasing and never consults host locale defaults.
 
 ## 8. Symlink policies
 
-Filesystem-aware operations expose an explicit policy:
+Filesystem-aware operations support:
 
-- `lexical-only` — do not resolve symlinks.
-- `follow-contained` — resolve symlinks and reject targets that escape the root.
-- `reject-symlink` — fail closed when a path component is a symlink.
+- `lexical-only` — no symlink observation.
+- `reject-symlink` — canonicalization is allowed, but a symlink destination is rejected when `lstat` reports one.
+- `follow-contained` — canonicalization follows symlinks but remains fail-closed on containment escape and resolution-depth overflow.
 
-The default is `lexical-only` for pure APIs and `reject-symlink` for security-sensitive filesystem-aware containment.
+`follow-contained` requires an explicit `symlinkDepth(path)` capability. The root and target hop counts are summed and must not exceed `maxSymlinkDepth` (default 64, maximum 64).
 
-Symlink resolution must include cycle detection and a bounded maximum resolution depth.
+This makes the depth boundary explicit and testable instead of assuming that a single `realpath()` call proves a safe resolution depth.
 
 ## 9. Capability seams
 
-Filesystem-aware resolution receives a capability object containing only narrow executable seams, for example:
+Filesystem-aware resolution may use only narrow executable capabilities:
 
-- `lstat(path)`
-- `realpath(path)`
-- `readlink(path)`
+- `realpath(path)` — returns a canonical path string.
+- `lstat(path)` — returns bounded metadata used by reject-symlink policy.
+- `symlinkDepth(path)` — returns a non-negative integer hop count used by follow-contained policy.
 
-Capability objects are execution hooks, not plain configuration data. The validation boundary must never recursively traverse, freeze, serialize, or invoke a capability function while validating caller data.
+Capability containers are execution seams, not plain configuration data. Validation must never freeze, recursively traverse, serialize, or invoke capability functions.
 
-Capability results are validated as bounded plain data before use.
+Capability results are validated before they affect decisions.
 
 ## 10. Determinism
 
-The core must not depend on host OS defaults for:
+The core does not depend on host defaults for:
 
-- case sensitivity
+- current working directory
+- case policy
 - separator policy
 - root comparison
-- Unicode normalization
 - locale ordering
 
-Default case mode is `sensitive`.
-
-Case-insensitive comparison, when explicitly requested, must use a fixed locale-independent mapping.
+All results are immutable and input objects are not mutated.
 
 ## 11. Bounds
 
-Suggested initial hard limits:
+Initial hard limits:
 
-- maximum input path: 32 KiB
-- maximum normalized path: 32 KiB
+- maximum path length: 32 KiB
 - maximum segments: 1024
-- maximum symlink resolution depth: 64
+- maximum symlink depth: 64
 - maximum serialized report size: 256 KiB
-- maximum diagnostic message size: 4 KiB
+- validation depth: 16
 
-Exceeding a bound must produce a typed limit error before filesystem mutation or capability expansion.
+Bounds are enforced before capability expansion and rejected calls do not poison later valid calls.
 
 ## 12. Failure and recovery
 
-Typed error codes must distinguish:
+Typed failures include:
 
 - `INVALID_PATH`
 - `MISSING_BASE`
 - `TRAVERSAL_ESCAPE`
 - `ROOT_MISMATCH`
-- `VOLUME_MISMATCH`
 - `SYMLINK_REJECTED`
 - `SYMLINK_ESCAPE`
-- `SYMLINK_CYCLE`
+- `SYMLINK_DEPTH_EXCEEDED`
 - `CAPABILITY_UNAVAILABLE`
 - `CAPABILITY_RESULT_INVALID`
 - `LIMIT_EXCEEDED`
 - `ACCESSOR_INPUT`
 - `CIRCULAR_INPUT`
-- `INTEGRITY_MISMATCH`
+- `INTEGRITY_FAILURE`
 - `MALFORMED_SERIALIZATION`
 
-A rejected call must not poison later independent valid calls.
+A rejected or malformed call must not poison later independent valid calls.
 
 ## 13. Mutation contract
 
-All public operations are non-mutating with respect to caller-provided inputs.
+All public operations are non-mutating with respect to caller input.
 
-The cube may allocate internal immutable result objects, but it must not:
+The cube must not:
 
-- create directories
-- write files
+- create, delete, or write filesystem objects
 - alter permissions
 - change process cwd
 - mutate environment variables
 - invoke shell commands
 
-## 14. Serialization
+Filesystem-aware behavior exists only behind injected capabilities.
 
-SPR1 serialization must:
+## 14. SPR1 serialization and integrity
 
-- use deterministic canonical field ordering
-- include format and schema version
-- include an integrity checksum
-- reject malformed, unknown-version, oversized, or tampered payloads
-- round-trip without changing semantic identity
-- return deeply immutable parsed results
+`serializeReport()` creates a versioned envelope:
+
+```json
+{
+  "format": "SPR1",
+  "version": 1,
+  "payload": "<canonical-json>",
+  "integrity": "<64 lowercase hex chars>"
+}
+```
+
+The payload is canonical JSON with recursively sorted object keys.
+
+The integrity field is:
+
+`SHA-256("SPR1|1|" + payload)`
+
+`parseReport()` must reject:
+
+- malformed JSON
+- incorrect format/version
+- missing or malformed integrity
+- tampered payloads
+- oversized serialized data
+
+Integrity failures use `INTEGRITY_FAILURE` and verification uses constant-time byte comparison.
+
+Parsed payloads are deeply validated and returned immutable.
 
 ## 15. Cross-platform contract
 
-The verification matrix must include:
+Verification matrix:
 
 - Ubuntu Linux
 - Windows
 - macOS-15-Intel
-- relevant WSL environment when filesystem-aware behavior is exercised
+- relevant WSL coverage where filesystem-aware behavior is exercised
 
-Tests must cover POSIX roots, Windows drives, UNC paths, namespace paths, separator normalization, root/volume mismatch, symlink behavior, and recovery after rejected inputs.
+Tests cover POSIX, drive, UNC, namespace roots, separators, traversal, sibling-prefix escapes, explicit case rules, canonical containment escape, symlink rejection, bounded symlink depth, serialization tampering, and recovery after rejected input.
 
 ## 16. Dependency boundary
 
@@ -201,9 +222,9 @@ Runtime third-party dependencies: **zero**.
 Allowed foundations:
 
 - Node.js standard library
-- native filesystem/path primitives through injected capabilities
+- native filesystem/path behavior supplied through injected capabilities
 
-No shell-based path utilities and no external path libraries may be required at runtime.
+No external path library or shell utility is required.
 
 ## 17. Definition of done
 
@@ -211,16 +232,15 @@ The cube is complete only when:
 
 - implementation matches this SPEC
 - public README/API documentation exists
-- examples exercise lexical and filesystem-aware modes
-- normal, malformed, boundary, recovery, symlink, namespace, and cross-volume tests pass
+- examples cover lexical and filesystem-aware paths
+- normal, malformed, boundary, recovery, namespace, containment, symlink, integrity, and cross-platform tests pass
 - full repository syntax/tests pass
-- browser smoke and platform CI pass where required by repository gates
-- release commit is reproducible
+- browser smoke and platform CI gates pass
+- pre-merge and post-merge verification pass on the release commit
 - `PROJECT_CONTROL.md` and `ROADMAP.md` record the final release and freeze
-- a post-merge verification run passes on the release commit
 
 ## 18. Release gate
 
 `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE -> NEXT CUBE`
 
-No implementation from a different cube may enter this milestone while it is active.
+No unrelated cube implementation may enter while this milestone is active.
