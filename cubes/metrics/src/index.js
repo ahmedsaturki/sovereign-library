@@ -8,6 +8,7 @@ const DEFAULT_MAX_NAME_BYTES = 128;
 const DEFAULT_HISTOGRAM_BUCKETS = Object.freeze([0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]);
 const NAME_RE = /^[a-zA-Z_:][a-zA-Z0-9_:]*$/;
 const LABEL_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+const lexicalCompare = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
 export class MetricsError extends Error {
   constructor(code, message, options = {}) {
@@ -41,7 +42,7 @@ function cloneLabels(labels, config) {
   const entries = Object.entries(labels);
   if (entries.length > config.maxLabels) throw new MetricsError('TOO_MANY_LABELS', `A metric may have at most ${config.maxLabels} labels`);
   const output = {};
-  for (const [key, value] of entries.sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [key, value] of entries.sort(([a], [b]) => lexicalCompare(a, b))) {
     if (!LABEL_RE.test(key)) throw new MetricsError('INVALID_LABEL_KEY', `Invalid label key: ${key}`);
     if (typeof value !== 'string') throw new MetricsError('INVALID_LABEL_VALUE', `Label value for ${key} must be a string`);
     if (utf8Bytes(value) > config.maxLabelValueBytes) throw new MetricsError('LABEL_VALUE_TOO_LARGE', `Label value for ${key} exceeds ${config.maxLabelValueBytes} bytes`);
@@ -69,11 +70,12 @@ function normalizeBuckets(buckets) {
   return Object.freeze(unique);
 }
 
+function sameBuckets(a, b) {
+  return a.length === b.length && a.every((value, index) => Object.is(value, b[index]));
+}
+
 function snapshotMetric(metric) {
-  if (metric.type === 'counter') {
-    return { name: metric.name, type: metric.type, series: [...metric.series.values()].map(series => ({ labels: { ...series.labels }, value: series.value })) };
-  }
-  if (metric.type === 'gauge') {
+  if (metric.type === 'counter' || metric.type === 'gauge') {
     return { name: metric.name, type: metric.type, series: [...metric.series.values()].map(series => ({ labels: { ...series.labels }, value: series.value })) };
   }
   return {
@@ -112,6 +114,10 @@ export function createMetricsRegistry(options = {}) {
     const existing = metrics.get(normalized);
     if (existing) {
       if (existing.type !== type) throw new MetricsError('METRIC_TYPE_CONFLICT', `Metric ${normalized} is already registered as ${existing.type}`);
+      if (type === 'histogram' && optionsForMetric.buckets !== undefined) {
+        const requested = normalizeBuckets(optionsForMetric.buckets);
+        if (!sameBuckets(existing.buckets, requested)) throw new MetricsError('HISTOGRAM_BUCKET_CONFLICT', `Metric ${normalized} already has a different bucket definition`);
+      }
       return existing;
     }
     if (metrics.size >= config.maxMetrics) throw new MetricsError('METRIC_LIMIT', `Metric registry is full at ${config.maxMetrics} metrics`);
@@ -194,7 +200,7 @@ export function createMetricsRegistry(options = {}) {
 
   function snapshot() {
     const result = { config: { ...config }, closed, metrics: [...metrics.values()].map(snapshotMetric) };
-    result.metrics.sort((a, b) => a.name.localeCompare(b.name));
+    result.metrics.sort((a, b) => lexicalCompare(a.name, b.name));
     return freezeDeep(result);
   }
 
