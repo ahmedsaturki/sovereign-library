@@ -35,8 +35,9 @@ test('dry-run retention and purge plans are bounded and non-destructive', async 
   await index.add(record('b', { state: 'expired', updatedAt: 200 }));
   await index.add(record('c', { state: 'tombstoned', updatedAt: 300 }));
   assert.deepEqual(index.purgePlan({ olderThan: 250 }).map((item) => item.id), ['b']);
-  assert.deepEqual(index.retentionPlan({ expireAfterMs: 50 }, 2000).map((item) => item.id), ['a', 'b', 'c'].filter((id) => id !== 'c').slice(0, 3));
+  assert.deepEqual(index.retentionPlan({ expireAfterMs: 50 }, 2000).map((item) => item.id), ['a']);
   assert.equal(index.get('b').state, 'expired');
+  assert.equal(index.get('c').state, 'tombstoned');
 });
 
 test('query supports state/tag/age filters deterministically', async () => {
