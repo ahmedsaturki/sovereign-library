@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Canonical JSON / Normalization Cube v0.1** and release it before starting another cube.
+Finish **CLI / Command Runtime Cube v0.1** and release it before starting another cube.
 
 ## Current repository state
 
-- Last released cube: **Diff / Patch v0.1**
-- Release PR: **#48**, squash-merged
-- Release merge commit: `e1acaeea3ec0b02da8998ac30a2f910e64aa2ade`
-- Release-gate Run 345: completed pre-merge verification; Ubuntu and macOS-15-Intel passed, Windows was queued at merge time.
-- Post-merge verification: **Run 347**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Diff / Patch v0.1 is therefore **FROZEN**.
-- README and ROADMAP were updated to record the release and activate the next cube.
+- Last released cube: **Canonical JSON / Normalization v0.1**
+- Release PR: **#49**, squash-merged
+- Release merge commit: `66f9329182792d879dfb7bcfd2d49c6513d918b9`
+- Pre-merge release verification: **Run 352**, passed on Ubuntu, Windows, and macOS-15-Intel.
+- Post-merge release verification: **Run 353**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Canonical JSON / Normalization v0.1 is therefore **FROZEN**.
+- `ROADMAP.md` and `README.md` were updated to record the release and activate CLI / Command Runtime.
 - Duplicate Redaction PR #47 remains closed as superseded by PR #45.
 
 ## The one-current-task rule
@@ -27,53 +27,57 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**CANONICAL-JSON-NORMALIZATION-V0.1-SPEC**
+**CLI-COMMAND-RUNTIME-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze the public contract for a standalone native Canonical JSON / Normalization product:
+Freeze the public contract for a standalone native CLI / Command Runtime product:
 
-1. define the supported JSON-safe value domain
-2. define deterministic object-key ordering
-3. define primitive serialization semantics, including negative zero and finite-number handling
-4. define rejection semantics for unsupported values and accessor objects
-5. define deterministic canonical JSON output
-6. define bounded depth, node, string, and serialized-output limits
-7. define immutable normalized output and immutable configuration
-8. define typed fail-closed diagnostics without arbitrary payload copying
-9. define source immutability guarantees
-10. define unit, contract, integration, failure, and recovery gates
-11. verify zero runtime third-party dependencies
-12. write the standalone cube specification before implementation
+1. define argv tokenization and strict option parsing semantics
+2. define short/long flags and typed option values
+3. define deterministic subcommand dispatch
+4. define positional argument rules
+5. define help/version rendering and deterministic output
+6. define explicit stdin/stdout/stderr ownership and bounded I/O
+7. define deterministic exit-code mapping
+8. define explicit environment access and allowlisting
+9. define typed fail-closed diagnostics without arbitrary payload copying
+10. define configuration immutability and source immutability
+11. define cross-platform behavior and capability limits
+12. define unit, contract, integration, failure, and recovery gates
+13. verify zero runtime third-party dependencies
+14. write the standalone cube specification before implementation
 
 ## Scope lock
 
-For Canonical JSON / Normalization Cube v0.1, the allowed scope is only:
+For CLI / Command Runtime Cube v0.1, the allowed scope is only:
 
-- JSON-safe primitives, arrays, and plain objects
-- deterministic object-key ordering
-- stable primitive serialization rules
-- explicit handling of negative zero and finite numbers
-- strict rejection of unsupported values
-- bounded depth, node count, string size, and serialized output size
-- immutable normalized output
+- argv tokenization
+- short and long flags
+- typed option values
+- deterministic subcommand routing
+- positional arguments
+- help and version output
+- bounded argument count/token sizes
+- explicit stdin/stdout/stderr handling
+- bounded output sizes
+- deterministic exit-code mapping
+- typed fail-closed command diagnostics
 - immutable configuration
-- deterministic canonical JSON serialization
-- typed fail-closed errors with safe diagnostics
-- source immutability
+- explicit environment allowlisting
+- cross-platform Windows/Linux/macOS/WSL behavior where supported
 - local unit/contract/integration/failure/recovery tests
-- cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- binary canonicalization formats
-- cryptographic signing
-- hashing APIs
-- schema validation
-- semantic normalization of dates, URLs, or domain-specific values
-- network services
-- third-party canonicalization packages
+- shell scripting language execution
+- network-based command discovery
+- plugin installation/package management
+- terminal UI frameworks
+- credential storage
+- remote command execution
+- third-party CLI frameworks
 
 ## Definition of done
 
