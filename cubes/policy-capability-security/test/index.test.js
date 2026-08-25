@@ -41,9 +41,13 @@ test('no match is deny by default and audit records are immutable', () => {
 test('policy snapshots and composition are immutable', () => {
   const a = makeEngine([{ id: 'a', effect: 'allow', action: 'x/**', resource: 'r/**' }]);
   const b = makeEngine([{ id: 'b', effect: 'deny', action: 'x/y', resource: 'r/z' }]);
+  const snapshot = a.snapshot();
+  assert.ok(Object.isFrozen(snapshot));
+  assert.ok(Object.isFrozen(snapshot.rules));
+  assert.ok(Object.isFrozen(snapshot.rules[0]));
   const composed = a.compose(b);
   assert.equal(composed.evaluate({ action: 'x/y', resource: 'r/z' }).allowed, false);
-  assert.ok(Object.isFrozen(composed.snapshot()));
+  assert.equal(composed.snapshot().rules.length, 2);
 });
 
 test('accessors, duplicates, malformed patterns, and unsupported values fail closed', () => {
@@ -54,6 +58,9 @@ test('accessors, duplicates, malformed patterns, and unsupported values fail clo
   assert.equal(evaluated, false);
   assert.throws(() => makeEngine([{ id: 'x', effect: 'allow', action: 'a/**/**', resource: 'r/s' }]), e => e.code === 'INVALID_POLICY');
   assert.throws(() => makeEngine([{ id: 'x', effect: 'allow', action: 'a/b', resource: 'r/s' }, { id: 'x', effect: 'deny', action: 'a/b', resource: 'r/s' }]), e => e.code === 'INVALID_POLICY');
+  assert.throws(() => makeEngine([{ id: 'x', effect: 'allow', action: 'a/b', resource: 'r/s', when: { count: 1n } }]), e => e.code === 'INVALID_CONTEXT');
+  const circular = {}; circular.self = circular;
+  assert.throws(() => makeEngine([{ id: 'x', effect: 'allow', action: 'a/b', resource: 'r/s', when: circular }]), e => e.code === 'INVALID_POLICY');
 });
 
 test('limits are bounded and later valid calls recover', () => {
