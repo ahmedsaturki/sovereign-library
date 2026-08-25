@@ -11,7 +11,6 @@ import {
   createMetricsRegistry,
 } from '../src/index.js';
 
-
 test('counter is monotonic and supports independent labelled series', () => {
   const registry = createMetricsRegistry();
   assert.equal(registry.incrementCounter('requests_total'), 1);
@@ -35,7 +34,7 @@ test('histogram uses deterministic cumulative buckets', () => {
   registry.observeHistogram('latency_ms', 3);
   const metric = registry.snapshot().metrics.find(entry => entry.name === 'latency_ms');
   assert.deepEqual(metric.buckets, [...DEFAULT_HISTOGRAM_BUCKETS]);
-  assert.deepEqual(metric.series[0].buckets, DEFAULT_HISTOGRAM_BUCKETS.map(bucket => bucket >= 3 ? 3 : bucket >= 0.2 ? 2 : bucket >= 0.003 ? 2 : 1));
+  assert.deepEqual(metric.series[0].buckets, [0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3]);
   assert.equal(metric.series[0].count, 3);
   assert.equal(metric.series[0].sum, 3.203);
 });
@@ -146,6 +145,8 @@ test('metric type conflicts and invalid histogram values are deterministic', () 
   registry.incrementCounter('same_name');
   assert.throws(() => registry.setGauge('same_name', 1), error => error.code === 'METRIC_TYPE_CONFLICT');
   assert.throws(() => registry.observeHistogram('latency', -1), error => error.code === 'INVALID_HISTOGRAM_VALUE');
+  assert.throws(() => registry.observeHistogram('custom', 1, undefined, { buckets: [0] }), error => error.code === 'INVALID_BUCKETS');
+  assert.throws(() => registry.observeHistogram('custom', 1, undefined, { buckets: [1, 2] }), error => error.code === 'HISTOGRAM_BUCKET_CONFLICT');
   assert.throws(() => createMetricsRegistry({ maxMetrics: 0 }), error => error.code === 'INVALID_LIMIT');
 });
 
