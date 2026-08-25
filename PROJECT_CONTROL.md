@@ -6,18 +6,19 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Select and specify the next standalone Sovereign product after freezing **Filesystem Metadata / Stat Normalizer v0.1**.
+Select and specify the next standalone Sovereign product after freezing **Bounded File Content Reader / Safe Content Access v0.1**.
 
 ## Current repository state
 
-- Last released cube: **Filesystem Metadata / Stat Normalizer v0.1**
-- Release PR: **#93**, squash-merged
-- Release commit: `44f1acc2f277a2016013146423bd97a7a4e15057`
-- Pre-merge verification: **Run 681**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 641 full-suite tests, and real-browser smoke.
-- Post-merge verification: **Run 682**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Filesystem Metadata / Stat Normalizer v0.1 is **FROZEN** at `44f1acc2f277a2016013146423bd97a7a4e15057`.
-- Blocking fix discovered in Run 680: native Linux `birthtimeMs`/timestamp fields can contain valid fractional milliseconds; the implementation was corrected to truncate finite non-negative timestamps within the safe numeric range.
-- Additional hardening includes privacy-safe coarse platform normalization, Safe Path Resolver-backed containment for relative symlink targets, safe numeric bounds, accessor-safe capabilities/options, deterministic FMN1 SHA-256 serialization, and recovery policies.
+- Last released cube: **Bounded File Content Reader / Safe Content Access v0.1**
+- Release PR: **#94**, merged
+- Release commit: `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`
+- Exact-SHA verification: final Reader verification passed with syntax, 400+ full-suite tests, 14+ Reader-specific tests, and browser smoke before release.
+- Pre-merge verification: **Run 693**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, **661/661 tests**, and real-browser smoke.
+- Mainline release verification: **Run 694**, passed on the release commit.
+- Mainline verification record: **Run 695**, Push verification on `main`; Ubuntu and Windows passed. The macOS-15-Intel job had a transient Node.js test-runner hang on specific runner instances: the original job and first two reruns timed out after the test suite itself passed, while a third fresh-run attempt **Job 98006586509** completed successfully in **34s** with syntax, contract/integration tests, browser smoke, and complete job all passing. No product code or `verify.yml` changes were required.
+- Bounded File Content Reader / Safe Content Access v0.1 is **FROZEN** at `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`.
+- Blocking fixes discovered during Run 687–693 included the test-harness syntax defect, BOM preservation, Safe Path Resolver error mapping, privacy-safe diagnostics, and the correct work-budget boundary. Each produced a minimal fix and regression coverage.
 - No runtime third-party dependencies were added.
 
 ## The one-current-task rule
@@ -28,35 +29,17 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**BOUNDED-FILE-CONTENT-READER-V0.1-SPEC**
+**FILESYSTEM-LEASE-AND-LOCK-REVIEW**
 
 ### Immediate next task
 
-Write and commit the complete SPEC for **Bounded File Content Reader / Safe Content Access v0.1** before implementation begins.
+Review the already-released **File Lease / Advisory Lock v0.1** against the lessons learned from Safe Path, Metadata, Directory Walker, and Reader before selecting the next new cube. Verify that its current public contract, recovery semantics, cross-platform behavior, and documentation still meet the current Sovereign release bar. If gaps are found, create a scoped corrective task; otherwise select and SPEC the next unreleased standalone cube.
 
-The SPEC must lock:
-
-1. standalone cross-platform bounded byte/text reading API
-2. explicit binary versus UTF-8 text semantics with no implicit encoding guessing
-3. root/path anchoring through the released Safe Path Resolver boundary
-4. maximum bytes, maximum lines/chunks, and total work/time budgets
-5. streaming, chunked, and fully-collected modes with bounded memory behavior
-6. exact offset/length semantics, partial read policy, and EOF behavior
-7. symlink non-following default and explicit contained-follow policy
-8. BOM policy, newline normalization policy, and decoder error policy
-9. capability seams for file open/read/stat/close without executable objects entering data validation
-10. cancellation, deadline, backpressure, and cleanup semantics
-11. changing-file and truncation race handling
-12. immutable results and deterministic metadata
-13. privacy-safe diagnostics that never copy arbitrary file contents into errors
-14. Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
-15. zero-runtime-third-party-dependency boundary
-
-No implementation starts before the SPEC exists on the control plane.
+No new cube implementation starts before this review gate is complete.
 
 ## Scope lock
 
-The next cube owns safe, bounded file-content access and decoding. It does not own directory traversal, filesystem watching, glob matching, metadata normalization, snapshots/manifests, persistence, archive extraction, shell execution, or content indexing/search.
+The review must not redesign the architecture or reopen unrelated cubes. It is limited to the released File Lease / Advisory Lock contract, its tests, recovery behavior, portability, and documentation, plus selecting the next unreleased cube once the review is closed.
 
 ## Definition of done
 
