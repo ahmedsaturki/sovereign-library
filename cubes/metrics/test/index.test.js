@@ -45,7 +45,7 @@ test('metric names and label keys/values are deterministic and bounded', () => {
   assert.throws(() => registry.incrementCounter('valid', 1, { 'bad-key!': 'x' }), error => error.code === 'INVALID_LABEL_KEY');
   assert.throws(() => registry.incrementCounter('valid', 1, { a: '12345' }), error => error.code === 'LABEL_VALUE_TOO_LARGE');
   assert.throws(() => registry.incrementCounter('valid', 1, { a: '1', b: '2', c: '3' }), error => error.code === 'TOO_MANY_LABELS');
-  assert.throws(() => registry.incrementCounter('01234567890'), error => error.code === 'METRIC_NAME_TOO_LARGE');
+  assert.throws(() => registry.incrementCounter('a12345678901'), error => error.code === 'METRIC_NAME_TOO_LARGE');
 });
 
 test('label order does not change series identity', () => {
@@ -146,7 +146,8 @@ test('metric type conflicts and invalid histogram values are deterministic', () 
   assert.throws(() => registry.setGauge('same_name', 1), error => error.code === 'METRIC_TYPE_CONFLICT');
   assert.throws(() => registry.observeHistogram('latency', -1), error => error.code === 'INVALID_HISTOGRAM_VALUE');
   assert.throws(() => registry.observeHistogram('custom', 1, undefined, { buckets: [0] }), error => error.code === 'INVALID_BUCKETS');
-  assert.throws(() => registry.observeHistogram('custom', 1, undefined, { buckets: [1, 2] }), error => error.code === 'HISTOGRAM_BUCKET_CONFLICT');
+  registry.observeHistogram('custom', 1, undefined, { buckets: [1, 2] });
+  assert.throws(() => registry.observeHistogram('custom', 1, undefined, { buckets: [1, 3] }), error => error.code === 'HISTOGRAM_BUCKET_CONFLICT');
   assert.throws(() => createMetricsRegistry({ maxMetrics: 0 }), error => error.code === 'INVALID_LIMIT');
 });
 
