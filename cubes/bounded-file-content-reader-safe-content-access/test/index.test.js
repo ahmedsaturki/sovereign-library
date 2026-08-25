@@ -163,7 +163,11 @@ test('stream consumer cancellation closes owned handle', async () => {
 
 test('work budget is enforced', async () => {
   await expectRejectCode(
-    () => readFileContent('/x', { maxWorkUnits: 1 }, capsFor(new Uint8Array(8))),
+    () => readFileContent('/x', {
+      chunkSize: 1,
+      maxWorkUnits: 1,
+      length: 8,
+    }, capsFor(new Uint8Array(8))),
     'WORK_BUDGET_EXCEEDED',
   );
 });
