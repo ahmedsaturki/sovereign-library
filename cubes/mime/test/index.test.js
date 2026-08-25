@@ -66,8 +66,8 @@ test('builder returns usable content type and content length', () => {
   assert.match(built.body.toString(), /Content-Disposition: form-data; name="x"/);
 });
 
-test('invalid boundaries and parts fail early', () => {
-  assert.throws(() => parseMultipart(Buffer.from('x'), { boundary: '' }), MimeError);
+test('invalid boundaries and parts fail early', async () => {
+  await assert.rejects(parseMultipart(Buffer.from('x'), { boundary: '' }), error => error instanceof MimeError && error.code === 'INVALID_BOUNDARY');
   assert.throws(() => buildMultipart([], { boundary: '*bad*' }), MimeError);
   assert.throws(() => buildMultipart([{}], { boundary: 'x' }), MimeError);
 });
