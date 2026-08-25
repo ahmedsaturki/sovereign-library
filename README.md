@@ -74,12 +74,13 @@ Released through v0.1:
 - Redaction / Secret Safety
 - Diff / Patch
 - Canonical JSON / Normalization
+- CLI / Command Runtime
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**CLI / Command Runtime v0.1** — standalone native command-line runtime for deterministic argument parsing, subcommands, flags/options, help/version output, bounded I/O, predictable exit semantics, typed diagnostics, and explicit environment handling with zero runtime third-party dependencies.
+**Search / Index Cube v0.1** — standalone deterministic in-memory text search and inverted-index engine for local document collections, with bounded exact-term/boolean/prefix/phrase queries, predictable relevance ordering, immutable results, and zero runtime third-party dependencies.
 
 ## License
 
