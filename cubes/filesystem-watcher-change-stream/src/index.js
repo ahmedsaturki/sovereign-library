@@ -84,17 +84,25 @@ export function createWatcher(rawOptions) {
   let state = 'created'; let sequence = 0; let queue = []; let waiters = []; let watchers = []; let pendingTimers = new Map(); let terminalError = null; let sourceEnded = false; let closed = false;
   const diagnostics = { overflow: 0, dropped: 0, suppressed: 0 };
   function snapshotStats() { return immutable({ ...diagnostics, queued: queue.length, state }); }
+  function finishIfIdle() { if (!sourceEnded || pendingTimers.size > 0 || queue.length > 0 || waiters.length === 0 || terminalError || closed) return; for (const waiter of waiters.splice(0)) waiter.resolve({ value: undefined, done: true }); }
   function emitError(error) { terminalError = error instanceof FilesystemWatcherError ? error : new FilesystemWatcherError('SOURCE_FAILURE', 'watch source failed'); for (const waiter of waiters.splice(0)) waiter.reject(terminalError); }
   function enqueue(baseEvent) {
     if (closed) return;
     const event = immutable({ format: FORMAT, sequence: ++sequence, rootId: baseEvent.rootId, type: baseEvent.type, path: baseEvent.path, ...(baseEvent.previousPath ? { previousPath: baseEvent.previousPath } : {}) });
     eventSize(event);
     const waiter = waiters.shift();
-    if (waiter) { waiter.resolve({ value: event, done: false }); return; }
-    if (queue.length >= options.queueCapacity) { diagnostics.overflow += 1; if (options.overflow === 'reject_new') { diagnostics.dropped += 1; return; } if (options.overflow === 'drop_oldest') { queue.shift(); diagnostics.dropped += 1; } if (options.overflow === 'drop_newest') { diagnostics.dropped += 1; return; } }
+    if (waiter) { waiter.resolve({ value: event, done: false }); finishIfIdle(); return; }
+    if (queue.length >= options.queueCapacity) { diagnostics.overflow += 1; if (options.overflow === 'reject_new') { diagnostics.dropped += 1; finishIfIdle(); return; } if (options.overflow === 'drop_oldest') { queue.shift(); diagnostics.dropped += 1; } if (options.overflow === 'drop_newest') { diagnostics.dropped += 1; finishIfIdle(); return; } }
     queue.push(event);
   }
-  function emit(baseEvent) { if (options.debounceMs === 0) return enqueue(baseEvent); const key = `${baseEvent.rootId}:${baseEvent.path}`; const previous = pendingTimers.get(key); if (previous) clearTimeout(previous); const timer = setTimeout(() => { pendingTimers.delete(key); enqueue(baseEvent); }, options.debounceMs); pendingTimers.set(key, timer); }
+  function emit(baseEvent) {
+    if (options.debounceMs === 0) return enqueue(baseEvent);
+    const key = `${baseEvent.rootId}:${baseEvent.path}`;
+    const previous = pendingTimers.get(key);
+    if (previous) clearTimeout(previous);
+    const timer = setTimeout(() => { pendingTimers.delete(key); enqueue(baseEvent); finishIfIdle(); }, options.debounceMs);
+    pendingTimers.set(key, timer);
+  }
   function handleNative(root, action, filename) { try { emit({ rootId: root.rootId, ...classifyNative(root, filename, action) }); } catch (error) { emitError(error); void close(); } }
   async function startInjected(source) {
     if (!source || typeof source[Symbol.asyncIterator] !== 'function') fail('INVALID_SOURCE', 'injected source must be AsyncIterable');
@@ -103,14 +111,14 @@ export function createWatcher(rawOptions) {
       const root = options.roots.find((r) => r.rootId === raw.rootId || r.publicRoot === raw.root); if (!root) fail('UNKNOWN_ROOT', 'event references unknown root');
       const path = publicPath(root.path, text(raw.path, 'event.path')); const previousPath = raw.previousPath === undefined ? undefined : publicPath(root.path, text(raw.previousPath, 'event.previousPath')); emit({ rootId: root.rootId, type, path, previousPath }); if (closed) break;
     }
-    if (!closed && !terminalError) { sourceEnded = true; for (const waiter of waiters.splice(0)) waiter.resolve({ value: undefined, done: true }); }
+    if (!closed && !terminalError) { sourceEnded = true; finishIfIdle(); }
   }
   async function start() {
     if (state === 'running') return snapshotStats(); if (state === 'closing' || state === 'closed') fail('CLOSED', 'watcher is closed'); state = 'starting';
     try { if (options.source) { state = 'running'; startInjected(options.source).catch((error) => { emitError(error); void close(); }); } else { for (const root of options.roots) { const handle = nativeWatch(nativeWatchPath(root.path), { recursive: options.recursive }, (action, filename) => handleNative(root, action, filename)); handle.on('error', emitError); watchers.push(handle); } state = 'running'; } return snapshotStats(); }
     catch (error) { emitError(error); await close(); throw error; }
   }
-  async function next() { if (queue.length) return { value: queue.shift(), done: false }; if (terminalError) return Promise.reject(terminalError); if (closed || sourceEnded) return { value: undefined, done: true }; return new Promise((resolveNext, rejectNext) => waiters.push({ resolve: resolveNext, reject: rejectNext })); }
+  async function next() { if (queue.length) return { value: queue.shift(), done: false }; if (terminalError) return Promise.reject(terminalError); if (closed) return { value: undefined, done: true }; if (sourceEnded && pendingTimers.size === 0) return { value: undefined, done: true }; return new Promise((resolveNext, rejectNext) => waiters.push({ resolve: resolveNext, reject: rejectNext })); }
   async function close() { if (state === 'closed' || state === 'closing') return snapshotStats(); state = 'closing'; closed = true; for (const timer of pendingTimers.values()) clearTimeout(timer); pendingTimers.clear(); for (const handle of watchers) { try { handle.close(); } catch { /* cleanup boundary */ } } watchers = []; queue = []; sourceEnded = true; for (const waiter of waiters.splice(0)) waiter.resolve({ value: undefined, done: true }); state = 'closed'; return snapshotStats(); }
   function stats() { return snapshotStats(); }
   return Object.freeze({ start, next, close, stats });
