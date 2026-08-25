@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Release / Verification Harness v0.1
+
+PR #58 was squash-merged as `6e60d151691639948fabceaec1ee28964d40d881`. Pre-merge Run 430 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 431 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
+The release provides deterministic local release-stage execution, safe native command invocation, bounded process output and diagnostics, timeout/cancellation/retry semantics, deterministic required/optional verdict aggregation, immutable machine-readable verification snapshots, and zero runtime third-party dependencies.
+
 ### Execution Engine v0.1
 
 PR #57 was squash-merged as `739798bb3de3d50884dc7b3f28bada7e4f58f1a2`. Pre-merge Run 424 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 425 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -18,15 +24,15 @@ The release provides deterministic dependency-aware task execution, explicit suc
 
 ### Policy / Capability Security v0.1
 
-PR #56 was squash-merged as `a1067431f06d20ad2bdce321590ded9e79471d02`. Pre-merge Run 418 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, contract/integration tests, and the real-browser smoke gate. Post-merge Run 419 passed on `main` with the same gates.
+PR #56 was squash-merged as `a1067431f06d20ad2bdce321590ded9e79471d02` after cross-platform verification.
 
 ### Agent Runtime v0.1
 
-PR #55 was squash-merged as `8d4608e012176a55bdc1822d3aea65add7aa7669`. Pre-merge Run 409 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 410 was a successful push verification on `main`.
+PR #55 was squash-merged as `8d4608e012176a55bdc1822d3aea65add7aa7669` after cross-platform verification.
 
 ### AI / Inference Runtime v0.1
 
-PR #54 was squash-merged as `83e076c3b0d8e0bc5e7f25c35e865cb9655121e9`. Pre-merge Run 403 and post-merge Run 404 passed on Ubuntu, Windows, and macOS-15-Intel.
+PR #54 was squash-merged as `83e076c3b0d8e0bc5e7f25c35e865cb9655121e9` after cross-platform verification.
 
 ### Reporting / Export v0.1
 
@@ -78,29 +84,30 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Release / Verification Harness v0.1
+### Release Manifest / Integrity v0.1
 
-Target: a standalone deterministic local release-verification harness that executes explicit verification stages, safely runs allowlisted local commands without shell dependence, applies bounded timeout/cancellation/retry semantics, and emits immutable machine-readable release verdicts.
+Target: a standalone deterministic local manifest and integrity component for generating versioned canonical manifests, calculating native content digests, verifying integrity, and emitting immutable mismatch reports.
 
 Initial scope:
-- immutable stage definitions and normalized commands
-- deterministic stage ordering and lifecycle states
-- native child-process execution without shell dependence
-- bounded stdout/stderr capture and diagnostics
-- per-stage timeout, cancellation, retry, and terminal outcomes
-- deterministic pass/fail/skip aggregation
-- immutable verification snapshots and reports
-- typed fail-closed errors and safe command validation
+- canonical manifest normalization and stable entry ordering
+- deterministic file/entry descriptors and content digests
+- explicit versioned manifest schema
+- bounded local manifest generation
+- deterministic integrity verification and mismatch reporting
+- immutable manifest and verification snapshots
+- fail-closed malformed manifests, unsafe paths, duplicates, and unsupported values
+- bounded entry count, path length, metadata size, and total manifest size
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- hosted CI provider SDKs
-- remote execution
-- secrets management
-- distributed agents
+- cryptographic signing or key management
+- remote registries
+- package publishing
+- hosted artifact storage
+- CI-provider integrations
 - GUI/admin console
-- browser automation implementation
+- network transport
 
 ## Parked
 
