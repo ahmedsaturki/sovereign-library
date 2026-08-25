@@ -83,12 +83,13 @@ Released through v0.1:
 - Agent Runtime
 - Policy / Capability Security
 - Execution Engine
+- Release / Verification Harness
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Release / Verification Harness v0.1** — standalone deterministic local verification orchestrator for safe stage execution, bounded process output, retry/timeout/cancellation semantics, deterministic aggregation, and immutable machine-readable release verdicts.
+**Release Manifest / Integrity v0.1** — standalone deterministic local manifest and integrity component for versioned canonical manifests, native content digests, bounded generation, deterministic integrity verification, and immutable mismatch reports.
 
 ## License
 
