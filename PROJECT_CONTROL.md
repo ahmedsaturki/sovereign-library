@@ -6,17 +6,18 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Select and specify the next standalone Sovereign product after freezing **Glob / Path Matcher v0.1**.
+Select and specify the next standalone Sovereign product after freezing **Safe Path Resolver / Containment Boundary v0.1**.
 
 ## Current repository state
 
-- Last released cube: **Glob / Path Matcher v0.1**
-- Release PR: **#87**, squash-merged
-- Release commit: `c9a3d330a16a488e00c28311085204363bab2fc7`
-- Pre-merge verification: **Run 654**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 655**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Glob / Path Matcher v0.1 is **FROZEN** at `c9a3d330a16a488e00c28311085204363bab2fc7`.
-- Blocking fixes included escape-tokenization ordering and explicit absolute-root anchoring; regression coverage was added and the final platform matrix passed without workflow bypasses.
+- Last released cube: **Safe Path Resolver / Containment Boundary v0.1**
+- Release PR: **#90**, squash-merged
+- Release commit: `0216f3acd81331c031ac0ae023bfc1322f9064bc`
+- Exact-SHA external verification: **PASS** at `b52473ee8f4148932ec3d8526bbfe3ef5abac14c` with 400+ repository tests, 14/14 cube tests, and browser smoke 1/1.
+- Pre-merge verification: **Run 664**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 665**, attempt 2 passed on Ubuntu, Windows, and macOS-15-Intel; the original macOS attempt had a transient runner hang and the fresh same-commit rerun passed all gates.
+- Safe Path Resolver / Containment Boundary v0.1 is **FROZEN** at `0216f3acd81331c031ac0ae023bfc1322f9064bc`.
+- No product-code or workflow changes were required to resolve the post-merge runner anomaly.
 
 ## The one-current-task rule
 
@@ -26,25 +27,25 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**SAFE-PATH-RESOLVER-V0.1-SPEC**
+**DIRECTORY-WALKER-BOUNDED-TREE-TRAVERSAL-V0.1-SPEC**
 
 ### Immediate next task
 
-Write and commit the complete SPEC for **Safe Path Resolver / Containment Boundary v0.1** before implementation begins.
+Write and commit the complete SPEC for **Directory Walker / Bounded Tree Traversal v0.1** before implementation begins.
 
 The SPEC must lock:
 
-1. standalone cross-platform path resolution and containment API
-2. lexical normalization versus filesystem-aware canonicalization semantics
-3. absolute, relative, drive, UNC, and root behavior
-4. explicit base/root scope anchoring
-5. traversal (`..`) handling and escape rejection
-6. symlink-aware versus lexical-only resolution policies
-7. Windows namespace and volume-boundary handling
-8. deterministic comparison semantics independent of host OS defaults
-9. bounded path length, segment count, and recursion limits
-10. capability seams for filesystem-aware resolution without leaking executable objects into data validation
-11. failure/recovery behavior and non-mutating guarantees
+1. standalone cross-platform directory traversal API
+2. root anchoring and safe-path integration without shell expansion
+3. lexical versus filesystem-aware traversal semantics
+4. deterministic traversal order independent of host filesystem enumeration
+5. file, directory, symlink, and special-entry policies
+6. bounded depth, entry count, path length, and total traversal budget
+7. cancellation, timeout, and backpressure semantics
+8. visitor versus collected-result modes without accidental unbounded memory growth
+9. capability seams for filesystem metadata and directory reads without leaking executable objects into data validation
+10. failure/recovery behavior including partial traversal policy
+11. non-mutating guarantees
 12. Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
 13. zero-runtime-third-party-dependency boundary
 
@@ -52,7 +53,7 @@ No implementation starts before the SPEC exists on the control plane.
 
 ## Scope lock
 
-The next cube owns safe path resolution, containment, and comparison semantics. It does not own glob matching, directory traversal, snapshotting, filesystem watching, archive extraction, shell expansion, shell execution, or persistent storage.
+The next cube owns bounded directory traversal and deterministic tree walking. It does not own snapshot serialization/digesting, filesystem watching, glob matching, safe path resolution policy, archive extraction, shell expansion, shell execution, or persistent storage.
 
 ## Definition of done
 
