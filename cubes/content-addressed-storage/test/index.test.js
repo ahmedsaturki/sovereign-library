@@ -29,6 +29,16 @@ test('invalid metadata accessors fail before getter evaluation and valid writes 
   assert.equal(await store.has(good), true);
 });
 
+test('closed stores fail closed and valid independent instances still recover', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'cas-'));
+  const store = await new CasStore({ root }).open();
+  const address = await store.put('stable');
+  store.close();
+  await assert.rejects(() => store.get(address), /CAS store is closed/);
+  const reopened = await new CasStore({ root }).open();
+  assert.deepEqual([...await reopened.get(address)], [...Buffer.from('stable')]);
+});
+
 test('corruption is detected on read', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'cas-'));
   const store = await new CasStore({ root }).open();
