@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Bundle / Reproducible Package Cube v0.1** as the next standalone Sovereign product.
+Build the **Local Artifact Catalog / Package Index Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Content-Addressed Storage / CAS v0.1**
-- Release PR: **#61**, squash-merged
-- Release commit: `63ba1b7e684857e95303b02864c91627a6c601e0`
-- Pre-merge verification: **Run 450**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 451**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Content-Addressed Storage / CAS v0.1 is therefore **FROZEN**.
-- The release provides native SHA-256 content addressing, bounded local object storage, atomic writes, corruption detection, immutable-by-copy reads, bounded metadata, and typed fail-closed errors with zero runtime third-party dependencies.
+- Last released cube: **Artifact Bundle / Reproducible Package v0.1**
+- Release PR: **#62**, squash-merged
+- Release commit: `a1d2655e7d48b63ce6ded71e4e449ea2c3a841dd`
+- Pre-merge verification: **Run 458**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 459**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Bundle / Reproducible Package v0.1 is therefore **FROZEN**.
+- The release provides deterministic SAB1 bundles, canonical metadata and paths, bounded entries, native SHA-256 integrity descriptors, safe verification/extraction, typed fail-closed errors, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,36 +26,37 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-BUNDLE-REPRODUCIBLE-PACKAGE-V0.1-SPEC**
+**LOCAL-ARTIFACT-CATALOG-PACKAGE-INDEX-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze and implement the public contract for a standalone deterministic package/bundle component:
+Implement the public contract for a standalone deterministic local artifact catalog/package index:
 
-1. deterministic file ordering and normalized bundle paths
-2. reproducible bundle metadata and stable serialization
-3. bounded entry count, path length, per-entry size, and total bundle size
-4. native local archive/bundle generation without a network service
-5. explicit versioned bundle format and integrity descriptors
-6. safe path validation and traversal rejection
-7. immutable bundle manifests and verification results
-8. fail-closed malformed bundles, duplicates, unsupported metadata, and corrupt content
-9. deterministic extraction/verification behavior without arbitrary command execution
-10. zero runtime third-party dependencies
-11. unit, contract, failure, recovery, and cross-platform verification
-12. standalone SPEC, README, and runnable example before release
+1. canonical artifact records and stable identifiers
+2. deterministic package/version metadata normalization
+3. bounded catalog size, record size, identifier length, and query output
+4. atomic add/update/remove semantics with recovery
+5. deterministic exact/prefix/tag/version queries
+6. immutable snapshots and typed fail-closed errors
+7. duplicate/conflicting record rejection
+8. corruption detection for persisted index state
+9. deterministic serialization suitable for backup/restore
+10. no required network service, registry, or external SDK
+11. zero runtime third-party dependencies
+12. unit, contract, failure, recovery, and cross-platform verification
+13. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Bundle / Reproducible Package v0.1, allowed scope is only:
+For Local Artifact Catalog / Package Index v0.1, allowed scope is only:
 
-- local deterministic bundle generation
-- canonical path normalization and stable entry ordering
-- versioned bundle format and metadata
-- bounded archive inputs and outputs
-- native integrity descriptors
-- deterministic verification and safe extraction
+- local catalog/index state
+- deterministic artifact identity and metadata normalization
+- bounded record storage and query output
+- exact/prefix/tag/version queries
+- atomic mutations and recovery
 - immutable public snapshots
+- deterministic serialization and corruption detection
 - typed fail-closed errors
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
@@ -64,12 +65,12 @@ Explicitly out of scope for v0.1:
 
 - remote registries
 - package publishing
-- signing/key management
-- remote replication
-- GUI/admin console
 - network transport
-- installer generation
-- operating-system package formats
+- dependency resolution across remote sources
+- signing/key management
+- GUI/admin console
+- full semantic-version solver
+- background synchronization
 
 ## Definition of done
 
