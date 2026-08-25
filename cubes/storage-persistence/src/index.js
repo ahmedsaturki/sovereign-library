@@ -24,8 +24,16 @@ class SnapshotError extends Error {
 const fail = (code, message, options = {}) => { throw new SnapshotError(code, message, options); };
 const objectLike = (value) => value !== null && typeof value === 'object';
 
+function assertDataProperties(value, label) {
+  if (!objectLike(value) || Array.isArray(value)) fail('INVALID_CONFIG', `${label} must be an object`);
+  for (const key of Object.keys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !('value' in descriptor)) fail('INVALID_CONFIG', `${label} contains an accessor property`);
+  }
+}
+
 function validateLimits(input = {}) {
-  if (!objectLike(input) || Array.isArray(input)) fail('INVALID_CONFIG', 'limits must be an object');
+  assertDataProperties(input, 'limits');
   const limits = Object.freeze({ ...DEFAULT_LIMITS, ...input });
   for (const [key, value] of Object.entries(limits)) {
     if (!Number.isSafeInteger(value) || value < 1) fail('INVALID_CONFIG', `${key} must be a positive safe integer`);
@@ -86,7 +94,7 @@ function encodePayload(payload, limits) {
 function buildEnvelope(payload, metadata, limits, algorithm) {
   const encoded = encodePayload(payload, limits);
   const safeMetadata = metadata ?? {};
-  if (!objectLike(safeMetadata) || Array.isArray(safeMetadata)) fail('INVALID_SNAPSHOT', 'Metadata must be an object');
+  assertDataProperties(safeMetadata, 'metadata');
   assertNoAccessors(safeMetadata, 0, limits);
   const metadataJson = canonicalJson(safeMetadata);
   if (Buffer.byteLength(metadataJson, 'utf8') > limits.maxMetadataBytes) fail('LIMIT_EXCEEDED', 'Metadata exceeds configured limit');
@@ -118,7 +126,7 @@ function decodeEnvelope(text, limits, expectedAlgorithm) {
   } catch (cause) {
     fail('MALFORMED_SNAPSHOT', 'Snapshot payload is not valid JSON', { cause });
   }
-  if (!objectLike(metadata) || Array.isArray(metadata)) fail('MALFORMED_SNAPSHOT', 'Snapshot metadata is invalid');
+  assertDataProperties(metadata, 'metadata');
   encodePayload(payload, limits);
   return Object.freeze({ format: 'SLIBSNAP', version: 1, algorithm, metadata: cloneFrozen(metadata), payload: cloneFrozen(payload), checksum: expected });
 }
@@ -130,9 +138,9 @@ function safePath(filePath, limits) {
 }
 
 function createSnapshotStore(config = {}) {
-  if (!objectLike(config) || Array.isArray(config)) fail('INVALID_CONFIG', 'Configuration must be an object');
-  if (Object.keys(config).some(key => !Object.prototype.hasOwnProperty.call(Object.getOwnPropertyDescriptors(config), key))) fail('INVALID_CONFIG', 'Invalid configuration');
-  const limits = validateLimits(config.limits ?? {});
+  assertDataProperties(config, 'config');
+  const limitsValue = config.limits ?? {};
+  const limits = validateLimits(limitsValue);
   const algorithm = config.algorithm ?? 'sha256';
   if (!['sha256', 'sha512'].includes(algorithm)) fail('INVALID_CONFIG', 'Unsupported checksum algorithm');
   let mutationSequence = 0;
