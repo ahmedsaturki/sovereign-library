@@ -87,12 +87,13 @@ Released through v0.1:
 - Release Manifest / Integrity
 - Content-Addressed Storage / CAS
 - Artifact Bundle / Reproducible Package
+- Local Artifact Catalog / Package Index
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Local Artifact Catalog / Package Index v0.1** — standalone deterministic local catalog/index for artifact/package records, stable identifiers, exact/prefix/tag/version queries, bounded state, atomic recovery, immutable snapshots, and deterministic serialization.
+**Artifact Dependency Graph / Relationship Index v0.1** — standalone deterministic local relationship graph for artifact/package nodes and typed directed edges, bounded adjacency/path queries, cycle detection, atomic mutations, immutable snapshots, and deterministic serialization.
 
 ## License
 
