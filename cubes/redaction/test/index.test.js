@@ -68,6 +68,14 @@ test('custom matcher receives safe path metadata', () => {
   assert.ok(paths.every(path => !path.includes('secret')));
 });
 
+test('custom matcher failures are typed and fail closed', () => {
+  const redactor = createRedactor({ keyMatcher: () => { throw new Error('matcher blew up'); } });
+  assert.throws(
+    () => redactor.redact({ safe: 'value' }),
+    error => error instanceof RedactionError && error.code === 'CUSTOM_MATCHER_FAILED' && error.path === '$.safe' && !String(error).includes('value'),
+  );
+});
+
 test('cycles fail closed before recursive leakage', () => {
   const source = { safe: 'ok' };
   source.self = source;
@@ -117,4 +125,13 @@ test('replacement is validated and configuration is immutable', () => {
   assert.equal(Object.isFrozen(redactor.config), true);
   assert.equal(redactor.redact({ password: 'x' }).password, '<secret>');
   assert.throws(() => createRedactor({ replacement: '' }), error => error.code === 'INVALID_REPLACEMENT');
+});
+
+test('prototype-pollution keys are copied as data and cannot mutate the output prototype', () => {
+  const source = JSON.parse('{"__proto__":{"polluted":true},"constructor":{"secret":"x"},"safe":"ok"}');
+  const result = createRedactor().redactWithReport(source);
+  assert.equal(Object.getPrototypeOf(result.value), Object.prototype);
+  assert.deepEqual(Object.getOwnPropertyDescriptor(result.value, '__proto__').value, { polluted: true });
+  assert.equal({}.polluted, undefined);
+  assert.equal(result.value.safe, 'ok');
 });
