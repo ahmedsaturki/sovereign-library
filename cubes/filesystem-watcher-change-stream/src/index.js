@@ -61,7 +61,7 @@ function normalizeOptions(options) {
   validateOptionsShape(options);
   if (!Array.isArray(options.roots) || options.roots.length === 0) fail('INVALID_ROOTS', 'roots must be a non-empty array');
   if (options.roots.length > MAX_ROOTS) fail('LIMIT_EXCEEDED', `roots exceeds ${MAX_ROOTS}`);
-  const roots = options.roots.map(normalizeRoot);
+  const roots = immutable(options.roots.map(normalizeRoot));
   const ids = new Set();
   for (const r of roots) { if (ids.has(r.publicRoot)) fail('DUPLICATE_ROOT', `duplicate root ${r.publicRoot}`); ids.add(r.publicRoot); }
   const queueCapacity = options.queueCapacity ?? 256;
@@ -71,7 +71,7 @@ function normalizeOptions(options) {
   const debounceMs = options.debounceMs ?? 0;
   if (!Number.isInteger(debounceMs) || debounceMs < 0 || debounceMs > MAX_DEBOUNCE_MS) fail('INVALID_DEBOUNCE', 'debounceMs is invalid');
   if (options.recursive !== undefined && typeof options.recursive !== 'boolean') fail('INVALID_RECURSIVE', 'recursive must be boolean');
-  return immutable({ roots, recursive: options.recursive ?? false, queueCapacity, overflow, debounceMs, source: options.source ?? null });
+  return Object.freeze({ roots, recursive: options.recursive ?? false, queueCapacity, overflow, debounceMs, source: options.source ?? null });
 }
 
 function publicPath(rootPath, candidate) { const absolute = resolve(rootPath, candidate); const rel = relative(rootPath, absolute); if (rel === '' || (!rel.startsWith(`..${sep}`) && rel !== '..' && !isAbsolute(rel))) return rel.split(sep).join('/'); fail('PATH_ESCAPE', 'event path escapes watcher root'); }
