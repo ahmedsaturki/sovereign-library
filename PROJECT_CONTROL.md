@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Execution Engine Cube v0.1** as the next standalone Sovereign product.
+Build the **Release / Verification Harness Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Policy / Capability Security v0.1**
-- Release PR: **#56**, squash-merged
-- Release commit: `a1067431f06d20ad2bdce321590ded9e79471d02`
-- Pre-merge verification: **Run 418**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, contract/integration tests, and real-browser smoke.
-- Post-merge verification: **Run 419**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, contract/integration tests, and real-browser smoke.
-- Policy / Capability Security v0.1 is therefore **FROZEN**.
-- The release provides deterministic local authorization decisions, explicit allow/deny capability records, hierarchical action/resource matching, deterministic precedence, bounded contextual inputs, fail-closed validation, immutable audit records, composable public snapshots, and zero runtime third-party dependencies.
+- Last released cube: **Execution Engine v0.1**
+- Release PR: **#57**, squash-merged
+- Release commit: `739798bb3de3d50884dc7b3f28bada7e4f58f1a2`
+- Pre-merge verification: **Run 424**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 425**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Execution Engine v0.1 is therefore **FROZEN**.
+- The release provides deterministic dependency-aware local task execution, explicit success/failure/cancel/timeout/skipped outcomes, bounded execution, retry/recovery, immutable snapshots/results, typed fail-closed errors, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,50 +26,49 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**EXECUTION-ENGINE-V0.1-SPEC**
+**RELEASE-VERIFICATION-HARNESS-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze and implement the public contract for a standalone deterministic execution engine:
+Freeze and implement the public contract for a standalone deterministic release-verification harness:
 
-1. immutable execution definitions and normalized task records
-2. deterministic task ordering and execution state transitions
-3. explicit success, failure, cancellation, timeout, and skipped outcomes
-4. bounded task count, payload size, execution depth, and diagnostics
-5. dependency-aware execution without hidden ambient authority
-6. deterministic retry and recovery semantics at the execution layer
-7. immutable execution snapshots and auditable result records
-8. fail-closed malformed definitions, cycles, duplicate ids, and unsupported values
-9. no network, scheduler service, worker framework, or external orchestration SDK requirement
+1. explicit verification stage definitions and normalized commands
+2. deterministic stage ordering and lifecycle states
+3. native child-process execution without shell dependence
+4. bounded stdout/stderr capture and diagnostic limits
+5. per-stage timeout, cancellation, retry, and terminal outcomes
+6. deterministic aggregation of stage results into a release verdict
+7. immutable verification snapshots and machine-readable reports
+8. fail-closed malformed definitions and unsafe command configuration
+9. no network service or CI-provider SDK requirement
 10. zero runtime third-party dependencies
 11. unit, contract, failure, recovery, and cross-platform verification
 12. standalone SPEC, README, and runnable example before release
 
 ## Scope lock
 
-For Execution Engine Cube v0.1, allowed scope is only:
+For Release / Verification Harness Cube v0.1, allowed scope is only:
 
-- local deterministic task execution
-- immutable task definitions and execution snapshots
-- dependency ordering and state transitions
-- success/failure/cancel/timeout/skipped semantics
-- bounded execution context and diagnostics
-- deterministic retry/recovery policy
+- local deterministic release-stage orchestration
+- native child-process execution
+- bounded output and diagnostics
+- timeout/cancellation/retry semantics
+- deterministic pass/fail/skip aggregation
+- immutable verification reports
 - typed fail-closed errors
-- immutable audit/result records
+- safe command allowlisting and argument validation
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- distributed execution
-- remote workers
-- cron/scheduling service integration
+- hosted CI control planes
+- GitHub/Azure/GitLab provider SDKs
+- remote execution
+- distributed agents
+- secrets management
 - GUI/admin console
-- network orchestration
-- queue broker integration
-- multi-agent orchestration
-- browser automation
+- browser automation implementation
 
 ## Definition of done
 
