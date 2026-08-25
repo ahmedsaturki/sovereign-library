@@ -81,12 +81,13 @@ Released through v0.1:
 - Reporting / Export
 - AI / Inference Runtime
 - Agent Runtime
+- Policy / Capability Security
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Policy / Capability Security Cube v0.1** — standalone deterministic local capability-policy engine for immutable policy snapshots, explicit allow/deny rules, hierarchical resource/action matching, deterministic precedence, bounded contextual evaluation, fail-closed diagnostics, and immutable audit decision records.
+**Execution Engine v0.1** — standalone deterministic local execution engine for immutable task definitions, dependency ordering, explicit lifecycle states and outcomes, bounded execution, deterministic retry/recovery semantics, and immutable execution snapshots/results.
 
 ## License
 
