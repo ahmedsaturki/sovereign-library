@@ -4,6 +4,26 @@ import { createWatcher, FILESYSTEM_WATCHER_FORMAT } from '../src/index.js';
 
 async function* sourceOf(events) { for (const event of events) yield event; }
 
+function controlledSource(events) {
+  let index = 0;
+  let finish;
+  const done = new Promise((resolve) => { finish = resolve; });
+  return {
+    done,
+    source: {
+      [Symbol.asyncIterator]() {
+        return {
+          next: async () => {
+            if (index < events.length) return { value: events[index++], done: false };
+            finish();
+            return { value: undefined, done: true };
+          },
+        };
+      },
+    },
+  };
+}
+
 const root = '/virtual/project';
 
 function injected(events, overrides = {}) {
@@ -29,13 +49,14 @@ test('normalizes injected create/change/remove/rename events with immutable sequ
 
 test('supports all overflow policies with bounded queue', async () => {
   for (const overflow of ['reject_new', 'drop_oldest', 'drop_newest']) {
-    const watcher = injected([
+    const { source, done } = controlledSource([
       { rootId: 'root-1', type: 'created', path: '1.txt' },
       { rootId: 'root-1', type: 'created', path: '2.txt' },
       { rootId: 'root-1', type: 'created', path: '3.txt' },
-    ], { queueCapacity: 2, overflow });
+    ]);
+    const watcher = createWatcher({ roots: [root], source, queueCapacity: 2, overflow });
     await watcher.start();
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await done;
     const first = await watcher.next();
     const second = await watcher.next();
     assert.equal(first.done, false);
