@@ -6,7 +6,18 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Redaction / Secret Safety Cube v0.1** and release it before starting another cube.
+Finish **Diff / Patch Cube v0.1** and release it before starting another cube.
+
+## Current repository state
+
+- Last released cube: **Redaction / Secret Safety v0.1**
+- Release PR: **#45**, squash-merged
+- Release commit: `e1040a0464f10f6e20d2ed39b5dd2e9097edae83`
+- Latest main commit: `907680fd2f2c8c7c2fa8c3a3a6e30a81c8b00878`
+- Latest main commit: `docs: release redaction and advance diff patch milestone`
+- Latest release-gate CI: **Run 341**, passed on Ubuntu, Windows, and macOS-15-Intel with full repository tests and real-browser smoke
+- Post-release verification: **Run 342** initially exposed one macOS-15-Intel timing-sensitive Worker Pool timeout test; failed jobs were re-run and the retry is currently in progress. No Redaction regression was observed.
+- Duplicate Redaction PR #47 was closed as superseded by PR #45.
 
 ## The one-current-task rule
 
@@ -16,51 +27,58 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**REDACTION-SECRET-SAFETY-V0.1-RELEASE**
+**DIFF-PATCH-V0.1-RELEASE**
 
 ### Immediate next task
 
-Build and release a standalone native redaction/safety product:
+Build and release a standalone native Diff / Patch product:
 
-1. freeze sensitive-key and custom-rule matching semantics
-2. implement bounded recursive plain-object/array traversal
-3. implement deterministic string-pattern redaction
-4. enforce depth/node/input/output bounds
-5. detect circular references before unsafe recursion
-6. guarantee source immutability
-7. expose immutable redacted output and safe diagnostics
-8. verify zero runtime third-party dependencies
-9. run the supported cross-platform CI matrix
-10. fix only failures required for the v0.1 gate
-11. squash-merge the release PR
-12. update ROADMAP before starting another cube
+1. freeze JSON-safe value and path semantics
+2. define deterministic structural diff operations
+3. define strict path validation and operation ordering
+4. implement immutable diff output
+5. implement bounded operation/depth/value limits
+6. implement deterministic patch application
+7. reject malformed, unsafe, ambiguous, or conflicting patch operations
+8. guarantee source immutability for both diff and patch
+9. expose safe typed diagnostics without leaking arbitrary payloads
+10. verify zero runtime third-party dependencies
+11. add unit, contract, integration, failure, and recovery tests
+12. run the supported cross-platform CI matrix and real-browser smoke gate
+13. fix only failures required for the v0.1 gate
+14. squash-merge the release PR
+15. update `ROADMAP.md` and freeze the cube before starting another milestone
 
 ## Scope lock
 
-For Redaction / Secret Safety Cube v0.1, the allowed scope is only:
+For Diff / Patch Cube v0.1, the allowed scope is only:
 
-- deterministic sensitive-key matching
-- configurable key rules
-- configurable string secret-pattern rules
-- recursive plain objects and arrays
-- bounded depth/node/string/input/output sizes
-- circular-reference detection
+- JSON-safe primitives, arrays, and plain objects
+- deterministic structural diff generation
+- deterministic patch operation format
+- add/remove/replace operations
+- strict path parsing and validation
+- bounded operation count and traversal depth
+- bounded string/value sizes
+- immutable diff results
+- immutable patch results
 - source immutability
-- immutable redacted output
-- deterministic replacement strings
-- path-aware safe diagnostics that never include secret values
-- local unit/integration/failure/recovery tests
+- deterministic operation ordering
+- conflict/ambiguity rejection
+- typed errors and safe diagnostics
+- local unit/contract/integration/failure/recovery tests
 - cross-platform verification
 
 Explicitly out of scope for v0.1:
 
-- secret storage
-- key management
-- encryption/decryption
-- credential rotation
-- network policy enforcement
-- external DLP services
-- third-party redaction packages
+- binary diff formats
+- filesystem patching
+- text/line-oriented patching
+- merge/conflict resolution between independent branches
+- three-way merge
+- network synchronization
+- external diff/patch services
+- third-party diff/patch packages
 
 ## Definition of done
 
@@ -70,12 +88,13 @@ A milestone is DONE only when:
 - public API is documented
 - normal-path tests pass
 - failure-path tests pass
-- cleanup/restart behavior is verified
+- cleanup/restart behavior is verified where applicable
 - supported-platform checks pass or documented capability limits exist
 - example usage works
 - release artifact is reproducible
 - no known blocking defect remains
-- ROADMAP is updated
+- `ROADMAP.md` is updated
+- `PROJECT_CONTROL.md` points to the next active milestone
 
 ## Anti-loop rules
 
