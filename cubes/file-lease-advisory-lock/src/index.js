@@ -33,12 +33,7 @@ function validateData(value, label, seen = new Set(), depth = 0) {
   }
   seen.delete(value);
 }
-
-function canonical(value) {
-  return JSON.stringify(value, (_, item) => item && typeof item === 'object' && !Array.isArray(item)
-    ? Object.fromEntries(Object.keys(item).sort().map((k) => [k, item[k]]))
-    : item);
-}
+function canonical(value) { return JSON.stringify(value, (_, item) => item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.keys(item).sort().map((k) => [k, item[k]])) : item); }
 function hash(value) { return createHash('sha256').update(value, 'utf8').digest('hex'); }
 function freezeDeep(value) { if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value; for (const child of Object.values(value)) freezeDeep(child); return Object.freeze(value); }
 function boundedText(value, label, max = MAX_PATH) { if (typeof value !== 'string' || !value) fail('INVALID_INPUT', `${label} must be a non-empty string`); if (value.length > max) fail('LIMIT_EXCEEDED', `${label} exceeds ${max}`); return value; }
@@ -82,20 +77,15 @@ function makePayload(record) {
 }
 function parseRecord(serialized) {
   if (typeof serialized !== 'string' || Buffer.byteLength(serialized, 'utf8') > MAX_RECORD) fail('LIMIT_EXCEEDED', 'serialized lock record exceeds maximum size');
-  let envelope;
-  try { envelope = JSON.parse(serialized); } catch { fail('MALFORMED_LOCK_RECORD', 'lock record is not JSON'); }
+  let envelope; try { envelope = JSON.parse(serialized); } catch { fail('MALFORMED_LOCK_RECORD', 'lock record is not JSON'); }
   validateData(envelope, 'lockRecord');
   if (envelope.format !== FORMAT || typeof envelope.payload !== 'string' || !/^[0-9a-f]{64}$/.test(envelope.checksum ?? '')) fail('MALFORMED_LOCK_RECORD', 'lock record envelope is invalid');
   if (hash(envelope.payload) !== envelope.checksum) fail('INTEGRITY_MISMATCH', 'lock record checksum mismatch');
-  let payload;
-  try { payload = JSON.parse(envelope.payload); } catch { fail('MALFORMED_LOCK_RECORD', 'lock record payload is not JSON'); }
+  let payload; try { payload = JSON.parse(envelope.payload); } catch { fail('MALFORMED_LOCK_RECORD', 'lock record payload is not JSON'); }
   validateData(payload, 'lockRecord.payload');
   return payload;
 }
-
-function statusSnapshot({ leaseId, lockPath, resourcePath, owner, acquiredAt, expiresAt, state }) {
-  return freezeDeep({ leaseId, lockPath, resourcePath, owner, acquiredAt, expiresAt, state });
-}
+function statusSnapshot(base, extra = {}) { return freezeDeep({ ...base, ...extra }); }
 
 export async function acquireLease(options) {
   const { fsOps, clock, uuid, lockPath, ttlMs, staleRecovery, owner, resourcePath } = normalizeOptions(options);
@@ -105,17 +95,14 @@ export async function acquireLease(options) {
   const acquiredAt = new Date(clock.now()).toISOString();
   const expiresAt = ttlMs > 0 ? new Date(clock.now() + ttlMs).toISOString() : null;
   const record = { format: FORMAT, leaseId, resourcePath, lockPath, owner, acquiredAt, expiresAt };
-  let state = 'acquiring';
-  let lost = false;
-
+  let state = 'acquiring'; let lost = false;
+  const base = () => ({ leaseId, lockPath, resourcePath, owner, acquiredAt, expiresAt, state });
   const readCurrent = async () => {
-    let entries;
-    try { entries = await fsOps.readdir(lockPath); } catch (error) { throw error; }
+    const entries = await fsOps.readdir(lockPath);
     const ownerFile = entries.find((name) => /^owner-[A-Za-z0-9-]+\.json$/.test(name));
     if (!ownerFile) fail('MALFORMED_LOCK_RECORD', 'lock directory has no owner record');
     return parseRecord(await fsOps.readFile(`${lockPath}/${ownerFile}`, 'utf8'));
   };
-
   async function recoverStale() {
     if (!staleRecovery) return false;
     const current = await readCurrent();
@@ -127,19 +114,15 @@ export async function acquireLease(options) {
     try { await fsOps.rm(quarantine, { recursive: true, force: true }); } catch { /* best effort */ }
     return true;
   }
-
   try {
-    try {
-      await fsOps.mkdir(lockPath, { recursive: false });
-    } catch (error) {
+    try { await fsOps.mkdir(lockPath, { recursive: false }); }
+    catch (error) {
       if (error?.code === 'EEXIST') {
         if (!(await recoverStale())) { state = 'busy'; fail('LOCK_BUSY', `lease is already held: ${lockPath}`); }
         await fsOps.mkdir(lockPath, { recursive: false });
-      } else if (error?.code === 'ENOTDIR' || error?.code === 'EROFS') {
-        state = 'unsupported'; fail('UNSUPPORTED_ATOMICITY', 'filesystem cannot create the advisory lock directory');
-      } else if (error?.code === 'EACCES' || error?.code === 'EPERM') {
-        state = 'failed'; fail('PERMISSION_DENIED', 'permission denied while creating advisory lock');
-      } else throw error;
+      } else if (error?.code === 'ENOTDIR' || error?.code === 'EROFS') { state = 'unsupported'; fail('UNSUPPORTED_ATOMICITY', 'filesystem cannot create the advisory lock directory'); }
+      else if (error?.code === 'EACCES' || error?.code === 'EPERM') { state = 'failed'; fail('PERMISSION_DENIED', 'permission denied while creating advisory lock'); }
+      else throw error;
     }
     await fsOps.writeFile(ownerPath, JSON.stringify(makePayload(record)), { encoding: 'utf8', flag: 'wx' });
     state = 'acquired';
@@ -147,7 +130,6 @@ export async function acquireLease(options) {
     if (error instanceof FileLeaseError) throw error;
     state = 'failed'; fail('ACQUISITION_FAILED', 'failed to establish advisory lease');
   }
-
   async function verifyOwnership() {
     if (lost || ['released', 'expired'].includes(state)) fail('INVALID_STATE', 'lease is no longer active');
     try {
@@ -160,7 +142,6 @@ export async function acquireLease(options) {
       lost = true; state = 'lost'; fail('OWNERSHIP_LOST', 'lease owner record is no longer available');
     }
   }
-
   async function renew() {
     if (ttlMs <= 0) fail('INVALID_STATE', 'renew is unavailable without ttlMs');
     state = 'renewing';
@@ -168,25 +149,20 @@ export async function acquireLease(options) {
     const renewed = { ...current, expiresAt: new Date(clock.now() + ttlMs).toISOString() };
     await fsOps.writeFile(ownerPath, JSON.stringify(makePayload(renewed)), { encoding: 'utf8', flag: 'w' });
     state = 'acquired';
-    return statusSnapshot({ leaseId, lockPath, resourcePath, owner, acquiredAt: renewed.acquiredAt, expiresAt: renewed.expiresAt, state });
+    return statusSnapshot({ ...base(), acquiredAt: renewed.acquiredAt, expiresAt: renewed.expiresAt });
   }
-
   async function release() {
-    if (state === 'released') return statusSnapshot({ leaseId, lockPath, resourcePath, owner, acquiredAt, expiresAt, state });
-    if (state === 'lost' || state === 'expired') { state = 'released'; return statusSnapshot({ leaseId, lockPath, resourcePath, owner, acquiredAt, expiresAt, state }); }
+    if (state === 'released') return statusSnapshot(base());
+    if (state === 'lost' || state === 'expired') { state = 'released'; return statusSnapshot(base()); }
     state = 'releasing';
     await verifyOwnership();
     await fsOps.rm(ownerPath, { force: true });
-    try {
-      await fsOps.rm(lockPath, { recursive: false, force: false });
-    } catch (error) {
-      if (!['ENOTEMPTY', 'EEXIST', 'ENOENT'].includes(error?.code)) { state = 'failed'; fail('RELEASE_FAILED', 'lock was not safely empty after owner release'); }
-    }
+    try { await fsOps.rm(lockPath, { recursive: false, force: false }); }
+    catch (error) { if (!['ENOTEMPTY', 'EEXIST', 'ENOENT'].includes(error?.code)) { state = 'failed'; fail('RELEASE_FAILED', 'lock was not safely empty after owner release'); } }
     state = 'released';
-    return statusSnapshot({ leaseId, lockPath, resourcePath, owner, acquiredAt, expiresAt, state });
+    return statusSnapshot(base());
   }
-
-  return statusSnapshot({ leaseId, lockPath, resourcePath, owner, acquiredAt, expiresAt, state }, { renew, release });
+  return statusSnapshot(base(), { renew, release });
 }
 
 export function serializeLeaseRecord(record) { return JSON.stringify(makePayload(record)); }
