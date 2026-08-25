@@ -70,12 +70,13 @@ Released through v0.1:
 - Digest / Hash
 - Serialization / Binary Codec
 - Worker Pool / Parallel Execution
+- Metrics / Telemetry
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Metrics / Telemetry Cube v0.1** — standalone bounded instrumentation for counters, gauges, histograms, immutable snapshots, deterministic label/cardinality limits, and high-resolution timing without third-party runtime dependencies.
+**Redaction / Secret Safety Cube v0.1** — standalone recursive data-redaction and secret-safety primitives with bounded depth/size, deterministic rule matching, immutable output, and zero runtime third-party dependencies.
 
 ## License
 
