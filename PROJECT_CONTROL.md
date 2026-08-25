@@ -6,17 +6,18 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Select and specify the next standalone Sovereign product after freezing **Ephemeral Workspace / Scratch Directory v0.1**.
+Select and specify the next standalone Sovereign product after freezing **Atomic File Writer / Safe Replace v0.1**.
 
 ## Current repository state
 
-- Last released cube: **Ephemeral Workspace / Scratch Directory v0.1**
-- Release PR: **#81**, merged
-- Release commit: `33b98771c4702a02dbdc3ce267af516bfbd8e43c`
-- Pre-merge verification: **Run 613**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 614**, initially hit a transient macOS-15-Intel runner hang/cancellation during contract tests; Ubuntu and Windows passed. The macOS job was re-run independently on the same release commit and then passed syntax, full repository tests, and real-browser smoke. The rerun establishes the release state as verified across the supported matrix.
-- Ephemeral Workspace / Scratch Directory v0.1 is **FROZEN**.
-- The previous macOS interruption was a runner/infrastructure anomaly, not a product regression: the identical commit passed pre-merge on macOS and passed the clean macOS rerun without code changes.
+- Last released cube: **Atomic File Writer / Safe Replace v0.1**
+- Initial release PR: **#82**, merged as `f6bb8d515eade8ac3bd158b851732070c5a9d470`
+- Corrective release PR: **#84**, merged as `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`
+- Initial post-merge Run 620 exposed a real Node 24 compatibility defect: `fsync` was incorrectly imported from `node:fs/promises`.
+- Corrective pre-merge verification: **Run 622**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Corrective post-merge verification: **Run 623**, passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Atomic File Writer / Safe Replace v0.1 is **FROZEN** at corrective release commit `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`.
+- The Node 24 compatibility defect was fixed without changing the public contract; the default `fsync` capability now uses a promisified `node:fs` callback implementation while retaining deterministic injection.
 
 ## The one-current-task rule
 
@@ -26,24 +27,24 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ATOMIC-FILE-WRITER-SAFE-REPLACE-V0.1-SPEC**
+**DIRECTORY-SNAPSHOT-TREE-MANIFEST-V0.1-SPEC**
 
 ### Immediate next task
 
-Write and commit the complete SPEC for **Atomic File Writer / Safe Replace v0.1** before implementation begins.
+Write and commit the complete SPEC for **Directory Snapshot / Tree Manifest v0.1** before implementation begins.
 
 The SPEC must lock:
 
-1. atomic replacement semantics for one destination file
-2. temporary-file creation inside the destination directory
-3. complete-write verification before replacement
-4. optional content digest and deterministic metadata
-5. preservation or explicit control of destination mode/permissions where supported
-6. crash/failure cleanup without deleting an unrelated pre-existing destination
-7. same-filesystem replacement guarantees and cross-device failure behavior
-8. symlink/path containment policy and refusal to follow unsafe destination indirection
-9. bounded input size, metadata, temporary names, and cleanup attempts
-10. deterministic filesystem, clock, identity, and rename capability seams
+1. standalone recursive local directory inventory and public API
+2. deterministic traversal and stable entry ordering
+3. explicit file, directory, and symlink representation
+4. configurable symlink policy without unsafe target traversal
+5. bounded depth, entry count, path length, and aggregate manifest size
+6. optional content digesting with caller-selected hash capability
+7. explicit handling of permission errors, vanished entries, and concurrent mutation
+8. deterministic snapshot identity and canonical manifest serialization
+9. clear distinction between logical snapshot and filesystem truth at capture time
+10. deterministic filesystem, clock, identity, digest, and serialization capability seams
 11. Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
 12. zero-runtime-third-party-dependency boundary
 
@@ -51,7 +52,7 @@ No implementation starts before the SPEC exists on the control plane.
 
 ## Scope lock
 
-The next cube owns safe replacement of one local file from caller-supplied bytes or an explicit stream writer. It does not own general file synchronization, filesystem watching, directory trees, advisory locking, process execution, content parsing, cloud/object storage, or databases.
+The next cube owns deterministic local directory snapshotting and manifest construction. It does not own file watching, atomic file writes, advisory locking, temporary workspace lifecycle, content synchronization, persistence databases, network storage, or document parsing.
 
 ## Definition of done
 
