@@ -24,8 +24,14 @@ function fail(code, message) {
 
 function assertSafeObject(value, label, seen = new Set(), depth = 0) {
   if (depth > 12) fail('DEPTH_LIMIT', `${label} exceeds maximum depth`);
-  if (value === null || typeof value !== 'object') return;
+  if (value === null) return;
+  const type = typeof value;
+  if (type === 'function' || type === 'symbol' || type === 'bigint' || type === 'undefined') fail('UNSUPPORTED_VALUE', `${label} contains an unsupported value`);
+  if (type === 'number' && !Number.isFinite(value)) fail('UNSUPPORTED_VALUE', `${label} contains a non-finite number`);
+  if (type !== 'object') return;
   if (seen.has(value)) fail('CIRCULAR_INPUT', `${label} contains a circular reference`);
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null && !Array.isArray(value)) fail('UNSUPPORTED_VALUE', `${label} must be a plain object`);
   seen.add(value);
   for (const key of Object.keys(value)) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
@@ -55,12 +61,16 @@ function boundedDigest(value, label) {
 
 function canonicalize(value) {
   assertSafeObject(value, 'value');
-  return JSON.stringify(value, (_, item) => {
-    if (item && typeof item === 'object' && !Array.isArray(item)) {
-      return Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]]));
-    }
-    return item;
-  });
+  try {
+    return JSON.stringify(value, (_, item) => {
+      if (item && typeof item === 'object' && !Array.isArray(item)) {
+        return Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]]));
+      }
+      return item;
+    });
+  } catch {
+    fail('UNSUPPORTED_VALUE', 'value cannot be serialized deterministically');
+  }
 }
 
 function checksum(value) {
@@ -116,11 +126,13 @@ function normalizeIntent(intent) {
 }
 
 function normalizeDestination(destination) {
-  assertSafeObject(destination, 'destination');
+  if (!destination || typeof destination !== 'object') fail('INVALID_DESTINATION', 'destination must be an object');
   const operations = Array.isArray(destination.operations) ? [...destination.operations] : fail('INVALID_INPUT', 'destination.operations must be an array');
   if (operations.length === 0) fail('INVALID_INPUT', 'destination.operations cannot be empty');
   for (const operation of operations) if (!PUBLIC_OPERATIONS.has(operation)) fail('UNSUPPORTED_OPERATION', `Unsupported destination operation: ${operation}`);
   if (typeof destination.prepare !== 'function' || typeof destination.commit !== 'function') fail('INVALID_DESTINATION', 'destination must expose prepare and commit functions');
+  const descriptor = Object.getOwnPropertyDescriptor(destination, 'destinationId');
+  if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', 'destination.destinationId is accessor-backed');
   return Object.freeze({
     destinationId: boundedId(destination.destinationId, 'destination.destinationId'),
     operations: [...new Set(operations)].sort(),
@@ -186,6 +198,7 @@ export function buildPublicationPlan({ closureReceipt, intents, destinations }) 
 export async function executePublicationPlan(plan, destinations, { ledger } = {}) {
   assertSafeObject(plan, 'plan');
   if (!plan || plan.format !== FORMAT || plan.mode !== 'publication_plan') fail('INVALID_PLAN', 'invalid publication plan');
+  if (!Array.isArray(destinations)) fail('INVALID_DESTINATION_SET', 'destinations must be an array');
   const destinationMap = new Map(destinations.map(normalizeDestination).map((destination) => [destination.destinationId, destination]));
   const committed = ledger ?? new Map();
   const outcomes = [];
@@ -198,9 +211,8 @@ export async function executePublicationPlan(plan, destinations, { ledger } = {}
       outcomes.push({ intentId: intent.intentId, idempotencyKey: intent.idempotencyKey, state: 'skipped_idempotent', destinationId: destination.destinationId });
       continue;
     }
-    let prepared;
     try {
-      prepared = await destination.prepare(clone(intent));
+      const prepared = await destination.prepare(clone(intent));
       const result = await destination.commit(prepared);
       committed.set(intent.idempotencyKey, true);
       outcomes.push({ intentId: intent.intentId, idempotencyKey: intent.idempotencyKey, state: 'succeeded', destinationId: destination.destinationId, result: result === undefined ? null : clone(result) });
