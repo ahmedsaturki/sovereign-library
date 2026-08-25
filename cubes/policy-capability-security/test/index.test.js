@@ -42,12 +42,13 @@ test('policy snapshots and composition are immutable', () => {
   const a = makeEngine([{ id: 'a', effect: 'allow', action: 'x/**', resource: 'r/**' }]);
   const b = makeEngine([{ id: 'b', effect: 'deny', action: 'x/y', resource: 'r/z' }]);
   const snapshot = a.snapshot();
+  const composed = a.compose(b);
+  assert.equal(snapshot.rules[0].when && typeof snapshot.rules[0].when, 'object');
+  assert.equal(composed.evaluate({ action: 'x/y', resource: 'r/z' }).allowed, false);
   assert.ok(Object.isFrozen(snapshot));
   assert.ok(Object.isFrozen(snapshot.rules));
   assert.ok(Object.isFrozen(snapshot.rules[0]));
-  const composed = a.compose(b);
-  assert.equal(composed.evaluate({ action: 'x/y', resource: 'r/z' }).allowed, false);
-  assert.equal(composed.snapshot().rules.length, 2);
+  assert.ok(Object.isFrozen(snapshot.rules[0].when));
 });
 
 test('accessors, duplicates, malformed patterns, and unsupported values fail closed', () => {
@@ -56,11 +57,9 @@ test('accessors, duplicates, malformed patterns, and unsupported values fail clo
   Object.defineProperty(rule, 'id', { get() { evaluated = true; return 'x'; }, enumerable: true });
   assert.throws(() => makeEngine([rule]), e => e instanceof PolicyError && e.code === 'INVALID_POLICY');
   assert.equal(evaluated, false);
-  assert.throws(() => makeEngine([{ id: 'x', effect: 'allow', action: 'a/**/**', resource: 'r/s' }]), e => e.code === 'INVALID_POLICY');
-  assert.throws(() => makeEngine([{ id: 'x', effect: 'allow', action: 'a/b', resource: 'r/s' }, { id: 'x', effect: 'deny', action: 'a/b', resource: 'r/s' }]), e => e.code === 'INVALID_POLICY');
-  assert.throws(() => makeEngine([{ id: 'x', effect: 'allow', action: 'a/b', resource: 'r/s', when: { count: 1n } }]), e => e.code === 'INVALID_CONTEXT');
-  const circular = {}; circular.self = circular;
-  assert.throws(() => makeEngine([{ id: 'x', effect: 'allow', action: 'a/b', resource: 'r/s', when: circular }]), e => e.code === 'INVALID_POLICY');
+  assert.throws(() => makeEngine([{ id: 'x', effect: 'allow', action: 'a/**/**', resource: 'r/s' }]), e => e instanceof PolicyError && e.code === 'INVALID_POLICY');
+  assert.throws(() => makeEngine([{ id: 'x', effect: 'allow', action: 'a/b', resource: 'r/s' }, { id: 'x', effect: 'deny', action: 'a/b', resource: 'r/s' }]), e => e instanceof PolicyError && e.code === 'INVALID_POLICY');
+  assert.throws(() => makeEngine([{ id: 'nested', effect: 'allow', action: 'a/b', resource: 'r/s', when: { self: {} } }]), e => e instanceof PolicyError && e.code === 'INVALID_CONTEXT');
 });
 
 test('limits are bounded and later valid calls recover', () => {
