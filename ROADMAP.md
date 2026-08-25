@@ -10,38 +10,37 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
-All previously released cubes remain frozen on `main`, including HTTP Metadata v0.1.
+All previously released cubes remain frozen on `main`, including URL / Query / Encoding v0.1.
 
-HTTP Metadata v0.1 was verified on Ubuntu, Windows, and macOS-15-Intel with HTTP metadata contract/integration/failure tests and the real Browser smoke test. Release-gate Run 254 passed all jobs and the cube was squash-merged as `04a67f7ca79624545601cd827e455b14f01a427a`.
+### URL / Query / Encoding v0.1
+
+Release-gate Run 281 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `0e4f629d60e5c4566d2194ec6744c13ee57a7526`.
+
+The release also fixed a real Base64 defect: UTF-8 `Uint8Array` values must be converted through `Buffer.from(bytes)` before Base64 encoding; calling `Uint8Array.toString('base64')` does not perform Base64 encoding.
 
 ## Active milestone
 
-### URL / Query / Encoding Cube v0.1
+### Content-Encoding / Compression Cube v0.1
 
-Target: a standalone native URL, query-string, percent-encoding, form-encoding, and byte-safe text conversion primitive usable by every HTTP/data/automation cube without a third-party URL or encoding framework.
+Target: a standalone native compression/decompression primitive reusable by HTTP, storage, data, and automation cubes without third-party compression frameworks.
 
 Initial scope:
-- URL parsing and serialization helpers
-- strict and tolerant percent-decoding
-- RFC-style query parameter parsing with duplicate keys
-- deterministic query builder
-- application/x-www-form-urlencoded encode/decode
-- UTF-8 encode/decode helpers
-- Base64 / Base64URL helpers
-- safe path-segment encoding/decoding
-- bounded input size limits
-- immutable parameter snapshots
-- deterministic malformed-input errors
+- gzip compression/decompression
+- deflate/inflate compression/decompression
+- bounded input/output size limits
+- deterministic typed compression/decompression errors
+- immutable configuration snapshots
+- buffer-safe native primitives
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- DNS resolution
-- URL fetching
-- URI templates
-- cryptographic signing schemes
-- IDNA implementation
-- third-party parsers/encoders
+- ZIP archives
+- TAR archives
+- password encryption
+- distributed compression workers
+- third-party compression packages
+- HTTP policy/negotiation logic
 
 ## Parked
 
