@@ -28,7 +28,7 @@ export function parseMimeType(value) {
   if (typeof value !== 'string') throw new MimeError('INVALID_MIME_TYPE', 'MIME type must be a string');
   const [typePart, ...parameterParts] = value.split(';');
   const type = typePart.trim().toLowerCase();
-  if (!/^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/.test(type)) throw new MimeError('INVALID_MIME_TYPE', `Invalid MIME type: ${value}`);
+  if (!/^[a-z0-9!#$&^_.+*-]+\/[a-z0-9!#$&^_.+*-]+$/.test(type)) throw new MimeError('INVALID_MIME_TYPE', `Invalid MIME type: ${value}`);
   const parameters = {};
   for (const item of parameterParts) {
     const index = item.indexOf('=');
@@ -50,8 +50,7 @@ function parseHeaders(block, maxHeaders) {
     if (index <= 0) throw new MimeError('MALFORMED_HEADERS', 'Malformed multipart header');
     const name = line.slice(0, index).trim().toLowerCase();
     const value = line.slice(index + 1).trim();
-    if (headers[name]) headers[name] = `${headers[name]}, ${value}`;
-    else headers[name] = value;
+    headers[name] = headers[name] ? `${headers[name]}, ${value}` : value;
   }
   return Object.freeze(headers);
 }
@@ -71,13 +70,23 @@ function parseContentDisposition(value) {
   return Object.freeze(result);
 }
 
-async function* asChunks(source) {
+async function readBounded(source, maxTotalBytes, signal) {
   if (typeof source === 'string' || Buffer.isBuffer(source) || source instanceof Uint8Array) {
-    yield toBuffer(source);
-    return;
+    const buffer = toBuffer(source);
+    if (buffer.length > maxTotalBytes) throw new MimeError('BODY_TOO_LARGE', `Multipart body exceeds ${maxTotalBytes} bytes`, { statusCode: 413 });
+    return buffer;
   }
   if (!source || typeof source[Symbol.asyncIterator] !== 'function') throw new TypeError('source must be an async iterable or byte sequence');
-  for await (const chunk of source) yield toBuffer(chunk);
+  const chunks = [];
+  let total = 0;
+  for await (const value of source) {
+    if (signal?.aborted) throw signal.reason ?? new MimeError('CANCELLED', 'Multipart parsing cancelled', { statusCode: 499 });
+    const chunk = toBuffer(value);
+    total += chunk.length;
+    if (total > maxTotalBytes) throw new MimeError('BODY_TOO_LARGE', `Multipart body exceeds ${maxTotalBytes} bytes`, { statusCode: 413 });
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks, total);
 }
 
 export async function parseMultipart(source, options = {}) {
@@ -85,72 +94,41 @@ export async function parseMultipart(source, options = {}) {
   const maxTotalBytes = options.maxTotalBytes ?? 16 * 1024 * 1024;
   const maxPartBytes = options.maxPartBytes ?? 8 * 1024 * 1024;
   const maxHeaderBytes = options.maxHeaderBytes ?? 64 * 1024;
-  const signal = options.signal;
   for (const [name, value] of [['maxTotalBytes', maxTotalBytes], ['maxPartBytes', maxPartBytes], ['maxHeaderBytes', maxHeaderBytes]]) {
     if (!Number.isSafeInteger(value) || value < 1) throw new RangeError(`${name} must be a safe integer >= 1`);
   }
 
+  const body = await readBounded(source, maxTotalBytes, options.signal);
   const marker = Buffer.from(`--${boundary}`);
-  const bodyMarker = Buffer.from(`\r\n--${boundary}`);
-  let buffer = Buffer.alloc(0);
-  let total = 0;
-  let state = 'preamble';
-  let headers = null;
+  const delimiter = Buffer.from(`\r\n--${boundary}`);
+  const headerEnd = Buffer.from('\r\n\r\n');
   const parts = [];
+  let cursor = body.indexOf(marker);
+  if (cursor < 0) throw new MimeError('MALFORMED_MULTIPART', 'Opening multipart boundary was not found');
 
-  const append = chunk => {
-    total += chunk.length;
-    if (total > maxTotalBytes) throw new MimeError('BODY_TOO_LARGE', `Multipart body exceeds ${maxTotalBytes} bytes`, { statusCode: 413 });
-    buffer = Buffer.concat([buffer, chunk]);
-  };
+  while (cursor >= 0) {
+    const afterMarker = cursor + marker.length;
+    if (body.length < afterMarker + 2) throw new MimeError('INCOMPLETE_MULTIPART', 'Multipart boundary is incomplete');
+    if (body.subarray(afterMarker, afterMarker + 2).equals(Buffer.from('--'))) return Object.freeze(parts);
+    if (!body.subarray(afterMarker, afterMarker + 2).equals(Buffer.from('\r\n'))) throw new MimeError('MALFORMED_MULTIPART', 'Multipart boundary must be followed by CRLF');
 
-  const find = needle => buffer.indexOf(needle);
-
-  for await (const chunk of asChunks(source)) {
-    if (signal?.aborted) throw signal.reason ?? new MimeError('CANCELLED', 'Multipart parsing cancelled', { statusCode: 499 });
-    append(chunk);
-
-    while (true) {
-      if (state === 'preamble') {
-        const start = find(marker);
-        if (start < 0) { if (buffer.length > marker.length + 2) buffer = buffer.subarray(buffer.length - marker.length - 2); break; }
-        buffer = buffer.subarray(start + marker.length);
-        if (buffer.length < 2) break;
-        if (buffer.subarray(0, 2).equals(Buffer.from('--'))) return parts;
-        if (!buffer.subarray(0, 2).equals(Buffer.from('\r\n'))) throw new MimeError('MALFORMED_MULTIPART', 'Multipart boundary must be followed by CRLF');
-        buffer = buffer.subarray(2);
-        state = 'headers';
-      }
-
-      if (state === 'headers') {
-        const end = find(Buffer.from('\r\n\r\n'));
-        if (end < 0) { if (buffer.length > maxHeaderBytes) throw new MimeError('HEADERS_TOO_LARGE', `Multipart headers exceed ${maxHeaderBytes} bytes`); break; }
-        headers = parseHeaders(buffer.subarray(0, end).toString('utf8'), maxHeaderBytes);
-        buffer = buffer.subarray(end + 4);
-        state = 'body';
-      }
-
-      if (state === 'body') {
-        const boundaryIndex = find(bodyMarker);
-        if (boundaryIndex < 0) {
-          if (buffer.length > maxPartBytes + bodyMarker.length) throw new MimeError('PART_TOO_LARGE', `Multipart part exceeds ${maxPartBytes} bytes`, { statusCode: 413 });
-          break;
-        }
-        const data = buffer.subarray(0, boundaryIndex);
-        if (data.length > maxPartBytes) throw new MimeError('PART_TOO_LARGE', `Multipart part exceeds ${maxPartBytes} bytes`, { statusCode: 413 });
-        const frozenHeaders = headers;
-        const disposition = parseContentDisposition(frozenHeaders['content-disposition']);
-        const contentType = frozenHeaders['content-type'] ?? 'text/plain';
-        const part = { headers: frozenHeaders, disposition, contentType, size: data.length, data: Buffer.from(data) };
-        if (disposition.name && !disposition.filename) part.text = data.toString('utf8');
-        parts.push(Object.freeze(part));
-        buffer = buffer.subarray(boundaryIndex + 2); // leave --boundary for preamble logic
-        state = 'preamble';
-      }
-    }
+    const headerStart = afterMarker + 2;
+    const headersEndIndex = body.indexOf(headerEnd, headerStart);
+    if (headersEndIndex < 0) throw new MimeError('INCOMPLETE_MULTIPART', 'Multipart headers are incomplete');
+    const headers = parseHeaders(body.subarray(headerStart, headersEndIndex).toString('utf8'), maxHeaderBytes);
+    const dataStart = headersEndIndex + headerEnd.length;
+    const nextBoundary = body.indexOf(delimiter, dataStart);
+    if (nextBoundary < 0) throw new MimeError('INCOMPLETE_MULTIPART', 'Multipart closing boundary was not found');
+    const data = body.subarray(dataStart, nextBoundary);
+    if (data.length > maxPartBytes) throw new MimeError('PART_TOO_LARGE', `Multipart part exceeds ${maxPartBytes} bytes`, { statusCode: 413 });
+    const disposition = parseContentDisposition(headers['content-disposition']);
+    const contentType = headers['content-type'] ?? 'text/plain';
+    const part = { headers, disposition, contentType, size: data.length, data: Buffer.from(data) };
+    if (disposition.name && !disposition.filename) part.text = data.toString('utf8');
+    parts.push(Object.freeze(part));
+    cursor = nextBoundary + 2;
   }
-
-  throw new MimeError('INCOMPLETE_MULTIPART', 'Multipart body ended before the closing boundary');
+  throw new MimeError('INCOMPLETE_MULTIPART', 'Multipart closing boundary was not found');
 }
 
 export function buildMultipart(parts, options = {}) {
