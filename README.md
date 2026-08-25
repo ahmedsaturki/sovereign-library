@@ -68,12 +68,13 @@ Released through v0.1:
 - Content-Encoding / Compression
 - Stream / Pipeline
 - Digest / Hash
+- Serialization / Binary Codec
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Serialization / Binary Codec Cube v0.1** — native bounded binary serialization helpers built from Node.js runtime primitives, with explicit type/size/error contracts and no third-party runtime dependency.
+**Worker Pool / Parallel Execution Cube v0.1** — native bounded worker-thread execution with task limits, cancellation, timeouts, deterministic results, and zero runtime third-party dependencies.
 
 ## License
 
