@@ -93,9 +93,9 @@ test('source rows are never mutated', () => {
 });
 
 test('failed export limit does not poison later valid export', () => {
-  const engine = createReportEngine({ limits: { maxOutputBytes: 32 } });
-  const small = engine.build([{ a: 1 }], { columns: [{ id: 'a' }] });
-  assert.throws(() => engine.toCsv(small, { nullValue: 'TOO-LONG-NULL' }), error => error instanceof ReportError && error.code === 'LIMIT_EXCEEDED');
+  const engine = createReportEngine({ limits: { maxOutputBytes: 128 } });
+  const small = engine.build([{ a: null }], { columns: [{ id: 'a' }] });
+  assert.throws(() => engine.toCsv(small, { nullValue: 'X'.repeat(200) }), error => error instanceof ReportError && error.code === 'LIMIT_EXCEEDED');
   const normal = createReportEngine().toCsv(small);
   assert.ok(normal.includes('a'));
 });
