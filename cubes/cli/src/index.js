@@ -27,11 +27,21 @@ function fail(code, message, options = {}) {
   throw new CliError(code, message, options);
 }
 
+function rejectAccessors(value, path) {
+  if (!isObject(value)) return;
+  for (const key of Object.keys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !('value' in descriptor)) fail('INVALID_CONFIG', 'Accessor properties are not supported', { path: `${path}.${key}` });
+  }
+}
+
 function assertLimit(value, name) {
   if (!Number.isSafeInteger(value) || value < 1) fail('INVALID_LIMIT', `${name} must be a safe integer >= 1`);
 }
 
 function normalizeLimits(input = {}) {
+  if (!isObject(input)) fail('INVALID_CONFIG', 'Limits must be an object', { path: 'config.limits' });
+  rejectAccessors(input, 'config.limits');
   const limits = { ...DEFAULTS, ...input };
   for (const [name, value] of Object.entries(limits)) assertLimit(value, name);
   return Object.freeze(limits);
@@ -40,13 +50,10 @@ function normalizeLimits(input = {}) {
 function cloneDefinition(value, path = 'config') {
   if (value === undefined || value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') return value;
   if (!isObject(value)) fail('INVALID_CONFIG', 'Unsupported configuration value', { path });
+  rejectAccessors(value, path);
   if (Array.isArray(value)) return Object.freeze(value.map((item, i) => cloneDefinition(item, `${path}[${i}]`)));
   const out = {};
-  for (const key of Object.keys(value).sort()) {
-    const descriptor = Object.getOwnPropertyDescriptor(value, key);
-    if (!descriptor || !('value' in descriptor)) fail('INVALID_CONFIG', 'Accessor properties are not supported', { path: `${path}.${key}` });
-    out[key] = cloneDefinition(descriptor.value, `${path}.${key}`);
-  }
+  for (const key of Object.keys(value).sort()) out[key] = cloneDefinition(Object.getOwnPropertyDescriptor(value, key).value, `${path}.${key}`);
   return Object.freeze(out);
 }
 
@@ -62,6 +69,7 @@ function createOptionTable(options, limits, commandPath) {
   const normalized = [];
   for (const option of options) {
     if (!isObject(option)) fail('INVALID_CONFIG', 'Option must be an object', { path: commandPath });
+    rejectAccessors(option, `${commandPath}.option`);
     assertName(option.name, 'option');
     if (option.short !== undefined) {
       if (typeof option.short !== 'string' || option.short.length !== 1 || option.short === '-') fail('INVALID_CONFIG', 'Invalid short option', { path: commandPath });
@@ -96,6 +104,7 @@ function normalizeCommands(commands, limits, parent = '') {
   const normalized = [];
   for (const command of commands) {
     if (!isObject(command)) fail('INVALID_CONFIG', 'Command must be an object', { path: parent || 'commands' });
+    rejectAccessors(command, parent ? `${parent}.${command.name ?? '<command>'}` : 'commands');
     assertName(command.name, 'command');
     if (byName.has(command.name)) fail('AMBIGUOUS_CONFIG', 'Duplicate command name', { path: parent || 'commands' });
     const path = parent ? `${parent}.${command.name}` : command.name;
@@ -151,9 +160,7 @@ function parseArgv(argv, command, limits) {
   }
   const options = {};
   const seenOptions = new Set();
-  for (const def of command.options.options) {
-    if (def.default !== undefined) options[def.name] = def.repeatable ? [...def.default] : def.default;
-  }
+  for (const def of command.options.options) if (def.default !== undefined) options[def.name] = def.repeatable ? [...def.default] : def.default;
   const positionals = [];
   let i = 0;
   let endOptions = false;
@@ -176,14 +183,9 @@ function parseArgv(argv, command, limits) {
         else { i += 1; if (i >= argv.length) fail('MISSING_VALUE', 'Option value is required', { exitCode: 2 }); raw = argv[i]; }
       } else if (equals >= 0) raw = body.slice(equals + 1);
       const value = convertValue(option, raw, option.name);
-      if (option.repeatable) {
-        (options[option.name] ??= []).push(value);
-      } else if (seenOptions.has(option.name)) {
-        fail('DUPLICATE_OPTION', 'Duplicate scalar option', { exitCode: 2 });
-      } else {
-        seenOptions.add(option.name);
-        options[option.name] = value;
-      }
+      if (option.repeatable) (options[option.name] ??= []).push(value);
+      else if (seenOptions.has(option.name)) fail('DUPLICATE_OPTION', 'Duplicate scalar option', { exitCode: 2 });
+      else { seenOptions.add(option.name); options[option.name] = value; }
       i += 1;
       continue;
     }
@@ -199,14 +201,9 @@ function parseArgv(argv, command, limits) {
         else { i += 1; if (i >= argv.length) fail('MISSING_VALUE', 'Option value is required', { exitCode: 2 }); raw = argv[i]; }
       }
       const value = convertValue(option, raw, option.name);
-      if (option.repeatable) {
-        (options[option.name] ??= []).push(value);
-      } else if (seenOptions.has(option.name)) {
-        fail('DUPLICATE_OPTION', 'Duplicate scalar option', { exitCode: 2 });
-      } else {
-        seenOptions.add(option.name);
-        options[option.name] = value;
-      }
+      if (option.repeatable) (options[option.name] ??= []).push(value);
+      else if (seenOptions.has(option.name)) fail('DUPLICATE_OPTION', 'Duplicate scalar option', { exitCode: 2 });
+      else { seenOptions.add(option.name); options[option.name] = value; }
     }
     i += 1;
   }
@@ -263,54 +260,57 @@ function rootCommand(config, limits) {
 
 export function createCli(definition) {
   if (!isObject(definition)) fail('INVALID_CONFIG', 'CLI definition must be an object');
-  assertName(definition.name ?? '', 'CLI');
-  const limits = normalizeLimits(definition.limits);
-  const commands = normalizeCommands(definition.commands ?? [], limits);
-  const config = Object.freeze({ name: definition.name, version: definition.version ?? null, limits, commands });
+  rejectAccessors(definition, 'config');
+  const name = definition.name;
+  const version = definition.version ?? null;
+  const limits = normalizeLimits(definition.limits ?? {});
+  const commandDefinitions = definition.commands ?? [];
+  assertName(name ?? '', 'CLI');
+  const commands = normalizeCommands(commandDefinitions, limits);
+  const config = Object.freeze({ name, version, limits, commands });
 
   async function run(argv = [], context = {}) {
-    const tokens = [...argv];
-    let command = rootCommand(config, limits);
-    const consumed = [];
-
-    if (tokens.length && config.commands.byName.has(tokens[0])) {
-      command = config.commands.byName.get(tokens.shift());
-      consumed.push(command.name);
-      while (tokens.length && command.commands.byName.has(tokens[0])) {
-        command = command.commands.byName.get(tokens.shift());
-        consumed.push(command.name);
-      }
-    } else if (tokens.length && !tokens[0].startsWith('-')) {
-      fail('UNKNOWN_COMMAND', 'Unknown command', { exitCode: 2 });
-    }
-
-    const parsed = parseArgv(tokens, command, limits);
-    if (parsed.help) return Object.freeze({ code: 0, stdout: renderHelp(config, command), stderr: '' });
-    if (parsed.version) return Object.freeze({ code: 0, stdout: `${config.version ?? ''}\n`, stderr: '' });
-
-    const env = context.env ?? {};
-    const allowedEnv = new Set(context.allowedEnv ?? []);
-    const readEnv = (key) => {
-      if (typeof key !== 'string' || utf8Bytes(key) > limits.maxEnvKeyBytes) fail('INVALID_ENV_KEY', 'Invalid environment key', { exitCode: 2 });
-      if (!allowedEnv.has(key)) fail('ENV_DENIED', 'Environment access denied', { exitCode: 2 });
-      const value = env[key];
-      if (value !== undefined && utf8Bytes(String(value)) > limits.maxEnvValueBytes) fail('ENV_LIMIT', 'Environment value exceeds configured limit', { exitCode: 2 });
-      return value;
-    };
-
-    const io = makeIo(context.io, limits.maxOutputBytes);
-    const commandContext = Object.freeze({
-      command: consumed.at(-1) ?? config.name,
-      options: parsed.options,
-      positionals: parsed.positionals,
-      stdin: io.stdin,
-      writeStdout: io.writeStdout,
-      writeStderr: io.writeStderr,
-      readEnv,
-      signal: context.signal ?? null,
-    });
-
     try {
+      const tokens = [...argv];
+      let command = rootCommand(config, limits);
+      const consumed = [];
+      if (tokens.length && config.commands.byName.has(tokens[0])) {
+        command = config.commands.byName.get(tokens.shift());
+        consumed.push(command.name);
+        while (tokens.length && command.commands.byName.has(tokens[0])) {
+          command = command.commands.byName.get(tokens.shift());
+          consumed.push(command.name);
+        }
+      } else if (tokens.length && !tokens[0].startsWith('-')) {
+        fail('UNKNOWN_COMMAND', 'Unknown command', { exitCode: 2 });
+      }
+
+      const parsed = parseArgv(tokens, command, limits);
+      if (parsed.help) return Object.freeze({ code: 0, stdout: renderHelp(config, command), stderr: '' });
+      if (parsed.version) return Object.freeze({ code: 0, stdout: `${config.version ?? ''}\n`, stderr: '' });
+
+      const env = context.env ?? {};
+      const allowedEnv = new Set(context.allowedEnv ?? []);
+      const readEnv = (key) => {
+        if (typeof key !== 'string' || utf8Bytes(key) > limits.maxEnvKeyBytes) fail('INVALID_ENV_KEY', 'Invalid environment key', { exitCode: 2 });
+        if (!allowedEnv.has(key)) fail('ENV_DENIED', 'Environment access denied', { exitCode: 2 });
+        const value = env[key];
+        if (value !== undefined && utf8Bytes(String(value)) > limits.maxEnvValueBytes) fail('ENV_LIMIT', 'Environment value exceeds configured limit', { exitCode: 2 });
+        return value;
+      };
+
+      const io = makeIo(context.io, limits.maxOutputBytes);
+      const commandContext = Object.freeze({
+        command: consumed.at(-1) ?? config.name,
+        options: parsed.options,
+        positionals: parsed.positionals,
+        stdin: io.stdin,
+        writeStdout: io.writeStdout,
+        writeStderr: io.writeStderr,
+        readEnv,
+        signal: context.signal ?? null,
+      });
+
       const result = await command.handler(commandContext);
       const code = result?.code === undefined ? 0 : result.code;
       if (!Number.isSafeInteger(code) || code < 0 || code > 255) fail('INVALID_EXIT_CODE', 'Invalid exit code returned by command', { exitCode: 1 });
