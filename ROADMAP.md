@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Serialization / Binary Codec v0.1
+
+Release-gate Run 308 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `4e4ebf0bd503e72ec27d1984237b41ad47a56adb`.
+
+The release defines the owned `SLBC` v1 binary format with explicit type tags, deterministic object key ordering, bounded payload/depth/collection/string sizes, duplicate-key rejection, and no executable decoding.
+
 ### Digest / Hash v0.1
 
 Release-gate Run 301 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `0500948a6a7c62492ca50ed2d93777baf7604809`.
@@ -30,36 +36,39 @@ The release uses Node.js `node:zlib` runtime primitives only and adds bounded in
 
 ### URL / Query / Encoding v0.1
 
-Release-gate Run 281 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `0e4f629d60e5c4566d2194ec6744c13ee57a7526`.
+Release-gate Run 281 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The release was squash-merged as `0e4f629d60e5c4566d2194ec6744c13ee57a7526`.
 
 The release fixed a real Base64 defect: UTF-8 `Uint8Array` values must be converted through `Buffer.from(bytes)` before Base64 encoding.
 
 ## Active milestone
 
-### Serialization / Binary Codec Cube v0.1
+### Worker Pool / Parallel Execution Cube v0.1
 
-Target: a native bounded binary serialization primitive for compact, deterministic application payloads without third-party codecs.
+Target: a native bounded worker-thread execution primitive reusable by CPU-heavy tasks, compression, serialization, data processing, and future agent runtimes.
 
 Initial scope:
-- deterministic binary encoding of explicitly supported primitive/container types
-- explicit type tags
-- bounded nesting depth
-- bounded payload size
-- deterministic decode errors
-- round-trip fidelity
-- immutable configuration snapshots
-- byte-oriented API
+- fixed-size or bounded worker pool
+- explicit task submission contract
+- bounded queued tasks
+- FIFO task admission
+- worker lifecycle and replacement
+- task timeout
+- task cancellation before execution
+- deterministic task result/error envelopes
+- graceful drain and shutdown
+- no shared mutable state across workers
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- schema registry
-- arbitrary class serialization
-- code execution / eval-based decoding
-- compression
-- encryption
-- third-party serialization packages
-- distributed protocols
+- distributed workers
+- remote execution
+- job brokers
+- persistent task queues
+- shared-memory protocols
+- arbitrary module loading from untrusted input
+- third-party worker-pool packages
+- cluster orchestration
 
 ## Parked
 
