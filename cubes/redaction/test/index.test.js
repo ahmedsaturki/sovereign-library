@@ -87,7 +87,7 @@ test('depth, node, string and output limits are enforced', () => {
   assert.throws(() => createRedactor({ maxDepth: 0 }), error => error.code === 'INVALID_LIMIT');
   assert.throws(() => createRedactor({ maxNodes: 0 }), error => error.code === 'INVALID_LIMIT');
   assert.throws(() => createRedactor({ maxStringBytes: 4 }).redact('12345'), error => error.code === 'STRING_TOO_LARGE');
-  assert.throws(() => createRedactor({ maxOutputBytes: 8, replacement: 'x' }).redact({ long: '123456789' }), error => error.code === 'OUTPUT_TOO_LARGE');
+  assert.throws(() => createRedactor({ maxStringBytes: 64, maxOutputBytes: 16, replacement: 'x' }).redact({ long: '123456789' }), error => error.code === 'OUTPUT_TOO_LARGE');
   assert.throws(() => createRedactor({ maxDepth: 1 }).redact({ nested: { value: 'x' } }), error => error.code === 'MAX_DEPTH_EXCEEDED');
   assert.throws(() => createRedactor({ maxNodes: 2 }).redact({ a: 1, b: 2 }), error => error.code === 'NODE_LIMIT');
 });
