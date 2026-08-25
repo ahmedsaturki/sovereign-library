@@ -1,5 +1,5 @@
 import { watch as nativeWatch, existsSync } from 'node:fs';
-import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
 
 const MAX_ROOTS = 16;
 const MAX_PATH = 4096;
@@ -21,7 +21,7 @@ export class FilesystemWatcherError extends Error {
 
 function fail(code, message) { throw new FilesystemWatcherError(code, message); }
 
-function safeObject(value, label, seen = new Set(), depth = 0) {
+function safeData(value, label, seen = new Set(), depth = 0) {
   if (depth > 12) fail('DEPTH_LIMIT', `${label} exceeds depth limit`);
   if (value === null) return;
   const type = typeof value;
@@ -35,9 +35,21 @@ function safeObject(value, label, seen = new Set(), depth = 0) {
   for (const key of Object.keys(value)) {
     const d = Object.getOwnPropertyDescriptor(value, key);
     if (!d || !('value' in d)) fail('ACCESSOR_INPUT', `${label}.${key} is accessor-backed`);
-    safeObject(d.value, `${label}.${key}`, seen, depth + 1);
+    safeData(d.value, `${label}.${key}`, seen, depth + 1);
   }
   seen.delete(value);
+}
+
+function validateOptionsShape(options) {
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) fail('INVALID_OPTIONS', 'options must be a plain object');
+  const proto = Object.getPrototypeOf(options);
+  if (proto !== Object.prototype && proto !== null) fail('INVALID_OPTIONS', 'options must be a plain object');
+  const seen = new Set([options]);
+  for (const key of Object.keys(options)) {
+    const descriptor = Object.getOwnPropertyDescriptor(options, key);
+    if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', `options.${key} is accessor-backed`);
+    if (key !== 'source') safeData(descriptor.value, `options.${key}`, seen, 1);
+  }
 }
 
 function text(value, label, max = MAX_PATH) {
@@ -59,7 +71,7 @@ function normalizeRoot(input, index) {
 }
 
 function normalizeOptions(options) {
-  safeObject(options, 'options');
+  validateOptionsShape(options);
   if (!Array.isArray(options.roots) || options.roots.length === 0) fail('INVALID_ROOTS', 'roots must be a non-empty array');
   if (options.roots.length > MAX_ROOTS) fail('LIMIT_EXCEEDED', `roots exceeds ${MAX_ROOTS}`);
   const roots = options.roots.map(normalizeRoot);
@@ -104,6 +116,7 @@ export function createWatcher(rawOptions) {
   let watchers = [];
   let pendingTimers = new Map();
   let terminalError = null;
+  let sourceEnded = false;
   let closed = false;
 
   const diagnostics = { overflow: 0, dropped: 0, suppressed: 0 };
@@ -146,27 +159,15 @@ export function createWatcher(rawOptions) {
     pendingTimers.set(key, timer);
   }
 
-  function resolveRoot(rawPath) {
-    const absolute = resolve(rawPath);
-    let best = null;
-    for (const root of options.roots) {
-      if (absolute === root.path || absolute.startsWith(`${root.path}${sep}`)) {
-        if (!best || root.path.length > best.path.length) best = root;
-      }
-    }
-    if (!best) fail('PATH_ESCAPE', 'native event is outside configured roots');
-    return { root: best, relativePath: publicPath(best.path, absolute) };
-  }
-
   function handleNative(root, action, filename) {
     try { emit({ rootId: root.rootId, ...classifyNative(root, filename, action) }); }
-    catch (error) { emitError(error); close(); }
+    catch (error) { emitError(error); void close(); }
   }
 
   async function startInjected(source) {
     if (!source || typeof source[Symbol.asyncIterator] !== 'function') fail('INVALID_SOURCE', 'injected source must be AsyncIterable');
     for await (const raw of source) {
-      safeObject(raw, 'event');
+      safeData(raw, 'event');
       const type = text(raw.type, 'event.type', 16);
       if (!TYPES.has(type)) fail('INVALID_EVENT', `unsupported event type ${type}`);
       const root = options.roots.find((r) => r.rootId === raw.rootId || r.publicRoot === raw.root);
@@ -175,6 +176,10 @@ export function createWatcher(rawOptions) {
       const previousPath = raw.previousPath === undefined ? undefined : publicPath(root.path, text(raw.previousPath, 'event.previousPath'));
       emit({ rootId: root.rootId, type, path, previousPath });
       if (closed) break;
+    }
+    if (!closed && !terminalError) {
+      sourceEnded = true;
+      for (const waiter of waiters.splice(0)) waiter.resolve({ value: undefined, done: true });
     }
   }
 
@@ -185,7 +190,7 @@ export function createWatcher(rawOptions) {
     try {
       if (options.source) {
         state = 'running';
-        startInjected(options.source).catch((error) => { emitError(error); close(); });
+        startInjected(options.source).catch((error) => { emitError(error); void close(); });
       } else {
         for (const root of options.roots) {
           const handle = nativeWatch(root.path, { recursive: options.recursive }, (action, filename) => handleNative(root, action, filename));
@@ -205,7 +210,7 @@ export function createWatcher(rawOptions) {
   async function next() {
     if (queue.length) return { value: queue.shift(), done: false };
     if (terminalError) return Promise.reject(terminalError);
-    if (closed) return { value: undefined, done: true };
+    if (closed || sourceEnded) return { value: undefined, done: true };
     return new Promise((resolveNext, rejectNext) => waiters.push({ resolve: resolveNext, reject: rejectNext }));
   }
 
@@ -218,6 +223,7 @@ export function createWatcher(rawOptions) {
     for (const handle of watchers) { try { handle.close(); } catch { /* cleanup boundary */ } }
     watchers = [];
     queue = [];
+    sourceEnded = true;
     for (const waiter of waiters.splice(0)) waiter.resolve({ value: undefined, done: true });
     state = 'closed';
     return snapshotStats();
