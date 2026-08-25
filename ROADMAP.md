@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### CLI / Command Runtime v0.1
+
+Release verification Run 366 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, the full repository suite, and the real-browser smoke gate. The cube was released through the direct-main gated path at `61eac767bca438e63d28a28892ffcc0dab956e36`.
+
+The release provides deterministic argv parsing, short and long options, typed values, repeatable options, grouped boolean flags, subcommand routing, positional validation, deterministic help/version output, bounded argument and output sizes, explicit stdin/stdout/stderr handling, deterministic exit-code mapping, explicit environment allowlisting, immutable configuration, accessor-safe validation, typed fail-closed diagnostics, public documentation, runnable examples, and zero runtime third-party dependencies.
+
 ### Canonical JSON / Normalization v0.1
 
 Release-gate Run 352 passed on Ubuntu, Windows, and macOS-15-Intel before merge. Post-merge Run 353 also passed on all three platforms with syntax checks, the full repository suite, and the real-browser smoke gate. The cube was squash-merged through PR #49 as `66f9329182792d879dfb7bcfd2d49c6513d918b9`.
@@ -52,38 +58,42 @@ Release-gate Run 290 passed on Ubuntu, Windows, and macOS-15-Intel with the full
 
 ### URL / Query / Encoding v0.1
 
-Release-gate Run 281 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The release was squash-merged as `0e4f629d60e5c4566d2194ec6744c13ee57a7526`.
+Release-gate Run 281 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real-browser smoke. The release was squash-merged as `0e4f629d60e5c4566d2194ec6744c13ee57a7526`.
 
 ## Active milestone
 
-### CLI / Command Runtime v0.1
+### Search / Index Cube v0.1
 
-Target: a standalone native command-line runtime for deterministic argument parsing, subcommands, flags/options, help/version output, typed command errors, safe environment handling, bounded input/output, predictable exit semantics, and testable command dispatch without third-party runtime dependencies.
+Target: a standalone deterministic in-memory text search and inverted-index product for local document collections, with bounded exact-term/boolean/prefix/phrase queries, predictable relevance ordering, immutable results, and zero runtime third-party dependencies.
 
 Initial scope:
-- argv tokenization and strict option parsing
-- short/long flags and typed options
-- deterministic subcommand dispatch
-- positional argument validation
-- `--help` and `--version` output
-- bounded argument and output sizes
-- explicit stdin/stdout/stderr handling
-- deterministic exit-code mapping
+- local in-memory inverted index
+- deterministic document and field contracts
+- deterministic Unicode-safe tokenization and normalization
+- document add/update/remove/rebuild
+- exact-term queries
+- AND/OR term queries
+- bounded prefix queries
+- bounded phrase queries
+- deterministic relevance scoring and tie-breaking
+- bounded documents, tokens, postings, query, and result sizes
+- immutable index snapshots and query results
+- source immutability
 - typed fail-closed diagnostics
-- no mutation of caller configuration
-- environment reads through explicit allowlisted access
-- cross-platform Windows/Linux/macOS/WSL behavior where supported
-- zero runtime third-party dependencies
 - unit, contract, integration, failure, and recovery coverage
+- cross-platform verification
+- zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- shell scripting language execution
-- command discovery through network services
-- plugin package installation
-- terminal UI rendering frameworks
-- credential storage
-- remote command execution
-- third-party CLI frameworks
+- network search services
+- distributed indexes
+- filesystem persistence
+- vector or embedding search
+- fuzzy edit-distance matching
+- external search engines
+- third-party search/index packages
+- web crawling
+- learned ranking models
 
 ## Parked
 
