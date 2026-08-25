@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Content-Addressed Storage / CAS v0.1
+
+PR #61 was squash-merged as `63ba1b7e684857e95303b02864c91627a6c601e0`. Pre-merge Run 450 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 451 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
+The release provides native SHA-256 content addressing, bounded local object storage, atomic writes, corruption detection, immutable-by-copy reads, bounded metadata, typed fail-closed errors, and zero runtime third-party dependencies.
+
 ### Release Manifest / Integrity v0.1
 
 PR #59 was squash-merged as `d1e33a2cfb12303cfe7e810e17241636ffa998db`. Pre-merge Run 437 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 390 tests, and the real-browser smoke gate. Post-merge Run 438 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -19,8 +25,6 @@ The release provides deterministic versioned manifests, native SHA-256 content d
 ### Release / Verification Harness v0.1
 
 PR #58 was squash-merged as `6e60d151691639948fabceaec1ee28964d40d881`. Pre-merge Run 430 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 431 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
-
-The release provides deterministic local release-stage execution, safe native command invocation, bounded process output and diagnostics, timeout/cancellation/retry semantics, deterministic required/optional verdict aggregation, immutable machine-readable verification snapshots, and zero runtime third-party dependencies.
 
 ### Execution Engine v0.1
 
@@ -78,7 +82,7 @@ Worker Pool / Parallel Execution `073ab5b9a27f03d7441bec8549786cd8e8f28f57`
 
 Serialization / Binary Codec `4e4ebf0bd503e72ec27d1984237b41ad47a56adb`
 
-Digest / Hash `0500948a6a7c62492ca50ed2d93777baf7604804809`
+Digest / Hash `0500948a6a7c62492ca50ed2d93777baf760480`
 
 Stream / Pipeline `9ac578f0ebee01dc2825672a096daf3a4539ffe7`
 
@@ -88,30 +92,32 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Content-Addressed Storage / CAS v0.1
+### Artifact Bundle / Reproducible Package v0.1
 
-Target: a standalone deterministic local content-addressed storage component that maps content to canonical native-digest addresses, provides safe bounded CRUD, detects corruption, and preserves valid state across rejected writes and recovery scenarios.
+Target: a standalone deterministic local bundle/package component for reproducible file ordering, versioned serialization, bounded archives, native integrity descriptors, and safe deterministic verification/extraction.
 
 Initial scope:
-- canonical digest-based addressing
-- immutable put/get/has/delete semantics
-- deterministic address validation and normalization
-- atomic writes and collision-safe existing-object handling
-- bounded object size/count, address length, and metadata size
-- safe namespace separation and path traversal rejection
-- immutable metadata and snapshots
-- corruption detection and typed recovery behavior
+- deterministic file ordering and normalized bundle paths
+- reproducible bundle metadata and stable serialization
+- bounded entry count, path length, per-entry size, and total bundle size
+- native local bundle generation without a network service
+- explicit versioned format and integrity descriptors
+- safe path validation and traversal rejection
+- immutable bundle manifests and verification results
+- fail-closed malformed bundles, duplicates, unsupported metadata, and corrupt content
+- deterministic extraction/verification without arbitrary command execution
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
+- remote registries
+- package publishing
+- signing/key management
 - remote replication
-- distributed consensus
-- object locking service
-- encryption/key management
-- HTTP/network transport
 - GUI/admin console
-- package registry or publishing service
+- network transport
+- installer generation
+- operating-system package formats
 
 ## Parked
 
