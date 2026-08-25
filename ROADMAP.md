@@ -10,15 +10,23 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Glob / Path Matcher v0.1
+
+PR #87 was squash-merged as `c9a3d330a16a488e00c28311085204363bab2fc7`.
+
+Pre-merge **Run 654** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+
+Post-merge **Run 655** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+
+Blocking fixes included escape-tokenization ordering and explicit absolute-root anchoring; regression coverage was added and the final platform matrix passed without workflow bypasses.
+
+The cube is **FROZEN** at `c9a3d330a16a488e00c28311085204363bab2fc7`.
+
 ### Host Identity / Environment Fingerprint v0.1
 
 PR #86 was squash-merged as `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`.
 
-Pre-merge **Run 644** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, HIF tests, and real-browser smoke.
-
-Post-merge **Run 645** passed on Windows and macOS-15-Intel on the original attempt. Ubuntu browser smoke experienced a transient runner hang; the Ubuntu job was rerun independently on the same release commit and passed syntax, full repository tests, and real-browser smoke.
-
-The release provides privacy-safe stable and volatile host identity fields, deterministic normalization and canonical serialization, explicit comparison semantics, bounded output, injectable capability seams, fail-closed malformed/accessor/circular input handling, and zero runtime third-party dependencies.
+Pre-merge **Run 644** passed on Ubuntu, Windows, and macOS-15-Intel. Post-merge **Run 645** passed on Windows and macOS-15-Intel on the original attempt; Ubuntu browser smoke experienced a transient runner hang and then passed on an independent same-commit rerun.
 
 The cube is **FROZEN** at `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`.
 
@@ -48,11 +56,15 @@ PR #81 was squash-merged as `33b98771c4702a02dbdc3ce267af516bfbd8e43c`.
 
 Pre-merge **Run 613** passed on Ubuntu, Windows, and macOS-15-Intel. Post-merge Run 614 initially experienced a transient macOS runner cancellation; an independent rerun on the identical commit passed all gates.
 
+The cube is **FROZEN** at `33b98771c4702a02dbdc3ce267af516bfbd8e43c`.
+
 ### File Lease / Advisory Lock v0.1
 
 PR #80 was squash-merged as `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868`.
 
 Pre-merge Run 607 and post-merge Run 608 passed across Ubuntu, Windows, and macOS-15-Intel.
+
+The cube is **FROZEN** at `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868`.
 
 ### Filesystem Watcher / Change Stream v0.1
 
@@ -60,11 +72,15 @@ PR #79 was merged as `239e418e620d06de5d25a9c40905f6efc42334b3`.
 
 Post-merge Run 598 passed across Ubuntu, Windows, and macOS-15-Intel.
 
+The cube is **FROZEN** at `239e418e620d06de5d25a9c40905f6efc42334b3`.
+
 ### Runtime Capability Inspector / Preflight v0.1
 
 PR #78 was squash-merged as `139a7d6c824b7fe522712c65e1b9ffcf605e134f4`.
 
 Pre-merge Run 580 and post-merge Run 581 passed across Ubuntu, Windows, and macOS-15-Intel.
+
+The cube is **FROZEN** at `139a7d6c824b7fe522712c65e1b9ffcf605e134f4`.
 
 ### Previous release chain
 
@@ -78,37 +94,37 @@ Earlier released cubes remain pinned to their recorded immutable SHAs.
 
 ## Active milestone
 
-### GLOB-PATH-MATCHER-V0.1-SPEC
+### SAFE-PATH-RESOLVER-V0.1-SPEC
 
-The Host Identity / Environment Fingerprint release is complete and frozen.
+Glob / Path Matcher v0.1 is complete and frozen.
 
 The next selected standalone product is:
 
-**Glob / Path Matcher v0.1**
+**Safe Path Resolver / Containment Boundary v0.1**
 
 Rationale:
 
-- pure path-pattern matching is a distinct capability not owned by Filesystem, Directory Snapshot, URL/Query, or Shell/Process cubes
-- a filesystem-independent matcher is reusable for ignore rules, routing, packaging, selectors, policy scopes, artifact selection, and test filtering
-- deterministic cross-platform semantics are valuable because OS-native glob behavior differs in separators, case rules, and recursive matching
-- the pure core can remain zero-runtime-dependency and free of filesystem side effects
+- safe path resolution and containment is a distinct reusable boundary between pure path matching and filesystem-aware consumers
+- it provides consistent traversal rejection, root anchoring, drive/UNC handling, and symlink policy for multiple future cubes
+- explicit lexical versus filesystem-aware modes make security-sensitive behavior testable without forcing filesystem access into pure APIs
+- the core can remain zero-runtime-dependency while exposing narrow native capability seams
 
 ### Immediate next task
 
-Write and commit the complete SPEC at `specs/glob-path-matcher-v0.1.md` before implementation begins.
+Write and commit the complete SPEC at `specs/safe-path-resolver-containment-boundary-v0.1.md` before implementation begins.
 
 The SPEC must lock:
 
-- explicit glob grammar and segment semantics
-- separator normalization and platform-independent matching rules
-- literal escaping and special-character handling
-- `*`, `?`, and recursive `**` semantics with bounded complexity
-- absolute/relative path behavior and root anchoring
-- explicit case-sensitivity policy
-- path traversal and dot-segment safety semantics
-- deterministic include/exclude evaluation and rule precedence
-- bounded pattern/path lengths and failure/recovery behavior
-- pure matcher boundary with no filesystem access in the core
+- lexical versus filesystem-aware resolution semantics
+- absolute, relative, drive, UNC, namespace, and root behavior
+- explicit base/root scope anchoring
+- traversal and escape rejection
+- symlink-aware versus lexical-only policies
+- deterministic comparison semantics independent of host OS defaults
+- Windows volume and namespace boundaries
+- bounded path lengths, segment counts, and recursion
+- capability seams with safe data/function separation
+- non-mutating behavior and failure/recovery semantics
 - Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
 - zero-runtime-third-party-dependency boundary
 
