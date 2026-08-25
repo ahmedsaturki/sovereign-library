@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import {
   SafePathResolverError,
   canonicalizePath,
@@ -13,7 +14,7 @@ import {
 } from '../src/index.js';
 
 const expectCode = (fn, code) => assert.throws(fn, (error) => error instanceof SafePathResolverError && error.code === code);
-const expectRejectCode = (fn, code) => assert.rejects(fn, (error) => error instanceof SafePathResolverError && error.code === code);
+const expectRejectCode = async (fn, code) => assert.rejects(fn, (error) => error instanceof SafePathResolverError && error.code === code);
 
 test('lexical normalization is deterministic and root aware', () => {
   assert.equal(normalizePath('/a/b/../c'), '/a/c');
@@ -36,9 +37,7 @@ test('relative paths require explicit absolute base', () => {
 });
 
 test('segment containment is not string-prefix containment', () => {
-  assert.deepEqual(isContained('/root/app/file.txt', '/root/app'), {
-    format: 'SPR1', status: 'contained', path: '/root/app/file.txt', root: '/root/app', reason: 'segment-contained'
-  });
+  assert.deepEqual(isContained('/root/app/file.txt', '/root/app'), { format: 'SPR1', status: 'contained', path: '/root/app/file.txt', root: '/root/app', reason: 'segment-contained' });
   assert.equal(isContained('/root/application', '/root/app').status, 'outside');
   assert.equal(isContained('C:/root/a', 'D:/root').reason, 'root-mismatch');
 });
@@ -64,6 +63,7 @@ test('UNC and namespace roots remain distinct by identity', () => {
 test('capability seams are executable hooks, not plain configuration data', async () => {
   const caps = Object.freeze({
     realpath: async (value) => value.replace('/logical', '/real'),
+    symlinkDepth: async () => 0,
     lstat: async () => ({ isSymbolicLink: false }),
   });
   const result = await canonicalizePath('/logical/file.txt', '/logical', caps, { symlinkPolicy: 'follow-contained' });
@@ -76,26 +76,37 @@ test('capability seams are executable hooks, not plain configuration data', asyn
 test('filesystem-aware canonicalization rejects canonical escape', async () => {
   const caps = {
     realpath: async (value) => value.endsWith('/root') ? '/srv/root' : '/srv/outside/file',
+    symlinkDepth: async () => 0,
   };
   await expectRejectCode(() => canonicalizePath('/root/file', '/root', caps, { symlinkPolicy: 'follow-contained' }), 'SYMLINK_ESCAPE');
 });
 
 test('reject-symlink policy is explicit and recovers after rejection', async () => {
-  const caps = {
-    realpath: async (value) => value,
-    lstat: async () => ({ isSymbolicLink: true }),
-  };
+  const caps = { realpath: async (value) => value, lstat: async () => ({ isSymbolicLink: true }) };
   await expectRejectCode(() => canonicalizePath('/root/link', '/root', caps, { symlinkPolicy: 'reject-symlink' }), 'SYMLINK_REJECTED');
   const valid = await canonicalizePath('/root/file', '/root', { realpath: async value => value, lstat: async () => ({ isSymbolicLink: false }) }, { symlinkPolicy: 'reject-symlink' });
   assert.equal(valid.status, 'contained');
 });
 
-test('serialization round-trips and caller input remains untouched', () => {
+test('follow-contained requires bounded symlink depth and recovers', async () => {
+  const caps = { realpath: async value => value, symlinkDepth: async value => value.includes('/deep') ? 3 : 0 };
+  await expectRejectCode(() => canonicalizePath('/root/deep/file', '/root', caps, { symlinkPolicy: 'follow-contained', maxSymlinkDepth: 2 }), 'SYMLINK_DEPTH_EXCEEDED');
+  const valid = await canonicalizePath('/root/deep/file', '/root', { realpath: async value => value, symlinkDepth: async () => 1 }, { symlinkPolicy: 'follow-contained', maxSymlinkDepth: 2 });
+  assert.equal(valid.status, 'contained');
+  await expectRejectCode(() => canonicalizePath('/root/file', '/root', { realpath: async value => value }, { symlinkPolicy: 'follow-contained' }), 'CAPABILITY_UNAVAILABLE');
+});
+
+test('serialization round-trips, detects tampering, and leaves input untouched', () => {
   const report = isContained('/root/app/file', '/root/app');
   const serialized = serializeReport(report);
   const parsed = parseReport(serialized);
   assert.deepEqual(parsed, report);
   assert.equal(Object.isFrozen(parsed), true);
+  const tampered = JSON.stringify({ ...JSON.parse(serialized), payload: JSON.stringify({ ...report, status: 'outside' }) });
+  expectCode(() => parseReport(tampered), 'INTEGRITY_FAILURE');
+  const envelope = JSON.parse(serialized);
+  const expected = createHash('sha256').update(`SPR1|1|${envelope.payload}`, 'utf8').digest('hex');
+  assert.equal(envelope.integrity, expected);
   assert.equal(JSON.stringify(report), JSON.stringify(isContained('/root/app/file', '/root/app')));
 });
 
@@ -108,7 +119,5 @@ test('malformed, oversized, circular, and accessor inputs fail closed', () => {
 });
 
 test('default lexical mode requires no filesystem access', () => {
-  assert.deepEqual(isContained('/root/a', '/root'), {
-    format: 'SPR1', status: 'contained', path: '/root/a', root: '/root', reason: 'segment-contained'
-  });
+  assert.deepEqual(isContained('/root/a', '/root'), { format: 'SPR1', status: 'contained', path: '/root/a', root: '/root', reason: 'segment-contained' });
 });
