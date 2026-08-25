@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Release Manifest / Integrity v0.1
+
+PR #59 was squash-merged as `d1e33a2cfb12303cfe7e810e17241636ffa998db`. Pre-merge Run 437 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 390 tests, and the real-browser smoke gate. Post-merge Run 438 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
+The release provides deterministic versioned manifests, native SHA-256 content descriptors, immutable integrity verification reports, bounded local inputs, safe path validation, and zero runtime third-party dependencies.
+
 ### Release / Verification Harness v0.1
 
 PR #58 was squash-merged as `6e60d151691639948fabceaec1ee28964d40d881`. Pre-merge Run 430 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 431 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -19,8 +25,6 @@ The release provides deterministic local release-stage execution, safe native co
 ### Execution Engine v0.1
 
 PR #57 was squash-merged as `739798bb3de3d50884dc7b3f28bada7e4f58f1a2`. Pre-merge Run 424 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 425 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
-
-The release provides deterministic dependency-aware task execution, explicit success/failure/cancel/timeout/skipped outcomes, bounded execution and diagnostics, retry/recovery, immutable snapshots/results, typed fail-closed errors, and zero runtime third-party dependencies.
 
 ### Policy / Capability Security v0.1
 
@@ -74,7 +78,7 @@ Worker Pool / Parallel Execution `073ab5b9a27f03d7441bec8549786cd8e8f28f57`
 
 Serialization / Binary Codec `4e4ebf0bd503e72ec27d1984237b41ad47a56adb`
 
-Digest / Hash `0500948a6a7c62492ca50ed2d93777baf7604809`
+Digest / Hash `0500948a6a7c62492ca50ed2d93777baf7604804809`
 
 Stream / Pipeline `9ac578f0ebee01dc2825672a096daf3a4539ffe7`
 
@@ -84,30 +88,30 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Release Manifest / Integrity v0.1
+### Content-Addressed Storage / CAS v0.1
 
-Target: a standalone deterministic local manifest and integrity component for generating versioned canonical manifests, calculating native content digests, verifying integrity, and emitting immutable mismatch reports.
+Target: a standalone deterministic local content-addressed storage component that maps content to canonical native-digest addresses, provides safe bounded CRUD, detects corruption, and preserves valid state across rejected writes and recovery scenarios.
 
 Initial scope:
-- canonical manifest normalization and stable entry ordering
-- deterministic file/entry descriptors and content digests
-- explicit versioned manifest schema
-- bounded local manifest generation
-- deterministic integrity verification and mismatch reporting
-- immutable manifest and verification snapshots
-- fail-closed malformed manifests, unsafe paths, duplicates, and unsupported values
-- bounded entry count, path length, metadata size, and total manifest size
+- canonical digest-based addressing
+- immutable put/get/has/delete semantics
+- deterministic address validation and normalization
+- atomic writes and collision-safe existing-object handling
+- bounded object size/count, address length, and metadata size
+- safe namespace separation and path traversal rejection
+- immutable metadata and snapshots
+- corruption detection and typed recovery behavior
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- cryptographic signing or key management
-- remote registries
-- package publishing
-- hosted artifact storage
-- CI-provider integrations
+- remote replication
+- distributed consensus
+- object locking service
+- encryption/key management
+- HTTP/network transport
 - GUI/admin console
-- network transport
+- package registry or publishing service
 
 ## Parked
 
