@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 import * as os from 'node:os';
 import process from 'node:process';
-import { sep } from 'node:path';
 
 const FORMAT = 'HIF1';
 const MAX_STABLE_FIELDS = 32;
@@ -12,11 +11,10 @@ const MAX_ENV_FIELDS = 32;
 const MAX_ENV_AGGREGATE = 16 * 1024;
 const MAX_SERIALIZED = 64 * 1024;
 const MAX_DIFFS = 64;
-
 const STATUS = new Set(['available', 'unavailable', 'unsupported', 'permission_denied']);
-const SENSITIVE = /(pass(word)?|secret|token|private[._-]?key|credential|authorization|cookie|api[._-]?key|access[._-]?key|session[._-]?key|auth)/i;
 const OS_FAMILIES = new Set(['linux', 'darwin', 'win32', 'freebsd', 'openbsd', 'sunos', 'aix', 'android', 'other']);
 const ARCHITECTURES = new Set(['x64', 'arm64', 'arm', 'ia32', 'ppc64', 'ppc64le', 's390x', 'riscv64', 'loong64', 'other']);
+const SENSITIVE = /(pass(word)?|secret|token|private[._-]?key|credential|authorization|cookie|api[._-]?key|access[._-]?key|session[._-]?key|auth)/i;
 
 export class HostIdentityError extends Error {
   constructor(code, message) {
@@ -27,23 +25,22 @@ export class HostIdentityError extends Error {
   }
 }
 
-function fail(code, message) { throw new HostIdentityError(code, message); }
-
-function isPlainObject(value) {
+const fail = (code, message) => { throw new HostIdentityError(code, message); };
+const plain = (value) => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const proto = Object.getPrototypeOf(value);
   return proto === Object.prototype || proto === null;
-}
+};
 
 function validatePlain(value, label, seen = new Set(), depth = 0) {
   if (depth > 12) fail('DEPTH_LIMIT', `${label} exceeds maximum depth`);
   if (value === null) return;
   const type = typeof value;
-  if (type === 'function' || type === 'symbol' || type === 'bigint' || type === 'undefined') fail('UNSUPPORTED_VALUE', `${label} contains unsupported value`);
+  if (['function', 'symbol', 'bigint', 'undefined'].includes(type)) fail('UNSUPPORTED_VALUE', `${label} contains unsupported value`);
   if (type === 'number' && !Number.isFinite(value)) fail('UNSUPPORTED_VALUE', `${label} contains a non-finite number`);
   if (type !== 'object') return;
   if (seen.has(value)) fail('CIRCULAR_INPUT', `${label} is circular`);
-  if (!Array.isArray(value) && !isPlainObject(value)) fail('UNSUPPORTED_VALUE', `${label} must contain plain data`);
+  if (!Array.isArray(value) && !plain(value)) fail('UNSUPPORTED_VALUE', `${label} must contain plain data`);
   seen.add(value);
   for (const key of Reflect.ownKeys(value)) {
     if (typeof key !== 'string') fail('UNSUPPORTED_VALUE', `${label} contains symbol keys`);
@@ -54,6 +51,15 @@ function validatePlain(value, label, seen = new Set(), depth = 0) {
   seen.delete(value);
 }
 
+function validateTopOptions(options) {
+  if (!plain(options)) fail('INVALID_OPTIONS', 'options must be a plain object');
+  for (const key of Reflect.ownKeys(options)) {
+    if (typeof key !== 'string') fail('UNSUPPORTED_VALUE', 'options contains symbol keys');
+    const descriptor = Object.getOwnPropertyDescriptor(options, key);
+    if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', `options.${key} is accessor-backed`);
+  }
+}
+
 function readData(object, key, label) {
   if (!object) return undefined;
   const descriptor = Object.getOwnPropertyDescriptor(object, key);
@@ -62,246 +68,223 @@ function readData(object, key, label) {
   return descriptor.value;
 }
 
-function capability(value, label) {
-  if (typeof value !== 'function') fail('INVALID_CAPABILITY', `${label} must be a function`);
-  return value;
+function validateCapabilityContainer(value, label) {
+  if (!plain(value)) fail('INVALID_CAPABILITY', `${label} must be a plain capability object`);
+  for (const key of Reflect.ownKeys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', `${label}.${key} is accessor-backed`);
+    const item = descriptor.value;
+    if (typeof item === 'function') continue;
+    validatePlain(item, `${label}.${key}`);
+  }
 }
 
-function boundedString(value, label, max = MAX_FIELD_VALUE, allowEmpty = false) {
-  if (typeof value !== 'string' || (!allowEmpty && value.length === 0)) fail('INVALID_FIELD', `${label} must be a ${allowEmpty ? 'string' : 'non-empty string'}`);
+function getCap(container, key, label) {
+  const value = readData(container, key, label);
+  if (value === undefined) return undefined;
+  if (typeof value === 'function') return value;
+  return () => value;
+}
+
+function boundedString(value, label, max = MAX_FIELD_VALUE) {
+  if (typeof value !== 'string' || value.length === 0) fail('INVALID_FIELD', `${label} must be a non-empty string`);
   if (value.length > max) fail('FIELD_TOO_LARGE', `${label} exceeds ${max} characters`);
   return value;
 }
 
-function normalizeStatus(value, label) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) fail('INVALID_CAPABILITY_RESULT', `${label} must return an availability object`);
+function availability(value, label) {
+  if (typeof value === 'string') return { status: 'available', value: boundedString(value, label) };
+  if (!plain(value)) fail('INVALID_CAPABILITY_RESULT', `${label} must return a string or availability object`);
   const status = readData(value, 'status', label);
   if (typeof status !== 'string' || !STATUS.has(status)) fail('INVALID_CAPABILITY_RESULT', `${label}.status is invalid`);
-  if (status === 'available') return { status, value: normalizeValue(readData(value, 'value', label), `${label}.value`) };
-  return { status };
+  if (status !== 'available') return { status };
+  const data = readData(value, 'value', label);
+  return { status, value: normalizeScalar(data, `${label}.value`) };
 }
 
-function normalizeValue(value, label) {
+function normalizeScalar(value, label) {
   if (typeof value === 'string') return boundedString(value, label);
-  if (value === null || value === undefined) fail('INVALID_CAPABILITY_RESULT', `${label} is missing`);
-  if (typeof value === 'number' || typeof value === 'boolean') return value;
-  fail('INVALID_CAPABILITY_RESULT', `${label} has unsupported type`);
+  if (typeof value === 'boolean') return value;
+  if (Number.isSafeInteger(value)) return value;
+  fail('INVALID_CAPABILITY_RESULT', `${label} has an unsupported value`);
+}
+
+async function callCapability(fn, label) {
+  try {
+    return await fn();
+  } catch (error) {
+    if (error?.code === 'UNSUPPORTED') return { status: 'unsupported' };
+    if (error?.code === 'UNAVAILABLE') return { status: 'unavailable' };
+    if (['EACCES', 'EPERM', 'PERMISSION_DENIED'].includes(error?.code)) return { status: 'permission_denied' };
+    fail('CAPABILITY_FAILURE', `${label} failed`);
+  }
 }
 
 function canonicalize(value) {
   validatePlain(value, 'value');
-  try {
-    return JSON.stringify(value, (_, item) => {
-      if (item && typeof item === 'object' && !Array.isArray(item)) {
-        return Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]]));
-      }
-      return item;
-    });
-  } catch {
-    fail('SERIALIZATION_FAILURE', 'value cannot be serialized deterministically');
-  }
+  return JSON.stringify(value, (_, item) => item && typeof item === 'object' && !Array.isArray(item)
+    ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]]))
+    : item);
 }
 
-function deepFreeze(value) {
-  if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
-  for (const child of Object.values(value)) deepFreeze(child);
-  return Object.freeze(value);
-}
-
-function digest(serialized, hash) {
-  const result = hash(serialized);
-  if (typeof result !== 'string' || !/^sha256:[0-9a-f]{64}$/.test(result)) fail('INVALID_DIGEST', 'hash capability must return sha256:<64 lowercase hex>');
-  return result;
-}
-
-function defaultHash(serialized) {
+function canonicalHash(serialized) {
   return `sha256:${createHash('sha256').update(serialized, 'utf8').digest('hex')}`;
 }
 
-function capabilityError(error, label) {
-  if (error?.code === 'UNSUPPORTED') return { status: 'unsupported' };
-  if (error?.code === 'EACCES' || error?.code === 'EPERM' || error?.code === 'PERMISSION_DENIED') return { status: 'permission_denied' };
-  if (error?.code === 'UNAVAILABLE') return { status: 'unavailable' };
-  fail('CAPABILITY_FAILURE', `${label} failed`);
+function freezeDeep(value) {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
+  for (const child of Object.values(value)) freezeDeep(child);
+  return Object.freeze(value);
 }
 
-async function callAvailability(fn, label) {
-  try {
-    const result = await fn();
-    return normalizeStatus(result, label);
-  } catch (error) {
-    return capabilityError(error, label);
-  }
-}
-
-function normalizeOs(value) {
-  const normalized = String(value);
-  return OS_FAMILIES.has(normalized) ? normalized : 'other';
-}
-
-function normalizeArchitecture(value) {
-  const normalized = String(value);
-  return ARCHITECTURES.has(normalized) ? normalized : 'other';
-}
-
+function normalizeOs(value) { return OS_FAMILIES.has(String(value)) ? String(value) : 'other'; }
+function normalizeArch(value) { return ARCHITECTURES.has(String(value)) ? String(value) : 'other'; }
 function normalizeSeparator(value) {
   if (value === '/' || value === '\\') return value;
   fail('INVALID_CAPABILITY_RESULT', 'path separator must be / or \\');
 }
-
-function normalizeCaseSensitivity(value) {
-  if (value === 'sensitive' || value === 'insensitive' || value === 'unavailable' || value === 'unsupported' || value === 'permission_denied') return value;
-  fail('INVALID_CAPABILITY_RESULT', 'caseSensitivity must be an allowed classification');
+function normalizeCase(value) {
+  if (['sensitive', 'insensitive'].includes(value)) return { status: 'available', value };
+  if (['unavailable', 'unsupported', 'permission_denied'].includes(value)) return { status: value };
+  fail('INVALID_CAPABILITY_RESULT', 'caseSensitivity is invalid');
 }
-
-function normalizeRuntimeMajor(version) {
+function runtimeMajor(version) {
   const match = /^v?(\d+)\.(\d+)\.(\d+)/.exec(String(version));
   if (!match) fail('INVALID_CAPABILITY_RESULT', 'runtime version is malformed');
   return Number(match[1]);
 }
-
-function normalizeAllowlist(environment) {
-  if (!environment) return [];
-  const allowlist = readData(environment, 'allowlist', 'environment');
-  if (allowlist === undefined) return [];
-  if (!Array.isArray(allowlist) || allowlist.length > MAX_ENV_FIELDS) fail('LIMIT_EXCEEDED', `environment.allowlist exceeds ${MAX_ENV_FIELDS} entries`);
-  const seen = new Set();
-  return allowlist.map((key, index) => {
-    boundedString(key, `environment.allowlist[${index}]`, MAX_FIELD_NAME);
-    if (SENSITIVE.test(key)) fail('DISALLOWED_SENSITIVE_FIELD', `environment.allowlist[${index}] is sensitive`);
-    if (seen.has(key)) fail('DUPLICATE_ENV_FIELD', `environment.allowlist contains duplicate ${key}`);
-    seen.add(key);
-    return key;
-  }).sort();
+function envKeyAllowed(key) {
+  return !SENSITIVE.test(key);
 }
-
-function buildEnvironmentStable(allowlist, values) {
+function normalizeEnvironment(environment) {
+  if (!plain(environment)) fail('INVALID_ENVIRONMENT', 'environment must be a plain object');
+  const allowlist = readData(environment, 'allowlist', 'environment') ?? [];
+  if (!Array.isArray(allowlist) || allowlist.length > MAX_ENV_FIELDS) fail('LIMIT_EXCEEDED', `environment.allowlist exceeds ${MAX_ENV_FIELDS} entries`);
+  const values = readData(environment, 'values', 'environment') ?? {};
+  if (!plain(values)) fail('INVALID_ENVIRONMENT', 'environment.values must be a plain object');
+  const keys = [...new Set(allowlist)].sort();
+  if (keys.length !== allowlist.length) fail('DUPLICATE_ENV_FIELD', 'environment.allowlist contains duplicates');
   const result = {};
-  let aggregate = 0;
-  for (const key of allowlist) {
+  let total = 0;
+  for (const key of keys) {
+    boundedString(key, `environment.allowlist.${key}`, MAX_FIELD_NAME);
+    if (!envKeyAllowed(key)) fail('DISALLOWED_SENSITIVE_FIELD', `${key} is sensitive`);
     if (!(key in values)) continue;
-    const value = values[key];
-    boundedString(key, 'environment field name', MAX_FIELD_NAME);
+    const value = readData(values, key, `environment.values`);
     boundedString(value, `environment.${key}`);
-    aggregate += key.length + value.length;
-    if (aggregate > MAX_ENV_AGGREGATE) fail('LIMIT_EXCEEDED', `environment fields exceed ${MAX_ENV_AGGREGATE} bytes`);
+    total += key.length + value.length;
+    if (total > MAX_ENV_AGGREGATE) fail('LIMIT_EXCEEDED', `environment fields exceed ${MAX_ENV_AGGREGATE} bytes`);
     result[key] = { status: 'available', value };
   }
   return result;
 }
 
-function stableFieldCount(stable) {
-  return Object.keys(stable).length;
+function stableIdentityPayload(stable) { return canonicalize(stable); }
+
+function validateFingerprint(fingerprint) {
+  try {
+    validatePlain(fingerprint, 'fingerprint');
+    if (!plain(fingerprint) || fingerprint.format !== FORMAT || !plain(fingerprint.stable) || !plain(fingerprint.volatile)) return false;
+    if (!/^sha256:[0-9a-f]{64}$/.test(fingerprint.identity)) return false;
+    if (typeof fingerprint.serialization !== 'string' || Buffer.byteLength(fingerprint.serialization, 'utf8') > MAX_SERIALIZED) return false;
+    if (stableIdentityPayload(fingerprint.stable) !== fingerprint.serialization) return false;
+    return canonicalHash(fingerprint.serialization) === fingerprint.identity;
+  } catch {
+    return false;
+  }
 }
 
-function volatileFieldCount(volatile) {
-  return Object.keys(volatile).length;
-}
-
-function validateFingerprintShape(fingerprint) {
-  validatePlain(fingerprint, 'fingerprint');
-  if (!isPlainObject(fingerprint) || fingerprint.format !== FORMAT) fail('INVALID_FINGERPRINT', 'fingerprint format is invalid');
-  if (!isPlainObject(fingerprint.stable) || !isPlainObject(fingerprint.volatile)) fail('INVALID_FINGERPRINT', 'fingerprint fields are invalid');
-  if (stableFieldCount(fingerprint.stable) > MAX_STABLE_FIELDS || volatileFieldCount(fingerprint.volatile) > MAX_VOLATILE_FIELDS) fail('LIMIT_EXCEEDED', 'fingerprint field count exceeds bound');
-  boundedString(fingerprint.identity, 'fingerprint.identity', 71);
-  if (!/^sha256:[0-9a-f]{64}$/.test(fingerprint.identity)) fail('INVALID_FINGERPRINT', 'fingerprint identity is malformed');
-  boundedString(fingerprint.serialization, 'fingerprint.serialization', MAX_SERIALIZED);
-  if (Buffer.byteLength(fingerprint.serialization, 'utf8') > MAX_SERIALIZED) fail('LIMIT_EXCEEDED', 'fingerprint serialization exceeds bound');
-  return fingerprint;
-}
-
-function collectDiffs(left, right, section, path = '', diffs = []) {
-  if (diffs.length >= MAX_DIFFS) return diffs;
-  const leftKeys = isPlainObject(left) ? Object.keys(left).sort() : [];
-  const rightKeys = isPlainObject(right) ? Object.keys(right).sort() : [];
-  for (const key of [...new Set([...leftKeys, ...rightKeys])].sort()) {
-    if (diffs.length >= MAX_DIFFS) break;
-    const childPath = path ? `${path}.${key}` : key;
+function diffValues(left, right, section, path = '', out = []) {
+  if (out.length >= MAX_DIFFS) return out;
+  const keys = [...new Set([...(plain(left) ? Object.keys(left) : []), ...(plain(right) ? Object.keys(right) : [])])].sort();
+  for (const key of keys) {
+    if (out.length >= MAX_DIFFS) break;
+    const next = path ? `${path}.${key}` : key;
     const a = left?.[key];
     const b = right?.[key];
-    if (isPlainObject(a) && isPlainObject(b)) collectDiffs(a, b, section, childPath, diffs);
-    else if (canonicalize(a) !== canonicalize(b)) diffs.push({ section, path: childPath, left: a, right: b });
+    if (plain(a) && plain(b)) diffValues(a, b, section, next, out);
+    else if (canonicalize(a) !== canonicalize(b)) out.push({ section, path: next, left: a, right: b });
   }
-  return diffs;
+  return out;
 }
 
-export async function fingerprintHost(rawOptions = {}) {
-  if (!isPlainObject(rawOptions)) fail('INVALID_OPTIONS', 'options must be a plain object');
-  validatePlain(rawOptions, 'options');
-  const platformCaps = readData(rawOptions, 'platform', 'options') ?? {};
-  const runtimeCaps = readData(rawOptions, 'runtime', 'options') ?? {};
-  const pathCaps = readData(rawOptions, 'path', 'options') ?? {};
-  const environment = readData(rawOptions, 'environment', 'options') ?? {};
-  const clock = capability(readData(rawOptions, 'clock', 'options')?.now ?? (() => Date.now()), 'clock.now');
-  const serializer = capability(readData(rawOptions, 'serialize', 'options') ?? canonicalize, 'serialize');
-  const hash = capability(readData(rawOptions, 'hash', 'options') ?? defaultHash, 'hash');
+export async function fingerprintHost(options = {}) {
+  validateTopOptions(options);
+  const platform = readData(options, 'platform', 'options') ?? {};
+  const runtime = readData(options, 'runtime', 'options') ?? {};
+  const path = readData(options, 'path', 'options') ?? {};
+  const environment = readData(options, 'environment', 'options') ?? {};
+  const clockContainer = readData(options, 'clock', 'options') ?? {};
+  const serializer = readData(options, 'serialize', 'options') ?? canonicalize;
+  const hash = readData(options, 'hash', 'options') ?? canonicalHash;
+  validateCapabilityContainer(platform, 'options.platform');
+  validateCapabilityContainer(runtime, 'options.runtime');
+  validateCapabilityContainer(path, 'options.path');
+  validateCapabilityContainer(environment, 'options.environment');
+  validateCapabilityContainer(clockContainer, 'options.clock');
+  if (typeof serializer !== 'function' || typeof hash !== 'function') fail('INVALID_CAPABILITY', 'serialize and hash must be functions');
+  const platformFn = getCap(platform, 'platform', 'platform') ?? (() => process.platform);
+  const architectureFn = getCap(platform, 'architecture', 'platform') ?? (() => process.arch);
+  const releaseFn = getCap(platform, 'release', 'platform') ?? (() => ({ status: 'available', value: os.release() }));
+  const familyFn = getCap(runtime, 'family', 'runtime') ?? (() => 'node');
+  const versionFn = getCap(runtime, 'version', 'runtime') ?? (() => process.version);
+  const separatorFn = getCap(path, 'separator', 'path') ?? (() => process.platform === 'win32' ? '\\' : '/');
+  const caseFn = getCap(path, 'caseSensitivity', 'path') ?? (() => ({ status: 'unavailable' }));
+  const clockFn = getCap(clockContainer, 'now', 'clock') ?? (() => Date.now());
 
-  const platformValue = readData(platformCaps, 'platform', 'platform') ?? (() => process.platform)();
-  const architectureValue = readData(platformCaps, 'architecture', 'platform') ?? (() => process.arch)();
-  const releaseValue = readData(platformCaps, 'release', 'platform');
-  const runtimeFamilyValue = readData(runtimeCaps, 'family', 'runtime') ?? 'node';
-  const runtimeVersionFn = readData(runtimeCaps, 'version', 'runtime');
-  const runtimeVersionValue = runtimeVersionFn === undefined ? process.version : await capability(runtimeVersionFn, 'runtime.version')();
-  const separatorFn = readData(pathCaps, 'separator', 'path');
-  const caseFn = readData(pathCaps, 'caseSensitivity', 'path');
-
-  const [platformRelease, caseSensitivity] = await Promise.all([
-    releaseValue === undefined ? { status: 'available', value: boundedString(os.release(), 'platform.release', MAX_FIELD_VALUE) } : callAvailability(capability(releaseValue, 'platform.release'), 'platform.release'),
-    caseFn === undefined ? { status: 'unavailable' } : callAvailability(capability(caseFn, 'path.caseSensitivity'), 'path.caseSensitivity'),
+  const [platformValue, architectureValue, releaseRaw, familyValue, versionValue, separatorValue, caseRaw] = await Promise.all([
+    platformFn(), architectureFn(), callCapability(releaseFn, 'platform.release'), familyFn(), versionFn(), separatorFn(), callCapability(caseFn, 'path.caseSensitivity'),
   ]);
-
-  const pathSeparator = separatorFn === undefined ? (process.platform === 'win32' ? '\\' : '/') : normalizeSeparator(await capability(separatorFn, 'path.separator')());
-  const runtimeMajor = normalizeRuntimeMajor(runtimeVersionValue);
-  const allowlist = normalizeAllowlist(environment);
-  const envValues = readData(environment, 'values', 'environment') ?? {};
-  if (!isPlainObject(envValues)) fail('INVALID_ENVIRONMENT', 'environment.values must be a plain object');
-  const environmentStable = buildEnvironmentStable(allowlist, envValues);
-
+  const release = availability(releaseRaw, 'platform.release');
+  const caseSensitivity = availability(caseRaw, 'path.caseSensitivity');
   const stable = {
-    osFamily: normalizeStatus({ status: 'available', value: normalizeOs(platformValue) }, 'osFamily'),
-    architecture: normalizeStatus({ status: 'available', value: normalizeArchitecture(architectureValue) }, 'architecture'),
-    platformRelease,
-    runtimeFamily: normalizeStatus({ status: 'available', value: boundedString(String(runtimeFamilyValue), 'runtime.family', 64) }, 'runtimeFamily'),
-    runtimeMajor: normalizeStatus({ status: 'available', value: runtimeMajor }, 'runtimeMajor'),
-    pathSeparator: normalizeStatus({ status: 'available', value: pathSeparator }, 'pathSeparator'),
-    filesystemCaseSensitivity: normalizeStatus({ status: caseSensitivity.status, value: caseSensitivity.status === 'available' ? normalizeCaseSensitivity(caseSensitivity.value) : caseSensitivity.status }, 'filesystemCaseSensitivity'),
-    environment: environmentStable,
+    osFamily: { status: 'available', value: normalizeOs(platformValue) },
+    architecture: { status: 'available', value: normalizeArch(architectureValue) },
+    platformRelease: release,
+    runtimeFamily: { status: 'available', value: boundedString(String(familyValue), 'runtime.family', 64) },
+    runtimeMajor: { status: 'available', value: runtimeMajor(versionValue) },
+    pathSeparator: { status: 'available', value: normalizeSeparator(separatorValue) },
+    filesystemCaseSensitivity: caseSensitivity.status === 'available' ? { status: 'available', value: normalizeCase(caseSensitivity.value).value } : caseSensitivity,
+    environment: normalizeEnvironment(environment),
   };
-  if (stableFieldCount(stable) > MAX_STABLE_FIELDS) fail('LIMIT_EXCEEDED', 'stable field count exceeds bound');
+  if (Object.keys(stable).length > MAX_STABLE_FIELDS) fail('LIMIT_EXCEEDED', 'stable field count exceeds bound');
 
+  const capturedAtRaw = await callCapability(clockFn, 'clock.now');
+  const timestamp = typeof capturedAtRaw === 'number' ? capturedAtRaw : Number(capturedAtRaw);
+  if (!Number.isFinite(timestamp)) fail('INVALID_CAPABILITY_RESULT', 'clock.now must return a finite timestamp');
   const volatile = {
-    runtimeVersion: normalizeStatus({ status: 'available', value: boundedString(String(runtimeVersionValue), 'runtime.version', MAX_FIELD_VALUE) }, 'runtimeVersion'),
-    capturedAt: normalizeStatus({ status: 'available', value: new Date(clock()).toISOString() }, 'capturedAt'),
+    runtimeVersion: { status: 'available', value: boundedString(String(versionValue), 'runtime.version') },
+    capturedAt: { status: 'available', value: new Date(timestamp).toISOString() },
   };
-  if (volatileFieldCount(volatile) > MAX_VOLATILE_FIELDS) fail('LIMIT_EXCEEDED', 'volatile field count exceeds bound');
+  if (Object.keys(volatile).length > MAX_VOLATILE_FIELDS) fail('LIMIT_EXCEEDED', 'volatile field count exceeds bound');
 
-  const stableSerialization = serializer(stable);
-  if (typeof stableSerialization !== 'string') fail('SERIALIZATION_FAILURE', 'serialize capability must return a string');
-  if (Buffer.byteLength(stableSerialization, 'utf8') > MAX_SERIALIZED) fail('LIMIT_EXCEEDED', 'stable serialization exceeds bound');
-  const identity = digest(stableSerialization, hash);
-  const fingerprint = { format: FORMAT, stable, volatile, identity, serialization: stableSerialization };
-  return deepFreeze(fingerprint);
+  const serialization = serializer(stable);
+  if (typeof serialization !== 'string') fail('SERIALIZATION_FAILURE', 'serialize capability must return a string');
+  if (Buffer.byteLength(serialization, 'utf8') > MAX_SERIALIZED) fail('LIMIT_EXCEEDED', 'stable serialization exceeds bound');
+  const identity = hash(serialization);
+  if (typeof identity !== 'string' || !/^sha256:[0-9a-f]{64}$/.test(identity)) fail('INVALID_DIGEST', 'hash capability must return sha256:<64 lowercase hex>');
+  return freezeDeep({ format: FORMAT, stable, volatile, identity, serialization });
 }
 
 export function serializeHostFingerprint(fingerprint) {
-  validateFingerprintShape(fingerprint);
-  const payload = { format: FORMAT, stable: fingerprint.stable, volatile: fingerprint.volatile, identity: fingerprint.identity };
-  const serialized = canonicalize(payload);
+  if (!validateFingerprint(fingerprint)) fail('INVALID_FINGERPRINT', 'fingerprint violates the HIF1 contract');
+  const serialized = canonicalize({ format: FORMAT, stable: fingerprint.stable, volatile: fingerprint.volatile, identity: fingerprint.identity });
   if (Buffer.byteLength(serialized, 'utf8') > MAX_SERIALIZED) fail('LIMIT_EXCEEDED', 'fingerprint serialization exceeds bound');
   return serialized;
 }
 
 export function compareHostFingerprints(left, right, options = {}) {
-  validateFingerprintShape(left);
-  validateFingerprintShape(right);
+  if (!plain(options)) return { format: FORMAT, verdict: 'invalid' };
+  if (!validateFingerprint(left) || !validateFingerprint(right)) return { format: FORMAT, verdict: 'invalid' };
+  const verbose = readData(options, 'verbose', 'options') === true;
   if (left.identity !== right.identity) {
     const result = { format: FORMAT, verdict: 'different_identity' };
-    if (options?.verbose === true) result.differences = collectDiffs(left.stable, right.stable, 'stable');
-    return deepFreeze(result);
+    if (verbose) result.differences = diffValues(left.stable, right.stable, 'stable');
+    return freezeDeep(result);
   }
   const result = { format: FORMAT, verdict: 'same_identity' };
-  if (options?.verbose === true) result.differences = collectDiffs(left.volatile, right.volatile, 'volatile');
-  return deepFreeze(result);
+  if (verbose) result.differences = diffValues(left.volatile, right.volatile, 'volatile');
+  return freezeDeep(result);
 }
 
 export const HOST_IDENTITY_FORMAT = FORMAT;
