@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Canonical JSON / Normalization v0.1
+
+Release-gate Run 352 passed on Ubuntu, Windows, and macOS-15-Intel before merge. Post-merge Run 353 also passed on all three platforms with syntax checks, the full repository suite, and the real-browser smoke gate. The cube was squash-merged through PR #49 as `66f9329182792d879dfb7bcfd2d49c6513d918b9`.
+
+The release provides deterministic canonicalization for JSON-safe values, stable object-key ordering, explicit negative-zero and finite-number semantics, immutable normalized structures, deterministic canonical JSON serialization, bounded traversal/string/output work, strict unsupported/accessor rejection, circular-reference detection, typed fail-closed diagnostics, source immutability, runnable documentation/examples, and zero runtime third-party dependencies.
+
 ### Diff / Patch v0.1
 
 Release-gate Run 345 completed the pre-merge verification and Run 347 completed the post-merge verification on `main`. Ubuntu, Windows, and macOS-15-Intel all passed syntax checks, the full repository suite, and the real-browser smoke gate. The cube was squash-merged through PR #48 as `e1acaeea3ec0b02da8998ac30a2f910e64aa2ade`.
@@ -20,13 +26,9 @@ The release provides deterministic structural diff generation and persistent imm
 
 Release-gate Run 341 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real-browser smoke test. The cube was squash-merged as `e1040a0464f10f6e20d2ed39b5dd2e9097edae83` through PR #45.
 
-The release provides bounded recursive redaction, sensitive-key and string-pattern rules, circular-reference protection, deterministic replacements, immutable output, safe path-aware diagnostics, and no runtime third-party dependencies.
-
 ### Metrics / Telemetry v0.1
 
 Release-gate Run 329 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `3c6f171f0469b34a055008b9594d043acb680f6c`.
-
-The release provides bounded counters, gauges, deterministic cumulative histograms, metric and label validation, cardinality limits, immutable snapshots, deterministic JSON export, safe operational recording, and high-resolution timing using native Node timing primitives only.
 
 ### Worker Pool / Parallel Execution v0.1
 
@@ -54,34 +56,34 @@ Release-gate Run 281 passed on Ubuntu, Windows, and macOS-15-Intel with the full
 
 ## Active milestone
 
-### Canonical JSON / Normalization Cube v0.1
+### CLI / Command Runtime v0.1
 
-Target: a standalone deterministic canonicalization engine for JSON-safe values, producing stable normalized structures and canonical serialized JSON suitable for hashing, cache keys, signatures, snapshot comparison, and reproducible artifacts without third-party runtime dependencies.
+Target: a standalone native command-line runtime for deterministic argument parsing, subcommands, flags/options, help/version output, typed command errors, safe environment handling, bounded input/output, predictable exit semantics, and testable command dispatch without third-party runtime dependencies.
 
 Initial scope:
-- JSON-safe primitives, arrays, and plain objects
-- deterministic object-key ordering
-- stable primitive serialization rules
-- explicit handling of negative zero and finite numbers
-- strict rejection of unsupported values
-- bounded depth, node count, string size, and serialized output size
-- immutable normalized output
-- immutable configuration
-- deterministic canonical JSON serialization
-- typed fail-closed errors with safe diagnostics
-- source immutability
+- argv tokenization and strict option parsing
+- short/long flags and typed options
+- deterministic subcommand dispatch
+- positional argument validation
+- `--help` and `--version` output
+- bounded argument and output sizes
+- explicit stdin/stdout/stderr handling
+- deterministic exit-code mapping
+- typed fail-closed diagnostics
+- no mutation of caller configuration
+- environment reads through explicit allowlisted access
+- cross-platform Windows/Linux/macOS/WSL behavior where supported
 - zero runtime third-party dependencies
 - unit, contract, integration, failure, and recovery coverage
-- cross-platform verification
 
 Explicitly out of scope for v0.1:
-- binary canonicalization formats
-- cryptographic signing
-- hashing APIs
-- schema validation
-- semantic normalization of dates, URLs, or domain-specific values
-- network services
-- third-party canonicalization packages
+- shell scripting language execution
+- command discovery through network services
+- plugin package installation
+- terminal UI rendering frameworks
+- credential storage
+- remote command execution
+- third-party CLI frameworks
 
 ## Parked
 
