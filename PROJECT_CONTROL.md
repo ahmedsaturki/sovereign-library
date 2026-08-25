@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Stream / Pipeline Cube v0.1** and release it before starting another cube.
+Finish **Digest / Hash Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,18 +16,18 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**STREAM-PIPELINE-V0.1-RELEASE**
+**DIGEST-HASH-V0.1-RELEASE**
 
 ### Immediate next task
 
-Build and release a native bounded stream/pipeline primitive:
+Build and release native digest/integrity helpers:
 
-1. freeze source/sink contracts
-2. support AsyncIterable and Node stream interoperability where useful
-3. implement ordered transform pipelines with explicit backpressure
-4. define bounded buffering and high-water limits
-5. propagate errors and cancellation deterministically
-6. guarantee cleanup of owned resources
+1. freeze supported digest and HMAC algorithm contracts
+2. implement bounded synchronous hashing
+3. implement bounded AsyncIterable hashing for large payloads
+4. implement HMAC helpers with explicit key/input contracts
+5. implement constant-time byte equality for same-length values
+6. normalize crypto failures into deterministic typed errors
 7. verify zero runtime third-party dependencies
 8. run the supported cross-platform CI matrix
 9. fix only failures required for the v0.1 gate
@@ -36,30 +36,32 @@ Build and release a native bounded stream/pipeline primitive:
 
 ## Scope lock
 
-For Stream / Pipeline Cube v0.1, the allowed scope is only:
+For Digest / Hash Cube v0.1, the allowed scope is only:
 
-- AsyncIterable source/sink adapters
-- ordered transform stages
-- bounded buffering
-- backpressure signals
-- cancellation propagation
-- deterministic error propagation
-- cleanup/finalization hooks
-- simple tee/merge only if required by the core contract
+- SHA-256
+- SHA-512
+- HMAC-SHA256
+- HMAC-SHA512
+- digest output as hex or bytes
+- bounded input sizes for synchronous helpers
+- bounded chunk sizes for AsyncIterable hashing
+- constant-time equality for same-length byte sequences
+- deterministic typed errors
+- immutable configuration snapshots
 - documentation
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Explicitly out of scope for v0.1:
 
-- distributed streaming
-- message brokers
-- reactive programming frameworks
-- third-party stream libraries
-- persistent queues
-- workflow DAGs
-- HTTP policy/negotiation
-- archive formats
+- password hashing / KDFs
+- public-key cryptography
+- signatures
+- key generation
+- encryption/decryption
+- third-party crypto packages
+- authentication protocols
+- certificate handling
 
 ## Definition of done
 
