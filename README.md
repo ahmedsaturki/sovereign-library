@@ -85,12 +85,13 @@ Released through v0.1:
 - Execution Engine
 - Release / Verification Harness
 - Release Manifest / Integrity
+- Content-Addressed Storage / CAS
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Content-Addressed Storage / CAS v0.1** — standalone deterministic local content-addressed storage for native digest-based addressing, bounded CRUD, corruption detection, immutable metadata, and recovery-safe persistence.
+**Artifact Bundle / Reproducible Package v0.1** — standalone deterministic local bundle/package component for reproducible path ordering, versioned serialization, bounded archives, native integrity descriptors, and safe verification/extraction.
 
 ## License
 
