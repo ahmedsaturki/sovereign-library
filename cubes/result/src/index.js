@@ -77,18 +77,18 @@ export const errors = Object.freeze({
 });
 
 export function serializeError(error, seen = new WeakSet()) {
-  const normalized = normalizeError(error);
-  if (seen.has(normalized)) return Object.freeze({ name: normalized.name, code: normalized.code, message: '[circular cause]', retryable: normalized.retryable, cancelled: normalized.cancelled, timedOut: normalized.timedOut });
-  seen.add(normalized);
+  const source = error instanceof Error ? error : normalizeError(error);
+  if (seen.has(source)) return Object.freeze({ name: source.name, code: source.code || 'UNKNOWN_ERROR', message: '[circular cause]', retryable: source.retryable === true, cancelled: source.cancelled === true, timedOut: source.timedOut === true });
+  seen.add(source);
   return Object.freeze({
-    name: normalized.name,
-    code: normalized.code,
-    message: normalized.message,
-    retryable: normalized.retryable,
-    cancelled: normalized.cancelled,
-    timedOut: normalized.timedOut,
-    details: normalized.details,
-    cause: normalized.cause instanceof Error ? serializeError(normalized.cause, seen) : undefined,
+    name: source.name || 'Error',
+    code: source.code || 'UNKNOWN_ERROR',
+    message: source.message || 'unknown error',
+    retryable: source.retryable === true,
+    cancelled: source.cancelled === true,
+    timedOut: source.timedOut === true,
+    details: source.details,
+    cause: source.cause instanceof Error ? serializeError(source.cause, seen) : undefined,
   });
 }
 
