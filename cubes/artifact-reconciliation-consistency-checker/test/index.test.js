@@ -24,7 +24,14 @@ test('missing, extra, digest, version, lifecycle, and lineage mismatches classif
   ] };
   const report = reconcileSnapshots(left, right);
   assert.equal(report.equal, false);
-  assert.deepEqual(report.issues.map(issue => issue.category), ['DIGEST_MISMATCH', 'LIFECYCLE_MISMATCH', 'VERSION_MISMATCH', 'LINEAGE_MISMATCH', 'MISSING_RIGHT', 'EXTRA_RIGHT'].sort((a,b) => a.localeCompare(b)));
+  assert.deepEqual(report.issues.map(issue => issue.category), [
+    'DIGEST_MISMATCH',
+    'MISSING_RIGHT',
+    'EXTRA_RIGHT',
+    'LIFECYCLE_MISMATCH',
+    'LINEAGE_MISMATCH',
+    'VERSION_MISMATCH',
+  ]);
 });
 
 test('duplicate identities and accessors fail closed without mutation', () => {
