@@ -10,43 +10,40 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
-All previously released cubes remain frozen on `main`, including Timeout / Deadline v0.1.
+All previously released cubes remain frozen on `main`, including Timeout / Deadline v0.1 and HTTP Server / Router v0.1.
+
+HTTP Server / Router v0.1 was verified on Ubuntu, Windows, and macOS-15-Intel with syntax, contract/integration, failure/recovery coverage, and the real Browser smoke test. Release-gate Run 240 passed all jobs and the cube was squash-merged as `77a668d5b56591b62f748b16235a318b3be724c3`.
 
 ## Active milestone
 
-### HTTP Server / Router Cube v0.1
+### MIME / Multipart Cube v0.1
 
-Target: a standalone native HTTP server and router built only on Node.js standard-library primitives, providing a compact Express-like server contract without Express or any third-party runtime dependency.
+Target: a standalone native MIME and `multipart/form-data` parser/builder using only Node.js language/runtime primitives, designed for file uploads and structured HTTP payloads without a third-party multipart framework.
 
 Initial scope:
-- native HTTP/HTTPS server creation
-- deterministic method/path routing
-- path parameters
-- query parsing
-- request body limits
-- JSON/text response helpers
-- status and header management
-- middleware pipeline with explicit ordering
-- async handler support
-- centralized error handling
-- 404 and method-not-allowed behavior
-- AbortSignal/request lifecycle propagation where supported
-- graceful close and connection cleanup
-- immutable route/response metadata snapshots
+- MIME type parsing and normalization
+- multipart boundary validation
+- streaming-safe multipart parsing
+- bounded total and per-part sizes
+- text field extraction
+- binary file-part extraction
+- content-disposition parsing
+- header normalization and limits
+- deterministic malformed-input errors
+- multipart body builder for client requests
+- immutable part metadata snapshots
+- cleanup/cancellation during streaming parse
 - local unit/integration/failure/recovery tests
-- real HTTP integration tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- WebSocket upgrade handling (use WebSocket Cube)
-- multipart parser
-- sessions/cookies framework
-- authentication/authorization framework
-- compression framework
-- templating engine
-- reverse proxy
-- distributed server state
-- third-party web frameworks
+- multipart compression
+- resumable uploads
+- remote object storage
+- antivirus scanning
+- image/video transcoding
+- distributed upload coordination
+- third-party multipart parsers
 
 ## Parked
 
