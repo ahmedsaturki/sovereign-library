@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Dependency Graph / Relationship Index Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Lifecycle / Retention Index Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Local Artifact Catalog / Package Index v0.1**
-- Release PR: **#63**, squash-merged
-- Release commit: `58fdd97ed36bf058843c83e2ad226a20d85fb446`
-- Pre-merge verification: **Run 465**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 466**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Local Artifact Catalog / Package Index v0.1 is therefore **FROZEN**.
-- The release provides deterministic SAC1 catalog state, stable artifact identifiers, exact/prefix/package/version/tag queries, atomic persistence, corruption detection, immutable snapshots, typed fail-closed errors, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Dependency Graph / Relationship Index v0.1**
+- Release PR: **#64**, squash-merged
+- Release commit: `2616a058f90ae1469561dc508eaea812e43e0f99`
+- Pre-merge verification: **Run 471**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 472**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Dependency Graph / Relationship Index v0.1 is therefore **FROZEN**.
+- The release provides deterministic node/edge identity, bounded adjacency and path queries, cycle detection, atomic mutations, checksum-protected persistence, immutable snapshots, typed fail-closed errors, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,21 +26,21 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-DEPENDENCY-GRAPH-RELATIONSHIP-INDEX-V0.1-SPEC**
+**ARTIFACT-LIFECYCLE-RETENTION-INDEX-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic local artifact relationship/graph index:
+Implement the public contract for a standalone deterministic local artifact lifecycle/retention index:
 
-1. canonical nodes and typed directed relationships
-2. stable relationship identifiers and deterministic adjacency ordering
-3. bounded node/edge count, identifier length, label length, and query output
-4. atomic add/remove relationship mutations with recovery
-5. deterministic exact-neighbor, reverse-neighbor, and path-within-bound queries
-6. cycle detection and explicit duplicate/conflict rejection
-7. immutable graph snapshots and typed fail-closed errors
+1. canonical lifecycle records and stable artifact identity references
+2. explicit states for live, retained, expired, tombstoned, and deleted
+3. deterministic retention policy evaluation from bounded local inputs
+4. atomic state transitions with recovery
+5. deterministic age/tag/reference queries and bounded purge planning
+6. immutable snapshots and typed fail-closed errors
+7. conflict/invalid-transition rejection
 8. deterministic serialization with checksum and corruption detection
-9. safe restore without code execution or external resolution
+9. dry-run purge planning without destructive side effects
 10. no required network service or external SDK
 11. zero runtime third-party dependencies
 12. unit, contract, failure, recovery, and cross-platform verification
@@ -48,14 +48,13 @@ Implement the public contract for a standalone deterministic local artifact rela
 
 ## Scope lock
 
-For Artifact Dependency Graph / Relationship Index v0.1, allowed scope is only:
+For Artifact Lifecycle / Retention Index v0.1, allowed scope is only:
 
-- local graph/index state
-- deterministic node/relationship identity
-- bounded graph state and query output
-- exact/reverse/path-within-bound queries
-- atomic relationship mutations and recovery
-- cycle detection
+- local lifecycle state
+- deterministic retention policy evaluation
+- bounded records and query/purge-plan output
+- atomic lifecycle mutations and recovery
+- dry-run purge planning
 - immutable snapshots
 - deterministic serialization and corruption detection
 - typed fail-closed errors
@@ -64,14 +63,14 @@ For Artifact Dependency Graph / Relationship Index v0.1, allowed scope is only:
 
 Explicitly out of scope for v0.1:
 
-- remote graph synchronization
-- remote dependency resolution
-- semantic-version solving
-- package publishing
+- destructive physical deletion from arbitrary storage backends
+- remote synchronization
 - network transport
+- distributed locks
+- billing or cost accounting
 - GUI/admin console
-- graph visualization UI
-- background synchronization
+- background scheduler integration
+- legal/compliance retention policy engines
 
 ## Definition of done
 
