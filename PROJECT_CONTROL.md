@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **HTTP Server / Router Cube v0.1** and release it before starting another cube.
+Finish **MIME / Multipart Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,60 +16,55 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**HTTP-SERVER-ROUTER-V0.1-RELEASE**
+**MIME-MULTIPART-V0.1-RELEASE**
 
 ### Immediate next task
 
-Build and release the native HTTP Server / Router Cube:
+Build and release the native MIME / Multipart Cube:
 
-1. freeze the server/router contract
-2. implement native HTTP/HTTPS server creation
-3. implement deterministic method/path routing and params
-4. implement query parsing and bounded request bodies
-5. implement response helpers and headers/status
-6. implement ordered async middleware
-7. implement centralized error and 404/405 handling
-8. integrate request lifecycle cancellation where supported
-9. implement graceful close and connection cleanup
-10. add unit, contract, integration, failure, and recovery tests
-11. verify zero runtime third-party dependencies
-12. run cross-platform CI and real HTTP integration coverage
-13. fix only failures required for the v0.1 gate
-14. squash-merge the release PR
-15. update ROADMAP before starting another cube
+1. freeze MIME and multipart contracts
+2. implement safe MIME/content-disposition parsing
+3. implement bounded streaming multipart parsing
+4. enforce total and per-part limits
+5. extract text fields and binary file parts deterministically
+6. implement immutable part metadata snapshots
+7. implement multipart body building
+8. integrate AbortSignal/cancellation and cleanup
+9. add malformed-input and recovery coverage
+10. verify zero runtime third-party dependencies
+11. run the supported cross-platform CI matrix
+12. fix only failures required for the v0.1 gate
+13. squash-merge the release PR
+14. update ROADMAP before starting another cube
 
 ## Scope lock
 
-For HTTP Server / Router Cube v0.1, the allowed scope is only:
+For MIME / Multipart Cube v0.1, the allowed scope is only:
 
-- native HTTP/HTTPS server creation
-- method/path routing
-- path parameters
-- query parsing
-- request body limits
-- JSON/text response helpers
-- status/header management
-- ordered middleware
-- async handlers
-- centralized error handling
-- 404 and method-not-allowed behavior
-- request lifecycle propagation where supported
-- graceful close and connection cleanup
-- immutable route/response metadata snapshots
+- MIME type parsing and normalization
+- multipart boundary validation
+- streaming-safe multipart parsing
+- bounded total and per-part sizes
+- text field extraction
+- binary file-part extraction
+- content-disposition parsing
+- header normalization and limits
+- deterministic malformed-input errors
+- multipart body builder
+- immutable metadata snapshots
+- cleanup/cancellation during streaming parse
 - documentation
 - local unit/integration/failure/recovery tests
 
 Explicitly out of scope for v0.1:
 
-- WebSocket upgrade handling
-- multipart parser
-- sessions/cookies framework
-- authentication/authorization framework
-- compression framework
-- templating engine
-- reverse proxy
-- distributed server state
-- third-party web frameworks
+- multipart compression
+- resumable uploads
+- remote object storage
+- antivirus scanning
+- image/video transcoding
+- distributed upload coordination
+- third-party multipart parsers
 - AI agent runtime
 
 ## Definition of done
