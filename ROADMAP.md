@@ -10,11 +10,15 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Policy / Capability Security v0.1
+
+PR #56 was squash-merged as `a1067431f06d20ad2bdce321590ded9e79471d02`. Pre-merge Run 418 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, contract/integration tests, and the real-browser smoke gate. Post-merge Run 419 was a push on `main` for the release commit and completed successfully on Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
+The release provides deterministic local authorization decisions, explicit allow/deny capability records, hierarchical action/resource matching, deterministic precedence, bounded contextual evaluation, fail-closed validation, immutable audit records, composable public snapshots, and zero runtime third-party dependencies.
+
 ### Agent Runtime v0.1
 
-PR #55 was squash-merged as `8d4608e012176a55bdc1822d3aea65add7aa7669`. Pre-merge Run 409 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, the full repository suite, and the real-browser smoke gate. Post-merge Run 410 was a push on `main` for the release commit and completed successfully.
-
-The release provides deterministic agent/session state, bounded conversation and tool work, explicit tool-call envelopes and capability allowlisting, cancellation/timeout/retry semantics, immutable snapshots, typed fail-closed diagnostics, public documentation/examples, and zero runtime third-party dependencies.
+PR #55 was squash-merged as `8d4608e012176a55bdc1822d3aea65add7aa7669`. Pre-merge Run 409 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 410 was a push on `main` for the release commit and completed successfully.
 
 ### AI / Inference Runtime v0.1
 
@@ -70,30 +74,30 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Policy / Capability Security Cube v0.1
+### Execution Engine v0.1
 
-Target: a standalone deterministic local capability-policy engine that provides immutable policy snapshots, explicit allow/deny rules, hierarchical resource/action matching, deterministic precedence, bounded contextual evaluation, fail-closed diagnostics, and immutable audit decision records.
+Target: a standalone deterministic local execution engine that normalizes task definitions, executes dependency-ordered work, records explicit lifecycle states and outcomes, enforces bounded execution, supports deterministic retry/recovery semantics, and emits immutable snapshots/results without external orchestration dependencies.
 
 Initial scope:
-- immutable policy definitions and normalization
-- explicit allow/deny capability records
-- hierarchical resource/action matching
-- deterministic precedence and conflict resolution
-- bounded contextual inputs
-- fail-closed evaluation on malformed rules and unsupported values
-- immutable safe audit decision records
-- policy composition/versioned snapshots
+- immutable execution definitions and normalized task records
+- deterministic task ordering and execution state transitions
+- explicit success/failure/cancel/timeout/skipped outcomes
+- dependency-aware execution with cycle and duplicate detection
+- bounded task count, payload, execution depth, and diagnostics
+- deterministic retry/recovery semantics
+- immutable execution snapshots and auditable result records
+- typed fail-closed errors
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- network authorization services
-- OAuth/OIDC providers
-- remote policy control planes
-- identity lifecycle management
-- distributed consensus
-- multi-agent orchestration
+- distributed execution
+- remote workers
+- cron/scheduling service integration
 - GUI/admin console
+- network orchestration
+- queue broker integration
+- multi-agent orchestration
 - browser automation
 
 ## Parked
