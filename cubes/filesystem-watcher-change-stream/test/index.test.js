@@ -35,11 +35,13 @@ test('supports all overflow policies with bounded queue', async () => {
       { rootId: 'root-1', type: 'created', path: '3.txt' },
     ], { queueCapacity: 2, overflow });
     await watcher.start();
+    await new Promise((resolve) => setTimeout(resolve, 10));
     const first = await watcher.next();
     const second = await watcher.next();
     assert.equal(first.done, false);
     assert.equal(second.done, false);
     assert.ok(watcher.stats().overflow > 0);
+    assert.ok(watcher.stats().queued <= 2);
     await watcher.close();
   }
 });
