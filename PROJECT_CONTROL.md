@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Local Artifact Catalog / Package Index Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Dependency Graph / Relationship Index Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Bundle / Reproducible Package v0.1**
-- Release PR: **#62**, squash-merged
-- Release commit: `a1d2655e7d48b63ce6ded71e4e449ea2c3a841dd`
-- Pre-merge verification: **Run 458**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 459**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Bundle / Reproducible Package v0.1 is therefore **FROZEN**.
-- The release provides deterministic SAB1 bundles, canonical metadata and paths, bounded entries, native SHA-256 integrity descriptors, safe verification/extraction, typed fail-closed errors, and zero runtime third-party dependencies.
+- Last released cube: **Local Artifact Catalog / Package Index v0.1**
+- Release PR: **#63**, squash-merged
+- Release commit: `58fdd97ed36bf058843c83e2ad226a20d85fb446`
+- Pre-merge verification: **Run 465**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 466**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Local Artifact Catalog / Package Index v0.1 is therefore **FROZEN**.
+- The release provides deterministic SAC1 catalog state, stable artifact identifiers, exact/prefix/package/version/tag queries, atomic persistence, corruption detection, immutable snapshots, typed fail-closed errors, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,36 +26,37 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**LOCAL-ARTIFACT-CATALOG-PACKAGE-INDEX-V0.1-SPEC**
+**ARTIFACT-DEPENDENCY-GRAPH-RELATIONSHIP-INDEX-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic local artifact catalog/package index:
+Implement the public contract for a standalone deterministic local artifact relationship/graph index:
 
-1. canonical artifact records and stable identifiers
-2. deterministic package/version metadata normalization
-3. bounded catalog size, record size, identifier length, and query output
-4. atomic add/update/remove semantics with recovery
-5. deterministic exact/prefix/tag/version queries
-6. immutable snapshots and typed fail-closed errors
-7. duplicate/conflicting record rejection
-8. corruption detection for persisted index state
-9. deterministic serialization suitable for backup/restore
-10. no required network service, registry, or external SDK
+1. canonical nodes and typed directed relationships
+2. stable relationship identifiers and deterministic adjacency ordering
+3. bounded node/edge count, identifier length, label length, and query output
+4. atomic add/remove relationship mutations with recovery
+5. deterministic exact-neighbor, reverse-neighbor, and path-within-bound queries
+6. cycle detection and explicit duplicate/conflict rejection
+7. immutable graph snapshots and typed fail-closed errors
+8. deterministic serialization with checksum and corruption detection
+9. safe restore without code execution or external resolution
+10. no required network service or external SDK
 11. zero runtime third-party dependencies
 12. unit, contract, failure, recovery, and cross-platform verification
 13. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Local Artifact Catalog / Package Index v0.1, allowed scope is only:
+For Artifact Dependency Graph / Relationship Index v0.1, allowed scope is only:
 
-- local catalog/index state
-- deterministic artifact identity and metadata normalization
-- bounded record storage and query output
-- exact/prefix/tag/version queries
-- atomic mutations and recovery
-- immutable public snapshots
+- local graph/index state
+- deterministic node/relationship identity
+- bounded graph state and query output
+- exact/reverse/path-within-bound queries
+- atomic relationship mutations and recovery
+- cycle detection
+- immutable snapshots
 - deterministic serialization and corruption detection
 - typed fail-closed errors
 - unit, contract, failure, recovery, and cross-platform tests
@@ -63,13 +64,13 @@ For Local Artifact Catalog / Package Index v0.1, allowed scope is only:
 
 Explicitly out of scope for v0.1:
 
-- remote registries
+- remote graph synchronization
+- remote dependency resolution
+- semantic-version solving
 - package publishing
 - network transport
-- dependency resolution across remote sources
-- signing/key management
 - GUI/admin console
-- full semantic-version solver
+- graph visualization UI
 - background synchronization
 
 ## Definition of done
