@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **URL / Query / Encoding Cube v0.1** and release it before starting another cube.
+Finish **Content-Encoding / Compression Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,53 +16,48 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**URL-QUERY-ENCODING-V0.1-RELEASE**
+**CONTENT-ENCODING-COMPRESSION-V0.1-RELEASE**
 
 ### Immediate next task
 
-Build and release the native URL / Query / Encoding cube:
+Build and release bounded native compression/decompression helpers:
 
-1. freeze URL/query/encoding contracts
-2. implement safe parsing and deterministic serialization
-3. implement duplicate-preserving query parameters
-4. implement form encoding/decoding
-5. implement UTF-8 and Base64/Base64URL helpers
-6. implement safe path-segment encoding/decoding
-7. enforce bounded input sizes
-8. add immutable snapshots and typed malformed-input errors
-9. verify zero runtime third-party dependencies
-10. run the supported cross-platform CI matrix
-11. fix only failures required for the v0.1 gate
-12. squash-merge the release PR
-13. update ROADMAP before starting another cube
+1. freeze format and buffer-size contracts
+2. implement gzip/deflate/inflate helpers using Node.js runtime primitives only
+3. define deterministic max input/max output limits
+4. normalize compression/decompression failures into typed errors
+5. support synchronous and bounded asynchronous paths only where required
+6. verify cancellation/cleanup behavior for streaming paths if included
+7. verify zero runtime third-party dependencies
+8. run the supported cross-platform CI matrix
+9. fix only failures required for the v0.1 gate
+10. squash-merge the release PR
+11. update ROADMAP before starting another cube
 
 ## Scope lock
 
-For URL / Query / Encoding Cube v0.1, the allowed scope is only:
+For Content-Encoding / Compression Cube v0.1, the allowed scope is only:
 
-- URL parsing and serialization helpers
-- strict and tolerant percent-decoding
-- duplicate-preserving query parsing
-- deterministic query building
-- application/x-www-form-urlencoded encode/decode
-- UTF-8 encode/decode helpers
-- Base64 / Base64URL helpers
-- safe path-segment encoding/decoding
-- bounded input size limits
-- immutable parameter snapshots
-- deterministic malformed-input errors
+- gzip compression/decompression
+- deflate/inflate compression/decompression
+- bounded input/output sizes
+- deterministic compression/decompression errors
+- immutable configuration snapshots
+- buffer-safe primitives
 - documentation
 - local unit/integration/failure/recovery tests
+- cross-platform verification
 
 Explicitly out of scope for v0.1:
 
-- DNS resolution
-- URL fetching
-- URI templates
-- cryptographic signing schemes
-- IDNA implementation
-- third-party parsers/encoders
-- AI agent runtime
+- ZIP archive creation
+- TAR archive creation
+- password encryption
+- streaming archive formats
+- distributed compression workers
+- third-party compression packages
+- content negotiation policy
+- HTTP server/client integration beyond contract-level examples
 
 ## Definition of done
 
