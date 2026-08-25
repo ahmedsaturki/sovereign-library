@@ -72,12 +72,13 @@ Released through v0.1:
 - Worker Pool / Parallel Execution
 - Metrics / Telemetry
 - Redaction / Secret Safety
+- Diff / Patch
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Diff / Patch Cube v0.1** — standalone deterministic structural diff and patch engine for JSON-safe values, with bounded operations, path validation, immutable outputs, and zero runtime third-party dependencies.
+**Canonical JSON / Normalization Cube v0.1** — standalone deterministic canonicalization engine for JSON-safe values, stable normalized structures, and canonical serialized JSON, with bounded traversal, immutable outputs, strict rejection, and zero runtime third-party dependencies.
 
 ## License
 
