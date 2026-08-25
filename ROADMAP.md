@@ -58,34 +58,36 @@ Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-
 ### Retry / Resilience Cube v0.1 — RELEASED
 Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-15-Intel with retry contract/integration/failure/recovery tests and the real Browser smoke test. Release-gate Run 197 passed all jobs.
 
+### Concurrency / Bulkhead Cube v0.1 — RELEASED
+Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-15-Intel with concurrency contract/integration/failure/recovery tests and the real Browser smoke test. Release-gate Run 201 passed all jobs.
+
 ## Active milestone
 
-### Concurrency / Bulkhead Cube v0.1
+### Circuit Breaker / Health Gate Cube v0.1
 
-Target: a standalone deterministic concurrency-control primitive that bounds active work, provides fair queued admission, supports cancellation, exposes immutable statistics, and composes cleanly with Scheduler, Rate Limiter, Retry, Result/Error, and AbortSignal without a third-party concurrency library.
+Target: a standalone deterministic failure-isolation primitive that tracks failures, transitions between closed/open/half-open states, controls probe admission, supports cooldown timing and reset semantics, and composes cleanly with Retry, Bulkhead, Rate Limiter, Result/Error, and AbortSignal without a third-party resilience framework.
 
 Initial scope:
-- configurable concurrency limit
-- immediate/non-blocking tryAcquire / admission check
-- bounded FIFO waiting queue
-- fair waiter ordering
-- queued cancellation via AbortSignal
-- release/lease lifecycle with double-release protection
-- queue overflow behavior
-- deterministic clock integration where waiting timers are required
-- immutable statistics snapshots
-- cleanup and shutdown semantics
+- closed/open/half-open state machine
+- configurable failure threshold
+- configurable success threshold for recovery
+- deterministic cooldown clock
+- half-open probe admission limit
+- explicit manual reset
+- result/error-based failure classification
+- immutable state/statistics snapshots
+- AbortSignal-safe probe execution
+- cleanup and close semantics
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- distributed semaphore state
-- remote coordination or Redis
-- priority scheduling
-- work stealing
-- adaptive ML-based concurrency
-- third-party concurrency libraries
-- tracing/telemetry backend
+- distributed circuit state
+- remote coordination
+- adaptive ML policies
+- external telemetry backend
+- third-party resilience libraries
+- service discovery
 
 ## Parked
 
