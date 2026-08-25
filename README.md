@@ -97,12 +97,13 @@ Released through v0.1:
 - Artifact Compliance / Policy Evaluator
 - Artifact Admission Gate / Release Eligibility
 - Artifact Release Plan / Deterministic Publication Plan
+- Artifact Release Snapshot / Candidate Set
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Release Snapshot / Candidate Set v0.1** — standalone deterministic local snapshot that freezes an explicit candidate artifact set using normalized identity, version, digest, admission verdict, and bounded evidence references, with no external discovery or mutation.
+**Artifact Release Approval / Decision Record v0.1** — standalone deterministic local approval record bound to one explicit frozen release snapshot and explicit approval decisions, with no external approval service or publication side effect.
 
 ## License
 
