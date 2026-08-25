@@ -9,7 +9,6 @@
 - lexical-only, reject-symlink, and follow-contained policies
 - injectable filesystem canonicalization seams
 - bounded inputs and typed failure modes
-- SPR1 deterministic serialization with SHA-256 integrity verification
-- fail-closed `INTEGRITY_FAILURE` tamper detection
-- explicit bounded `symlinkDepth(path)` capability for follow-contained mode
+- SHA-256 integrity-protected SPR1 serialization with tamper detection
+- explicit symlink-depth enforcement for follow-contained resolution
 - zero runtime third-party dependencies
