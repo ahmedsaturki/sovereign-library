@@ -84,7 +84,7 @@ function base64Bytes(bytes) { return Buffer.from(bytes instanceof Uint8Array ? b
 
 export function base64Encode(value, options = {}) {
   const bytes = typeof value === 'string' ? utf8Encode(value, options) : base64Bytes(value);
-  return bytes.toString('base64');
+  return Buffer.from(bytes).toString('base64');
 }
 
 export function base64Decode(value, options = {}) {
