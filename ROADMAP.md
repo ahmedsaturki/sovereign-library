@@ -10,13 +10,17 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Lifecycle / Retention Index v0.1
+
+PR #65 was squash-merged as `da1f4992c0f84422f9e43a5c5037af1e28e85fc9`. Pre-merge Run 480 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 481 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
 ### Artifact Dependency Graph / Relationship Index v0.1
 
-PR #64 was squash-merged as `2616a058f90ae1469561dc508eaea812e43e0f99`. Pre-merge Run 471 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 472 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #64 was squash-merged as `2616a058f90ae1469561dc508eaea812e43e0f99`.
 
 ### Local Artifact Catalog / Package Index v0.1
 
-PR #63 was squash-merged as `58fdd97ed36bf058843c83e2ad226a20d85fb446`. Pre-merge Run 465 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 466 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #63 was squash-merged as `58fdd97ed36bf058843c83e2ad226a20d85fb446`.
 
 ### Artifact Bundle / Reproducible Package v0.1
 
@@ -100,32 +104,32 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Lifecycle / Retention Index v0.1
+### Artifact Reference Resolver / Locator v0.1
 
-Target: a standalone deterministic local lifecycle/retention index for artifact references, explicit lifecycle states, bounded policy evaluation, safe dry-run purge planning, atomic state transitions, immutable snapshots, and checksum-protected serialization.
+Target: a standalone deterministic local resolver for canonical artifact references against an explicit bounded candidate set, with no hidden registry/network/filesystem discovery.
 
 Initial scope:
-- canonical lifecycle records and stable artifact identity references
-- explicit live/retained/expired/tombstoned/deleted states
-- deterministic bounded retention policy evaluation
-- atomic lifecycle state transitions and recovery
-- deterministic age/tag/reference queries and purge planning
-- immutable snapshots and typed fail-closed errors
-- invalid transition/conflict rejection
-- deterministic serialization with checksum and corruption detection
-- dry-run purge planning without destructive side effects
+- canonical artifact reference grammar for name/version/digest/tag forms
+- deterministic normalization and validation
+- bounded explicit candidate resolution
+- exact and alias matching only
+- explicit ambiguity and not-found outcomes
+- immutable resolution snapshots
+- typed fail-closed errors and recovery
+- deterministic ordering and result limits
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- destructive physical deletion from arbitrary storage backends
-- remote synchronization
+- remote registries
 - network transport
-- distributed locks
-- billing or cost accounting
+- implicit filesystem discovery
+- semantic version range solving
+- dependency installation
+- destructive lifecycle operations
 - GUI/admin console
 - background scheduler integration
-- legal/compliance retention policy engines
+- billing or cost accounting
 
 ## Parked
 
