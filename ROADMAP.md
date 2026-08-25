@@ -10,34 +10,43 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
-All previously released cubes remain frozen on `main`, including Circuit Breaker / Health Gate v0.1.
+All previously released cubes remain frozen on `main`, including Timeout / Deadline v0.1.
 
 ## Active milestone
 
-### Timeout / Deadline Cube v0.1
+### HTTP Server / Router Cube v0.1
 
-Target: a standalone deterministic timeout/deadline primitive that composes cleanly with HTTP, Process, Scheduler, Retry, Rate Limiter, Bulkhead, Circuit Breaker, Result/Error, and AbortSignal without a third-party timeout framework.
+Target: a standalone native HTTP server and router built only on Node.js standard-library primitives, providing a compact Express-like server contract without Express or any third-party runtime dependency.
 
 Initial scope:
-- deadline creation from duration or absolute monotonic deadline
-- remaining-time calculation
-- AbortSignal integration
-- deterministic clock support including deterministic timers
-- timeout error with explicit deadline metadata
-- race-safe completion/timeout/cancellation semantics
-- child deadline derivation
-- immutable deadline snapshots
-- cleanup and timer lifecycle
+- native HTTP/HTTPS server creation
+- deterministic method/path routing
+- path parameters
+- query parsing
+- request body limits
+- JSON/text response helpers
+- status and header management
+- middleware pipeline with explicit ordering
+- async handler support
+- centralized error handling
+- 404 and method-not-allowed behavior
+- AbortSignal/request lifecycle propagation where supported
+- graceful close and connection cleanup
+- immutable route/response metadata snapshots
 - local unit/integration/failure/recovery tests
+- real HTTP integration tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- distributed deadlines
-- tracing backend
-- remote coordination
-- adaptive timeouts
-- third-party timeout libraries
-- workflow orchestration
+- WebSocket upgrade handling (use WebSocket Cube)
+- multipart parser
+- sessions/cookies framework
+- authentication/authorization framework
+- compression framework
+- templating engine
+- reverse proxy
+- distributed server state
+- third-party web frameworks
 
 ## Parked
 
