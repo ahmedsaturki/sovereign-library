@@ -50,6 +50,18 @@ test('server serves params and query values', async () => {
   } finally { await closeQuietly(handle); }
 });
 
+test('HEAD fallback returns headers without a response body', async () => {
+  const app = createApp();
+  app.get('/head', ctx => ctx.textResponse('body')); 
+  const { handle, origin } = await open(app);
+  try {
+    const { response, text } = await request(origin, '/head', { method: 'HEAD' });
+    assert.equal(response.status, 200);
+    assert.equal(text, '');
+    assert.match(response.headers.get('content-type') ?? '', /text\/plain/);
+  } finally { await closeQuietly(handle); }
+});
+
 test('404 and 405 are explicit and 405 includes Allow header', async () => {
   const app = createApp();
   app.get('/only-get', ctx => ctx.textResponse('ok'));
@@ -59,7 +71,7 @@ test('404 and 405 are explicit and 405 includes Allow header', async () => {
     assert.equal(missing.response.status, 404);
     const wrong = await request(origin, '/only-get', { method: 'POST' });
     assert.equal(wrong.response.status, 405);
-    assert.equal(wrong.response.headers.get('allow'), 'GET');
+    assert.equal(wrong.response.headers.get('allow'), 'GET, HEAD');
   } finally { await closeQuietly(handle); }
 });
 
