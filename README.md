@@ -78,12 +78,13 @@ Released through v0.1:
 - Search / Index
 - Workflow / Durable Orchestration
 - Storage Persistence / Snapshot
+- Reporting / Export
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Reporting / Export Cube v0.1** — standalone deterministic local reporting/export engine for immutable report snapshots, stable JSON/CSV output, deterministic aggregation/grouping/order, bounded streaming, cancellation-aware output, and zero runtime third-party dependencies.
+**AI / Inference Runtime Cube v0.1** — standalone provider-neutral local inference runtime for bounded message/context normalization, synchronous results, streaming delta events, cancellation/timeouts, a native child-process/stdio adapter, and zero runtime third-party dependencies.
 
 ## License
 
