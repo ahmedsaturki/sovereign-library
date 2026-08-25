@@ -71,12 +71,13 @@ Released through v0.1:
 - Serialization / Binary Codec
 - Worker Pool / Parallel Execution
 - Metrics / Telemetry
+- Redaction / Secret Safety
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Redaction / Secret Safety Cube v0.1** — standalone recursive data-redaction and secret-safety primitives with bounded depth/size, deterministic rule matching, immutable output, and zero runtime third-party dependencies.
+**Diff / Patch Cube v0.1** — standalone deterministic structural diff and patch engine for JSON-safe values, with bounded operations, path validation, immutable outputs, and zero runtime third-party dependencies.
 
 ## License
 
