@@ -69,12 +69,13 @@ Released through v0.1:
 - Stream / Pipeline
 - Digest / Hash
 - Serialization / Binary Codec
+- Worker Pool / Parallel Execution
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Worker Pool / Parallel Execution Cube v0.1** — native bounded worker-thread execution with task limits, cancellation, timeouts, deterministic results, and zero runtime third-party dependencies.
+**Metrics / Telemetry Cube v0.1** — standalone bounded instrumentation for counters, gauges, histograms, immutable snapshots, deterministic label/cardinality limits, and high-resolution timing without third-party runtime dependencies.
 
 ## License
 
