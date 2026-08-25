@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Reference Resolver / Locator Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Provenance / Lineage Ledger Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Lifecycle / Retention Index v0.1**
-- Release PR: **#65**, squash-merged
-- Release commit: `da1f4992c0f84422f9e43a5c5037af1e28e85fc9`
-- Pre-merge verification: **Run 480**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 481**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Lifecycle / Retention Index v0.1 is therefore **FROZEN**.
-- The release provides deterministic lifecycle records, explicit live/retained/expired/tombstoned/deleted states, bounded retention evaluation, atomic transitions, dry-run retention/purge planning, checksum-protected persistence, immutable snapshots, typed fail-closed errors, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Reference Resolver / Locator v0.1**
+- Release PR: **#66**, squash-merged
+- Release commit: `7cb477e1e11ea5c5f9b145cf6eba1527482a4b57`
+- Pre-merge verification: **Run 485**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 486**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Reference Resolver / Locator v0.1 is therefore **FROZEN**.
+- The release provides canonical reference parsing/normalization, deterministic bounded candidate resolution, exact and alias matching, explicit ambiguity/not-found outcomes, immutable snapshots, typed fail-closed errors, no hidden discovery, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,45 +26,48 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-REFERENCE-RESOLVER-LOCATOR-V0.1-SPEC**
+**ARTIFACT-PROVENANCE-LINEAGE-LEDGER-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic local artifact reference resolver/locator:
+Implement the public contract for a standalone deterministic local artifact provenance / lineage ledger:
 
-1. canonical artifact reference grammar for name, version, digest, and tag forms
-2. deterministic normalization and validation of local references
-3. resolution across an explicit bounded in-memory candidate set
-4. exact, alias, and version-range-free deterministic matching only
-5. explicit ambiguity and not-found outcomes with typed errors
-6. bounded candidate/result limits and fail-closed invalid input handling
-7. immutable resolution snapshots and stable result ordering
-8. no hidden network access, filesystem scanning, registry lookup, or external SDK
-9. zero runtime third-party dependencies
-10. unit, contract, failure, recovery, and cross-platform verification
-11. standalone SPEC, README, changelog, and runnable example before release
+1. canonical provenance records with stable artifact/event identity
+2. explicit parent/child and derived-from lineage relationships
+3. deterministic append-only event ordering with bounded local storage
+4. actor/action/source metadata with fail-closed validation
+5. deterministic ancestry/descendant traversal with depth and result bounds
+6. immutable snapshots and replay-safe reads
+7. atomic append/recovery semantics without partial writes
+8. deterministic serialization with checksum and corruption detection
+9. no network, registry, filesystem discovery, or external SDK required
+10. zero runtime third-party dependencies
+11. unit, contract, failure, recovery, and cross-platform verification
+12. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Reference Resolver / Locator v0.1, allowed scope is only:
+For Artifact Provenance / Lineage Ledger v0.1, allowed scope is only:
 
-- local artifact reference parsing and normalization
-- bounded explicit candidate resolution
-- deterministic exact/alias matching
-- ambiguity/not-found reporting
-- immutable snapshots
+- local provenance records and stable artifact/event identity
+- explicit lineage relationships
+- deterministic append-only event ordering
+- bounded ancestry/descendant traversal
+- immutable snapshots and replay-safe reads
 - typed fail-closed errors
+- atomic append/recovery behavior
+- deterministic serialization and corruption detection
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- remote registries
+- remote provenance stores
 - network transport
-- implicit filesystem discovery
-- semantic version range solving
-- dependency installation
-- destructive lifecycle operations
+- distributed consensus or locks
+- signature/certificate infrastructure
+- automatic filesystem/registry discovery
+- cryptographic trust policy engines
 - GUI/admin console
 - background scheduler integration
 - billing or cost accounting
