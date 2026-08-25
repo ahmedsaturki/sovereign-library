@@ -70,7 +70,12 @@ function parseContentDisposition(value) {
   return Object.freeze(result);
 }
 
+function cancellationReason(signal) {
+  return signal?.reason ?? new MimeError('CANCELLED', 'Multipart parsing cancelled', { statusCode: 499 });
+}
+
 async function readBounded(source, maxTotalBytes, signal) {
+  if (signal?.aborted) throw cancellationReason(signal);
   if (typeof source === 'string' || Buffer.isBuffer(source) || source instanceof Uint8Array) {
     const buffer = toBuffer(source);
     if (buffer.length > maxTotalBytes) throw new MimeError('BODY_TOO_LARGE', `Multipart body exceeds ${maxTotalBytes} bytes`, { statusCode: 413 });
@@ -80,7 +85,7 @@ async function readBounded(source, maxTotalBytes, signal) {
   const chunks = [];
   let total = 0;
   for await (const value of source) {
-    if (signal?.aborted) throw signal.reason ?? new MimeError('CANCELLED', 'Multipart parsing cancelled', { statusCode: 499 });
+    if (signal?.aborted) throw cancellationReason(signal);
     const chunk = toBuffer(value);
     total += chunk.length;
     if (total > maxTotalBytes) throw new MimeError('BODY_TOO_LARGE', `Multipart body exceeds ${maxTotalBytes} bytes`, { statusCode: 413 });
