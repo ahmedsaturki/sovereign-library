@@ -10,40 +10,38 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
-All previously released cubes remain frozen on `main`, including MIME / Multipart v0.1.
+All previously released cubes remain frozen on `main`, including HTTP Metadata v0.1.
 
-HTTP Server / Router v0.1 was verified on Ubuntu, Windows, and macOS-15-Intel with syntax, contract/integration, failure/recovery coverage, and the real Browser smoke test. Release-gate Run 240 passed all jobs and the cube was squash-merged as `77a668d5b56591b62f748b16235a318b3be724c3`.
-
-MIME / Multipart v0.1 was verified on Ubuntu, Windows, and macOS-15-Intel with MIME contract/integration/failure/recovery tests and the real Browser smoke test. Release-gate Run 249 passed all jobs and the cube was squash-merged as `a6614ea0b8c212791107fc4d73295cb7cc502607`.
+HTTP Metadata v0.1 was verified on Ubuntu, Windows, and macOS-15-Intel with HTTP metadata contract/integration/failure tests and the real Browser smoke test. Release-gate Run 254 passed all jobs and the cube was squash-merged as `04a67f7ca79624545601cd827e455b14f01a427a`.
 
 ## Active milestone
 
-### HTTP Headers / Cookies / Content Negotiation Cube v0.1
+### URL / Query / Encoding Cube v0.1
 
-Target: a standalone native HTTP metadata primitive for normalized request/response headers, cookies, content negotiation, and cache-relevant header semantics without a third-party HTTP utility framework.
+Target: a standalone native URL, query-string, percent-encoding, form-encoding, and byte-safe text conversion primitive usable by every HTTP/data/automation cube without a third-party URL or encoding framework.
 
 Initial scope:
-- case-insensitive header storage with deterministic normalization
-- multi-value header semantics where applicable
-- safe request/response header validation
-- Cookie header parsing
-- Set-Cookie builder with bounded attributes
-- Accept / Accept-Encoding / Accept-Language negotiation helpers
-- Content-Type / Content-Length parsing helpers
-- ETag / conditional request helpers
-- immutable metadata snapshots
-- deterministic malformed-value errors
+- URL parsing and serialization helpers
+- strict and tolerant percent-decoding
+- RFC-style query parameter parsing with duplicate keys
+- deterministic query builder
+- application/x-www-form-urlencoded encode/decode
+- UTF-8 encode/decode helpers
+- Base64 / Base64URL helpers
+- safe path-segment encoding/decoding
+- bounded input size limits
+- immutable parameter snapshots
+- deterministic malformed-input errors
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- cookie jar persistence
-- authentication/session framework
-- compression implementation
-- HTTP cache storage engine
-- proxy behavior
-- browser cookie policy emulation
-- third-party header utility libraries
+- DNS resolution
+- URL fetching
+- URI templates
+- cryptographic signing schemes
+- IDNA implementation
+- third-party parsers/encoders
 
 ## Parked
 
