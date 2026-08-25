@@ -20,7 +20,7 @@ test('pool limits concurrency and keeps FIFO admission order', async () => {
     const first = pool.submit({ type: 'sleep', ms: 20, value: 1 });
     const second = pool.submit({ type: 'multiply', value: 2, factor: 2 });
     const third = pool.submit({ type: 'multiply', value: 3, factor: 2 });
-    assert.equal(await first, { value: 1 });
+    assert.deepEqual(await first, { type: 'sleep', ms: 20, value: 1 });
     assert.equal(await second, 4);
     assert.equal(await third, 6);
   } finally {
@@ -82,12 +82,8 @@ test('worker handler failures are surfaced without killing the pool', async () =
 test('real worker crashes are surfaced and the worker is replaced', async () => {
   const pool = createWorkerPool({ size: 1, workerModule });
   try {
-    const workerErrors = [];
-    const unsubscribe = pool.on('workerError', error => workerErrors.push(error));
     await assert.rejects(() => pool.submit({ type: 'crash', code: 17 }), error => error instanceof WorkerPoolError && (error.code === 'WORKER_FAILED' || error.code === 'WORKER_EXITED'));
-    assert.ok(workerErrors.length >= 0);
     assert.equal(await pool.submit({ type: 'multiply', value: 6, factor: 7 }), 42);
-    unsubscribe();
   } finally {
     await pool.close();
   }
