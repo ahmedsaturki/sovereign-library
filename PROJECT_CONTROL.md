@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **CLI / Command Runtime Cube v0.1** and release it before starting another cube.
+Finish **Search / Index Cube v0.1** and release it before starting another cube.
 
 ## Current repository state
 
-- Last released cube: **Canonical JSON / Normalization v0.1**
-- Release PR: **#49**, squash-merged
-- Release merge commit: `66f9329182792d879dfb7bcfd2d49c6513d918b9`
-- Pre-merge release verification: **Run 352**, passed on Ubuntu, Windows, and macOS-15-Intel.
-- Post-merge release verification: **Run 353**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Canonical JSON / Normalization v0.1 is therefore **FROZEN**.
-- `ROADMAP.md` and `README.md` were updated to record the release and activate CLI / Command Runtime.
+- Last released cube: **CLI / Command Runtime v0.1**
+- Release path: **direct-main gated release**
+- Release commit: `61eac767bca438e63d28a28892ffcc0dab956e36`
+- Release verification: **Run 366**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- CLI / Command Runtime v0.1 is therefore **FROZEN**.
+- `ROADMAP.md` and `README.md` were updated to record the release and activate Search / Index.
+- Earlier CLI CI failures were resolved with minimal source fixes and regression coverage: optional defaults, child-command normalization, explicit-option tracking, parser fail-closed handling, and accessor-safe configuration validation.
 - Duplicate Redaction PR #47 remains closed as superseded by PR #45.
 
 ## The one-current-task rule
@@ -27,57 +27,58 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**CLI-COMMAND-RUNTIME-V0.1-SPEC**
+**SEARCH-INDEX-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze the public contract for a standalone native CLI / Command Runtime product:
+Freeze the public contract for a standalone native Search / Index product:
 
-1. define argv tokenization and strict option parsing semantics
-2. define short/long flags and typed option values
-3. define deterministic subcommand dispatch
-4. define positional argument rules
-5. define help/version rendering and deterministic output
-6. define explicit stdin/stdout/stderr ownership and bounded I/O
-7. define deterministic exit-code mapping
-8. define explicit environment access and allowlisting
-9. define typed fail-closed diagnostics without arbitrary payload copying
-10. define configuration immutability and source immutability
-11. define cross-platform behavior and capability limits
+1. define the indexed document and identifier contract
+2. define deterministic Unicode-safe tokenization and normalization semantics
+3. define an owned inverted-index representation
+4. define add, update, remove, and rebuild lifecycle behavior
+5. define exact-term, AND/OR, prefix, and bounded phrase-query semantics
+6. define deterministic scoring and result ordering
+7. define bounds for documents, fields, tokens, query size, postings, and results
+8. define immutable snapshots and source immutability
+9. define typed fail-closed errors without copying arbitrary payloads
+10. define recovery behavior after rejected mutations and failed rebuilds
+11. verify zero runtime third-party dependencies
 12. define unit, contract, integration, failure, and recovery gates
-13. verify zero runtime third-party dependencies
-14. write the standalone cube specification before implementation
+13. write the standalone cube specification before implementation
 
 ## Scope lock
 
-For CLI / Command Runtime Cube v0.1, the allowed scope is only:
+For Search / Index Cube v0.1, the allowed scope is only:
 
-- argv tokenization
-- short and long flags
-- typed option values
-- deterministic subcommand routing
-- positional arguments
-- help and version output
-- bounded argument count/token sizes
-- explicit stdin/stdout/stderr handling
-- bounded output sizes
-- deterministic exit-code mapping
-- typed fail-closed command diagnostics
-- immutable configuration
-- explicit environment allowlisting
-- cross-platform Windows/Linux/macOS/WSL behavior where supported
+- local in-memory inverted indexing
+- deterministic text tokenization and normalization
+- document add/update/remove/rebuild
+- exact-term query
+- AND/OR term query
+- bounded prefix query
+- bounded phrase query
+- deterministic relevance scoring
+- deterministic tie-breaking
+- bounded index memory/work
+- immutable query results and index snapshots
+- source immutability
+- typed fail-closed diagnostics
 - local unit/contract/integration/failure/recovery tests
+- cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- shell scripting language execution
-- network-based command discovery
-- plugin installation/package management
-- terminal UI frameworks
-- credential storage
-- remote command execution
-- third-party CLI frameworks
+- network search services
+- distributed indexes
+- filesystem persistence
+- vector/semantic embeddings
+- fuzzy matching/edit distance
+- external search engines
+- third-party search/index packages
+- web crawling
+- ranking learned from external models
 
 ## Definition of done
 
