@@ -55,33 +55,37 @@ Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-
 ### Rate Limiter / Backpressure Cube v0.1 — RELEASED
 Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-15-Intel with rate limiter contract/integration/failure/recovery tests and the real Browser smoke test. Release-gate Run 187 passed all jobs.
 
+### Retry / Resilience Cube v0.1 — RELEASED
+Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-15-Intel with retry contract/integration/failure/recovery tests and the real Browser smoke test. Release-gate Run 197 passed all jobs.
+
 ## Active milestone
 
-### Retry / Resilience Cube v0.1
+### Concurrency / Bulkhead Cube v0.1
 
-Target: a standalone deterministic retry/resilience primitive that composes with Result/Error, Scheduler, Rate Limiter, and AbortSignal without a third-party resilience framework.
+Target: a standalone deterministic concurrency-control primitive that bounds active work, provides fair queued admission, supports cancellation, exposes immutable statistics, and composes cleanly with Scheduler, Rate Limiter, Retry, Result/Error, and AbortSignal without a third-party concurrency library.
 
 Initial scope:
-- retry policy and attempt accounting
-- exponential/fixed/linear backoff
-- configurable maximum attempts and total elapsed budget
-- deterministic jitter through injectable randomness
-- retryability classification using Result/Error semantics
-- explicit cancellation and timeout behavior
-- AbortSignal propagation and cleanup
-- deterministic clock integration
-- immutable retry decision/result snapshots
-- hooks for per-attempt diagnostics without binding to Logger
+- configurable concurrency limit
+- immediate/non-blocking tryAcquire / admission check
+- bounded FIFO waiting queue
+- fair waiter ordering
+- queued cancellation via AbortSignal
+- release/lease lifecycle with double-release protection
+- queue overflow behavior
+- deterministic clock integration where waiting timers are required
+- immutable statistics snapshots
+- cleanup and shutdown semantics
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- circuit breakers
-- distributed coordination
-- tracing backend
-- remote retry state
-- third-party resilience libraries
-- adaptive ML-based retry strategies
+- distributed semaphore state
+- remote coordination or Redis
+- priority scheduling
+- work stealing
+- adaptive ML-based concurrency
+- third-party concurrency libraries
+- tracing/telemetry backend
 
 ## Parked
 
