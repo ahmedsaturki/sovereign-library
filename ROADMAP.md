@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Search / Index v0.1
+
+Release PR #50 was squash-merged as `e124f7cfa59880c0c0381863a5215f3bc2bd08f4`. Pre-merge Run 371 passed after the macOS-only timing-sensitive Worker Pool test was rerun; Search-specific tests were green. Post-merge Run 372 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, the full repository suite, and the real-browser smoke gate.
+
+The release provides a deterministic native in-memory inverted index with NFKC/Unicode tokenization, add/update/remove/rebuild lifecycle, exact/AND/OR/prefix/phrase queries, bounded TF-IDF-like scoring, deterministic result ordering, copy-on-write mutations, transactional rebuilds, immutable public results/snapshots, typed fail-closed diagnostics, and zero runtime third-party dependencies.
+
 ### CLI / Command Runtime v0.1
 
 Release verification Run 366 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, the full repository suite, and the real-browser smoke gate. The cube was released through the direct-main gated path at `61eac767bca438e63d28a28892ffcc0dab956e36`.
@@ -25,8 +31,6 @@ The release provides deterministic canonicalization for JSON-safe values, stable
 ### Diff / Patch v0.1
 
 Release-gate Run 345 completed the pre-merge verification and Run 347 completed the post-merge verification on `main`. Ubuntu, Windows, and macOS-15-Intel all passed syntax checks, the full repository suite, and the real-browser smoke gate. The cube was squash-merged through PR #48 as `e1acaeea3ec0b02da8998ac30a2f910e64aa2ade`.
-
-The release provides deterministic structural diff generation and persistent immutable patch application for JSON-safe primitives, arrays, and plain objects, with strict JSON Pointer paths, bounded work and value sizes, source immutability, conflict rejection, circular-reference detection, typed fail-closed diagnostics, public documentation, runnable examples, and zero runtime third-party dependencies.
 
 ### Redaction / Secret Safety v0.1
 
@@ -62,22 +66,22 @@ Release-gate Run 281 passed on Ubuntu, Windows, and macOS-15-Intel with the full
 
 ## Active milestone
 
-### Search / Index Cube v0.1
+### Workflow / Durable Orchestration Cube v0.1
 
-Target: a standalone deterministic in-memory text search and inverted-index product for local document collections, with bounded exact-term/boolean/prefix/phrase queries, predictable relevance ordering, immutable results, and zero runtime third-party dependencies.
+Target: a standalone deterministic local workflow engine for durable in-process orchestration, with sequential/parallel/conditional steps, replayable execution history, retries, timeouts, cancellation, idempotency, immutable snapshots, bounded history/work, and zero runtime third-party dependencies.
 
 Initial scope:
-- local in-memory inverted index
-- deterministic document and field contracts
-- deterministic Unicode-safe tokenization and normalization
-- document add/update/remove/rebuild
-- exact-term queries
-- AND/OR term queries
-- bounded prefix queries
-- bounded phrase queries
-- deterministic relevance scoring and tie-breaking
-- bounded documents, tokens, postings, query, and result sizes
-- immutable index snapshots and query results
+- local in-process workflow definitions
+- deterministic step state machine
+- sequential and bounded parallel execution
+- deterministic conditional branching
+- durable in-memory execution history
+- replay from history
+- retry and timeout policy
+- cancellation propagation
+- idempotent step execution keys
+- bounded fan-out and history/payload sizes
+- immutable execution snapshots/results
 - source immutability
 - typed fail-closed diagnostics
 - unit, contract, integration, failure, and recovery coverage
@@ -85,15 +89,15 @@ Initial scope:
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- network search services
-- distributed indexes
-- filesystem persistence
-- vector or embedding search
-- fuzzy edit-distance matching
-- external search engines
-- third-party search/index packages
-- web crawling
-- learned ranking models
+- network orchestration
+- distributed workers
+- external durable databases
+- cron/scheduled triggers
+- third-party workflow engines
+- remote queues
+- BPMN/visual editors
+- external service integrations
+- learned planning or agent behavior
 
 ## Parked
 
