@@ -18,19 +18,19 @@ Windows, Linux, macOS, and WSL where the capability is supported.
 
 ## Latest release
 
-**Safe Path Resolver / Containment Boundary v0.1** — PR #90, release commit `0216f3acd81331c031ac0ae023bfc1322f9064bc`.
+**Directory Walker / Bounded Tree Traversal v0.1** — PR #92, release commit `4d64f6610286524799ebe809021279a7b7be3d40`.
 
-Exact-SHA external verification at `b52473ee8f4148932ec3d8526bbfe3ef5abac14c` passed with 400+ repository tests, 14/14 cube-specific tests, and browser smoke 1/1. Pre-merge Run #664 passed on Ubuntu, Windows, and macOS-15-Intel. Post-merge Run #665 passed on all three platforms on attempt 2 after a transient macOS runner hang on attempt 1.
+Pre-merge Run #674 and post-merge Run #675 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
 
-The release provides deterministic lexical and filesystem-aware path resolution, explicit root anchoring and containment, traversal rejection, symlink policies with bounded depth, Windows drive/UNC/namespace handling, safe capability seams, SHA-256 SPR1 integrity protection, deterministic serialization, bounded inputs, failure/recovery semantics, and zero runtime third-party dependencies.
+The release provides deterministic frame-based traversal, bounded depth/entries/work, visitor backpressure, collected-result mode, cancellation/deadlines, explicit symlink policies, canonical-root containment, bounded symlink depth, immutable results, fail-closed capability seams, and zero runtime third-party dependencies.
 
-Earlier released cubes include Glob / Path Matcher, Host Identity / Environment Fingerprint, Directory Snapshot / Tree Manifest, Atomic File Writer / Safe Replace, Ephemeral Workspace / Scratch Directory, File Lease / Advisory Lock, Filesystem Watcher / Change Stream, Runtime Capability Inspector / Preflight, and the preceding Artifact Release series, all pinned in `ROADMAP.md`.
+Earlier released cubes include Safe Path Resolver / Containment Boundary, Glob / Path Matcher, Host Identity / Environment Fingerprint, Directory Snapshot / Tree Manifest, Atomic File Writer / Safe Replace, Ephemeral Workspace / Scratch Directory, File Lease / Advisory Lock, Filesystem Watcher / Change Stream, Runtime Capability Inspector / Preflight, and the preceding Artifact Release series, all pinned in `ROADMAP.md`.
 
 ## Active milestone
 
-**Directory Walker / Bounded Tree Traversal v0.1 SPEC** — the next standalone product.
+**Filesystem Metadata / Stat Normalizer v0.1 SPEC** — the next standalone product.
 
-It will own deterministic, bounded directory traversal using explicit file/directory/symlink/special-entry policies, root anchoring, traversal budgets, cancellation/backpressure, visitor and collected-result modes, and narrow filesystem capability seams. It will not absorb snapshot serialization, filesystem watching, glob matching, safe path policy, archive extraction, or persistent storage.
+It will own deterministic normalization of `lstat`/`stat` metadata across POSIX and Windows, with explicit symlink and platform-field policies, bounded immutable metadata, privacy-safe allowlisting, capability seams, deterministic canonical representation, and failure/recovery behavior for missing, permission-denied, malformed, or changing entries. It will not own traversal, snapshots, persistence, watching, glob matching, or path containment.
 
 ## Repository shape
 
