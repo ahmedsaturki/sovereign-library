@@ -97,6 +97,19 @@ test('allows contained symlink traversal and refuses escaping targets', async (t
   } finally { await cleanup(root); await cleanup(outside); }
 });
 
+test('detects contained symlink cycles without unbounded recursion', async (t) => {
+  const root = await tempRoot();
+  try {
+    await mkdir(join(root, 'dir'));
+    try { await symlink(root, join(root, 'dir', 'back'), 'junction'); }
+    catch (error) { t.skip(`symlink creation unavailable: ${error.message}`); return; }
+    const snap = await snapshotDirectory(root, baseOptions({ symlinkPolicy: 'follow-contained' }));
+    const cycle = snap.entries.find((entry) => entry.path === 'dir/back');
+    assert.equal(cycle.followed, false);
+    assert.equal(cycle.cycle, true);
+  } finally { await cleanup(root); }
+});
+
 test('enforces entry and depth limits', async () => {
   const root = await tempRoot();
   try {
