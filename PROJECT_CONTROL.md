@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Digest / Hash Cube v0.1** and release it before starting another cube.
+Finish **Serialization / Binary Codec Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,18 +16,18 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**DIGEST-HASH-V0.1-RELEASE**
+**SERIALIZATION-BINARY-CODEC-V0.1-RELEASE**
 
 ### Immediate next task
 
-Build and release native digest/integrity helpers:
+Build and release a native bounded binary serialization primitive:
 
-1. freeze supported digest and HMAC algorithm contracts
-2. implement bounded synchronous hashing
-3. implement bounded AsyncIterable hashing for large payloads
-4. implement HMAC helpers with explicit key/input contracts
-5. implement constant-time byte equality for same-length values
-6. normalize crypto failures into deterministic typed errors
+1. freeze supported value types and wire-format rules
+2. implement deterministic encoding with explicit type tags
+3. implement bounded decoding with depth and payload limits
+4. reject unsupported values before encoding
+5. normalize decode/encode failures into deterministic typed errors
+6. guarantee round-trip fidelity for supported values
 7. verify zero runtime third-party dependencies
 8. run the supported cross-platform CI matrix
 9. fix only failures required for the v0.1 gate
@@ -36,32 +36,33 @@ Build and release native digest/integrity helpers:
 
 ## Scope lock
 
-For Digest / Hash Cube v0.1, the allowed scope is only:
+For Serialization / Binary Codec Cube v0.1, the allowed scope is only:
 
-- SHA-256
-- SHA-512
-- HMAC-SHA256
-- HMAC-SHA512
-- digest output as hex or bytes
-- bounded input sizes for synchronous helpers
-- bounded chunk sizes for AsyncIterable hashing
-- constant-time equality for same-length byte sequences
-- deterministic typed errors
+- null/boolean/number/string values
+- bounded arrays
+- bounded plain objects with string keys
+- explicit type tags
+- deterministic key ordering
+- bounded nesting depth
+- bounded encoded payload size
+- deterministic typed encode/decode errors
 - immutable configuration snapshots
-- documentation
+- byte-oriented APIs
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Explicitly out of scope for v0.1:
 
-- password hashing / KDFs
-- public-key cryptography
-- signatures
-- key generation
-- encryption/decryption
-- third-party crypto packages
-- authentication protocols
-- certificate handling
+- arbitrary class instances
+- functions
+- symbols
+- WeakMap/WeakSet
+- executable or eval-based decoding
+- schema registry
+- compression
+- encryption
+- third-party serialization packages
+- distributed protocol negotiation
 
 ## Definition of done
 
