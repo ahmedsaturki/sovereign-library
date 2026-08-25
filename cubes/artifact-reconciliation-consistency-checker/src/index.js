@@ -46,6 +46,11 @@ function normalizeSnapshot(snapshot, limits, label) {
   if (!Array.isArray(snapshot.records)) throw new ReconciliationError('INVALID_SNAPSHOT', `${label}.records must be an array`);
   if (snapshot.records.length > limits.maxRecords) throw new ReconciliationError('INVALID_LIMIT', `${label} exceeds ${limits.maxRecords} records`, { statusCode: 413 });
   const records = snapshot.records.map(normalizeRecord).sort((a, b) => a.id.localeCompare(b.id));
+  const seen = new Set();
+  for (const record of records) {
+    if (seen.has(record.id)) throw new ReconciliationError('DUPLICATE_ID', `${label} contains duplicate artifact id ${record.id}`, { statusCode: 409 });
+    seen.add(record.id);
+  }
   return Object.freeze(records);
 }
 
