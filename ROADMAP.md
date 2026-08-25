@@ -10,6 +10,10 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Release Snapshot / Candidate Set v0.1
+
+PR #73 was squash-merged as `62009ced973107cae4ef81c77f535d800e8692fe`. Pre-merge Run 543 passed on Ubuntu, Windows, and macOS-15-Intel after the deterministic serialization-test fix. Post-merge Run 544 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
+
 ### Artifact Release Plan / Deterministic Publication Plan v0.1
 
 PR #72 was squash-merged as `80c1dcc1a653da8247fdabc0849ecf7d9139259c`. Pre-merge Run 536 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 537 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -24,15 +28,15 @@ PR #70 was squash-merged as `10ea69e80865fda16e385a635fa7bdde17162769`. Pre-merg
 
 ### Artifact Audit / Drift Reporter v0.1
 
-PR #69 was squash-merged as `f939f13437412682600aad691998cae9d5218606`. Pre-merge Run 511 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 512 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #69 was squash-merged as `f939f13437412682600aad691998cae9d5218606` after cross-platform verification.
 
 ### Artifact Reconciliation / Consistency Checker v0.1
 
-PR #68 was squash-merged as `9dfb6833299cbfc42c82afdef5fcf2d3a6175833`. Pre-merge Run 504 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 505 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #68 was squash-merged as `9dfb6833299cbfc42c82afdef5fcf2d3a6175833` after cross-platform verification.
 
 ### Artifact Provenance / Lineage Ledger v0.1
 
-PR #67 was squash-merged as `d1b2795d3a638100a6fbf657cbebeb5ef7aaae82`. Pre-merge Run 497 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 498 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #67 was squash-merged as `d1b2795d3a638100a6fbf657cbebeb5ef7aaae82` after cross-platform verification.
 
 ### Artifact Reference Resolver / Locator v0.1
 
@@ -132,25 +136,26 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Release Snapshot / Candidate Set v0.1
+### Artifact Release Approval / Decision Record v0.1
 
-Target: a standalone deterministic local snapshot that freezes an explicit candidate artifact set using normalized identity, version, digest, admission verdict, and bounded evidence references without external discovery or mutation.
+Target: a standalone deterministic local approval record bound to one explicit frozen release snapshot and a finite set of explicit approval decisions, without external approval services or publication side effects.
 
 Initial scope:
-- explicit candidate artifact records only
-- deterministic identity/version/digest normalization
-- duplicate/conflict detection for identities, versions, and digests
-- stable candidate ordering independent of input insertion order
-- immutable bounded candidate snapshots
-- bounded evidence references
+- explicit frozen snapshot identity
+- explicit decision records with stable decision ids and reviewer ids
+- required/optional approval scopes
+- deterministic decision normalization and ordering
+- conflict/duplicate detection per scope
+- deterministic overall approval status
+- immutable bounded decision/evidence summaries
 - fail-closed malformed/accessor/circular/invalid/oversized input handling
-- deterministic checksum-protected snapshot serialization
+- deterministic checksum-protected decision serialization
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- external candidate discovery
-- network/filesystem/registry scanning
+- external approval services
+- network/filesystem/registry discovery
 - publication/deployment
 - signing/trust-chain verification
 - automatic mutation or repair
