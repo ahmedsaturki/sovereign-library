@@ -10,17 +10,21 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Filesystem Watcher / Change Stream v0.1
+
+PR #79 was merged as `239e418e620d06de5d25a9c40905f6efc42334b3`.
+
+Post-merge **Run 598** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
+
+The release provides a read-only native filesystem change stream, deterministic injected event sources, immutable bounded events, explicit overflow policies, lifecycle/recovery behavior, bounded debounce with terminal-event draining, root/path containment, and Windows native watch-path hardening with zero runtime third-party dependencies.
+
+The cube is **FROZEN** at `239e418e620d06de5d25a9c40905f6efc42334b3`.
+
 ### Runtime Capability Inspector / Preflight v0.1
 
-PR #78 was squash-merged as `139a7d6c824b7fe522712c65e1b9ffcf605e134f`.
+PR #78 was squash-merged as `139a7d6c824b7fe522712c65e1b9ffcf605e134f4`.
 
-Pre-merge **Run 580** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate.
-
-Post-merge **Run 581** passed on `main` on Ubuntu, Windows, and macOS-15-Intel with the same gates.
-
-The release provides bounded host/runtime facts, non-executing executable availability checks, immutable capability snapshots, pure declarative requirement evaluation, fail-closed malformed/accessor/circular/oversized input handling, deterministic `RCI1` integrity-protected serialization, and zero runtime third-party dependencies.
-
-The cube is **FROZEN** at `139a7d6c824b7fe522712c65e1b9ffcf605e134f`.
+Pre-merge **Run 580** and post-merge **Run 581** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
 
 ### Previous release chain
 
@@ -34,38 +38,39 @@ Earlier released cubes remain pinned to their recorded immutable SHAs.
 
 ## Active milestone
 
-### NEXT-CUBE-SELECTION
+### FILE-LEASE-ADVISORY-LOCK-V0.1-SPEC
 
-The Runtime Capability Inspector release is complete and frozen. The next selected standalone product is:
+The Filesystem Watcher / Change Stream release is complete and frozen. The next selected standalone product is:
 
-**Filesystem Watcher / Change Stream v0.1**
+**File Lease / Advisory Lock v0.1**
 
 Rationale:
 
-- filesystem read/write primitives already exist, but temporal change observation is not a standalone product
-- the capability is useful to editors, build systems, synchronization engines, caches, agents, and automations
-- the boundary is independent: observe changes, normalize events, manage lifecycle, and apply explicit queue/backpressure behavior
-- the core can be implemented with native platform facilities and standard-library primitives
-- the cube remains read-only with respect to watched targets and does not execute commands, write configuration, or require another Sovereign cube
+- filesystem primitives already exist, but cooperative resource ownership is not a standalone product
+- the capability is useful for single-instance guards, job exclusion, agent/workspace ownership, build coordination, and maintenance locks
+- the boundary is independent: acquire, verify, renew, recover conservatively, and release one local advisory lease
+- native filesystem atomicity provides the core without third-party dependencies
+- the cube can remain content-neutral and read-only with respect to the protected resource
+- failure-safe semantics are valuable for the larger Sovereign runtime without making this cube depend on other cubes
 
 ### Immediate next task
 
-Write and commit the complete SPEC at `specs/filesystem-watcher-change-stream-v0.1.md` before starting implementation.
+Implement the public contract defined in `specs/file-lease-advisory-lock-v0.1.md` from branch `file-lease-advisory-lock-v0-1`.
 
-The SPEC must lock:
+The SPEC locks:
 
-- normalized create/change/remove/rename event semantics
-- lifecycle, close, error, and recovery behavior
-- optional debounce/coalescing semantics
-- bounded queue and explicit overflow/backpressure policy
-- recursive watching and platform differences
-- symlink and path containment rules
-- duplicate/noise suppression rules that never invent events
-- deterministic injected event source for contract tests
-- cross-platform verification targets
+- atomic ownership establishment
+- acquisition/busy/recovery outcomes
+- explicit lease identity and bounded owner metadata
+- optional TTL and renewal
+- conservative stale recovery
+- exact-owner release and successor-owner protection
+- versioned integrity-protected lock records
+- bounded paths/metadata/records and fail-closed validation
+- Ubuntu, Windows, macOS-15-Intel, and WSL verification boundaries
 - zero-runtime-third-party-dependency boundary
 
-No implementation begins until this SPEC gate is complete.
+No unrelated cube implementation starts before this cube reaches FREEZE.
 
 ## Parked
 
