@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Rate Limiter / Backpressure Cube v0.1** and release it before starting another cube.
+Finish **Retry / Resilience Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,52 +16,52 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**RATE-LIMITER-BACKPRESSURE-V0.1-RELEASE**
+**RETRY-RESILIENCE-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Rate Limiter / Backpressure Cube release gate:
+Complete the Retry / Resilience Cube release gate:
 
-1. write and freeze the rate-limit/backpressure contract
-2. define the deterministic native algorithm and clock interface
-3. verify immediate admission and wait-duration calculation
-4. verify burst capacity and refill behavior
-5. verify bounded waiting and fairness
-6. verify queued cancellation and AbortSignal cleanup
-7. verify overflow behavior and immutable statistics snapshots
-8. run syntax, unit, contract, integration, failure, and recovery tests
-9. verify zero runtime third-party dependencies
-10. run the supported cross-platform CI matrix
-11. fix only failures required for the v0.1 gate
-12. mark the release gate complete
+1. write and freeze the retry contract and attempt lifecycle
+2. define fixed, linear, and exponential backoff policies
+3. define deterministic jitter using injectable randomness
+4. verify maximum attempts and total elapsed budget
+5. verify retryability classification with Result/Error semantics
+6. verify AbortSignal cancellation and timeout cleanup
+7. verify deterministic clock behavior and timer lifecycle
+8. verify immutable retry decision/result snapshots
+9. run syntax, unit, contract, integration, failure, and recovery tests
+10. verify zero runtime third-party dependencies
+11. run the supported cross-platform CI matrix
+12. fix only failures required for the v0.1 gate
+13. mark the release gate complete
 
 ## Scope lock
 
-For Rate Limiter / Backpressure Cube v0.1, the allowed scope is only:
+For Retry / Resilience Cube v0.1, the allowed scope is only:
 
-- deterministic native rate-limiting algorithm
-- configurable refill rate
-- configurable burst capacity
-- immediate/non-blocking admission check
-- bounded waiting queue
-- fair waiter ordering
-- queue cancellation via AbortSignal
-- queue overflow behavior
-- retry-after / wait-duration calculation
+- retry policy and attempt accounting
+- fixed, linear, and exponential backoff
+- configurable maximum attempts
+- configurable total elapsed budget
+- deterministic jitter through injectable randomness
+- retryability classification using Result/Error semantics
+- explicit cancellation and timeout behavior
+- AbortSignal propagation and cleanup
 - deterministic clock integration
-- immutable statistics snapshots
-- local unit/integration/failure/recovery tests
+- immutable retry decision/result snapshots
+- optional per-attempt diagnostics hooks without logger coupling
 - documentation
+- local unit/integration/failure/recovery tests
 
 Explicitly out of scope for v0.1:
 
-- distributed rate limiting
-- Redis or remote stores
-- cross-process coordination
-- adaptive ML-based throttling
-- third-party limiter libraries
-- HTTP middleware framework
-- external telemetry backend
+- circuit breakers
+- distributed coordination
+- tracing backend
+- remote retry state
+- third-party resilience libraries
+- adaptive ML-based retry strategies
 - AI agent runtime
 
 ## Definition of done
