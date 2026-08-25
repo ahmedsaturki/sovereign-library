@@ -83,7 +83,6 @@ function createOptionTable(options, limits, commandPath) {
       default: normalizedDefault,
     });
     if (type === 'enum' && (!Array.isArray(normalizedOption.enum) || normalizedOption.enum.length === 0)) fail('INVALID_CONFIG', 'Enum option requires values', { path: commandPath });
-    if (byLong.has(normalizedOption.name)) fail('AMBIGUOUS_CONFIG', 'Duplicate option', { path: commandPath });
     byLong.set(normalizedOption.name, normalizedOption);
     if (normalizedOption.short) byShort.set(normalizedOption.short, normalizedOption);
     normalized.push(normalizedOption);
@@ -151,6 +150,7 @@ function parseArgv(argv, command, limits) {
     if (utf8Bytes(token) > limits.maxTokenBytes) fail('ARG_LIMIT', 'Argument token exceeds configured limit', { exitCode: 2 });
   }
   const options = {};
+  const seenOptions = new Set();
   for (const def of command.options.options) {
     if (def.default !== undefined) options[def.name] = def.repeatable ? [...def.default] : def.default;
   }
@@ -176,9 +176,14 @@ function parseArgv(argv, command, limits) {
         else { i += 1; if (i >= argv.length) fail('MISSING_VALUE', 'Option value is required', { exitCode: 2 }); raw = argv[i]; }
       } else if (equals >= 0) raw = body.slice(equals + 1);
       const value = convertValue(option, raw, option.name);
-      if (option.repeatable) (options[option.name] ??= []).push(value);
-      else if (options[option.name] !== undefined) fail('DUPLICATE_OPTION', 'Duplicate scalar option', { exitCode: 2 });
-      else options[option.name] = value;
+      if (option.repeatable) {
+        (options[option.name] ??= []).push(value);
+      } else if (seenOptions.has(option.name)) {
+        fail('DUPLICATE_OPTION', 'Duplicate scalar option', { exitCode: 2 });
+      } else {
+        seenOptions.add(option.name);
+        options[option.name] = value;
+      }
       i += 1;
       continue;
     }
@@ -194,9 +199,14 @@ function parseArgv(argv, command, limits) {
         else { i += 1; if (i >= argv.length) fail('MISSING_VALUE', 'Option value is required', { exitCode: 2 }); raw = argv[i]; }
       }
       const value = convertValue(option, raw, option.name);
-      if (option.repeatable) (options[option.name] ??= []).push(value);
-      else if (options[option.name] !== undefined) fail('DUPLICATE_OPTION', 'Duplicate scalar option', { exitCode: 2 });
-      else options[option.name] = value;
+      if (option.repeatable) {
+        (options[option.name] ??= []).push(value);
+      } else if (seenOptions.has(option.name)) {
+        fail('DUPLICATE_OPTION', 'Duplicate scalar option', { exitCode: 2 });
+      } else {
+        seenOptions.add(option.name);
+        options[option.name] = value;
+      }
     }
     i += 1;
   }
@@ -208,9 +218,10 @@ function parseArgv(argv, command, limits) {
 function renderHelp(config, command) {
   const lines = [`${config.name}${config.version ? ` v${config.version}` : ''}`, command.description || '', 'Usage:'];
   lines.push(`  ${config.name} ${command.name}${command.options.options.length ? ' [options]' : ''}`);
-  if (command.commands.commands.length) {
+  const helpCommands = command.commands.commands.length ? command.commands.commands : config.commands.commands;
+  if (helpCommands.length) {
     lines.push('', 'Commands:');
-    for (const child of command.commands.commands) lines.push(`  ${child.name}\t${child.description}`);
+    for (const child of helpCommands) lines.push(`  ${child.name}\t${child.description}`);
   }
   if (command.options.options.length) {
     lines.push('', 'Options:');
