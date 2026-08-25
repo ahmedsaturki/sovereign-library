@@ -111,7 +111,12 @@ export function createRedactor(options = {}) {
       pattern.lastIndex = 0;
       if (pattern.test(key)) return true;
     }
-    return customKeyMatcher ? Boolean(customKeyMatcher(key, path)) : false;
+    if (!customKeyMatcher) return false;
+    try {
+      return Boolean(customKeyMatcher(key, path));
+    } catch (cause) {
+      throw new RedactionError('CUSTOM_MATCHER_FAILED', 'Custom key matcher failed safely', { cause, path });
+    }
   }
 
   function redactString(value, path = '$') {
@@ -159,10 +164,10 @@ export function createRedactor(options = {}) {
         for (const key of keys) {
           const childPath = `${path}.${key}`;
           if (isSensitiveKey(key, childPath)) {
-            output[key] = config.replacement;
+            Object.defineProperty(output, key, { value: config.replacement, enumerable: true, writable: true, configurable: true });
             report.redactedPaths.push(childPath);
           } else {
-            output[key] = visit(current[key], depth + 1, childPath);
+            Object.defineProperty(output, key, { value: visit(current[key], depth + 1, childPath), enumerable: true, writable: true, configurable: true });
           }
         }
         return output;
