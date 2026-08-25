@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Content-Encoding / Compression Cube v0.1** and release it before starting another cube.
+Finish **Stream / Pipeline Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,18 +16,18 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**CONTENT-ENCODING-COMPRESSION-V0.1-RELEASE**
+**STREAM-PIPELINE-V0.1-RELEASE**
 
 ### Immediate next task
 
-Build and release bounded native compression/decompression helpers:
+Build and release a native bounded stream/pipeline primitive:
 
-1. freeze format and buffer-size contracts
-2. implement gzip/deflate/inflate helpers using Node.js runtime primitives only
-3. define deterministic max input/max output limits
-4. normalize compression/decompression failures into typed errors
-5. support synchronous and bounded asynchronous paths only where required
-6. verify cancellation/cleanup behavior for streaming paths if included
+1. freeze source/sink contracts
+2. support AsyncIterable and Node stream interoperability where useful
+3. implement ordered transform pipelines with explicit backpressure
+4. define bounded buffering and high-water limits
+5. propagate errors and cancellation deterministically
+6. guarantee cleanup of owned resources
 7. verify zero runtime third-party dependencies
 8. run the supported cross-platform CI matrix
 9. fix only failures required for the v0.1 gate
@@ -36,28 +36,30 @@ Build and release bounded native compression/decompression helpers:
 
 ## Scope lock
 
-For Content-Encoding / Compression Cube v0.1, the allowed scope is only:
+For Stream / Pipeline Cube v0.1, the allowed scope is only:
 
-- gzip compression/decompression
-- deflate/inflate compression/decompression
-- bounded input/output sizes
-- deterministic compression/decompression errors
-- immutable configuration snapshots
-- buffer-safe primitives
+- AsyncIterable source/sink adapters
+- ordered transform stages
+- bounded buffering
+- backpressure signals
+- cancellation propagation
+- deterministic error propagation
+- cleanup/finalization hooks
+- simple tee/merge only if required by the core contract
 - documentation
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Explicitly out of scope for v0.1:
 
-- ZIP archive creation
-- TAR archive creation
-- password encryption
-- streaming archive formats
-- distributed compression workers
-- third-party compression packages
-- content negotiation policy
-- HTTP server/client integration beyond contract-level examples
+- distributed streaming
+- message brokers
+- reactive programming frameworks
+- third-party stream libraries
+- persistent queues
+- workflow DAGs
+- HTTP policy/negotiation
+- archive formats
 
 ## Definition of done
 
