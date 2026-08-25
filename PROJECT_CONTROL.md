@@ -6,16 +6,16 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Runtime Capability Inspector v0.1** as the next standalone Sovereign product.
+Select and specify the next standalone Sovereign cube after freezing **Runtime Capability Inspector / Preflight v0.1**.
 
 ## Current repository state
 
-- Last released cube: **Artifact Release Publication Confirmation / Outcome Receipt v0.1**
-- Release PR: **#77**, squash-merged
-- Release commit: `ee642ac4f760da6ee6263faa5e82bf7d197fa78d`
-- Pre-merge verification: **Run 573**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 574**, passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
-- Artifact Release Publication Confirmation / Outcome Receipt v0.1 is **FROZEN**.
+- Last released cube: **Runtime Capability Inspector / Preflight v0.1**
+- Release PR: **#78**, squash-merged
+- Release commit: `139a7d6c824b7fe522712c65e1b9ffcf605e134f`
+- Pre-merge verification: **Run 580**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 581**, passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+- Runtime Capability Inspector / Preflight v0.1 is **FROZEN**.
 
 ## The one-current-task rule
 
@@ -25,45 +25,38 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**RUNTIME-CAPABILITY-INSPECTOR-V0.1-SPEC**
+**NEXT-CUBE-SELECTION**
 
 ### Immediate next task
 
-Implement the public contract defined in `specs/runtime-capability-inspector-v0.1.md`:
+Define the next standalone product as **Filesystem Watcher / Change Stream v0.1** and write its SPEC before implementation.
 
-1. capture bounded host/runtime facts without leaking environment values
-2. inspect explicit executable availability without executing programs
-3. normalize an immutable capability snapshot
-4. evaluate declarative runtime requirements with deterministic ordered findings
-5. reject unsafe/accessor/circular/oversized inputs fail-closed
-6. serialize and parse reports with deterministic `RCI1` integrity protection
-7. provide recovery after rejected input without global state poisoning
-8. remain zero-runtime-third-party-dependency and cross-platform
-9. add normal, failure, recovery, requirement, serialization, and idempotency tests
-10. add README, changelog, runnable example, package registration, and release verification
+Selection rationale:
+
+- the repository already has filesystem read/write primitives, but no standalone temporal observation/change-stream product
+- the cube has an independent product boundary: observe changes, normalize events, control lifecycle, and provide bounded backpressure/recovery
+- it does not require the Filesystem cube internally and must remain usable as a standalone product
+- native platform APIs can provide the capability without a runtime third-party package
+- it is valuable for agents, editors, sync engines, caches, build systems, and automation while remaining explicitly read-only with respect to watched targets
+
+SPEC gate must define:
+
+1. normalized create/change/remove/rename event semantics
+2. lifecycle, close, error, and recovery behavior
+3. debounce/coalescing policy as explicit opt-in behavior
+4. bounded queue/backpressure semantics
+5. recursive watching semantics and platform limitations
+6. symlink and path containment rules
+7. duplicate/noise suppression without inventing events
+8. deterministic test hooks and injected event source where needed
+9. cross-platform contract across Ubuntu, Windows, macOS-15-Intel, and WSL
+10. zero-runtime-third-party-dependency boundary
+
+No implementation of the next cube begins before this SPEC gate is complete.
 
 ## Scope lock
 
-Allowed scope for Runtime Capability Inspector v0.1:
-
-- local runtime and host observation
-- bounded executable availability checks based on filesystem metadata
-- pure requirement evaluation
-- immutable normalized reports
-- typed fail-closed validation
-- deterministic checksum-protected serialization
-- unit/contract/failure/recovery/idempotency/cross-platform verification
-
-Explicitly out of scope:
-
-- executing commands or child processes
-- installing or downloading software
-- network calls
-- credentials and secret values
-- persistent configuration mutation
-- scheduling or orchestration
-- telemetry collection
-- GUI/admin console
+Runtime Capability Inspector / Preflight v0.1 is released and frozen. No additional feature work may be added to that cube outside a separately authorized future version.
 
 ## Definition of done
 
@@ -73,7 +66,7 @@ A milestone is DONE only when implementation, public API documentation, normal a
 
 - Do not redesign the whole architecture during a cube release.
 - Do not add a dependency to solve a local problem without recording the decision.
-- Do not start a second cube because the current cube is difficult.
+- Do not start a second cube while the current cube is unfinished.
 - Do not expand scope because a competitor has more features.
 - Do not call a cube production-ready from source inspection alone.
 - Park out-of-scope work and continue.
