@@ -63,10 +63,11 @@ function immutableRecord(record) {
   return Object.freeze(copy);
 }
 
-function withTimeout(promise, timeoutMs) {
-  if (!timeoutMs) return Promise.resolve(promise).then(v => ({ kind: 'ok', value: v }));
+function withTimeout(runOrPromise, timeoutMs) {
+  const work = Promise.resolve().then(() => typeof runOrPromise === 'function' ? runOrPromise() : runOrPromise);
+  if (!timeoutMs) return work.then(v => ({ kind: 'ok', value: v }), e => ({ kind: 'error', error: e }));
   return Promise.race([
-    Promise.resolve(promise).then(v => ({ kind: 'ok', value: v }), e => ({ kind: 'error', error: e })),
+    work.then(v => ({ kind: 'ok', value: v }), e => ({ kind: 'error', error: e })),
     new Promise(resolve => setTimeout(() => resolve({ kind: 'timeout' }), timeoutMs)),
   ]);
 }
@@ -107,7 +108,7 @@ function createExecutionEngine(definition = {}, options = {}) {
     }
 
     while (pending.size) {
-      const ready = [...pending].filter(id => taskMap.get(id).dependsOn.every(dep => ['succeeded'].includes(states[dep]))).sort();
+      const ready = [...pending].filter(id => taskMap.get(id).dependsOn.every(dep => states[dep] === 'succeeded')).sort();
       const blocked = [...pending].filter(id => taskMap.get(id).dependsOn.some(dep => ['failed', 'timed_out', 'cancelled', 'skipped'].includes(states[dep]))).sort();
       for (const id of blocked) { states[id] = 'skipped'; pending.delete(id); }
       if (!ready.length) {
@@ -125,7 +126,7 @@ function createExecutionEngine(definition = {}, options = {}) {
         while (!done) {
           attempts[id] += 1;
           const ctx = Object.freeze({ input, results: Object.freeze({ ...results }), attempts: Object.freeze({ ...attempts }), signal: Object.freeze({ get cancelled() { return cancelled; } }) });
-          const outcome = await withTimeout(task.run(ctx), task.timeoutMs);
+          const outcome = await withTimeout(() => task.run(ctx), task.timeoutMs);
           if (outcome.kind === 'ok') {
             if (outcome.value !== undefined && bytes(JSON.stringify(outcome.value)) > lim.maxOutputBytes) {
               outcome.kind = 'error'; outcome.error = new ExecutionError('LIMIT_EXCEEDED', `${id} output exceeds limit`);
