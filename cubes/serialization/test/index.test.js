@@ -19,10 +19,7 @@ test('primitive values round-trip exactly', () => {
 });
 
 test('arrays and nested plain objects round-trip', () => {
-  const value = {
-    z: [1, true, null, { beta: 'x', alpha: 2 }],
-    a: 'first',
-  };
+  const value = { z: [1, true, null, { beta: 'x', alpha: 2 }], a: 'first' };
   assert.deepEqual(decode(encode(value)), value);
 });
 
@@ -68,15 +65,13 @@ test('decoder rejects invalid headers, versions, tags, duplicates and trailing b
   assert.throws(() => decode(badMagic), error => error instanceof SerializationError && error.code === 'INVALID_HEADER');
   const badVersion = Buffer.from(valid); badVersion[MAGIC.length] = VERSION + 1;
   assert.throws(() => decode(badVersion), error => error instanceof SerializationError && error.code === 'UNSUPPORTED_VERSION');
-  const badTag = Buffer.from([...​MAGIC, VERSION, 0xff]);
+  const badTag = Buffer.from([...MAGIC, VERSION, 0xff]);
   assert.throws(() => decode(badTag), error => error instanceof SerializationError && error.code === 'INVALID_TAG');
   assert.throws(() => decode(Buffer.concat([valid, Buffer.from([0])])), error => error instanceof SerializationError && error.code === 'TRAILING_BYTES');
 });
 
 test('decoder rejects duplicate object keys deterministically', () => {
   const encoded = Buffer.from(encode({ a: 1 }));
-  // Header + object tag + count(1) + key length(1) + key + number tag + value.
-  // Convert the count to 2 and duplicate the first entry bytes.
   const firstEntry = encoded.subarray(10);
   const countOffset = MAGIC.length + 1 + 1;
   const prefix = encoded.subarray(0, countOffset);
