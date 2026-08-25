@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **HTTP Headers / Cookies / Content Negotiation Cube v0.1** and release it before starting another cube.
+Finish **URL / Query / Encoding Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,20 +16,20 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**HTTP-METADATA-V0.1-RELEASE**
+**URL-QUERY-ENCODING-V0.1-RELEASE**
 
 ### Immediate next task
 
-Build and release the native HTTP metadata cube:
+Build and release the native URL / Query / Encoding cube:
 
-1. freeze normalized header storage and multi-value semantics
-2. implement safe header validation and deterministic normalization
-3. implement Cookie parsing and Set-Cookie building
-4. implement Accept / Accept-Encoding / Accept-Language negotiation
-5. implement Content-Type / Content-Length helpers
-6. implement ETag and conditional request helpers
-7. add immutable metadata snapshots
-8. add malformed-value and security-boundary coverage
+1. freeze URL/query/encoding contracts
+2. implement safe parsing and deterministic serialization
+3. implement duplicate-preserving query parameters
+4. implement form encoding/decoding
+5. implement UTF-8 and Base64/Base64URL helpers
+6. implement safe path-segment encoding/decoding
+7. enforce bounded input sizes
+8. add immutable snapshots and typed malformed-input errors
 9. verify zero runtime third-party dependencies
 10. run the supported cross-platform CI matrix
 11. fix only failures required for the v0.1 gate
@@ -38,30 +38,30 @@ Build and release the native HTTP metadata cube:
 
 ## Scope lock
 
-For HTTP Headers / Cookies / Content Negotiation Cube v0.1, the allowed scope is only:
+For URL / Query / Encoding Cube v0.1, the allowed scope is only:
 
-- case-insensitive header storage and deterministic normalization
-- multi-value header semantics where applicable
-- safe request/response header validation
-- Cookie header parsing
-- Set-Cookie builder with bounded attributes
-- Accept / Accept-Encoding / Accept-Language negotiation helpers
-- Content-Type / Content-Length parsing helpers
-- ETag / conditional request helpers
-- immutable metadata snapshots
-- deterministic malformed-value errors
+- URL parsing and serialization helpers
+- strict and tolerant percent-decoding
+- duplicate-preserving query parsing
+- deterministic query building
+- application/x-www-form-urlencoded encode/decode
+- UTF-8 encode/decode helpers
+- Base64 / Base64URL helpers
+- safe path-segment encoding/decoding
+- bounded input size limits
+- immutable parameter snapshots
+- deterministic malformed-input errors
 - documentation
 - local unit/integration/failure/recovery tests
 
 Explicitly out of scope for v0.1:
 
-- cookie jar persistence
-- authentication/session framework
-- compression implementation
-- HTTP cache storage engine
-- proxy behavior
-- browser cookie policy emulation
-- third-party header utility libraries
+- DNS resolution
+- URL fetching
+- URI templates
+- cryptographic signing schemes
+- IDNA implementation
+- third-party parsers/encoders
 - AI agent runtime
 
 ## Definition of done
