@@ -68,7 +68,7 @@ test('rejects duplicates, conflicts, unsupported operations, and unknown destina
 
 test('rejects duplicate destination identities and malformed inputs fail closed', () => {
   assert.throws(() => buildPublicationPlan({ closureReceipt: closure, intents: [intent('a')], destinations: [destination([], 'dest-a'), destination([], 'dest-a')] }), (error) => error.code === 'DUPLICATE_DESTINATION');
-  const accessor = {};
+  const accessor = { ...intent('accessor') };
   Object.defineProperty(accessor, 'intentId', { get() { throw new Error('getter must not execute'); } });
   assert.throws(() => buildPublicationPlan({ closureReceipt: closure, intents: [accessor], destinations: [destination([])] }), (error) => error.code === 'ACCESSOR_INPUT');
   const circular = intent('cycle');
