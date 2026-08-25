@@ -96,12 +96,13 @@ Released through v0.1:
 - Artifact Audit / Drift Reporter
 - Artifact Compliance / Policy Evaluator
 - Artifact Admission Gate / Release Eligibility
+- Artifact Release Plan / Deterministic Publication Plan
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Release Plan / Deterministic Publication Plan v0.1** — standalone deterministic local dry-run release-plan builder for explicit eligible artifacts, dependencies, and release constraints, with no publication side effects.
+**Artifact Release Snapshot / Candidate Set v0.1** — standalone deterministic local snapshot that freezes an explicit candidate artifact set using normalized identity, version, digest, admission verdict, and bounded evidence references, with no external discovery or mutation.
 
 ## License
 
