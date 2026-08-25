@@ -59,13 +59,14 @@ test('tool result accessors and circular values fail closed', async () => {
   await assert.rejects(() => session.invokeTool({ name: 'bad', input: {} }), e => e instanceof AgentError && e.code === 'INVALID_DEFINITION');
 });
 
-test('step, tool-call, message, output and result limits recover deterministically', async () => {
-  const runtime = makeRuntime({ maxMessages: 2, maxSteps: 1, maxToolCalls: 1, maxOutputBytes: 4 });
+test('step, tool-call, message, output and result limits fail closed and recover deterministically', async () => {
+  const runtime = makeRuntime({ maxMessages: 2, maxSteps: 1, maxToolCalls: 1, maxOutputBytes: 4, maxRetries: 1 });
   const session = runtime.createSession({ id: 'bounded' });
   await assert.rejects(() => session.runTurn('hello', { execute: async () => ({ output: '12345' }) }), e => e instanceof AgentError && e.code === 'LIMIT_EXCEEDED');
-  const snapshot = session.snapshot();
-  assert.equal(snapshot.state, 'failed');
-  assert.throws(() => session.retry());
+  assert.equal(session.snapshot().state, 'failed');
+  assert.equal(session.retry().state, 'running');
+  session.transition('failed');
+  assert.throws(() => session.retry(), e => e instanceof AgentError && e.code === 'LIMIT_EXCEEDED');
 });
 
 test('retry is bounded and returns session to running', () => {
