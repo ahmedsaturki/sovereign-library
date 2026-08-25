@@ -1,6 +1,7 @@
 import { lstat, stat, readlink } from 'node:fs/promises';
 import { platform } from 'node:os';
 import { createHash, timingSafeEqual } from 'node:crypto';
+import { resolveContained } from '../../safe-path-resolver-containment-boundary/src/index.js';
 
 const MAX_PATH = 32 * 1024;
 const MAX_TARGET = 16 * 1024;
@@ -28,9 +29,7 @@ export class MetadataNormalizerError extends Error {
   }
 }
 
-function fail(code, message, details) {
-  throw new MetadataNormalizerError(code, message, details);
-}
+function fail(code, message, details) { throw new MetadataNormalizerError(code, message, details); }
 
 function assertPlainOptions(options) {
   if (options === null || typeof options !== 'object' || Array.isArray(options)) fail('INVALID_OPTIONS', 'options must be an object');
@@ -82,14 +81,17 @@ function assertCapabilities(capabilities) {
     if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', `capabilities.${key} is accessor-backed`);
     if (typeof descriptor.value !== 'function') fail('CAPABILITY_FAILURE', `${key} must be a function`);
   }
-  for (const required of ['lstat']) if (typeof capabilities[required] !== 'function') fail('CAPABILITY_FAILURE', `${required} capability is required`);
+  if (typeof capabilities.lstat !== 'function') fail('CAPABILITY_FAILURE', 'lstat capability is required');
 }
 
 const defaultCapabilities = Object.freeze({
   lstat,
   stat,
   readlink,
-  containment: async (target, root) => target === root || target.startsWith(`${root}/`),
+  containment: async (target, root) => {
+    try { resolveContained(root, target, { separatorNormalization: true, normalizeDotSegments: true }); return true; }
+    catch { return false; }
+  },
   now: () => Date.now(),
   hostPlatform: () => platform(),
 });
@@ -121,9 +123,7 @@ function classifyStat(raw) {
     if (raw.isCharacterDevice?.()) return 'character-device';
     if (raw.isFIFO?.()) return 'fifo';
     return 'unknown';
-  } catch (error) {
-    fail('MALFORMED_STAT', 'stat kind methods failed', { cause: boundedMessage(error) });
-  }
+  } catch (error) { fail('MALFORMED_STAT', 'stat kind methods failed', { cause: boundedMessage(error) }); }
 }
 
 function boundedMessage(error) {
@@ -139,7 +139,7 @@ function mapNativeError(error) {
 }
 
 function normalizePlatform(value) {
-  if (value === 'win32') return 'windows';
+  if (value === 'win32' || value === 'windows') return 'windows';
   if (value === 'darwin') return 'darwin';
   if (value === 'linux') return 'linux';
   return 'other';
@@ -148,39 +148,26 @@ function normalizePlatform(value) {
 function normalizeRawStat(raw, path, options, observedWith) {
   if (!raw || typeof raw !== 'object') fail('MALFORMED_STAT', 'stat capability must return an object');
   const kind = classifyStat(raw);
+  const blocks = safeIntegerOrNull(raw.blocks);
+  const blksize = safeIntegerOrNull(raw.blksize);
   const metadata = {
-    version: 'FMN1',
-    path,
-    kind,
+    version: 'FMN1', path, kind,
     size: safeIntegerOrNull(raw.size),
-    allocationSize: safeIntegerOrNull(raw.blocks) !== null && safeIntegerOrNull(raw.blksize) !== null ? safeIntegerOrNull(raw.blocks) * safeIntegerOrNull(raw.blksize) : null,
+    allocationSize: blocks !== null && blksize !== null && blocks * blksize <= Number.MAX_SAFE_INTEGER ? blocks * blksize : null,
     mode: safeIntegerOrNull(raw.mode),
     readonly: typeof raw.mode === 'number' ? ((raw.mode & 0o200) === 0) : null,
-    uid: safeIntegerOrNull(raw.uid),
-    gid: safeIntegerOrNull(raw.gid),
-    nlink: safeIntegerOrNull(raw.nlink),
-    inode: safeIntegerOrNull(raw.ino),
-    device: safeIntegerOrNull(raw.dev),
-    birthtimeMs: timestampOrNull(raw.birthtimeMs),
-    ctimeMs: timestampOrNull(raw.ctimeMs),
-    mtimeMs: timestampOrNull(raw.mtimeMs),
-    atimeMs: timestampOrNull(raw.atimeMs),
+    uid: safeIntegerOrNull(raw.uid), gid: safeIntegerOrNull(raw.gid), nlink: safeIntegerOrNull(raw.nlink),
+    inode: safeIntegerOrNull(raw.ino), device: safeIntegerOrNull(raw.dev),
+    birthtimeMs: timestampOrNull(raw.birthtimeMs), ctimeMs: timestampOrNull(raw.ctimeMs),
+    mtimeMs: timestampOrNull(raw.mtimeMs), atimeMs: timestampOrNull(raw.atimeMs),
     isSparse: typeof raw.blocks === 'number' && Number.isSafeInteger(raw.blocks) && typeof raw.size === 'number' && Number.isSafeInteger(raw.size) ? raw.blocks * 512 < raw.size : null,
     symlinkTarget: null,
-    platform: normalizePlatform(options.platform ?? normalizePlatform(capabilitiesPlatform(options, raw))),
+    platform: normalizePlatform(options._platform ?? process.platform),
     observedWith,
   };
   if (metadata.size === null && raw.size !== undefined) fail('UNSAFE_NUMBER', 'size is unavailable or unsafe');
-  if (metadata.mtimeMs === null && raw.mtimeMs !== undefined) fail('INVALID_TIMESTAMP', 'mtimeMs is invalid');
-  if (metadata.ctimeMs === null && raw.ctimeMs !== undefined) fail('INVALID_TIMESTAMP', 'ctimeMs is invalid');
-  if (metadata.atimeMs === null && raw.atimeMs !== undefined) fail('INVALID_TIMESTAMP', 'atimeMs is invalid');
+  for (const field of ['birthtimeMs', 'ctimeMs', 'mtimeMs', 'atimeMs']) if (metadata[field] === null && raw[field] !== undefined) fail('INVALID_TIMESTAMP', `${field} is invalid`);
   return Object.freeze(metadata);
-}
-
-function capabilitiesPlatform(options, raw) {
-  if (options._platform) return options._platform;
-  if (raw.platformHint) return raw.platformHint;
-  return process.platform;
 }
 
 function canonicalJson(value) {
@@ -189,10 +176,7 @@ function canonicalJson(value) {
   const keys = Object.keys(value).sort();
   return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
 }
-
-function digest(payload) {
-  return createHash('sha256').update(payload, 'utf8').digest('hex');
-}
+function digest(payload) { return createHash('sha256').update(payload, 'utf8').digest('hex'); }
 
 export function normalizeEntryMetadata(raw, path, options = {}) {
   const opts = normalizeOptions(options);
@@ -206,25 +190,19 @@ export async function normalizeStat(path, options = {}, capabilities = defaultCa
   const opts = normalizeOptions(options);
   if (path.length > opts.maxPathLength) fail('PATH_LIMIT_EXCEEDED', 'path exceeds maximum length');
   let lstatResult;
-  try {
-    lstatResult = await capabilities.lstat(path);
-  } catch (error) {
+  try { lstatResult = await capabilities.lstat(path); }
+  catch (error) {
     const mapped = mapNativeError(error);
     if (opts.recovery === 'return-null' && (mapped.code === 'NOT_FOUND' || mapped.code === 'PERMISSION_DENIED')) return null;
     if (opts.recovery === 'return-error') return Object.freeze({ ok: false, error: Object.freeze({ code: mapped.code, message: mapped.message }) });
     throw mapped;
   }
-
-  let observed = lstatResult;
-  let observedWith = 'lstat';
-  const initialKind = classifyStat(lstatResult);
-  let symlinkTarget = null;
+  let observed = lstatResult; let observedWith = 'lstat'; const initialKind = classifyStat(lstatResult); let symlinkTarget = null;
 
   if (initialKind === 'symlink' && opts.includeSymlinkTarget) {
     if (typeof capabilities.readlink !== 'function') fail('CAPABILITY_FAILURE', 'readlink capability is required to report symlink targets');
-    try {
-      symlinkTarget = stringOrNull(await capabilities.readlink(path), opts.maxSymlinkTargetLength);
-    } catch (error) {
+    try { symlinkTarget = stringOrNull(await capabilities.readlink(path), opts.maxSymlinkTargetLength); }
+    catch (error) {
       const mapped = mapNativeError(error);
       if (opts.recovery === 'return-null' && (mapped.code === 'NOT_FOUND' || mapped.code === 'PERMISSION_DENIED')) return null;
       if (opts.recovery === 'return-error') return Object.freeze({ ok: false, error: Object.freeze({ code: mapped.code, message: mapped.message }) });
@@ -237,14 +215,11 @@ export async function normalizeStat(path, options = {}, capabilities = defaultCa
       if (typeof capabilities.readlink !== 'function' || typeof capabilities.containment !== 'function') fail('CAPABILITY_FAILURE', 'contained symlink policy requires readlink and containment capabilities');
       if (typeof opts.root !== 'string') fail('INVALID_OPTIONS', 'contained policy requires root');
       if (!symlinkTarget) symlinkTarget = stringOrNull(await capabilities.readlink(path), opts.maxSymlinkTargetLength);
-      const allowed = await capabilities.containment(symlinkTarget, opts.root);
-      if (!allowed) fail('ROOT_ESCAPE', 'symlink target is outside the declared root');
+      if (!(await capabilities.containment(symlinkTarget, opts.root))) fail('ROOT_ESCAPE', 'symlink target is outside the declared root');
     }
     if (typeof capabilities.stat !== 'function') fail('CAPABILITY_FAILURE', 'stat capability is required to follow symlinks');
-    try {
-      observed = await capabilities.stat(path);
-      observedWith = 'stat';
-    } catch (error) {
+    try { observed = await capabilities.stat(path); observedWith = 'stat'; }
+    catch (error) {
       const mapped = mapNativeError(error);
       if (opts.recovery === 'return-null' && (mapped.code === 'NOT_FOUND' || mapped.code === 'PERMISSION_DENIED')) return null;
       if (opts.recovery === 'return-error') return Object.freeze({ ok: false, error: Object.freeze({ code: mapped.code, message: mapped.message }) });
@@ -252,20 +227,18 @@ export async function normalizeStat(path, options = {}, capabilities = defaultCa
     }
   }
 
-  const metadata = normalizeRawStat(observed, path, { ...opts, _observedWith: observedWith, _platform: normalizePlatform(capabilities.hostPlatform ? await capabilities.hostPlatform() : process.platform) }, observedWith);
+  const coarsePlatform = normalizePlatform(capabilities.hostPlatform ? await capabilities.hostPlatform() : process.platform);
+  const metadata = normalizeRawStat(observed, path, { ...opts, _platform: coarsePlatform }, observedWith);
   const final = Object.freeze({ ...metadata, symlinkTarget });
-
   if (opts.consistency === 'strict' && initialKind === 'symlink' && observedWith === 'stat' && classifyStat(lstatResult) !== 'symlink') fail('CHANGED_DURING_READ', 'entry kind changed during observation');
   return final;
 }
 
 export function serializeMetadata(metadata, options = {}) {
-  const opts = normalizeOptions(options);
-  validatePlain(metadata, 'metadata');
+  const opts = normalizeOptions(options); validatePlain(metadata, 'metadata');
   const canonical = canonicalJson(metadata);
   if (Buffer.byteLength(canonical, 'utf8') > opts.maxMetadataBytes) fail('LIMIT_EXCEEDED', 'serialized metadata exceeds maximum size');
-  const checksum = digest(canonical);
-  return `${FMN_PREFIX}${canonical}|${checksum}`;
+  return `${FMN_PREFIX}${canonical}|${digest(canonical)}`;
 }
 
 export function parseMetadata(serialized, options = {}) {
@@ -273,17 +246,13 @@ export function parseMetadata(serialized, options = {}) {
   if (typeof serialized !== 'string') fail('SERIALIZATION_FAILURE', 'serialized metadata must be a string');
   if (Buffer.byteLength(serialized, 'utf8') > opts.maxMetadataBytes + 128) fail('LIMIT_EXCEEDED', 'serialized metadata exceeds maximum size');
   if (!serialized.startsWith(FMN_PREFIX)) fail('SERIALIZATION_FAILURE', 'invalid FMN1 envelope');
-  const payload = serialized.slice(FMN_PREFIX.length);
-  const separator = payload.lastIndexOf('|');
+  const payload = serialized.slice(FMN_PREFIX.length); const separator = payload.lastIndexOf('|');
   if (separator <= 0) fail('SERIALIZATION_FAILURE', 'missing integrity field');
-  const canonical = payload.slice(0, separator);
-  const checksum = payload.slice(separator + 1);
-  const expected = digest(canonical);
+  const canonical = payload.slice(0, separator); const checksum = payload.slice(separator + 1); const expected = digest(canonical);
   if (checksum.length !== expected.length || !timingSafeEqual(Buffer.from(checksum), Buffer.from(expected))) fail('SERIALIZATION_FAILURE', 'metadata integrity check failed');
   let parsed;
   try { parsed = JSON.parse(canonical); } catch { fail('SERIALIZATION_FAILURE', 'malformed canonical metadata'); }
-  const normalized = Object.freeze({ ...parsed });
-  return normalized;
+  return Object.freeze({ ...parsed });
 }
 
 export function getDefaultCapabilities() { return defaultCapabilities; }
