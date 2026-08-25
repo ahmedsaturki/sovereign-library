@@ -94,12 +94,13 @@ Released through v0.1:
 - Artifact Provenance / Lineage Ledger
 - Artifact Reconciliation / Consistency Checker
 - Artifact Audit / Drift Reporter
+- Artifact Compliance / Policy Evaluator
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Compliance / Policy Evaluator v0.1** — standalone deterministic local policy evaluator for explicit artifact records and explicit caller-supplied rules, without remote policy engines or source mutation.
+**Artifact Admission Gate / Release Eligibility v0.1** — standalone deterministic local gate for explicit artifact records and explicit caller-supplied admission clauses, without mutation, discovery, orchestration, or external policy engines.
 
 ## License
 
