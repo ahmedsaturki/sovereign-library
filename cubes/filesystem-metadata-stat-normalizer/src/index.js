@@ -1,0 +1,289 @@
+import { lstat, stat, readlink } from 'node:fs/promises';
+import { platform } from 'node:os';
+import { createHash, timingSafeEqual } from 'node:crypto';
+
+const MAX_PATH = 32 * 1024;
+const MAX_TARGET = 16 * 1024;
+const MAX_METADATA_BYTES = 128 * 1024;
+const MAX_DIAGNOSTICS = 2 * 1024;
+const FMN_PREFIX = 'FMN1|1|';
+
+const DEFAULTS = Object.freeze({
+  symlinkPolicy: 'lstat',
+  includeSymlinkTarget: false,
+  consistency: 'strict',
+  recovery: 'throw',
+  maxPathLength: MAX_PATH,
+  maxSymlinkTargetLength: MAX_TARGET,
+  maxMetadataBytes: MAX_METADATA_BYTES,
+  maxDiagnosticsLength: MAX_DIAGNOSTICS,
+});
+
+export class MetadataNormalizerError extends Error {
+  constructor(code, message, details = {}) {
+    super(message);
+    this.name = 'MetadataNormalizerError';
+    this.code = code;
+    this.details = Object.freeze({ ...details });
+  }
+}
+
+function fail(code, message, details) {
+  throw new MetadataNormalizerError(code, message, details);
+}
+
+function assertPlainOptions(options) {
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) fail('INVALID_OPTIONS', 'options must be an object');
+  for (const key of Object.getOwnPropertyNames(options)) {
+    const descriptor = Object.getOwnPropertyDescriptor(options, key);
+    if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', `options.${key} is accessor-backed`);
+  }
+}
+
+function validatePlain(value, label, seen = new Set(), depth = 0) {
+  if (depth > 12) fail('INVALID_OPTIONS', `${label} exceeds validation depth`);
+  if (value === null) return;
+  const type = typeof value;
+  if (type === 'function' || type === 'symbol' || type === 'bigint' || type === 'undefined') fail('INVALID_OPTIONS', `${label} contains unsupported data`);
+  if (type === 'number' && !Number.isFinite(value)) fail('INVALID_OPTIONS', `${label} contains a non-finite number`);
+  if (type !== 'object') return;
+  if (seen.has(value)) fail('INVALID_OPTIONS', `${label} is circular`);
+  const proto = Object.getPrototypeOf(value);
+  if (!Array.isArray(value) && proto !== Object.prototype && proto !== null) fail('INVALID_OPTIONS', `${label} must contain plain data`);
+  seen.add(value);
+  for (const key of Object.getOwnPropertyNames(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', `${label}.${key} is accessor-backed`);
+    validatePlain(descriptor.value, `${label}.${key}`, seen, depth + 1);
+  }
+  seen.delete(value);
+}
+
+function normalizeOptions(options = {}) {
+  assertPlainOptions(options);
+  validatePlain(options, 'options');
+  const out = { ...DEFAULTS, ...options };
+  if (!['lstat', 'stat', 'contained'].includes(out.symlinkPolicy)) fail('INVALID_OPTIONS', 'invalid symlinkPolicy');
+  if (!['strict', 'best-effort'].includes(out.consistency)) fail('INVALID_OPTIONS', 'invalid consistency policy');
+  if (!['throw', 'return-null', 'return-error'].includes(out.recovery)) fail('INVALID_OPTIONS', 'invalid recovery policy');
+  for (const field of ['maxPathLength', 'maxSymlinkTargetLength', 'maxMetadataBytes', 'maxDiagnosticsLength']) {
+    if (!Number.isInteger(out[field]) || out[field] < 1) fail('INVALID_OPTIONS', `${field} must be a positive integer`);
+  }
+  if (out.maxPathLength > MAX_PATH || out.maxSymlinkTargetLength > MAX_TARGET || out.maxMetadataBytes > MAX_METADATA_BYTES || out.maxDiagnosticsLength > MAX_DIAGNOSTICS) fail('LIMIT_EXCEEDED', 'configured metadata bounds exceed hard limits');
+  if (out.includeSymlinkTarget !== true && out.includeSymlinkTarget !== false) fail('INVALID_OPTIONS', 'includeSymlinkTarget must be boolean');
+  if (out.root !== undefined && (typeof out.root !== 'string' || out.root.length === 0 || out.root.length > out.maxPathLength)) fail('INVALID_OPTIONS', 'root must be a bounded non-empty string');
+  return Object.freeze(out);
+}
+
+function assertCapabilities(capabilities) {
+  if (!capabilities || typeof capabilities !== 'object' || Array.isArray(capabilities)) fail('CAPABILITY_FAILURE', 'capabilities must be an object');
+  for (const key of Object.getOwnPropertyNames(capabilities)) {
+    const descriptor = Object.getOwnPropertyDescriptor(capabilities, key);
+    if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', `capabilities.${key} is accessor-backed`);
+    if (typeof descriptor.value !== 'function') fail('CAPABILITY_FAILURE', `${key} must be a function`);
+  }
+  for (const required of ['lstat']) if (typeof capabilities[required] !== 'function') fail('CAPABILITY_FAILURE', `${required} capability is required`);
+}
+
+const defaultCapabilities = Object.freeze({
+  lstat,
+  stat,
+  readlink,
+  containment: async (target, root) => target === root || target.startsWith(`${root}/`),
+  now: () => Date.now(),
+  hostPlatform: () => platform(),
+});
+
+function safeIntegerOrNull(value) {
+  if (typeof value === 'bigint') return value >= 0n && value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : null;
+  return Number.isSafeInteger(value) && value >= 0 ? value : null;
+}
+
+function timestampOrNull(value) {
+  if (typeof value === 'bigint') return value >= 0n && value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : null;
+  if (!Number.isFinite(value) || value < 0) return null;
+  return Number.isSafeInteger(value) ? value : Math.trunc(value);
+}
+
+function stringOrNull(value, maxLength) {
+  if (typeof value !== 'string') return null;
+  if (value.length > maxLength) fail('LIMIT_EXCEEDED', 'string field exceeds configured bound');
+  return value;
+}
+
+function classifyStat(raw) {
+  try {
+    if (raw.isSymbolicLink?.()) return 'symlink';
+    if (raw.isFile?.()) return 'file';
+    if (raw.isDirectory?.()) return 'directory';
+    if (raw.isSocket?.()) return 'socket';
+    if (raw.isBlockDevice?.()) return 'block-device';
+    if (raw.isCharacterDevice?.()) return 'character-device';
+    if (raw.isFIFO?.()) return 'fifo';
+    return 'unknown';
+  } catch (error) {
+    fail('MALFORMED_STAT', 'stat kind methods failed', { cause: boundedMessage(error) });
+  }
+}
+
+function boundedMessage(error) {
+  const raw = error instanceof Error ? error.message : String(error);
+  return raw.slice(0, MAX_DIAGNOSTICS);
+}
+
+function mapNativeError(error) {
+  if (error?.code === 'ENOENT' || error?.code === 'ENOTDIR') return new MetadataNormalizerError('NOT_FOUND', 'filesystem entry was not found');
+  if (error?.code === 'EACCES' || error?.code === 'EPERM') return new MetadataNormalizerError('PERMISSION_DENIED', 'filesystem access was denied');
+  if (error instanceof MetadataNormalizerError) return error;
+  return new MetadataNormalizerError('CAPABILITY_FAILURE', boundedMessage(error));
+}
+
+function normalizePlatform(value) {
+  if (value === 'win32') return 'windows';
+  if (value === 'darwin') return 'darwin';
+  if (value === 'linux') return 'linux';
+  return 'other';
+}
+
+function normalizeRawStat(raw, path, options, observedWith) {
+  if (!raw || typeof raw !== 'object') fail('MALFORMED_STAT', 'stat capability must return an object');
+  const kind = classifyStat(raw);
+  const metadata = {
+    version: 'FMN1',
+    path,
+    kind,
+    size: safeIntegerOrNull(raw.size),
+    allocationSize: safeIntegerOrNull(raw.blocks) !== null && safeIntegerOrNull(raw.blksize) !== null ? safeIntegerOrNull(raw.blocks) * safeIntegerOrNull(raw.blksize) : null,
+    mode: safeIntegerOrNull(raw.mode),
+    readonly: typeof raw.mode === 'number' ? ((raw.mode & 0o200) === 0) : null,
+    uid: safeIntegerOrNull(raw.uid),
+    gid: safeIntegerOrNull(raw.gid),
+    nlink: safeIntegerOrNull(raw.nlink),
+    inode: safeIntegerOrNull(raw.ino),
+    device: safeIntegerOrNull(raw.dev),
+    birthtimeMs: timestampOrNull(raw.birthtimeMs),
+    ctimeMs: timestampOrNull(raw.ctimeMs),
+    mtimeMs: timestampOrNull(raw.mtimeMs),
+    atimeMs: timestampOrNull(raw.atimeMs),
+    isSparse: typeof raw.blocks === 'number' && Number.isSafeInteger(raw.blocks) && typeof raw.size === 'number' && Number.isSafeInteger(raw.size) ? raw.blocks * 512 < raw.size : null,
+    symlinkTarget: null,
+    platform: normalizePlatform(options.platform ?? normalizePlatform(capabilitiesPlatform(options, raw))),
+    observedWith,
+  };
+  if (metadata.size === null && raw.size !== undefined) fail('UNSAFE_NUMBER', 'size is unavailable or unsafe');
+  if (metadata.mtimeMs === null && raw.mtimeMs !== undefined) fail('INVALID_TIMESTAMP', 'mtimeMs is invalid');
+  if (metadata.ctimeMs === null && raw.ctimeMs !== undefined) fail('INVALID_TIMESTAMP', 'ctimeMs is invalid');
+  if (metadata.atimeMs === null && raw.atimeMs !== undefined) fail('INVALID_TIMESTAMP', 'atimeMs is invalid');
+  return Object.freeze(metadata);
+}
+
+function capabilitiesPlatform(options, raw) {
+  if (options._platform) return options._platform;
+  if (raw.platformHint) return raw.platformHint;
+  return process.platform;
+}
+
+function canonicalJson(value) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  const keys = Object.keys(value).sort();
+  return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+}
+
+function digest(payload) {
+  return createHash('sha256').update(payload, 'utf8').digest('hex');
+}
+
+export function normalizeEntryMetadata(raw, path, options = {}) {
+  const opts = normalizeOptions(options);
+  if (typeof path !== 'string' || !path || path.length > opts.maxPathLength || path.includes('\0')) fail('INVALID_PATH', 'path is invalid or exceeds the configured bound');
+  return normalizeRawStat(raw, path, opts, opts._observedWith ?? 'lstat');
+}
+
+export async function normalizeStat(path, options = {}, capabilities = defaultCapabilities) {
+  if (typeof path !== 'string' || !path || path.includes('\0')) fail('INVALID_PATH', 'path is invalid');
+  assertCapabilities(capabilities);
+  const opts = normalizeOptions(options);
+  if (path.length > opts.maxPathLength) fail('PATH_LIMIT_EXCEEDED', 'path exceeds maximum length');
+  let lstatResult;
+  try {
+    lstatResult = await capabilities.lstat(path);
+  } catch (error) {
+    const mapped = mapNativeError(error);
+    if (opts.recovery === 'return-null' && (mapped.code === 'NOT_FOUND' || mapped.code === 'PERMISSION_DENIED')) return null;
+    if (opts.recovery === 'return-error') return Object.freeze({ ok: false, error: Object.freeze({ code: mapped.code, message: mapped.message }) });
+    throw mapped;
+  }
+
+  let observed = lstatResult;
+  let observedWith = 'lstat';
+  const initialKind = classifyStat(lstatResult);
+  let symlinkTarget = null;
+
+  if (initialKind === 'symlink' && opts.includeSymlinkTarget) {
+    if (typeof capabilities.readlink !== 'function') fail('CAPABILITY_FAILURE', 'readlink capability is required to report symlink targets');
+    try {
+      symlinkTarget = stringOrNull(await capabilities.readlink(path), opts.maxSymlinkTargetLength);
+    } catch (error) {
+      const mapped = mapNativeError(error);
+      if (opts.recovery === 'return-null' && (mapped.code === 'NOT_FOUND' || mapped.code === 'PERMISSION_DENIED')) return null;
+      if (opts.recovery === 'return-error') return Object.freeze({ ok: false, error: Object.freeze({ code: mapped.code, message: mapped.message }) });
+      throw mapped;
+    }
+  }
+
+  if (initialKind === 'symlink' && opts.symlinkPolicy !== 'lstat') {
+    if (opts.symlinkPolicy === 'contained') {
+      if (typeof capabilities.readlink !== 'function' || typeof capabilities.containment !== 'function') fail('CAPABILITY_FAILURE', 'contained symlink policy requires readlink and containment capabilities');
+      if (typeof opts.root !== 'string') fail('INVALID_OPTIONS', 'contained policy requires root');
+      if (!symlinkTarget) symlinkTarget = stringOrNull(await capabilities.readlink(path), opts.maxSymlinkTargetLength);
+      const allowed = await capabilities.containment(symlinkTarget, opts.root);
+      if (!allowed) fail('ROOT_ESCAPE', 'symlink target is outside the declared root');
+    }
+    if (typeof capabilities.stat !== 'function') fail('CAPABILITY_FAILURE', 'stat capability is required to follow symlinks');
+    try {
+      observed = await capabilities.stat(path);
+      observedWith = 'stat';
+    } catch (error) {
+      const mapped = mapNativeError(error);
+      if (opts.recovery === 'return-null' && (mapped.code === 'NOT_FOUND' || mapped.code === 'PERMISSION_DENIED')) return null;
+      if (opts.recovery === 'return-error') return Object.freeze({ ok: false, error: Object.freeze({ code: mapped.code, message: mapped.message }) });
+      throw mapped;
+    }
+  }
+
+  const metadata = normalizeRawStat(observed, path, { ...opts, _observedWith: observedWith, _platform: normalizePlatform(capabilities.hostPlatform ? await capabilities.hostPlatform() : process.platform) }, observedWith);
+  const final = Object.freeze({ ...metadata, symlinkTarget });
+
+  if (opts.consistency === 'strict' && initialKind === 'symlink' && observedWith === 'stat' && classifyStat(lstatResult) !== 'symlink') fail('CHANGED_DURING_READ', 'entry kind changed during observation');
+  return final;
+}
+
+export function serializeMetadata(metadata, options = {}) {
+  const opts = normalizeOptions(options);
+  validatePlain(metadata, 'metadata');
+  const canonical = canonicalJson(metadata);
+  if (Buffer.byteLength(canonical, 'utf8') > opts.maxMetadataBytes) fail('LIMIT_EXCEEDED', 'serialized metadata exceeds maximum size');
+  const checksum = digest(canonical);
+  return `${FMN_PREFIX}${canonical}|${checksum}`;
+}
+
+export function parseMetadata(serialized, options = {}) {
+  const opts = normalizeOptions(options);
+  if (typeof serialized !== 'string') fail('SERIALIZATION_FAILURE', 'serialized metadata must be a string');
+  if (Buffer.byteLength(serialized, 'utf8') > opts.maxMetadataBytes + 128) fail('LIMIT_EXCEEDED', 'serialized metadata exceeds maximum size');
+  if (!serialized.startsWith(FMN_PREFIX)) fail('SERIALIZATION_FAILURE', 'invalid FMN1 envelope');
+  const payload = serialized.slice(FMN_PREFIX.length);
+  const separator = payload.lastIndexOf('|');
+  if (separator <= 0) fail('SERIALIZATION_FAILURE', 'missing integrity field');
+  const canonical = payload.slice(0, separator);
+  const checksum = payload.slice(separator + 1);
+  const expected = digest(canonical);
+  if (checksum.length !== expected.length || !timingSafeEqual(Buffer.from(checksum), Buffer.from(expected))) fail('SERIALIZATION_FAILURE', 'metadata integrity check failed');
+  let parsed;
+  try { parsed = JSON.parse(canonical); } catch { fail('SERIALIZATION_FAILURE', 'malformed canonical metadata'); }
+  const normalized = Object.freeze({ ...parsed });
+  return normalized;
+}
+
+export function getDefaultCapabilities() { return defaultCapabilities; }
