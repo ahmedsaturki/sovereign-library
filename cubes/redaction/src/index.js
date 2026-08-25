@@ -13,7 +13,7 @@ const SENSITIVE_EXACT_KEYS = new Set([
 const DEFAULT_STRING_RULES = Object.freeze([
   Object.freeze({ pattern: /\bBearer\s+[A-Za-z0-9._~+\/-]+/gi, replacement: DEFAULT_REPLACEMENT }),
   Object.freeze({ pattern: /\bBasic\s+[A-Za-z0-9+/=]+/gi, replacement: DEFAULT_REPLACEMENT }),
-  Object.freeze({ pattern: /-----BEGIN [^-]+ PRIVATE KEY-----[\s\S]*?-----END [^-]+ PRIVATE KEY-----/g, replacement: DEFAULT_REPLACEMENT }),
+  Object.freeze({ pattern: /-----BEGIN [^-\r\n]*PRIVATE KEY-----[\s\S]*?-----END [^-\r\n]*PRIVATE KEY-----/g, replacement: DEFAULT_REPLACEMENT }),
 ]);
 const lexicalCompare = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
