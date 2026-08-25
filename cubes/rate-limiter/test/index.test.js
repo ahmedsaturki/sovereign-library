@@ -83,12 +83,13 @@ test('clear rejects all pending waiters and removes their timers/listeners', asy
   assert.equal(limiter.getStats().queued, 0);
 });
 
-test('stats are immutable snapshots and track grants/rejections/overflow', () => {
+test('stats are immutable snapshots and track grants/rejections/overflow', async () => {
   const clock = new FakeClock(0);
   const limiter = new RateLimiter({capacity: 1, refillPerSecond: 1, maxQueue: 0, clock});
   limiter.tryAcquire();
   limiter.tryAcquire();
-  assert.equal(limiter.getStats().rejected, 1);
+  await assert.rejects(limiter.acquire(), /queue is full/);
+  assert.equal(limiter.getStats().rejected, 2);
   assert.equal(limiter.getStats().overflowed, 1);
   assert.equal(Object.isFrozen(limiter.getStats()), true);
 });
