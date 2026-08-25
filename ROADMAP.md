@@ -10,6 +10,10 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Compliance / Policy Evaluator v0.1
+
+PR #70 was squash-merged as `10ea69e80865fda16e385a635fa7bdde17162769`. Pre-merge Run 524 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 525 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
 ### Artifact Audit / Drift Reporter v0.1
 
 PR #69 was squash-merged as `f939f13437412682600aad691998cae9d5218606`. Pre-merge Run 511 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 512 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -120,31 +124,29 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Compliance / Policy Evaluator v0.1
+### Artifact Admission Gate / Release Eligibility v0.1
 
-Target: a standalone deterministic local policy evaluator for explicit artifact records and explicit caller-supplied compliance rules, with no remote policy engine and no mutation of source artifacts.
+Target: a standalone deterministic local gate that decides whether an explicit artifact record is eligible for release using explicit caller-supplied admission clauses, without mutation, discovery, orchestration, or external policy engines.
 
 Initial scope:
-- explicit local artifacts and explicit local policy rules only
-- canonical policy normalization
-- identity/digest/version/lifecycle/lineage/metadata constraint evaluation
-- bounded numeric/string constraints
-- deterministic allow/deny predicates
-- stable rule-id/severity/category violations
-- immutable bounded compliance reports
-- fail-closed malformed/accessor/circular/duplicate-rule/invalid-regex/oversized input handling
-- deterministic checksum-protected report serialization
+- explicit artifact data and explicit gate configuration only
+- deterministic required/optional clause evaluation
+- required compliance verdict handling
+- lifecycle, digest presence, version validity, provenance/lineage status, and bounded metadata requirements
+- stable clause ids and deterministic blocking/non-blocking reasons
+- immutable bounded eligibility results
+- fail-closed malformed/accessor/circular/duplicate/invalid/oversized input handling
+- deterministic checksum-protected result serialization
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 - remote policy retrieval
 - network/filesystem/registry discovery
-- automatic repair or mutation of source artifacts
-- distributed policy evaluation
-- signature/trust-chain verification
+- automatic repair, mutation, or publication
+- release scheduling/orchestration
+- signing or trust-chain verification
 - GUI/admin console
-- background scheduler integration
 - billing or cost accounting
 
 ## Parked
