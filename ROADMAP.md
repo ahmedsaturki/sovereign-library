@@ -10,11 +10,21 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Filesystem Metadata / Stat Normalizer v0.1
+
+PR #93 was squash-merged as `44f1acc2f277a2016013146423bd97a7a4e15057`.
+
+Pre-merge **Run 681** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 641 repository tests, and real-browser smoke. Post-merge **Run 682** passed on all three platforms with the same gates.
+
+Run 680 exposed a real Linux timestamp-shape issue: native `birthtimeMs` and related fields may carry valid fractional milliseconds. The implementation now truncates finite non-negative timestamps within the safe range and rejects only unsafe/invalid values.
+
+The cube is **FROZEN** at `44f1acc2f277a2016013146423bd97a7a4e15057`.
+
 ### Directory Walker / Bounded Tree Traversal v0.1
 
 PR #92 was squash-merged as `4d64f6610286524799ebe809021279a7b7be3d40`.
 
-Pre-merge **Run 674** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke. Post-merge **Run 675** passed on all three platforms with the same gates.
+Pre-merge **Run 674** and post-merge **Run 675** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
 
 The cube is **FROZEN** at `4d64f6610286524799ebe809021279a7b7be3d40`.
 
@@ -26,123 +36,66 @@ Exact-SHA external verification at `b52473ee8f4148932ec3d8526bbfe3ef5abac14c` pa
 
 The cube is **FROZEN** at `0216f3acd81331c031ac0ae023bfc1322f9064bc`.
 
-### Glob / Path Matcher v0.1
+### Prior release chain
 
-PR #87 was squash-merged as `c9a3d330a16a488e00c28311085204363bab2fc7`.
+Glob / Path Matcher v0.1 — PR #87 — `c9a3d330a16a488e00c28311085204363bab2fc7`
 
-Pre-merge **Run 654** and post-merge **Run 655** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke. Blocking fixes included escape-tokenization ordering and explicit absolute-root anchoring; regression coverage was added.
+Host Identity / Environment Fingerprint v0.1 — PR #86 — `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`
 
-The cube is **FROZEN** at `c9a3d330a16a488e00c28311085204363bab2fc7`.
+Directory Snapshot / Tree Manifest v0.1 — PR #85 — `c01cc08e97404d1528fb93d6728fd2ae272871c3`
 
-### Host Identity / Environment Fingerprint v0.1
+Atomic File Writer / Safe Replace v0.1 — corrective PR #84 — `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`
 
-PR #86 was squash-merged as `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`.
+Ephemeral Workspace / Scratch Directory v0.1 — PR #81 — `33b98771c4702a02dbdc3ce267af516bfbd8e43c`
 
-Pre-merge **Run 644** passed on Ubuntu, Windows, and macOS-15-Intel. Post-merge **Run 645** passed on Windows and macOS-15-Intel on the original attempt; Ubuntu browser smoke experienced a transient runner hang and then passed on an independent same-commit rerun.
+File Lease / Advisory Lock v0.1 — PR #80 — `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868`
 
-The cube is **FROZEN** at `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`.
+Filesystem Watcher / Change Stream v0.1 — PR #79 — `239e418e620d06de5d25a9c40905f6efc42334b3`
 
-### Directory Snapshot / Tree Manifest v0.1
+Runtime Capability Inspector / Preflight v0.1 — PR #78 — `139a7d6c824b7fe522712c65e1b9ffcf605e134f4`
 
-PR #85 was squash-merged as `c01cc08e97404d1528fb93d6728fd2ae272871c3`.
-
-Pre-merge **Run 633** and post-merge **Run 635** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-
-The cube is **FROZEN** at `c01cc08e97404d1528fb93d6728fd2ae272871c3`.
-
-### Atomic File Writer / Safe Replace v0.1
-
-Initial PR #82 was squash-merged as `f6bb8d515eade8ac3bd158b851732070c5a9d470`.
-
-Post-merge **Run 620** exposed a real Node 24 compatibility defect: `fsync` had been imported from `node:fs/promises`.
-
-Corrective PR #84 was squash-merged as `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`.
-
-Corrective pre-merge **Run 622** and post-merge **Run 623** passed on Ubuntu, Windows, and macOS-15-Intel.
-
-The cube is **FROZEN** at `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`.
-
-### Ephemeral Workspace / Scratch Directory v0.1
-
-PR #81 was squash-merged as `33b98771c4702a02dbdc3ce267af516bfbd8e43c`.
-
-Pre-merge **Run 613** passed on Ubuntu, Windows, and macOS-15-Intel. Post-merge Run 614 initially experienced a transient macOS runner cancellation; an independent rerun on the identical commit passed all gates.
-
-The cube is **FROZEN** at `33b98771c4702a02dbdc3ce267af516bfbd8e43c`.
-
-### File Lease / Advisory Lock v0.1
-
-PR #80 was squash-merged as `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868`.
-
-Pre-merge Run 607 and post-merge Run 608 passed across Ubuntu, Windows, and macOS-15-Intel.
-
-The cube is **FROZEN** at `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868`.
-
-### Filesystem Watcher / Change Stream v0.1
-
-PR #79 was merged as `239e418e620d06de5d25a9c40905f6efc42334b3`.
-
-Post-merge Run 598 passed across Ubuntu, Windows, and macOS-15-Intel.
-
-The cube is **FROZEN** at `239e418e620d06de5d25a9c40905f6efc42334b3`.
-
-### Runtime Capability Inspector / Preflight v0.1
-
-PR #78 was squash-merged as `139a7d6c824b7fe522712c65e1b9ffcf605e134f4`.
-
-Pre-merge Run 580 and post-merge Run 581 passed across Ubuntu, Windows, and macOS-15-Intel.
-
-The cube is **FROZEN** at `139a7d6c824b7fe522712c65e1b9ffcf605e134f4`.
-
-### Previous release chain
-
-Artifact Release Publication Confirmation / Outcome Receipt v0.1 — PR #77 — `ee642ac4f760da6ee6263faa5e82bf7d197fa78d`
-
-Artifact Release Publication Executor / Boundary v0.1 — PR #76 — `23cf7b06e9162201683eb613d6c71c241cb5e34e`
-
-Artifact Release Closure Receipt / Finalization v0.1 — PR #75 — `0e1adc1fc41924c4df14c5b10aa5ed1278297b90`
-
-Earlier released cubes remain pinned to their recorded immutable SHAs.
+Earlier Artifact Release cubes remain pinned to their recorded immutable SHAs.
 
 ## Active milestone
 
-### FILESYSTEM-METADATA-STAT-NORMALIZER-V0.1-SPEC
+### BOUNDED-FILE-CONTENT-READER-V0.1-SPEC
 
-Directory Walker / Bounded Tree Traversal v0.1 is complete and frozen.
+Filesystem Metadata / Stat Normalizer v0.1 is complete and frozen.
 
 The next selected standalone product is:
 
-**Filesystem Metadata / Stat Normalizer v0.1**
+**Bounded File Content Reader / Safe Content Access v0.1**
 
 Rationale:
 
-- normalizes platform-specific filesystem metadata into a stable, dependency-free contract
-- separates metadata semantics from traversal and snapshot concerns
-- gives later cubes a deterministic, immutable representation of `lstat`/`stat` results
-- keeps privacy boundaries explicit so host/user/device metadata is never leaked accidentally
-- supports failure/recovery around races, permission errors, missing entries, and malformed capability results
+- provides a reusable safe primitive for bounded file-content access without absorbing traversal or indexing
+- separates byte/text decoding semantics from metadata and directory walking
+- makes memory, offset, cancellation, and decoding behavior explicit
+- integrates Safe Path Resolver for root containment and Metadata Normalizer for stable entry context without re-owning either concern
+- supports streaming and collected modes while preventing unbounded content disclosure through errors
 
 ### Immediate next task
 
-Write and commit the complete SPEC at `specs/filesystem-metadata-stat-normalizer-v0.1.md` before implementation begins.
+Write and commit the complete SPEC at `specs/bounded-file-content-reader-safe-content-access-v0.1.md` before implementation begins.
 
 The SPEC must lock:
 
-- cross-platform metadata API
-- file/directory/symlink/special kind normalization
-- stable numeric/stat fields across POSIX and Windows
-- timestamp, size, mode, identity and platform-specific field policies
-- capability seam validation and getter/circular protections
-- default non-following symlink behavior and explicit target-resolution policy
-- bounded metadata, integer-safe fields, and path/name limits
-- deterministic serialization/canonical representation
-- privacy-safe field allowlisting
-- missing, permission-denied, malformed and concurrent-change recovery semantics
-- non-mutating guarantees
+- bounded byte/text APIs
+- binary versus UTF-8 semantics
+- Safe Path Resolver integration
+- byte/line/work/time budgets
+- streaming/chunked/collected memory behavior
+- offset/length and EOF rules
+- symlink policies
+- BOM/newline/decoder policies
+- filesystem capability seams and cleanup
+- cancellation/deadline/backpressure
+- changing-file semantics
+- immutable deterministic results and privacy-safe diagnostics
 - Ubuntu, Windows, macOS-15-Intel and relevant WSL verification
 - zero-runtime-third-party-dependency boundary
 
-No implementation starts before this SPEC exists on the control plane.
+No unrelated cube implementation starts before the SPEC gate is complete.
 
 ## Parked
 
