@@ -79,12 +79,13 @@ Released through v0.1:
 - Workflow / Durable Orchestration
 - Storage Persistence / Snapshot
 - Reporting / Export
+- AI / Inference Runtime
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**AI / Inference Runtime Cube v0.1** — standalone provider-neutral local inference runtime for bounded message/context normalization, synchronous results, streaming delta events, cancellation/timeouts, a native child-process/stdio adapter, and zero runtime third-party dependencies.
+**Agent Runtime Cube v0.1** — standalone native agent runtime for deterministic session/turn state, bounded conversation context, explicit tool-call contracts, capability allowlisting, cancellation/timeout/retry semantics, recoverable immutable session snapshots, and zero runtime third-party dependencies.
 
 ## License
 
