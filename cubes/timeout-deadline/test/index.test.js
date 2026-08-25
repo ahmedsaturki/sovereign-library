@@ -23,6 +23,18 @@ test('absolute deadline and child deadline cannot extend the parent', () => {
   assert.throws(() => parent.child(-1), RangeError);
 });
 
+test('fake clock timers execute deterministically and can be cancelled', () => {
+  const clock = new FakeClock(0);
+  const events = [];
+  const first = clock.setTimer(() => events.push('first'), 10);
+  clock.setTimer(() => events.push('second'), 10);
+  clock.clearTimer(first);
+  clock.advance(9);
+  assert.deepEqual(events, []);
+  clock.advance(1);
+  assert.deepEqual(events, ['second']);
+});
+
 test('expired deadline rejects before starting operation', async () => {
   const clock = new FakeClock(100);
   const deadline = new Deadline(100, clock);
@@ -36,17 +48,26 @@ test('withDeadline returns successful operation and cleans timer', async () => {
   const deadline = createDeadline(1000, { clock });
   const value = await withDeadline(async () => 'ok', deadline);
   assert.equal(value, 'ok');
+  assert.equal(clock.timers.size, 0);
 });
 
-test('withDeadline aborts the operation on timeout and returns TimeoutError', async () => {
+test('withDeadline aborts the operation on timeout deterministically', async () => {
   const clock = new FakeClock(0);
   const deadline = createDeadline(20, { clock });
   let observedSignal = null;
-  await assert.rejects(withDeadline(({ signal }) => {
+  const promise = withDeadline(({ signal }) => {
     observedSignal = signal;
-    return new Promise(resolve => setTimeout(resolve, 100));
-  }, deadline), e => e instanceof TimeoutError && e.code === 'TIMEOUT');
+    return new Promise(resolve => {
+      signal.addEventListener('abort', () => resolve('aborted'), { once: true });
+    });
+  }, deadline);
+  await flush();
+  clock.advance(19);
+  assert.equal(observedSignal.aborted, false);
+  clock.advance(1);
+  await assert.rejects(promise, e => e instanceof TimeoutError && e.code === 'TIMEOUT');
   assert.equal(observedSignal.aborted, true);
+  assert.equal(clock.timers.size, 0);
 });
 
 test('parent AbortSignal cancels operation and does not become timeout', async () => {
@@ -60,6 +81,7 @@ test('parent AbortSignal cancels operation and does not become timeout', async (
   await flush();
   controller.abort(reason);
   await assert.rejects(promise, error => error === reason);
+  assert.equal(clock.timers.size, 0);
 });
 
 test('deadline snapshot is immutable and updates remaining time', () => {
