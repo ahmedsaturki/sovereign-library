@@ -18,17 +18,17 @@ Windows, Linux, macOS, and WSL where the capability is supported.
 
 ## Latest release
 
-**Directory Snapshot / Tree Manifest v0.1** — PR #85, release commit `c01cc08e97404d1528fb93d6728fd2ae272871c3`.
+**Host Identity / Environment Fingerprint v0.1** — PR #86, release commit `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`.
 
-Pre-merge Run #633 and post-merge Run #635 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+Pre-merge Run #644 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, HIF tests, and real-browser smoke. Post-merge Run #645 passed on Windows and macOS-15-Intel; its Ubuntu browser-smoke job experienced a transient runner hang and then passed when that exact job was independently rerun on the same release commit.
 
-The release provides deterministic directory inventory, explicit file/directory/symlink representation, bounded traversal, symlink containment and cycle protection, optional content digesting, mutation/error policies, canonical serialization, immutable read-only snapshots, and zero runtime third-party dependencies.
+The release provides privacy-safe stable and volatile host identity fields, deterministic normalization and canonical serialization, explicit comparison semantics, bounded output, injectable capability seams, fail-closed malformed/accessor/circular input handling, and zero runtime third-party dependencies.
 
-Earlier released cubes include Atomic File Writer / Safe Replace, Ephemeral Workspace / Scratch Directory, File Lease / Advisory Lock, Filesystem Watcher / Change Stream, Runtime Capability Inspector / Preflight, and the preceding Artifact Release series, all pinned in `ROADMAP.md`.
+Earlier released cubes include Directory Snapshot / Tree Manifest, Atomic File Writer / Safe Replace, Ephemeral Workspace / Scratch Directory, File Lease / Advisory Lock, Filesystem Watcher / Change Stream, Runtime Capability Inspector / Preflight, and the preceding Artifact Release series, all pinned in `ROADMAP.md`.
 
 ## Active milestone
 
-**Host Identity / Environment Fingerprint v0.1 SPEC** — the next standalone product. It will own privacy-safe local host/environment identity data, stable-vs-volatile classification, deterministic normalization/serialization, bounded fingerprints, and comparison semantics without reading secrets, extracting credentials, or performing remote discovery.
+**Glob / Path Matcher v0.1 SPEC** — the next standalone product. It will own pure cross-platform path-pattern compilation and matching with explicit grammar, separator normalization, recursive `**` semantics, deterministic include/exclude precedence, explicit case policy, bounded complexity, and no filesystem side effects.
 
 ## Repository shape
 
