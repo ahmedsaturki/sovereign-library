@@ -38,8 +38,16 @@ function scanSafe(value, seen, depth, nodes, label = 'input') {
   if (seen.has(value)) fail('CIRCULAR_INPUT', `${label} is circular`);
   seen.add(value);
   let count = nodes + 1;
-  assertPlainRecord(value, label);
-  for (const child of Object.values(value)) count = scanSafe(child, seen, depth + 1, count, label);
+  if (Array.isArray(value)) {
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    for (const key of Object.keys(descriptors)) {
+      if (!('value' in descriptors[key])) fail('ACCESSOR_INPUT', `${label} contains an accessor property`);
+    }
+    for (const child of value) count = scanSafe(child, seen, depth + 1, count, label);
+  } else {
+    assertPlainRecord(value, label);
+    for (const child of Object.values(value)) count = scanSafe(child, seen, depth + 1, count, label);
+  }
   seen.delete(value);
   if (count > MAX_METADATA_NODES) fail('BOUNDS', `${label} exceeds max nodes`);
   return count;
@@ -49,9 +57,7 @@ function assertString(value, label) {
   if (typeof value !== 'string' || value.length > MAX_STRING) fail('INVALID_INPUT', `${label} must be a bounded string`);
 }
 
-function clone(value) {
-  return structuredClone(value);
-}
+function clone(value) { return structuredClone(value); }
 
 function freezeDeep(value) {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
@@ -63,9 +69,7 @@ function freezeDeep(value) {
 
 function stable(value) {
   if (Array.isArray(value)) return value.map(stable);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.keys(value).sort().map((k) => [k, stable(value[k])]));
-  }
+  if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map((k) => [k, stable(value[k])]));
   return value;
 }
 
@@ -153,28 +157,16 @@ function evaluate(operator, actual, expected, exists) {
 }
 
 function violation(rule, artifact, actual, exists) {
-  return {
-    ruleId: rule.id,
-    artifactId: artifact.id,
-    category: rule.category,
-    severity: rule.severity,
-    field: rule.field,
-    expected: clone(rule.value),
-    actual: exists ? clone(actual) : null,
-    reason: exists ? 'predicate_failed' : 'field_missing',
-  };
+  return { ruleId: rule.id, artifactId: artifact.id, category: rule.category, severity: rule.severity, field: rule.field, expected: clone(rule.value), actual: exists ? clone(actual) : null, reason: exists ? 'predicate_failed' : 'field_missing' };
 }
 
-export function normalizePolicies(rules) {
-  return freezeDeep(normalizeRules(rules));
-}
+export function normalizePolicies(rules) { return freezeDeep(normalizeRules(rules)); }
 
 export function evaluateCompliance(artifacts, rules, options = {}) {
   const normalizedArtifacts = normalizeArtifacts(artifacts);
   const normalizedRules = normalizeRules(rules);
   const maxFindings = options.maxFindings ?? MAX_FINDINGS;
   if (!Number.isInteger(maxFindings) || maxFindings < 0 || maxFindings > MAX_FINDINGS) fail('INVALID_LIMIT', 'maxFindings is invalid');
-
   const findings = [];
   for (const artifact of normalizedArtifacts) {
     for (const rule of normalizedRules) {
@@ -185,21 +177,8 @@ export function evaluateCompliance(artifacts, rules, options = {}) {
       }
     }
   }
-
-  findings.sort((a, b) =>
-    SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] ||
-    a.category.localeCompare(b.category) ||
-    a.ruleId.localeCompare(b.ruleId) ||
-    a.artifactId.localeCompare(b.artifactId)
-  );
-
-  const report = {
-    format: 'SCP1',
-    verdict: findings.length === 0 ? 'compliant' : 'non_compliant',
-    counts: { artifacts: normalizedArtifacts.length, rules: normalizedRules.length, findings: findings.length },
-    findings,
-  };
-  return freezeDeep(report);
+  findings.sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || a.category.localeCompare(b.category) || a.ruleId.localeCompare(b.ruleId) || a.artifactId.localeCompare(b.artifactId));
+  return freezeDeep({ format: 'SCP1', verdict: findings.length === 0 ? 'compliant' : 'non_compliant', counts: { artifacts: normalizedArtifacts.length, rules: normalizedRules.length, findings: findings.length }, findings });
 }
 
 function canonicalPayload(report) { return JSON.stringify(stable(report)); }
