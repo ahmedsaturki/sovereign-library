@@ -107,7 +107,7 @@ The latest release is **Artifact Release Publication Confirmation / Outcome Rece
 
 ## Active milestone
 
-**NEXT-CUBE-SELECTION** — the previous cube is released and frozen. The next implementation will not begin until exactly one non-overlapping standalone cube is selected and its SPEC defines the public contract, limits, failure/recovery model, cross-platform target, tests, documentation, example, and release gate.
+**Runtime Capability Inspector v0.1** — standalone local runtime preflight and capability-report cube. It observes bounded host/runtime facts, checks explicit executable availability without running programs, evaluates declarative requirements, and emits deterministic integrity-protected reports. No network, installation, command execution, credential access, or external service calls.
 
 ## License
 
