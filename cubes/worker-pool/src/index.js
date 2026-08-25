@@ -1,8 +1,8 @@
 import { Worker } from 'node:worker_threads';
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { resolve } from 'node:path';
 
 const RUNNER_URL = new URL('./worker-runner.js', import.meta.url);
 const DEFAULT_SIZE = 1;
@@ -68,6 +68,17 @@ export function createWorkerPool(options = {}) {
     }
   }
 
+  async function terminateAndReplace(slot) {
+    slot.stopped = true;
+    const index = workers.indexOf(slot);
+    if (index !== -1) workers.splice(index, 1);
+    try { await slot.worker.terminate(); } catch {}
+    if (!closed && !draining) {
+      createWorkerSlot();
+      pump();
+    }
+  }
+
   function createWorkerSlot() {
     const worker = new Worker(RUNNER_URL, { workerData: { moduleUrl } });
     const slot = { worker, busy: false, task: null, stopped: false };
@@ -78,7 +89,7 @@ export function createWorkerPool(options = {}) {
         const error = new WorkerPoolError('WORKER_BOOT_FAILED', message.error?.message ?? 'Worker failed to boot', { cause: message.error });
         slot.stopped = true;
         if (slot.task) finishTask(slot, 'reject', error);
-        void replaceWorker(slot);
+        void terminateAndReplace(slot);
         return;
       }
       if (!slot.task || message?.id !== slot.task.id) return;
@@ -91,26 +102,16 @@ export function createWorkerPool(options = {}) {
       slot.stopped = true;
       events.emit('workerError', error);
       if (slot.task) finishTask(slot, 'reject', new WorkerPoolError('WORKER_FAILED', 'Worker thread failed', { cause: error, taskId: slot.task.id }));
-      void replaceWorker(slot);
+      void terminateAndReplace(slot);
     });
 
     worker.on('exit', code => {
       slot.stopped = true;
       if (code !== 0 && slot.task) finishTask(slot, 'reject', new WorkerPoolError('WORKER_EXITED', `Worker exited with code ${code}`, { taskId: slot.task.id }));
-      if (!closed && !draining && workers.includes(slot)) void replaceWorker(slot);
+      if (!closed && !draining && workers.includes(slot)) void terminateAndReplace(slot);
     });
 
     return slot;
-  }
-
-  async function replaceWorker(slot) {
-    const index = workers.indexOf(slot);
-    if (index !== -1) workers.splice(index, 1);
-    try { await slot.worker.terminate(); } catch {}
-    if (!closed && !draining) {
-      createWorkerSlot();
-      pump();
-    }
   }
 
   function finishTask(slot, mode, value) {
@@ -128,7 +129,7 @@ export function createWorkerPool(options = {}) {
   function startTask(slot, task) {
     slot.busy = true;
     slot.task = task;
-    task.timer = setTimeout(async () => {
+    task.timer = setTimeout(() => {
       if (!slot.task || slot.task.id !== task.id) return;
       const error = new WorkerPoolError('TASK_TIMEOUT', `Task exceeded ${taskTimeoutMs}ms`, { statusCode: 408, taskId: task.id });
       pending.delete(task.id);
@@ -136,14 +137,30 @@ export function createWorkerPool(options = {}) {
       slot.busy = false;
       task.reject(error);
       events.emit('timeout', { taskId: task.id });
-      try { await slot.worker.terminate(); } catch {}
-      slot.stopped = true;
-      const index = workers.indexOf(slot);
-      if (index !== -1) workers.splice(index, 1);
-      if (!closed && !draining) createWorkerSlot();
-      pump();
+      void terminateAndReplace(slot);
     }, taskTimeoutMs);
     slot.worker.postMessage({ type: 'run', id: task.id, payload: task.payload });
+  }
+
+  function cancelTask(task) {
+    const queuedIndex = queue.findIndex(entry => entry.id === task.id);
+    if (queuedIndex !== -1) {
+      queue.splice(queuedIndex, 1);
+      pending.delete(task.id);
+      clearTimeout(task.timer);
+      task.reject(new WorkerPoolError('CANCELLED', 'Task cancelled before execution', { statusCode: 499, taskId: task.id }));
+      events.emit('cancelled', { taskId: task.id });
+      return;
+    }
+    const slot = workers.find(entry => entry.task?.id === task.id);
+    if (!slot) return;
+    pending.delete(task.id);
+    clearTimeout(task.timer);
+    slot.task = null;
+    slot.busy = false;
+    task.reject(new WorkerPoolError('CANCELLED', 'Task cancelled during execution', { statusCode: 499, taskId: task.id }));
+    events.emit('cancelled', { taskId: task.id });
+    void terminateAndReplace(slot);
   }
 
   function pump() {
@@ -177,15 +194,7 @@ export function createWorkerPool(options = {}) {
       const task = { id: taskId, payload, controller, resolve: resolvePromise, reject: rejectPromise, timer: null, sequence: sequence++ };
       pending.set(taskId, task);
       queue.push(task);
-      controller.signal.addEventListener('abort', () => {
-        const index = queue.findIndex(entry => entry.id === taskId);
-        if (index !== -1) {
-          queue.splice(index, 1);
-          pending.delete(taskId);
-          rejectPromise(new WorkerPoolError('CANCELLED', 'Task cancelled before execution', { statusCode: 499, taskId }));
-          events.emit('cancelled', { taskId });
-        }
-      }, { once: true });
+      controller.signal.addEventListener('abort', () => cancelTask(task), { once: true });
       pump();
     });
   }
@@ -198,6 +207,7 @@ export function createWorkerPool(options = {}) {
   }
 
   async function closeWorkers() {
+    if (closed) return;
     closed = true;
     draining = true;
     rejectQueued(new WorkerPoolError('POOL_CLOSED', 'Worker pool closed'));
