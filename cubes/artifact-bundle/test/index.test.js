@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createBundle, parseBundle, verifyBundle, extractBundle, ArtifactBundleError } from '../src/index.js';
@@ -15,6 +15,7 @@ test('parse and verify round-trip is immutable and integrity-safe', () => {
   const bundle = createBundle([{ path: 'hello.txt', bytes: new TextEncoder().encode('hello') }]);
   const parsed = parseBundle(bundle.bytes);
   assert.equal(parsed.entries[0].path, 'hello.txt');
+  assert.equal(parsed.entries[0].data, Buffer.from('hello').toString('base64'));
   assert.equal(verifyBundle(bundle.bytes).ok, true);
   assert.throws(() => { parsed.entries.push({}); }, TypeError);
 });
@@ -26,15 +27,20 @@ test('unsafe paths, duplicates, accessors and malformed bundles fail closed', ()
   Object.defineProperty(accessor, 'path', { enumerable: true, get() { throw new Error('getter'); } });
   assert.throws(() => createBundle([accessor]), /accessor/);
   assert.throws(() => parseBundle('not-a-bundle'), /header/);
+  const malformed = createBundle([{ path: 'x', bytes: new Uint8Array([1]) }]).bytes.toString().replace('AQ==', 'Ag==');
+  assert.throws(() => parseBundle(malformed), /INTEGRITY_MISMATCH/);
 });
 
-test('extraction is safe and preserves exact bytes', async () => {
+test('extraction is safe, exact, and idempotent for identical existing files', async () => {
   const bundle = createBundle([{ path: 'dir/file.txt', bytes: Buffer.from('exact') }]);
   const target = await mkdtemp(path.join(tmpdir(), 'bundle-'));
   const result = await extractBundle(bundle.bytes, target);
   assert.equal(result.entries, 1);
   assert.equal(await readFile(path.join(target, 'dir', 'file.txt'), 'utf8'), 'exact');
-  await assert.rejects(() => extractBundle(bundle.bytes, target), /Existing file|COLLISION|differs/);
+  const repeat = await extractBundle(bundle.bytes, target);
+  assert.equal(repeat.entries, 1);
+  await writeFile(path.join(target, 'dir', 'file.txt'), 'tampered');
+  await assert.rejects(() => extractBundle(bundle.bytes, target), /Existing file differs/);
 });
 
 test('bounds fail closed and later valid input recovers', () => {
