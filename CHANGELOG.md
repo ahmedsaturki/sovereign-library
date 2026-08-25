@@ -10,6 +10,12 @@
 - Added capability/data separation, cleanup guarantees, mutation consistency checks, and privacy-safe diagnostics.
 - Rebuilt the contract test suite with explicit syntax-safe lifecycle fixtures after CI parser detection.
 
+### Release Verification — Bounded File Content Reader / Safe Content Access v0.1
+
+- PR #94 merged to `main` at `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99` after cross-platform pre-merge Verify #693.
+- Pre-merge matrix passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 661/661 tests, and browser smoke.
+- Mainline verification is required before the cube is marked FROZEN.
+
 ### Host Identity / Environment Fingerprint v0.1
 
 - Added privacy-first local host identity and environment fingerprinting.
