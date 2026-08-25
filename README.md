@@ -80,12 +80,13 @@ Released through v0.1:
 - Storage Persistence / Snapshot
 - Reporting / Export
 - AI / Inference Runtime
+- Agent Runtime
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Agent Runtime Cube v0.1** — standalone native agent runtime for deterministic session/turn state, bounded conversation context, explicit tool-call contracts, capability allowlisting, cancellation/timeout/retry semantics, recoverable immutable session snapshots, and zero runtime third-party dependencies.
+**Policy / Capability Security Cube v0.1** — standalone deterministic local capability-policy engine for immutable policy snapshots, explicit allow/deny rules, hierarchical resource/action matching, deterministic precedence, bounded contextual evaluation, fail-closed diagnostics, and immutable audit decision records.
 
 ## License
 
