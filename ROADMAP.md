@@ -10,15 +10,19 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Execution Engine v0.1
+
+PR #57 was squash-merged as `739798bb3de3d50884dc7b3f28bada7e4f58f1a2`. Pre-merge Run 424 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 425 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
+The release provides deterministic dependency-aware task execution, explicit success/failure/cancel/timeout/skipped outcomes, bounded execution and diagnostics, retry/recovery, immutable snapshots/results, typed fail-closed errors, and zero runtime third-party dependencies.
+
 ### Policy / Capability Security v0.1
 
-PR #56 was squash-merged as `a1067431f06d20ad2bdce321590ded9e79471d02`. Pre-merge Run 418 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, contract/integration tests, and the real-browser smoke gate. Post-merge Run 419 was a push on `main` for the release commit and completed successfully on Ubuntu, Windows, and macOS-15-Intel with the same gates.
-
-The release provides deterministic local authorization decisions, explicit allow/deny capability records, hierarchical action/resource matching, deterministic precedence, bounded contextual evaluation, fail-closed validation, immutable audit records, composable public snapshots, and zero runtime third-party dependencies.
+PR #56 was squash-merged as `a1067431f06d20ad2bdce321590ded9e79471d02`. Pre-merge Run 418 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, contract/integration tests, and the real-browser smoke gate. Post-merge Run 419 passed on `main` with the same gates.
 
 ### Agent Runtime v0.1
 
-PR #55 was squash-merged as `8d4608e012176a55bdc1822d3aea65add7aa7669`. Pre-merge Run 409 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 410 was a push on `main` for the release commit and completed successfully.
+PR #55 was squash-merged as `8d4608e012176a55bdc1822d3aea65add7aa7669`. Pre-merge Run 409 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 410 was a successful push verification on `main`.
 
 ### AI / Inference Runtime v0.1
 
@@ -74,31 +78,29 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Execution Engine v0.1
+### Release / Verification Harness v0.1
 
-Target: a standalone deterministic local execution engine that normalizes task definitions, executes dependency-ordered work, records explicit lifecycle states and outcomes, enforces bounded execution, supports deterministic retry/recovery semantics, and emits immutable snapshots/results without external orchestration dependencies.
+Target: a standalone deterministic local release-verification harness that executes explicit verification stages, safely runs allowlisted local commands without shell dependence, applies bounded timeout/cancellation/retry semantics, and emits immutable machine-readable release verdicts.
 
 Initial scope:
-- immutable execution definitions and normalized task records
-- deterministic task ordering and execution state transitions
-- explicit success/failure/cancel/timeout/skipped outcomes
-- dependency-aware execution with cycle and duplicate detection
-- bounded task count, payload, execution depth, and diagnostics
-- deterministic retry/recovery semantics
-- immutable execution snapshots and auditable result records
-- typed fail-closed errors
+- immutable stage definitions and normalized commands
+- deterministic stage ordering and lifecycle states
+- native child-process execution without shell dependence
+- bounded stdout/stderr capture and diagnostics
+- per-stage timeout, cancellation, retry, and terminal outcomes
+- deterministic pass/fail/skip aggregation
+- immutable verification snapshots and reports
+- typed fail-closed errors and safe command validation
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- distributed execution
-- remote workers
-- cron/scheduling service integration
+- hosted CI provider SDKs
+- remote execution
+- secrets management
+- distributed agents
 - GUI/admin console
-- network orchestration
-- queue broker integration
-- multi-agent orchestration
-- browser automation
+- browser automation implementation
 
 ## Parked
 
