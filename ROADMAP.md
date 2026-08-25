@@ -10,6 +10,10 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Reference Resolver / Locator v0.1
+
+PR #66 was squash-merged as `7cb477e1e11ea5c5f9b145cf6eba1527482a4b57`. Pre-merge Run 485 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 486 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
 ### Artifact Lifecycle / Retention Index v0.1
 
 PR #65 was squash-merged as `da1f4992c0f84422f9e43a5c5037af1e28e85fc9`. Pre-merge Run 480 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 481 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -104,29 +108,29 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Reference Resolver / Locator v0.1
+### Artifact Provenance / Lineage Ledger v0.1
 
-Target: a standalone deterministic local resolver for canonical artifact references against an explicit bounded candidate set, with no hidden registry/network/filesystem discovery.
+Target: a standalone deterministic local provenance and lineage ledger for artifact references and transformation events, with bounded traversal, append-only local history, immutable snapshots, and checksum-protected persistence.
 
 Initial scope:
-- canonical artifact reference grammar for name/version/digest/tag forms
-- deterministic normalization and validation
-- bounded explicit candidate resolution
-- exact and alias matching only
-- explicit ambiguity and not-found outcomes
-- immutable resolution snapshots
-- typed fail-closed errors and recovery
-- deterministic ordering and result limits
+- canonical provenance records and stable artifact/event identity
+- explicit parent/child and derived-from lineage relationships
+- deterministic append-only event ordering
+- bounded ancestry/descendant traversal
+- actor/action/source metadata validation
+- atomic append and recovery semantics
+- immutable snapshots and replay-safe reads
+- deterministic serialization with checksum and corruption detection
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- remote registries
+- remote provenance stores
 - network transport
-- implicit filesystem discovery
-- semantic version range solving
-- dependency installation
-- destructive lifecycle operations
+- distributed consensus or locks
+- signature/certificate infrastructure
+- automatic filesystem/registry discovery
+- cryptographic trust policy engines
 - GUI/admin console
 - background scheduler integration
 - billing or cost accounting
