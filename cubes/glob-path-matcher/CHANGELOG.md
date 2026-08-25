@@ -12,3 +12,4 @@
 - immutable compiled matcher representation
 - GPM1 integrity-protected serialization
 - zero runtime third-party dependencies
+- regression hardening for escaped metacharacters and absolute-root anchoring
