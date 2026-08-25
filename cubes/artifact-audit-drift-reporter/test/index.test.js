@@ -44,9 +44,9 @@ test('duplicates, accessors, circular input, and bounds fail closed', () => {
   const accessor = { records: [] };
   Object.defineProperty(accessor, 'records', { get() { throw new Error('getter evaluated'); } });
   assert.throws(() => auditSnapshots(accessor, { records: [] }), e => e.code === 'ACCESSOR_INPUT');
-  const circular = { records: [] };
-  circular.self = circular;
-  assert.throws(() => auditSnapshots(circular, { records: [] }), e => e.code === 'INVALID_SNAPSHOT');
+  const circularRecord = { id: 'a' };
+  circularRecord.parents = [circularRecord];
+  assert.throws(() => auditSnapshots({ records: [circularRecord] }, { records: [] }), e => e.code === 'INVALID_ID');
   assert.throws(() => auditSnapshots({ records: [{ id: 'a' }, { id: 'b' }] }, { records: [] }, { maxRecords: 1 }), e => e.code === 'INVALID_LIMIT');
   const valid = auditSnapshots({ records: [{ id: 'a' }] }, { records: [{ id: 'a' }] }, { maxRecords: 1 });
   assert.equal(valid.counts.findings, 1);
