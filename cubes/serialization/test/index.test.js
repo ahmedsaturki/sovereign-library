@@ -31,7 +31,7 @@ test('object key ordering is deterministic', () => {
 
 test('wire header is stable and versioned', () => {
   const encoded = encode(null);
-  assert.deepEqual(encoded.subarray(0, MAGIC.length), MAGIC);
+  assert.deepEqual(Uint8Array.from(encoded.subarray(0, MAGIC.length)), MAGIC);
   assert.equal(encoded[MAGIC.length], VERSION);
 });
 
