@@ -92,7 +92,14 @@ test('real worker crashes are surfaced and the worker is replaced', async () => 
 test('task timeout terminates and replaces the worker', async () => {
   const pool = createWorkerPool({ size: 1, workerModule, taskTimeoutMs: 20 });
   try {
-    await assert.rejects(() => pool.submit({ type: 'sleep', ms: 100 }), error => error instanceof WorkerPoolError && error.code === 'TASK_TIMEOUT');
+    let error;
+    try {
+      await pool.submit({ type: 'sleep', ms: 100 });
+    } catch (caught) {
+      error = caught;
+    }
+    assert.ok(error instanceof WorkerPoolError);
+    assert.equal(error.code, 'TASK_TIMEOUT');
     assert.equal(await pool.submit({ type: 'multiply', value: 4, factor: 3 }), 12);
   } finally {
     await pool.close();
