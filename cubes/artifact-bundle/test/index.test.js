@@ -28,7 +28,7 @@ test('unsafe paths, duplicates, accessors and malformed bundles fail closed', ()
   assert.throws(() => createBundle([accessor]), /accessor/);
   assert.throws(() => parseBundle('not-a-bundle'), /header/);
   const malformed = createBundle([{ path: 'x', bytes: new Uint8Array([1]) }]).bytes.toString().replace('AQ==', 'Ag==');
-  assert.throws(() => parseBundle(malformed), /INTEGRITY_MISMATCH/);
+  assert.throws(() => parseBundle(malformed), (error) => error instanceof ArtifactBundleError && error.code === 'INTEGRITY_MISMATCH');
 });
 
 test('extraction is safe, exact, and idempotent for identical existing files', async () => {
