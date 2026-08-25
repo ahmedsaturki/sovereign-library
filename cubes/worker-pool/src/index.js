@@ -104,11 +104,17 @@ export function createWorkerPool(options = {}) {
     slot.stopped = true;
     const index = workers.indexOf(slot);
     if (index !== -1) workers.splice(index, 1);
-    try { await slot.worker.terminate(); } catch {}
+
+    // Publish the replacement before awaiting termination of the old worker.
+    // Some platforms can take noticeably longer to resolve worker.terminate().
+    // Starting recovery first keeps the pool available within the contract's
+    // bounded recovery window while the old worker finishes shutting down.
     if (!closed && !draining) {
       createWorkerSlot();
       pump();
     }
+
+    try { await slot.worker.terminate(); } catch {}
   }
 
   function createWorkerSlot() {
@@ -242,7 +248,8 @@ export function createWorkerPool(options = {}) {
     drain,
     close: closeWorkers,
     on(event, listener) { events.on(event, listener); return () => events.off(event, listener); },
-    stats() { return Object.freeze({ size, active: workers.filter(slot => slot.busy).length, queued: queue.length, pending: pending.size, closed, draining }); },
+    stats() { return Object.freeze({ size, active: workers.filter(slot => slot.busy).length, queued: queue.length, pending: pending.size, closed, draining });
+    },
   });
 }
 
