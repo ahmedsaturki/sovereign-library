@@ -52,35 +52,36 @@ Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, a
 ### Result / Error Cube v0.1 — RELEASED
 Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-15-Intel with Result/Error contract/integration/failure tests and the real Browser smoke test. Release-gate Run 179 passed all jobs.
 
+### Rate Limiter / Backpressure Cube v0.1 — RELEASED
+Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-15-Intel with rate limiter contract/integration/failure/recovery tests and the real Browser smoke test. Release-gate Run 187 passed all jobs.
+
 ## Active milestone
 
-### Rate Limiter / Backpressure Cube v0.1
+### Retry / Resilience Cube v0.1
 
-Target: a standalone deterministic rate-limiting and backpressure primitive that can protect Browser, HTTP, Scheduler, Event, and automation workloads without a third-party limiter or external service.
+Target: a standalone deterministic retry/resilience primitive that composes with Result/Error, Scheduler, Rate Limiter, and AbortSignal without a third-party resilience framework.
 
 Initial scope:
-- token-bucket or equivalent bounded native algorithm
+- retry policy and attempt accounting
+- exponential/fixed/linear backoff
+- configurable maximum attempts and total elapsed budget
+- deterministic jitter through injectable randomness
+- retryability classification using Result/Error semantics
+- explicit cancellation and timeout behavior
+- AbortSignal propagation and cleanup
 - deterministic clock integration
-- immediate/non-blocking admission check
-- bounded waiting queue
-- cancellation of queued waiters
-- configurable burst capacity
-- configurable refill rate
-- fairness guarantees
-- queue overflow behavior
-- retry-after / wait-duration calculation
-- statistics and immutable snapshots
-- integration with AbortSignal
+- immutable retry decision/result snapshots
+- hooks for per-attempt diagnostics without binding to Logger
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- distributed rate limiting
-- Redis or remote stores
-- cross-process coordination
-- adaptive ML-based throttling
-- third-party limiter libraries
-- HTTP middleware framework
+- circuit breakers
+- distributed coordination
+- tracing backend
+- remote retry state
+- third-party resilience libraries
+- adaptive ML-based retry strategies
 
 ## Parked
 
