@@ -6,18 +6,18 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Storage Persistence / Snapshot v0.1** and release it before starting another cube.
+Finish **Reporting / Export Cube v0.1** and release it before starting another cube.
 
 ## Current repository state
 
-- Last released cube: **Workflow / Durable Orchestration v0.1**
-- Release PR: **#51**, squash-merged
-- Release commit: `f3b38368b7865aafd85e69b98f11f076f53b01be`
-- Pre-merge verification: **Run 379**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 380**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Workflow / Durable Orchestration v0.1 is therefore **FROZEN**.
-- A repeated macOS Worker Pool timeout-test flake was converted into a deterministic recovery assertion and the full Worker Pool suite was restored before release.
-- `ROADMAP.md` and `README.md` were updated to record the release and activate Storage Persistence / Snapshot.
+- Last released cube: **Storage Persistence / Snapshot v0.1**
+- Release PR: **#52**, squash-merged
+- Release commit: `6ed90856cc66c9894ae948731769d23d0e9a40a5`
+- Pre-merge verification: **Run 389**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 390**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke. fileciteturn446file0L1-L6
+- Storage Persistence / Snapshot v0.1 is therefore **FROZEN**.
+- The release provides deterministic versioned snapshot envelopes, checksum verification, atomic replacement, bounded local persistence, immutable loaded snapshots, typed fail-closed diagnostics, and zero runtime third-party dependencies.
+- `ROADMAP.md` and `README.md` must now record the release and activate Reporting / Export.
 - Duplicate Redaction PR #47 remains closed as superseded by PR #45.
 
 ## The one-current-task rule
@@ -28,55 +28,55 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**STORAGE-PERSISTENCE-SNAPSHOT-V0.1-SPEC**
+**REPORTING-EXPORT-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze the public contract for a standalone native persistence/snapshot product:
+Freeze the public contract for a standalone native Reporting / Export product:
 
-1. define versioned snapshot envelope and format identity
-2. define deterministic encode/decode semantics over Sovereign-compatible data
-3. define atomic save/load behavior using standard filesystem primitives only
-4. define checksum/integrity verification and corruption detection
-5. define crash-safe temporary-file and rename recovery semantics
-6. define bounded snapshot size, record count, and nesting work
-7. define immutable loaded snapshots and source immutability
-8. define typed fail-closed errors without arbitrary payload copying
-9. define explicit format versioning and forward-incompatibility behavior
-10. define recovery behavior after truncated or partially written snapshots
+1. define immutable report document and section contracts
+2. define deterministic aggregation, ordering, grouping, and pagination semantics
+3. define stable CSV and JSON export formats with explicit escaping/null/date rules
+4. define bounded text/row/cell/output work
+5. define streaming export behavior for large result sets
+6. define reproducible report metadata without environment-specific noise
+7. define immutable report snapshots and source immutability
+8. define typed fail-closed diagnostics without arbitrary payload copying
+9. define cancellation and partial-output behavior
+10. define recovery after failed or interrupted exports
 11. verify zero runtime third-party dependencies
-12. define unit, contract, integration, failure, and recovery gates
+12. define unit, contract, integration, failure, recovery, and cross-platform gates
 13. write the standalone cube specification before implementation
 
 ## Scope lock
 
-For Storage Persistence / Snapshot v0.1, the allowed scope is only:
+For Reporting / Export Cube v0.1, the allowed scope is only:
 
-- local filesystem persistence
-- deterministic versioned snapshot envelope
-- native binary or text encoding built from standard APIs
-- checksum/integrity verification
-- atomic write via temporary file + rename semantics
-- load, validate, and recover from interrupted writes
-- bounded snapshot size, records, nesting, and payloads
-- immutable loaded snapshots
+- local in-process report definitions
+- deterministic aggregation and ordering
+- deterministic grouping and bounded pagination
+- immutable report snapshots
+- JSON export
+- CSV export
+- bounded streaming export
+- cancellation-aware output
+- bounded report/output work
 - source immutability
 - typed fail-closed diagnostics
-- unit/contract/integration/failure/recovery tests
+- local unit, contract, integration, failure, and recovery tests
 - cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- remote/object storage
-- distributed consensus
-- databases
-- compression formats beyond native standard APIs where already available
-- encryption/key management
-- filesystem watching
-- synchronization/replication
-- third-party serialization packages
-- network transport
+- PDF rendering
+- chart/image generation
+- spreadsheets with proprietary formats
+- database query engines
+- network reporting APIs
+- external BI services
+- templating engines
+- third-party reporting libraries
 
 ## Definition of done
 
@@ -105,13 +105,13 @@ A milestone is DONE only when:
 
 ## Lessons-learned rule
 
-Every blocking bug or CI failure must produce all of the following before release:
+Every blocking bug or CI failure must produce:
 
 - root-cause identification
 - minimal fix
 - regression test
 - CI protection when applicable
-- documentation or control update when the lesson affects future work
+- documentation/control update when the lesson affects future work
 
 ## Clean-repository rule
 
