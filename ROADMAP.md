@@ -10,15 +10,17 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Dependency Graph / Relationship Index v0.1
+
+PR #64 was squash-merged as `2616a058f90ae1469561dc508eaea812e43e0f99`. Pre-merge Run 471 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 472 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
 ### Local Artifact Catalog / Package Index v0.1
 
 PR #63 was squash-merged as `58fdd97ed36bf058843c83e2ad226a20d85fb446`. Pre-merge Run 465 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 466 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
 
-The release provides deterministic SAC1 catalog state, stable artifact identifiers, exact/prefix/package/version/tag queries, atomic persistence, corruption detection, immutable snapshots, typed fail-closed errors, and zero runtime third-party dependencies.
-
 ### Artifact Bundle / Reproducible Package v0.1
 
-PR #62 was squash-merged as `a1d2655e7d48b63ce6ded71e4e449ea2c3a841dd`. Pre-merge Run 458 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 399 tests, and the real-browser smoke gate. Post-merge Run 459 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #62 was squash-merged as `a1d2655e7d48b63ce6ded71e4e449ea2c3a841dd` after full cross-platform verification.
 
 ### Content-Addressed Storage / CAS v0.1
 
@@ -98,32 +100,32 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Dependency Graph / Relationship Index v0.1
+### Artifact Lifecycle / Retention Index v0.1
 
-Target: a standalone deterministic local relationship graph for artifact/package nodes and typed directed edges, with bounded adjacency/path queries, cycle detection, atomic mutations, and deterministic backup/restore serialization.
+Target: a standalone deterministic local lifecycle/retention index for artifact references, explicit lifecycle states, bounded policy evaluation, safe dry-run purge planning, atomic state transitions, immutable snapshots, and checksum-protected serialization.
 
 Initial scope:
-- canonical nodes and typed directed relationships
-- stable relationship identifiers and deterministic adjacency ordering
-- bounded node/edge count, identifier/label lengths, and query output
-- atomic add/remove mutations with recovery
-- exact-neighbor, reverse-neighbor, and bounded path queries
-- cycle detection and duplicate/conflict rejection
-- immutable graph snapshots and typed fail-closed errors
+- canonical lifecycle records and stable artifact identity references
+- explicit live/retained/expired/tombstoned/deleted states
+- deterministic bounded retention policy evaluation
+- atomic lifecycle state transitions and recovery
+- deterministic age/tag/reference queries and purge planning
+- immutable snapshots and typed fail-closed errors
+- invalid transition/conflict rejection
 - deterministic serialization with checksum and corruption detection
-- safe restore without code execution or external resolution
+- dry-run purge planning without destructive side effects
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- remote graph synchronization
-- remote dependency resolution
-- semantic-version solving
-- package publishing
+- destructive physical deletion from arbitrary storage backends
+- remote synchronization
 - network transport
+- distributed locks
+- billing or cost accounting
 - GUI/admin console
-- graph visualization UI
-- background synchronization
+- background scheduler integration
+- legal/compliance retention policy engines
 
 ## Parked
 
