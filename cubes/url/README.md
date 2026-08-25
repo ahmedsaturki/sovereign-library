@@ -16,5 +16,3 @@ Built entirely from ECMAScript / Node.js runtime primitives with zero runtime th
 - path-segment encoding/decoding
 - deterministic typed errors
 - immutable parsed URL/query snapshots
-
-CI verification trigger: current-head refresh marker.
