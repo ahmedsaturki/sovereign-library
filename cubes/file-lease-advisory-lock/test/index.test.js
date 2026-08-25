@@ -18,6 +18,7 @@ test('acquires, renews, releases, and reacquires a local advisory lease', async 
     assert.equal(first.state, 'acquired');
     assert.equal(first.lockPath.endsWith('resource.lock'), true);
     assert.equal(Object.isFrozen(first), true);
+    c.advance(1);
     const renewed = await first.renew();
     assert.equal(renewed.state, 'acquired');
     assert.ok(renewed.expiresAt > first.expiresAt);
@@ -52,8 +53,8 @@ test('busy lock is not recovered by default', async () => {
   const root = await tempRoot();
   try {
     const lockPath = join(root, 'busy.lock');
-    const first = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, uuid: uuidSequence('holder') });
-    await assert.rejects(() => acquireLease({ resourcePath: join(root, 'resource'), lockPath, uuid: uuidSequence('contender') }), (error) => error.code === 'LOCK_BUSY');
+    const first = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, uuid: uuidSequence('holder-01') });
+    await assert.rejects(() => acquireLease({ resourcePath: join(root, 'resource'), lockPath, uuid: uuidSequence('contender-01') }), (error) => error.code === 'LOCK_BUSY');
     await first.release();
   } finally { await cleanup(root); }
 });
@@ -77,8 +78,8 @@ test('stale recovery refuses a non-expiring lease', async () => {
   const root = await tempRoot();
   const lockPath = join(root, 'lease.lock');
   try {
-    const first = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, uuid: uuidSequence('holder') });
-    await assert.rejects(() => acquireLease({ resourcePath: join(root, 'resource'), lockPath, staleRecovery: true, uuid: uuidSequence('contender') }), (error) => error.code === 'LOCK_BUSY');
+    const first = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, uuid: uuidSequence('holder-01') });
+    await assert.rejects(() => acquireLease({ resourcePath: join(root, 'resource'), lockPath, staleRecovery: true, uuid: uuidSequence('contender-01') }), (error) => error.code === 'LOCK_BUSY');
     await first.release();
   } finally { await cleanup(root); }
 });
@@ -88,13 +89,13 @@ test('tampered lock records fail integrity validation and do not become recovery
   const c = clock();
   const lockPath = join(root, 'lease.lock');
   try {
-    const first = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 100, staleRecovery: true, clock: c, uuid: uuidSequence('owner') });
+    const first = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 100, staleRecovery: true, clock: c, uuid: uuidSequence('owner-0001') });
     const ownerFile = join(lockPath, `owner-${first.leaseId}.json`);
     const serialized = await readFile(ownerFile, 'utf8');
-    const tampered = serialized.replace('owner', 'other');
+    const tampered = serialized.replace('owner-0001', 'other-0001');
     await writeFile(ownerFile, tampered, 'utf8');
     c.advance(101);
-    await assert.rejects(() => acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 100, staleRecovery: true, clock: c, uuid: uuidSequence('contender') }), (error) => error.code === 'INTEGRITY_MISMATCH');
+    await assert.rejects(() => acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 100, staleRecovery: true, clock: c, uuid: uuidSequence('contender-01') }), (error) => error.code === 'INTEGRITY_MISMATCH');
   } finally { await cleanup(root); }
 });
 
@@ -103,12 +104,12 @@ test('release cannot remove a successor owner after lock replacement', async () 
   const c = clock();
   const lockPath = join(root, 'lease.lock');
   try {
-    const old = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 10, staleRecovery: true, clock: c, uuid: uuidSequence('old-owner', 'quarantine') });
+    const old = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 10, staleRecovery: true, clock: c, uuid: uuidSequence('old-owner-01', 'quarantine-01') });
     c.advance(11);
-    const successor = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 1000, staleRecovery: true, clock: c, uuid: uuidSequence('new-owner') });
+    const successor = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 1000, staleRecovery: true, clock: c, uuid: uuidSequence('new-owner-01') });
     await assert.rejects(() => old.release(), (error) => error.code === 'OWNERSHIP_LOST' || error.code === 'INVALID_STATE');
     const record = parseLeaseRecord(await readFile(join(lockPath, `owner-${successor.leaseId}.json`), 'utf8'));
-    assert.equal(record.leaseId, 'new-owner');
+    assert.equal(record.leaseId, 'new-owner-01');
     await successor.release();
   } finally { await cleanup(root); }
 });
@@ -142,9 +143,9 @@ test('failed acquisition does not poison a later independent lease', async () =>
   const root = await tempRoot();
   const badPath = join(root, 'bad', 'resource.lock');
   try {
-    await assert.rejects(() => acquireLease({ resourcePath: join(root, 'resource'), lockPath: badPath, uuid: uuidSequence('bad') }), (error) => ['ACQUISITION_FAILED', 'ENOENT', 'PERMISSION_DENIED'].includes(error.code));
-    const valid = await acquireLease({ resourcePath: join(root, 'resource'), lockPath: join(root, 'good.lock'), uuid: uuidSequence('good') });
-    assert.equal(valid.leaseId, 'good');
+    await assert.rejects(() => acquireLease({ resourcePath: join(root, 'resource'), lockPath: badPath, uuid: uuidSequence('bad-lock-01') }), (error) => ['ACQUISITION_FAILED', 'ENOENT', 'PERMISSION_DENIED'].includes(error.code));
+    const valid = await acquireLease({ resourcePath: join(root, 'resource'), lockPath: join(root, 'good.lock'), uuid: uuidSequence('good-lock-01') });
+    assert.equal(valid.leaseId, 'good-lock-01');
     await valid.release();
   } finally { await cleanup(root); }
 });
