@@ -1,0 +1,1 @@
+const content is generated locally; using git blob/tree instead
