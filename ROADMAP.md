@@ -46,39 +46,35 @@ Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, a
 ### Cache / Memoization Cube v0.1 — RELEASED
 Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with cache contract/integration/failure tests and the real Browser smoke test. Release-gate Run 161 passed all jobs.
 
+### Validation / Schema Cube v0.1 — RELEASED
+Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with validation contract/integration/failure tests and the real Browser smoke test. Release-gate Run 170 passed all jobs.
+
 ## Active milestone
 
-### Validation / Schema Cube v0.1
+### Result / Error Cube v0.1
 
-Target: standalone validation and schema primitives that normalize and validate structured inputs without third-party schema frameworks, designed to compose with the Data Engine and Configuration Cube while remaining independently reusable.
+Target: a standalone deterministic Result/Outcome and typed-error vocabulary that can be reused by every future Cube without forcing consumers onto a framework or third-party error library.
 
 Initial scope:
-- typed primitive validation
-- object and array shape validation
-- required and optional fields
-- nested paths
-- enums and literal constraints
-- string/number bounds
-- array length bounds
-- custom deterministic validators
-- structured validation results
-- typed validation errors
-- coercion only when explicitly requested
-- safe handling of unknown keys
-- deterministic error paths/messages/codes
-- reusable schema definitions
-- local unit/integration/failure/recovery tests
+- Result success/failure contract
+- typed error base and error codes
+- deterministic serialization-safe diagnostics
+- cause chaining
+- retryable/cancelled/timeout classification
+- error normalization helpers
+- Result mapping/flatMap helpers
+- exhaustive outcome branching helpers
+- immutable result/error snapshots
+- cross-cube interoperability tests
+- local unit/integration/failure tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- JSON Schema full standard implementation
-- OpenAPI generation
-- code generation
-- remote schema registries
-- third-party schema libraries
-- ORM validation
-- UI form generation
+- remote error telemetry
 - localization framework
+- tracing backend
+- distributed error registry
+- third-party result/error libraries
 
 ## Parked
 
