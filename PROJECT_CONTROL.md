@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **MIME / Multipart Cube v0.1** and release it before starting another cube.
+Finish **HTTP Headers / Cookies / Content Negotiation Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,55 +16,52 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**MIME-MULTIPART-V0.1-RELEASE**
+**HTTP-METADATA-V0.1-RELEASE**
 
 ### Immediate next task
 
-Build and release the native MIME / Multipart Cube:
+Build and release the native HTTP metadata cube:
 
-1. freeze MIME and multipart contracts
-2. implement safe MIME/content-disposition parsing
-3. implement bounded streaming multipart parsing
-4. enforce total and per-part limits
-5. extract text fields and binary file parts deterministically
-6. implement immutable part metadata snapshots
-7. implement multipart body building
-8. integrate AbortSignal/cancellation and cleanup
-9. add malformed-input and recovery coverage
-10. verify zero runtime third-party dependencies
-11. run the supported cross-platform CI matrix
-12. fix only failures required for the v0.1 gate
-13. squash-merge the release PR
-14. update ROADMAP before starting another cube
+1. freeze normalized header storage and multi-value semantics
+2. implement safe header validation and deterministic normalization
+3. implement Cookie parsing and Set-Cookie building
+4. implement Accept / Accept-Encoding / Accept-Language negotiation
+5. implement Content-Type / Content-Length helpers
+6. implement ETag and conditional request helpers
+7. add immutable metadata snapshots
+8. add malformed-value and security-boundary coverage
+9. verify zero runtime third-party dependencies
+10. run the supported cross-platform CI matrix
+11. fix only failures required for the v0.1 gate
+12. squash-merge the release PR
+13. update ROADMAP before starting another cube
 
 ## Scope lock
 
-For MIME / Multipart Cube v0.1, the allowed scope is only:
+For HTTP Headers / Cookies / Content Negotiation Cube v0.1, the allowed scope is only:
 
-- MIME type parsing and normalization
-- multipart boundary validation
-- streaming-safe multipart parsing
-- bounded total and per-part sizes
-- text field extraction
-- binary file-part extraction
-- content-disposition parsing
-- header normalization and limits
-- deterministic malformed-input errors
-- multipart body builder
+- case-insensitive header storage and deterministic normalization
+- multi-value header semantics where applicable
+- safe request/response header validation
+- Cookie header parsing
+- Set-Cookie builder with bounded attributes
+- Accept / Accept-Encoding / Accept-Language negotiation helpers
+- Content-Type / Content-Length parsing helpers
+- ETag / conditional request helpers
 - immutable metadata snapshots
-- cleanup/cancellation during streaming parse
+- deterministic malformed-value errors
 - documentation
 - local unit/integration/failure/recovery tests
 
 Explicitly out of scope for v0.1:
 
-- multipart compression
-- resumable uploads
-- remote object storage
-- antivirus scanning
-- image/video transcoding
-- distributed upload coordination
-- third-party multipart parsers
+- cookie jar persistence
+- authentication/session framework
+- compression implementation
+- HTTP cache storage engine
+- proxy behavior
+- browser cookie policy emulation
+- third-party header utility libraries
 - AI agent runtime
 
 ## Definition of done
