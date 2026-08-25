@@ -6,19 +6,18 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish and freeze **Diff / Patch Cube v0.1** before starting another cube.
+Finish **Canonical JSON / Normalization Cube v0.1** and release it before starting another cube.
 
 ## Current repository state
 
-- Last released cube before current gate: **Redaction / Secret Safety v0.1**
-- Current release PR: **#48**, squash-merged
-- Current release merge commit: `e1acaeea3ec0b02da8998ac30a2f910e64aa2ade`
-- Diff / Patch branch head released into main: `1e7e37c0254fd107ec4b9bc46d689fcc6617ca2d`
-- Latest main feature merge: `e1acaeea3ec0b02da8998ac30a2f910e64aa2ade`
-- Release-gate Run 345: Ubuntu and macOS-15-Intel passed syntax, full repository tests, and real-browser smoke; the Windows job remained queued when GitHub completed the merge.
-- Post-merge verification is therefore required before FREEZE and before the repository is advanced to the next cube.
-- Earlier release-gate Run 341 for Redaction passed on Ubuntu, Windows, and macOS-15-Intel.
-- Duplicate Redaction PR #47 was closed as superseded by PR #45.
+- Last released cube: **Diff / Patch v0.1**
+- Release PR: **#48**, squash-merged
+- Release merge commit: `e1acaeea3ec0b02da8998ac30a2f910e64aa2ade`
+- Release-gate Run 345: completed pre-merge verification; Ubuntu and macOS-15-Intel passed, Windows was queued at merge time.
+- Post-merge verification: **Run 347**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Diff / Patch v0.1 is therefore **FROZEN**.
+- README and ROADMAP were updated to record the release and activate the next cube.
+- Duplicate Redaction PR #47 remains closed as superseded by PR #45.
 
 ## The one-current-task rule
 
@@ -28,49 +27,53 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**DIFF-PATCH-V0.1-FREEZE-GATE**
+**CANONICAL-JSON-NORMALIZATION-V0.1-SPEC**
 
 ### Immediate next task
 
-Verify the merged Diff / Patch Cube on `main` across the supported CI matrix and complete the freeze:
+Freeze the public contract for a standalone native Canonical JSON / Normalization product:
 
-1. run the post-merge repository verification on `main`
-2. require syntax, full repository tests, failure/recovery tests, and real-browser smoke to pass
-3. require Ubuntu, Windows, and macOS-15-Intel verification to pass
-4. record any blocking failure with root cause, minimal fix, and regression protection
-5. update `ROADMAP.md` with the final release record
-6. update `README.md` to reflect the released cube
-7. freeze Diff / Patch v0.1
-8. activate exactly one next cube and exactly one immediate next task
+1. define the supported JSON-safe value domain
+2. define deterministic object-key ordering
+3. define primitive serialization semantics, including negative zero and finite-number handling
+4. define rejection semantics for unsupported values and accessor objects
+5. define deterministic canonical JSON output
+6. define bounded depth, node, string, and serialized-output limits
+7. define immutable normalized output and immutable configuration
+8. define typed fail-closed diagnostics without arbitrary payload copying
+9. define source immutability guarantees
+10. define unit, contract, integration, failure, and recovery gates
+11. verify zero runtime third-party dependencies
+12. write the standalone cube specification before implementation
 
-## Diff / Patch v0.1 scope that has been implemented
+## Scope lock
+
+For Canonical JSON / Normalization Cube v0.1, the allowed scope is only:
 
 - JSON-safe primitives, arrays, and plain objects
-- deterministic structural diff generation
-- deterministic add/remove/replace operation format
-- strict JSON Pointer path parsing and escaping
-- bounded operation count, traversal depth, node count, string size, and serialized value size
-- immutable diff results
-- persistent immutable patch application
+- deterministic object-key ordering
+- stable primitive serialization rules
+- explicit handling of negative zero and finite numbers
+- strict rejection of unsupported values
+- bounded depth, node count, string size, and serialized output size
+- immutable normalized output
+- immutable configuration
+- deterministic canonical JSON serialization
+- typed fail-closed errors with safe diagnostics
 - source immutability
-- deterministic object ordering
-- conflict and ambiguity rejection
-- typed fail-closed diagnostics without arbitrary payload copying
-- circular-reference detection before recursive traversal
+- local unit/contract/integration/failure/recovery tests
+- cross-platform verification
 - zero runtime third-party dependencies
-- public documentation and runnable example
-- unit, contract, integration, failure, and recovery coverage
 
-## Explicitly out of scope for Diff / Patch v0.1
+Explicitly out of scope for v0.1:
 
-- binary diff formats
-- filesystem patching
-- text/line-oriented patching
-- merge/conflict resolution between independent branches
-- three-way merge
-- network synchronization
-- external diff/patch services
-- third-party diff/patch packages
+- binary canonicalization formats
+- cryptographic signing
+- hashing APIs
+- schema validation
+- semantic normalization of dates, URLs, or domain-specific values
+- network services
+- third-party canonicalization packages
 
 ## Definition of done
 
