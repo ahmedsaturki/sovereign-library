@@ -98,12 +98,13 @@ Released through v0.1:
 - Artifact Admission Gate / Release Eligibility
 - Artifact Release Plan / Deterministic Publication Plan
 - Artifact Release Snapshot / Candidate Set
+- Artifact Release Approval / Decision Record
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Release Approval / Decision Record v0.1** — standalone deterministic local approval record bound to one explicit frozen release snapshot and explicit approval decisions, with no external approval service or publication side effect.
+**Artifact Release Closure Receipt v0.1** — standalone deterministic closure receipt linking one explicit frozen release snapshot to one explicit approved decision record, without publishing or mutating artifacts.
 
 ## License
 
