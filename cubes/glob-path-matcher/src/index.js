@@ -8,8 +8,6 @@ const MAX_TOKENS = 8192;
 const MAX_RULES = 4096;
 const MAX_SERIALIZED = 256 * 1024;
 
-const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
-
 export class GlobPathMatcherError extends Error {
   constructor(code, message) {
     super(message);
@@ -87,7 +85,7 @@ function normalizePath(path, options = {}) {
   if (typeof path !== 'string') fail('INVALID_PATH', 'path must be a string');
   if (path.length > MAX_PATH) fail('LIMIT_EXCEEDED', `path exceeds ${MAX_PATH} characters`);
   const opts = normalizeOptions(options);
-  let value = opts.separatorNormalization ? path.replaceAll('\\', '/') : path;
+  const value = opts.separatorNormalization ? path.replaceAll('\\', '/') : path;
   const kind = pathKind(value);
   const prefix = kind.root;
   const rest = kind.absolute ? value.slice(prefix.length) : value;
@@ -110,8 +108,7 @@ function normalizePath(path, options = {}) {
         segments.pop();
         continue;
       }
-      if (kind.absolute) fail('TRAVERSAL_ESCAPE', 'path escapes its absolute root');
-      fail('TRAVERSAL_ESCAPE', 'relative path escapes its root scope');
+      fail('TRAVERSAL_ESCAPE', 'path escapes its root scope');
     }
     segments.push(segment);
   }
@@ -126,14 +123,31 @@ function splitPattern(pattern, options) {
   if (pattern.length === 0) fail('INVALID_PATTERN', 'pattern must not be empty');
   if (pattern.length > MAX_PATTERN) fail('LIMIT_EXCEEDED', `pattern exceeds ${MAX_PATTERN} characters`);
   const opts = normalizeOptions(options);
-  let value = opts.separatorNormalization ? pattern.replaceAll('\\', '/') : pattern;
+  // With escapes enabled, backslash belongs to the pattern grammar and is
+  // interpreted by tokenizeSegment. Callers should use canonical '/'
+  // separators in escaped patterns. With escapes disabled, backslash is a
+  // platform separator and is normalized before tokenization.
+  const value = opts.separatorNormalization && !opts.escape ? pattern.replaceAll('\\', '/') : pattern;
   const kind = pathKind(value);
   const prefix = kind.root;
   const rest = kind.absolute ? value.slice(prefix.length) : value;
   if (opts.separatorNormalization && rest.includes('//')) fail('INVALID_PATTERN', 'repeated separators are not allowed');
-  if (rest.startsWith('..') && (rest === '..' || rest.startsWith('../'))) fail('TRAVERSAL_ESCAPE', 'pattern escapes its root scope');
   const rawSegments = rest.split('/').filter((segment, index) => !(segment === '' && index === 0));
   if (rawSegments.length > MAX_SEGMENTS) fail('LIMIT_EXCEEDED', `pattern exceeds ${MAX_SEGMENTS} segments`);
+  if (opts.normalizeDotSegments) {
+    const stack = [];
+    for (const segment of rawSegments) {
+      if (segment === '.') continue;
+      if (segment === '..') {
+        if (stack.length && stack.at(-1) !== '..') stack.pop();
+        else fail('TRAVERSAL_ESCAPE', 'pattern escapes its root scope');
+      } else {
+        stack.push(segment);
+      }
+    }
+    return { absolute: kind.absolute, root: prefix, segments: stack, options: opts };
+  }
+  if (rawSegments[0] === '..') fail('TRAVERSAL_ESCAPE', 'pattern escapes its root scope');
   return { absolute: kind.absolute, root: prefix, segments: rawSegments, options: opts };
 }
 
@@ -152,37 +166,6 @@ function tokenizeSegment(segment, options) {
     else tokens.push({ type: 'literal', value: char });
   }
   return tokens;
-}
-
-function segmentMatch(tokens, value, caseMode) {
-  const text = fold(value, caseMode);
-  const literals = tokens.map(token => token.type === 'literal' ? { ...token, value: fold(token.value, caseMode) } : token);
-  let current = new Set([0]);
-  for (let i = 0; i < current.size + text.length + tokens.length; i += 1) {
-    const closure = new Set(current);
-    let changed = true;
-    while (changed) {
-      changed = false;
-      for (const position of [...closure]) {
-        if (position < literals.length && literals[position].type === 'star' && !closure.has(position + 1)) {
-          closure.add(position + 1);
-          changed = true;
-        }
-      }
-    }
-    current = closure;
-    if (!text.length) break;
-    const char = text[0];
-    const next = new Set();
-    for (const position of current) {
-      const token = literals[position];
-      if (!token) continue;
-      if (token.type === 'star') next.add(position);
-      else if (token.type === 'question' || token.value === char) next.add(position + 1);
-    }
-    return segmentMatchFrom(tokens, text, caseMode, 0, current);
-  }
-  return current.has(literals.length);
 }
 
 function segmentMatchFrom(tokens, text, caseMode) {
@@ -255,6 +238,7 @@ export function matchGlob(compiled, candidatePath, overrideOptions = {}) {
   const options = normalizeOptions({ ...compiled.options, ...overrideOptions });
   const candidate = pathSegments(candidatePath, options);
   if (compiled.absolute !== candidate.absolute && !options.allowRelativeAgainstRoot) return false;
+  if (compiled.absolute && candidate.absolute && fold(compiled.root, options.caseMode) !== fold(candidate.root, options.caseMode)) return false;
   if (candidate.segments.some(segment => segment.startsWith('.') && options.dotfiles === 'exclude')) return false;
 
   const patternSegments = compiled.segments;
@@ -269,7 +253,7 @@ export function matchGlob(compiled, candidatePath, overrideOptions = {}) {
       if (token.recursive) {
         result = visit(p + 1, c) || (c < candidate.segments.length && visit(p, c + 1));
       } else if (c < candidate.segments.length) {
-        result = segmentMatchFrom(token.tokens, fold(candidate.segments[c], options.caseMode), options.caseMode) && visit(p + 1, c + 1);
+        result = segmentMatchFrom(token.tokens, candidate.segments[c], options.caseMode) && visit(p + 1, c + 1);
       }
     }
     memo.set(key, result);
