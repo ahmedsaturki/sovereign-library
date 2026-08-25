@@ -16,19 +16,19 @@ Target: zero runtime third-party dependencies per cube. Standard libraries and n
 
 Windows, Linux, macOS, and WSL where the capability is supported.
 
-## Released through v0.1
+## Latest release
 
-The repository includes the core Browser, HTTP, Filesystem, Process, Data, Storage, Transport, Scheduling, Eventing, Diagnostics, Configuration, Resilience, Concurrency, HTTP Server, Encoding, Streaming, Digest, Serialization, Worker, Metrics, Security, Diff, Canonical JSON, CLI, Search, Workflow, Persistence, Reporting, AI, Agent, Policy, Execution, Release, Artifact, Runtime Capability, Filesystem Watcher, File Lease, Ephemeral Workspace, and Atomic File Writer cubes.
+**Directory Snapshot / Tree Manifest v0.1** — PR #85, release commit `c01cc08e97404d1528fb93d6728fd2ae272871c3`.
 
-### Latest release
+Pre-merge Run #633 and post-merge Run #635 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
 
-**Atomic File Writer / Safe Replace v0.1** — finalized by corrective PR #84 at `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`.
+The release provides deterministic directory inventory, explicit file/directory/symlink representation, bounded traversal, symlink containment and cycle protection, optional content digesting, mutation/error policies, canonical serialization, immutable read-only snapshots, and zero runtime third-party dependencies.
 
-The corrective release fixed a real Node 24 compatibility issue in the default `fsync` capability without changing the public contract. Corrective Run #622 and post-merge Run #623 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+Earlier released cubes include Atomic File Writer / Safe Replace, Ephemeral Workspace / Scratch Directory, File Lease / Advisory Lock, Filesystem Watcher / Change Stream, Runtime Capability Inspector / Preflight, and the preceding Artifact Release series, all pinned in `ROADMAP.md`.
 
 ## Active milestone
 
-**Directory Snapshot / Tree Manifest v0.1 SPEC** — the next standalone product. It will own deterministic local directory inventory, stable entry representation and ordering, optional file digesting, explicit symlink policy, bounded manifest generation, and clear concurrent-mutation/error semantics without becoming a sync, watch, storage, or database framework.
+**Host Identity / Environment Fingerprint v0.1 SPEC** — the next standalone product. It will own privacy-safe local host/environment identity data, stable-vs-volatile classification, deterministic normalization/serialization, bounded fingerprints, and comparison semantics without reading secrets, extracting credentials, or performing remote discovery.
 
 ## Repository shape
 
