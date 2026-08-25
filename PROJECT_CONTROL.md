@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Validation / Schema Cube v0.1** and release it before starting another cube.
+Finish **Result / Error Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,20 +16,20 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**VALIDATION-SCHEMA-V0.1-RELEASE**
+**RESULT-ERROR-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Validation / Schema Cube release gate:
+Complete the Result / Error Cube release gate:
 
-1. write and freeze the validation contract
-2. run syntax, unit, contract, integration, failure, and recovery tests
-3. verify primitive types, object/array shapes, required/optional fields, and nested paths
-4. verify enums/literals and bounds
-5. verify deterministic custom validators and structured validation results
-6. verify typed errors and deterministic error paths/messages/codes
-7. verify explicit-only coercion and unknown-key handling
-8. verify reusable immutable schema definitions
+1. write and freeze the Result/Outcome contract
+2. define typed error base and deterministic error codes
+3. verify Result success/failure construction and immutable snapshots
+4. verify map/flatMap/branch helpers and exhaustive outcome handling
+5. verify cause chaining and retryable/cancelled/timeout classification
+6. verify serialization-safe diagnostics and normalization helpers
+7. verify cross-cube interoperability without introducing runtime dependencies
+8. run syntax, unit, contract, integration, failure, and recovery tests
 9. verify zero runtime third-party dependencies
 10. run the supported cross-platform CI matrix
 11. fix only failures required for the v0.1 gate
@@ -37,35 +37,28 @@ Complete the Validation / Schema Cube release gate:
 
 ## Scope lock
 
-For Validation / Schema Cube v0.1, the allowed scope is only:
+For Result / Error Cube v0.1, the allowed scope is only:
 
-- typed primitive validation
-- object and array shape validation
-- required and optional fields
-- nested paths
-- enums and literal constraints
-- string/number bounds
-- array length bounds
-- custom deterministic validators
-- structured validation results
-- typed validation errors
-- coercion only when explicitly requested
-- safe handling of unknown keys
-- deterministic error paths/messages/codes
-- reusable schema definitions
+- Result success/failure contract
+- typed error base and error codes
+- deterministic serialization-safe diagnostics
+- cause chaining
+- retryable/cancelled/timeout classification
+- error normalization helpers
+- Result mapping/flatMap helpers
+- exhaustive outcome branching helpers
+- immutable result/error snapshots
+- cross-cube interoperability tests
 - documentation
 - tests
 
 Explicitly out of scope for v0.1:
 
-- JSON Schema full standard implementation
-- OpenAPI generation
-- code generation
-- remote schema registries
-- third-party schema libraries
-- ORM validation
-- UI form generation
+- remote error telemetry
 - localization framework
+- tracing backend
+- distributed error registry
+- third-party result/error libraries
 - AI agent runtime
 
 ## Definition of done
