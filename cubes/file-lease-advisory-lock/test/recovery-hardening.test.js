@@ -39,7 +39,7 @@ test('release fails before deleting ownership when unexpected lock-directory ent
   const root = await tempRoot();
   const lockPath = join(root, 'lease.lock');
   try {
-    const lease = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, uuid: uuidSequence('owner') });
+    const lease = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, uuid: uuidSequence('owner-0001') });
     await writeFile(join(lockPath, 'unexpected.tmp'), 'x', 'utf8');
     await assert.rejects(() => lease.release(), (error) => error instanceof FileLeaseError && error.code === 'RELEASE_FAILED');
     const ownerPath = join(lockPath, `owner-${lease.leaseId}.json`);
