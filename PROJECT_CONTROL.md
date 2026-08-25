@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Admission Gate / Release Eligibility Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Release Plan / Deterministic Publication Plan Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Compliance / Policy Evaluator v0.1**
-- Release PR: **#70**, squash-merged
-- Release commit: `10ea69e80865fda16e385a635fa7bdde17162769`
-- Pre-merge verification: **Run 524**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 525**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Compliance / Policy Evaluator v0.1 is therefore **FROZEN**.
-- The release provides deterministic rule normalization, explicit artifact/rule evaluation, identity/digest/version/lifecycle/lineage/metadata/constraint predicates, bounded immutable findings, typed fail-closed errors, SCP1 checksum-protected serialization, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Admission Gate / Release Eligibility v0.1**
+- Release PR: **#71**, squash-merged
+- Release commit: `29be5dc41556cb7aafa5fc0a4cd1ccb08ef2c157`
+- Pre-merge verification: **Run 530**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 531**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Admission Gate / Release Eligibility v0.1 is therefore **FROZEN**.
+- The release provides deterministic required/optional admission clauses, release eligibility verdicts, immutable blocking/non-blocking reasons, typed fail-closed errors, SAG1 checksum-protected serialization, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,45 +26,46 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-ADMISSION-GATE-RELEASE-ELIGIBILITY-V0.1-SPEC**
+**ARTIFACT-RELEASE-PLAN-DETERMINISTIC-PUBLICATION-PLAN-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic artifact admission/release eligibility gate:
+Implement the public contract for a standalone deterministic artifact release-plan builder:
 
-1. accept explicit artifact records plus an explicit admission configuration only
-2. evaluate required compliance verdicts, lifecycle state, digest presence, version validity, provenance/lineage status, and bounded metadata requirements
-3. support deterministic required/optional gate clauses with stable ids
-4. produce a single immutable eligibility verdict plus bounded blocking/non-blocking reasons
-5. preserve evidence references without copying unbounded payloads
-6. fail closed on malformed/accessor/circular/duplicate clause/invalid configuration/oversized inputs
-7. serialize and parse the gate result deterministically with checksum/integrity protection
-8. never mutate artifact inputs and never perform automatic repair
-9. no network, filesystem discovery, registry lookup, or external policy engine required
+1. accept an explicit set of eligible artifact records and an explicit release-plan configuration only
+2. validate uniqueness, dependencies, required admission verdicts, and deterministic release constraints
+3. compute stable release ordering without network access, mutation, or hidden discovery
+4. emit bounded immutable release-plan steps and dependency evidence
+5. detect dependency cycles and impossible release prerequisites fail-closed
+6. support deterministic dry-run plans with no publication side effects
+7. serialize and parse plans deterministically with checksum/integrity protection
+8. preserve evidence references without copying unbounded artifact payloads
+9. no network, filesystem discovery, registry lookup, scheduler, or actual publication
 10. zero runtime third-party dependencies
 11. unit, contract, failure, recovery, and cross-platform verification
 12. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Admission Gate / Release Eligibility v0.1, allowed scope is only:
+For Artifact Release Plan / Deterministic Publication Plan v0.1, allowed scope is only:
 
 - explicit local artifact data
-- explicit gate configuration supplied by the caller
-- deterministic eligibility evaluation
-- immutable verdict/evidence summaries
+- explicit release-plan configuration
+- deterministic dependency validation and ordering
+- immutable dry-run release plans
 - typed fail-closed errors
-- deterministic checksum-protected result serialization
+- deterministic checksum-protected plan serialization
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- remote policy retrieval
+- actual publication or deployment
 - network/filesystem/registry discovery
-- automatic repair, mutation, or publication
-- release scheduling/orchestration
-- signing or trust-chain verification
+- remote release APIs
+- background scheduling/orchestration
+- signing/trust-chain verification
+- automatic artifact mutation or repair
 - GUI/admin console
 - billing or cost accounting
 
