@@ -89,12 +89,13 @@ Released through v0.1:
 - Artifact Bundle / Reproducible Package
 - Local Artifact Catalog / Package Index
 - Artifact Dependency Graph / Relationship Index
+- Artifact Lifecycle / Retention Index
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Lifecycle / Retention Index v0.1** — standalone deterministic local lifecycle/retention index for artifact references, explicit lifecycle states, bounded retention evaluation, safe dry-run purge planning, atomic state transitions, immutable snapshots, and checksum-protected serialization.
+**Artifact Reference Resolver / Locator v0.1** — standalone deterministic local resolver for canonical artifact references against an explicit bounded candidate set, with no hidden registry/network/filesystem discovery.
 
 ## License
 
