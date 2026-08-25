@@ -1,10 +1,10 @@
-import { gzip, gunzip, deflate, inflate, gzipSync as gzipNativeSync, gunzipSync as gunzipNativeSync, deflateSync as deflateNativeSync, inflateSync as inflateNativeSync } from 'node:zlib';
+import { gzip as gzipNative, gunzip as gunzipNative, deflate as deflateNative, inflate as inflateNative, gzipSync as gzipNativeSync, gunzipSync as gunzipNativeSync, deflateSync as deflateNativeSync, inflateSync as inflateNativeSync } from 'node:zlib';
 import { promisify } from 'node:util';
 
-const gzipAsync = promisify(gzip);
-const gunzipAsync = promisify(gunzip);
-const deflateAsync = promisify(deflate);
-const inflateAsync = promisify(inflate);
+const gzipAsync = promisify(gzipNative);
+const gunzipAsync = promisify(gunzipNative);
+const deflateAsync = promisify(deflateNative);
+const inflateAsync = promisify(inflateNative);
 
 const DEFAULT_MAX_INPUT_BYTES = 1_048_576;
 const DEFAULT_MAX_OUTPUT_BYTES = 8_388_608;
@@ -43,7 +43,6 @@ export function createCompressionConfig(options = {}) {
 
 function toBuffer(input) {
   if (input instanceof Uint8Array) return Buffer.from(input);
-  if (Buffer.isBuffer(input)) return Buffer.from(input);
   if (typeof input === 'string') return Buffer.from(input, 'utf8');
   throw new CompressionError('INVALID_INPUT', 'Input must be a string, Buffer, or Uint8Array');
 }
@@ -96,37 +95,14 @@ async function asyncOperation(nativeFn, input, options, operation) {
   }
 }
 
-export function gzipSync(input, options = {}) {
-  return syncOperation(gzipNativeSync, input, options, 'compress');
-}
-
-export function gunzipSync(input, options = {}) {
-  return syncOperation(gunzipNativeSync, input, options, 'decompress');
-}
-
-export function deflateSync(input, options = {}) {
-  return syncOperation(deflateNativeSync, input, options, 'compress');
-}
-
-export function inflateSync(input, options = {}) {
-  return syncOperation(inflateNativeSync, input, options, 'decompress');
-}
-
-export function gzip(input, options = {}) {
-  return asyncOperation(gzipAsync, input, options, 'compress');
-}
-
-export function gunzip(input, options = {}) {
-  return asyncOperation(gunzipAsync, input, options, 'decompress');
-}
-
-export function deflate(input, options = {}) {
-  return asyncOperation(deflateAsync, input, options, 'compress');
-}
-
-export function inflate(input, options = {}) {
-  return asyncOperation(inflateAsync, input, options, 'decompress');
-}
+export function gzipSync(input, options = {}) { return syncOperation(gzipNativeSync, input, options, 'compress'); }
+export function gunzipSync(input, options = {}) { return syncOperation(gunzipNativeSync, input, options, 'decompress'); }
+export function deflateSync(input, options = {}) { return syncOperation(deflateNativeSync, input, options, 'compress'); }
+export function inflateSync(input, options = {}) { return syncOperation(inflateNativeSync, input, options, 'decompress'); }
+export function gzip(input, options = {}) { return asyncOperation(gzipAsync, input, options, 'compress'); }
+export function gunzip(input, options = {}) { return asyncOperation(gunzipAsync, input, options, 'decompress'); }
+export function deflate(input, options = {}) { return asyncOperation(deflateAsync, input, options, 'compress'); }
+export function inflate(input, options = {}) { return asyncOperation(inflateAsync, input, options, 'decompress'); }
 
 export function compress(input, options = {}) {
   const format = options?.format ?? 'gzip';
