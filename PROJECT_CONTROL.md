@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Search / Index Cube v0.1** and release it before starting another cube.
+Finish **Workflow / Durable Orchestration Cube v0.1** and release it before starting another cube.
 
 ## Current repository state
 
-- Last released cube: **CLI / Command Runtime v0.1**
-- Release path: **direct-main gated release**
-- Release commit: `61eac767bca438e63d28a28892ffcc0dab956e36`
-- Release verification: **Run 366**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- CLI / Command Runtime v0.1 is therefore **FROZEN**.
-- `ROADMAP.md` and `README.md` were updated to record the release and activate Search / Index.
-- Earlier CLI CI failures were resolved with minimal source fixes and regression coverage: optional defaults, child-command normalization, explicit-option tracking, parser fail-closed handling, and accessor-safe configuration validation.
+- Last released cube: **Search / Index v0.1**
+- Release PR: **#50**, squash-merged
+- Release commit: `e124f7cfa59880c0c0381863a5215f3bc2bd08f4`
+- Pre-merge verification: **Run 371**, passed after a macOS-only timing-sensitive Worker Pool failure was rerun successfully; Search-specific tests remained green.
+- Post-merge verification: **Run 372**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Search / Index v0.1 is therefore **FROZEN**.
+- `ROADMAP.md` and `README.md` were updated to record the release and activate Workflow / Durable Orchestration.
 - Duplicate Redaction PR #47 remains closed as superseded by PR #45.
 
 ## The one-current-task rule
@@ -27,58 +27,58 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**SEARCH-INDEX-V0.1-SPEC**
+**WORKFLOW-DURABLE-ORCHESTRATION-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze the public contract for a standalone native Search / Index product:
+Freeze the public contract for a standalone native Workflow / Durable Orchestration product:
 
-1. define the indexed document and identifier contract
-2. define deterministic Unicode-safe tokenization and normalization semantics
-3. define an owned inverted-index representation
-4. define add, update, remove, and rebuild lifecycle behavior
-5. define exact-term, AND/OR, prefix, and bounded phrase-query semantics
-6. define deterministic scoring and result ordering
-7. define bounds for documents, fields, tokens, query size, postings, and results
+1. define workflow and step contracts
+2. define deterministic execution state and transition rules
+3. define sequential, parallel, and conditional step composition
+4. define durable event/history records and replay semantics
+5. define retry, timeout, cancellation, and compensation boundaries
+6. define deterministic scheduling and idempotency rules
+7. define bounded history, steps, payloads, fan-out, retries, and replay work
 8. define immutable snapshots and source immutability
-9. define typed fail-closed errors without copying arbitrary payloads
-10. define recovery behavior after rejected mutations and failed rebuilds
+9. define typed fail-closed errors without arbitrary payload copying
+10. define crash/restart recovery and replay behavior
 11. verify zero runtime third-party dependencies
 12. define unit, contract, integration, failure, and recovery gates
 13. write the standalone cube specification before implementation
 
 ## Scope lock
 
-For Search / Index Cube v0.1, the allowed scope is only:
+For Workflow / Durable Orchestration Cube v0.1, the allowed scope is only:
 
-- local in-memory inverted indexing
-- deterministic text tokenization and normalization
-- document add/update/remove/rebuild
-- exact-term query
-- AND/OR term query
-- bounded prefix query
-- bounded phrase query
-- deterministic relevance scoring
-- deterministic tie-breaking
-- bounded index memory/work
-- immutable query results and index snapshots
+- local in-process workflow definitions
+- deterministic step state machine
+- sequential and bounded parallel step execution
+- deterministic conditional branching
+- durable in-memory execution history
+- replay from history
+- retry and timeout policy
+- cancellation propagation
+- idempotent step execution keys
+- bounded fan-out and history/payload sizes
+- immutable execution snapshots/results
 - source immutability
 - typed fail-closed diagnostics
-- local unit/contract/integration/failure/recovery tests
+- local unit, contract, integration, failure, and recovery tests
 - cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- network search services
-- distributed indexes
-- filesystem persistence
-- vector/semantic embeddings
-- fuzzy matching/edit distance
-- external search engines
-- third-party search/index packages
-- web crawling
-- ranking learned from external models
+- network workflow orchestration
+- distributed workers
+- external durable databases
+- cron/scheduled triggers
+- third-party workflow engines
+- remote task queues
+- BPMN/visual editors
+- external service integrations
+- learned planning or agent behavior
 
 ## Definition of done
 
