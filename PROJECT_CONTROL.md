@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Retry / Resilience Cube v0.1** and release it before starting another cube.
+Finish **Concurrency / Bulkhead Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,52 +16,51 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**RETRY-RESILIENCE-V0.1-RELEASE**
+**CONCURRENCY-BULKHEAD-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Retry / Resilience Cube release gate:
+Complete the Concurrency / Bulkhead Cube release gate:
 
-1. write and freeze the retry contract and attempt lifecycle
-2. define fixed, linear, and exponential backoff policies
-3. define deterministic jitter using injectable randomness
-4. verify maximum attempts and total elapsed budget
-5. verify retryability classification with Result/Error semantics
-6. verify AbortSignal cancellation and timeout cleanup
-7. verify deterministic clock behavior and timer lifecycle
-8. verify immutable retry decision/result snapshots
-9. run syntax, unit, contract, integration, failure, and recovery tests
-10. verify zero runtime third-party dependencies
-11. run the supported cross-platform CI matrix
-12. fix only failures required for the v0.1 gate
-13. mark the release gate complete
+1. write and freeze the concurrency admission and lease contract
+2. define immediate admission and bounded FIFO waiting
+3. verify fair waiter ordering
+4. verify cancellation and queue cleanup via AbortSignal
+5. verify release lifecycle and double-release protection
+6. verify queue overflow and shutdown behavior
+7. verify immutable statistics snapshots and deterministic state
+8. run syntax, unit, contract, integration, failure, and recovery tests
+9. verify zero runtime third-party dependencies
+10. run the supported cross-platform CI matrix
+11. fix only failures required for the v0.1 gate
+12. mark the release gate complete
 
 ## Scope lock
 
-For Retry / Resilience Cube v0.1, the allowed scope is only:
+For Concurrency / Bulkhead Cube v0.1, the allowed scope is only:
 
-- retry policy and attempt accounting
-- fixed, linear, and exponential backoff
-- configurable maximum attempts
-- configurable total elapsed budget
-- deterministic jitter through injectable randomness
-- retryability classification using Result/Error semantics
-- explicit cancellation and timeout behavior
-- AbortSignal propagation and cleanup
-- deterministic clock integration
-- immutable retry decision/result snapshots
-- optional per-attempt diagnostics hooks without logger coupling
+- configurable concurrency limit
+- immediate/non-blocking admission check
+- bounded FIFO waiting queue
+- fair waiter ordering
+- queued cancellation via AbortSignal
+- release/lease lifecycle with double-release protection
+- queue overflow behavior
+- deterministic clock integration where waiting timers are required
+- immutable statistics snapshots
+- cleanup and shutdown semantics
 - documentation
 - local unit/integration/failure/recovery tests
 
 Explicitly out of scope for v0.1:
 
-- circuit breakers
-- distributed coordination
-- tracing backend
-- remote retry state
-- third-party resilience libraries
-- adaptive ML-based retry strategies
+- distributed semaphore state
+- remote coordination or Redis
+- priority scheduling
+- work stealing
+- adaptive ML-based concurrency
+- third-party concurrency libraries
+- tracing/telemetry backend
 - AI agent runtime
 
 ## Definition of done
