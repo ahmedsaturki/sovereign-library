@@ -19,10 +19,12 @@ export class DiffPatchError extends Error {
   }
 }
 
+function fail(code, message, options = {}) {
+  throw new DiffPatchError(code, message, options);
+}
+
 function assertPositiveInteger(value, name) {
-  if (!Number.isSafeInteger(value) || value < 1) {
-    throw new DiffPatchError('INVALID_LIMIT', `${name} must be a safe integer >= 1`);
-  }
+  if (!Number.isSafeInteger(value) || value < 1) fail('INVALID_LIMIT', `${name} must be a safe integer >= 1`);
 }
 
 function isPlainObject(value) {
@@ -31,49 +33,40 @@ function isPlainObject(value) {
   return prototype === Object.prototype || prototype === null;
 }
 
-function utf8Bytes(value) {
-  return Buffer.byteLength(value, 'utf8');
-}
+function utf8Bytes(value) { return Buffer.byteLength(value, 'utf8'); }
 
-function escapeToken(token) {
-  return token.replaceAll('~', '~0').replaceAll('/', '~1');
-}
+function escapeToken(token) { return token.replaceAll('~', '~0').replaceAll('/', '~1'); }
 
 function unescapeToken(token) {
-  if (/~(?![01])/.test(token)) throw new DiffPatchError('INVALID_PATH', 'Path contains an invalid escape sequence');
+  if (/~(?![01])/.test(token)) fail('INVALID_PATH', 'Path contains an invalid escape sequence');
   return token.replaceAll('~1', '/').replaceAll('~0', '~');
 }
 
 function parsePointer(path) {
-  if (typeof path !== 'string' || path.length > 65536) throw new DiffPatchError('INVALID_PATH', 'Path must be a bounded string');
+  if (typeof path !== 'string' || path.length > 65536) fail('INVALID_PATH', 'Path must be a bounded string');
   if (path === '') return [];
-  if (!path.startsWith('/')) throw new DiffPatchError('INVALID_PATH', 'Path must be empty or start with /');
+  if (!path.startsWith('/')) fail('INVALID_PATH', 'Path must be empty or start with /');
   return path.slice(1).split('/').map(unescapeToken);
 }
 
-function formatPath(parent, token) {
-  return `${parent}/${escapeToken(token)}`;
-}
+function formatPath(parent, token) { return `${parent}/${escapeToken(token)}`; }
 
 function cloneAndValidate(value, state, depth = 0, path = '') {
   state.nodes += 1;
-  if (state.nodes > state.config.maxNodes) throw new DiffPatchError('NODE_LIMIT', 'Value exceeds the configured node limit', { path, statusCode: 413 });
-  if (depth > state.config.maxDepth) throw new DiffPatchError('DEPTH_LIMIT', 'Value exceeds the configured depth limit', { path, statusCode: 413 });
+  if (state.nodes > state.config.maxNodes) fail('NODE_LIMIT', 'Value exceeds the configured node limit', { path, statusCode: 413 });
+  if (depth > state.config.maxDepth) fail('DEPTH_LIMIT', 'Value exceeds the configured depth limit', { path, statusCode: 413 });
 
   if (value === null || typeof value === 'boolean') return value;
   if (typeof value === 'number') {
-    if (!Number.isFinite(value)) throw new DiffPatchError('UNSUPPORTED_VALUE', 'Only finite numbers are supported', { path });
+    if (!Number.isFinite(value)) fail('UNSUPPORTED_VALUE', 'Only finite numbers are supported', { path });
     return value;
   }
   if (typeof value === 'string') {
-    if (utf8Bytes(value) > state.config.maxStringBytes) throw new DiffPatchError('STRING_LIMIT', 'String exceeds the configured size limit', { path, statusCode: 413 });
+    if (utf8Bytes(value) > state.config.maxStringBytes) fail('STRING_LIMIT', 'String exceeds the configured size limit', { path, statusCode: 413 });
     return value;
   }
-  if (!isObject(value)) throw new DiffPatchError('UNSUPPORTED_VALUE', 'Unsupported value type', { path });
-
-  if (!Array.isArray(value) && !isPlainObject(value)) {
-    throw new DiffPatchError('UNSUPPORTED_OBJECT', 'Only arrays and plain objects are supported', { path });
-  }
+  if (!isObject(value)) fail('UNSUPPORTED_VALUE', 'Unsupported value type', { path });
+  if (!Array.isArray(value) && !isPlainObject(value)) fail('UNSUPPORTED_OBJECT', 'Only arrays and plain objects are supported', { path });
 
   if (Array.isArray(value)) {
     const output = value.map((item, index) => cloneAndValidate(item, state, depth + 1, `${path}/${index}`));
@@ -83,7 +76,7 @@ function cloneAndValidate(value, state, depth = 0, path = '') {
   const output = {};
   for (const key of Object.keys(value).sort(compare)) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
-    if (!descriptor || !('value' in descriptor)) throw new DiffPatchError('UNSUPPORTED_OBJECT', 'Accessor properties are not supported', { path: formatPath(path, key) });
+    if (!descriptor || !('value' in descriptor)) fail('UNSUPPORTED_OBJECT', 'Accessor properties are not supported', { path: formatPath(path, key) });
     output[key] = cloneAndValidate(descriptor.value, state, depth + 1, formatPath(path, key));
   }
   return Object.freeze(output);
@@ -91,24 +84,14 @@ function cloneAndValidate(value, state, depth = 0, path = '') {
 
 function valueBytes(value) {
   let serialized;
-  try {
-    serialized = JSON.stringify(value);
-  } catch (cause) {
-    throw new DiffPatchError('SERIALIZATION_FAILED', 'Value could not be serialized safely', { cause });
-  }
-  const bytes = utf8Bytes(serialized);
-  return bytes;
+  try { serialized = JSON.stringify(value); } catch (cause) { fail('SERIALIZATION_FAILED', 'Value could not be serialized safely', { cause }); }
+  return utf8Bytes(serialized);
 }
 
-function freezeOperation(operation) {
-  if (Object.hasOwn(operation, 'value') && isObject(operation.value)) Object.freeze(operation.value);
-  return Object.freeze(operation);
-}
+function freezeOperation(operation) { return Object.freeze(operation); }
 
 export function createDiffEngine(options = {}) {
-  if (options === null || typeof options !== 'object' || Array.isArray(options)) {
-    throw new DiffPatchError('INVALID_OPTIONS', 'Options must be an object');
-  }
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) fail('INVALID_OPTIONS', 'Options must be an object');
   const config = Object.freeze({
     maxDepth: options.maxDepth ?? DEFAULT_MAX_DEPTH,
     maxNodes: options.maxNodes ?? DEFAULT_MAX_NODES,
@@ -121,7 +104,7 @@ export function createDiffEngine(options = {}) {
   function validateRoot(value) {
     const state = { config, nodes: 0 };
     const clone = cloneAndValidate(value, state);
-    if (valueBytes(clone) > config.maxValueBytes) throw new DiffPatchError('VALUE_LIMIT', 'Value exceeds the configured serialized size limit', { statusCode: 413 });
+    if (valueBytes(clone) > config.maxValueBytes) fail('VALUE_LIMIT', 'Value exceeds the configured serialized size limit', { statusCode: 413 });
     return clone;
   }
 
@@ -129,22 +112,17 @@ export function createDiffEngine(options = {}) {
     const left = validateRoot(before);
     const right = validateRoot(after);
     const operations = [];
-
     const addOperation = (operation) => {
-      if (operations.length >= config.maxOperations) throw new DiffPatchError('OPERATION_LIMIT', 'Diff exceeds the configured operation limit', { path: operation.path, statusCode: 413 });
+      if (operations.length >= config.maxOperations) fail('OPERATION_LIMIT', 'Diff exceeds the configured operation limit', { path: operation.path, statusCode: 413 });
       operations.push(freezeOperation(operation));
     };
 
     function walk(a, b, path, depth) {
-      if (depth > config.maxDepth) throw new DiffPatchError('DEPTH_LIMIT', 'Diff exceeds the configured depth limit', { path, statusCode: 413 });
+      if (depth > config.maxDepth) fail('DEPTH_LIMIT', 'Diff exceeds the configured depth limit', { path, statusCode: 413 });
       if (Object.is(a, b)) return;
-
       const arrays = Array.isArray(a) && Array.isArray(b);
       const objects = isPlainObject(a) && isPlainObject(b);
-      if (!arrays && !objects) {
-        addOperation({ op: path === '' ? 'replace' : 'replace', path, value: b });
-        return;
-      }
+      if (!arrays && !objects) { addOperation({ op: 'replace', path, value: b }); return; }
 
       if (arrays) {
         const common = Math.min(a.length, b.length);
@@ -171,20 +149,18 @@ export function createDiffEngine(options = {}) {
   }
 
   function applyPatch(source, operations) {
-    const root = validateRoot(source);
-    if (!Array.isArray(operations)) throw new DiffPatchError('INVALID_OPERATIONS', 'Operations must be an array');
-    if (operations.length > config.maxOperations) throw new DiffPatchError('OPERATION_LIMIT', 'Patch exceeds the configured operation limit', { statusCode: 413 });
+    let output = validateRoot(source);
+    if (!Array.isArray(operations)) fail('INVALID_OPERATIONS', 'Operations must be an array');
+    if (operations.length > config.maxOperations) fail('OPERATION_LIMIT', 'Patch exceeds the configured operation limit', { statusCode: 413 });
 
     const normalized = operations.map((operation, operationIndex) => normalizeOperation(operation, operationIndex, config));
     const seenPaths = new Set();
     for (const operation of normalized) {
-      if (seenPaths.has(operation.path)) throw new DiffPatchError('CONFLICTING_OPERATION', 'Duplicate operation path is not allowed', { path: operation.path, operationIndex: operation.index });
+      if (seenPaths.has(operation.path)) fail('CONFLICTING_OPERATION', 'Duplicate operation path is not allowed', { path: operation.path, operationIndex: operation.index });
       seenPaths.add(operation.path);
     }
-
-    let output = root;
     for (const operation of normalized) output = applyOne(output, operation, config);
-    if (valueBytes(output) > config.maxValueBytes) throw new DiffPatchError('VALUE_LIMIT', 'Patched value exceeds the configured serialized size limit', { statusCode: 413 });
+    if (valueBytes(output) > config.maxValueBytes) fail('VALUE_LIMIT', 'Patched value exceeds the configured serialized size limit', { statusCode: 413 });
     return output;
   }
 
@@ -192,75 +168,87 @@ export function createDiffEngine(options = {}) {
 }
 
 function normalizeOperation(operation, operationIndex, config) {
-  if (!operation || typeof operation !== 'object' || Array.isArray(operation)) throw new DiffPatchError('INVALID_OPERATION', 'Operation must be an object', { operationIndex });
+  if (!operation || typeof operation !== 'object' || Array.isArray(operation)) fail('INVALID_OPERATION', 'Operation must be an object', { operationIndex });
   const allowed = operation.op === 'remove' ? ['op', 'path'] : ['op', 'path', 'value'];
-  for (const key of Object.keys(operation)) if (!allowed.includes(key)) throw new DiffPatchError('INVALID_OPERATION', 'Operation contains an unknown member', { operationIndex });
-  if (!['add', 'remove', 'replace'].includes(operation.op)) throw new DiffPatchError('INVALID_OPERATION', 'Operation type is unsupported', { operationIndex });
-  let path;
-  try { path = operation.path; parsePointer(path); } catch (error) {
-    if (error instanceof DiffPatchError) { error.operationIndex = operationIndex; throw error; }
+  for (const key of Object.keys(operation)) if (!allowed.includes(key)) fail('INVALID_OPERATION', 'Operation contains an unknown member', { operationIndex });
+  if (!['add', 'remove', 'replace'].includes(operation.op)) fail('INVALID_OPERATION', 'Operation type is unsupported', { operationIndex });
+  const path = operation.path;
+  try { parsePointer(path); } catch (error) {
+    if (error instanceof DiffPatchError) throw new DiffPatchError(error.code, error.message, { path: null, operationIndex, statusCode: error.statusCode });
     throw error;
   }
-  if (path === '' && operation.op !== 'replace') throw new DiffPatchError('INVALID_OPERATION', 'Root add/remove operations are not supported', { path, operationIndex });
+  if (path === '' && operation.op !== 'replace') fail('INVALID_OPERATION', 'Root add/remove operations are not supported', { path, operationIndex });
   const normalized = { op: operation.op, path, index: operationIndex };
   if (operation.op !== 'remove') {
     const state = { config, nodes: 0 };
     normalized.value = cloneAndValidate(operation.value, state, 0, path);
-    if (valueBytes(normalized.value) > config.maxValueBytes) throw new DiffPatchError('VALUE_LIMIT', 'Operation value exceeds the configured serialized size limit', { path, operationIndex, statusCode: 413 });
+    if (valueBytes(normalized.value) > config.maxValueBytes) fail('VALUE_LIMIT', 'Operation value exceeds the configured serialized size limit', { path, operationIndex, statusCode: 413 });
   }
   return Object.freeze(normalized);
 }
 
-function getParent(root, tokens, path, operationIndex) {
-  if (tokens.length === 0) return { parent: null, key: null };
-  let current = root;
-  for (let index = 0; index < tokens.length - 1; index += 1) {
-    const token = tokens[index];
-    if (Array.isArray(current)) {
-      if (!/^0$|^[1-9][0-9]*$/.test(token) || Number(token) >= current.length) throw new DiffPatchError('PATH_NOT_FOUND', 'Patch path does not exist', { path, operationIndex });
-    } else if (!isPlainObject(current) || !Object.hasOwn(current, token)) {
-      throw new DiffPatchError('PATH_NOT_FOUND', 'Patch path does not exist', { path, operationIndex });
-    }
-    current = current[Array.isArray(current) ? Number(token) : token];
+function getChild(container, token, path, operationIndex) {
+  if (Array.isArray(container)) {
+    if (!/^0$|^[1-9][0-9]*$/.test(token) || Number(token) >= container.length) fail('PATH_NOT_FOUND', 'Patch path does not exist', { path, operationIndex });
+    return container[Number(token)];
   }
-  return { parent: current, key: tokens[tokens.length - 1] };
+  if (!isPlainObject(container) || !Object.hasOwn(container, token)) fail('PATH_NOT_FOUND', 'Patch path does not exist', { path, operationIndex });
+  return container[token];
+}
+
+function rebuildAt(root, tokens, operation, depth = 0) {
+  const { path, index: operationIndex } = operation;
+  if (depth >= tokens.length) {
+    if (operation.op === 'replace') return operation.value;
+    fail('INVALID_OPERATION', 'Root add/remove operations are not supported', { path, operationIndex });
+  }
+
+  const token = tokens[depth];
+  if (depth === tokens.length - 1) {
+    if (Array.isArray(root)) {
+      if (!/^0$|^[1-9][0-9]*$/.test(token)) fail('INVALID_PATH', 'Array paths require non-negative integer indices', { path, operationIndex });
+      const index = Number(token);
+      const output = root.slice();
+      if (operation.op === 'add') {
+        if (index > output.length) fail('PATH_NOT_FOUND', 'Array insertion index is out of range', { path, operationIndex });
+        output.splice(index, 0, operation.value);
+      } else {
+        if (index >= output.length) fail('PATH_NOT_FOUND', 'Array target index is out of range', { path, operationIndex });
+        if (operation.op === 'replace') output[index] = operation.value;
+        else output.splice(index, 1);
+      }
+      return Object.freeze(output);
+    }
+    if (!isPlainObject(root)) fail('PATH_NOT_FOUND', 'Patch parent is not patchable', { path, operationIndex });
+    const output = { ...root };
+    const exists = Object.hasOwn(output, token);
+    if (operation.op === 'add') {
+      if (exists) fail('CONFLICTING_OPERATION', 'Object add target already exists', { path, operationIndex });
+      output[token] = operation.value;
+    } else if (operation.op === 'replace') {
+      if (!exists) fail('PATH_NOT_FOUND', 'Object replace target does not exist', { path, operationIndex });
+      output[token] = operation.value;
+    } else {
+      if (!exists) fail('PATH_NOT_FOUND', 'Object remove target does not exist', { path, operationIndex });
+      delete output[token];
+    }
+    return Object.freeze(Object.fromEntries(Object.keys(output).sort(compare).map((key) => [key, output[key]])));
+  }
+
+  const child = getChild(root, token, path, operationIndex);
+  const updatedChild = rebuildAt(child, tokens, operation, depth + 1);
+  if (Array.isArray(root)) {
+    const index = Number(token);
+    const output = root.slice(); output[index] = updatedChild; return Object.freeze(output);
+  }
+  const output = { ...root, [token]: updatedChild };
+  return Object.freeze(Object.fromEntries(Object.keys(output).sort(compare).map((key) => [key, output[key]])));
 }
 
 function applyOne(root, operation, config) {
   const tokens = parsePointer(operation.path);
   if (tokens.length === 0) return cloneAndValidate(operation.value, { config, nodes: 0 });
-
-  const parentInfo = getParent(root, tokens, operation.path, operation.index);
-  const parent = parentInfo.parent;
-  const key = parentInfo.key;
-  if (Array.isArray(parent)) {
-    if (!/^0$|^[1-9][0-9]*$/.test(key)) throw new DiffPatchError('INVALID_PATH', 'Array paths require non-negative integer indices', { path: operation.path, operationIndex: operation.index });
-    const index = Number(key);
-    if (operation.op === 'add') {
-      if (index > parent.length) throw new DiffPatchError('PATH_NOT_FOUND', 'Array insertion index is out of range', { path: operation.path, operationIndex: operation.index });
-      const output = parent.slice(); output.splice(index, 0, operation.value); return Object.freeze(output);
-    }
-    if (index >= parent.length) throw new DiffPatchError('PATH_NOT_FOUND', 'Array target index is out of range', { path: operation.path, operationIndex: operation.index });
-    const output = parent.slice();
-    if (operation.op === 'replace') output[index] = operation.value;
-    else output.splice(index, 1);
-    return Object.freeze(output);
-  }
-
-  if (!isPlainObject(parent)) throw new DiffPatchError('PATH_NOT_FOUND', 'Patch parent is not patchable', { path: operation.path, operationIndex: operation.index });
-  const output = { ...parent };
-  const exists = Object.hasOwn(output, key);
-  if (operation.op === 'add') {
-    if (exists) throw new DiffPatchError('CONFLICTING_OPERATION', 'Object add target already exists', { path: operation.path, operationIndex: operation.index });
-    output[key] = operation.value;
-  } else if (operation.op === 'replace') {
-    if (!exists) throw new DiffPatchError('PATH_NOT_FOUND', 'Object replace target does not exist', { path: operation.path, operationIndex: operation.index });
-    output[key] = operation.value;
-  } else {
-    if (!exists) throw new DiffPatchError('PATH_NOT_FOUND', 'Object remove target does not exist', { path: operation.path, operationIndex: operation.index });
-    delete output[key];
-  }
-  return Object.freeze(output);
+  return rebuildAt(root, tokens, operation);
 }
 
 export const diff = (before, after, options) => createDiffEngine(options).diff(before, after);
