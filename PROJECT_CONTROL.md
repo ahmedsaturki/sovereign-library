@@ -2,23 +2,21 @@
 
 ## Purpose
 
-This file is the anti-drift control for the repository. It exists to keep development finite, visible, and recoverable.
+This file is the anti-drift control for the repository. It keeps development finite, visible, and recoverable.
 
 ## Current mission
 
-Finish **Agent Runtime Cube v0.1** and release it before starting another cube.
+Finish the **Policy / Capability Security Cube v0.1** before starting another cube.
 
 ## Current repository state
 
-- Last released cube: **AI / Inference Runtime v0.1**
-- Release PR: **#54**, squash-merged
-- Release commit: `83e076c3b0d8e0bc5e7f25c35e865cb9655121e9`
-- Pre-merge verification: **Run 403**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 404**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- AI / Inference Runtime v0.1 is therefore **FROZEN**.
-- The release provides provider-neutral request normalization, immutable request/result snapshots, synchronous and streaming inference contracts, cancellation/timeout handling, native child-process/NDJSON execution without shell invocation, bounded diagnostics, typed fail-closed errors, and zero runtime third-party dependencies.
-- `ROADMAP.md` and `README.md` must now record AI as released and activate Agent Runtime.
-- Duplicate Redaction PR #47 remains closed as superseded by PR #45.
+- Last released cube: **Agent Runtime v0.1**
+- Release PR: **#55**, squash-merged
+- Release commit: `8d4608e012176a55bdc1822d3aea65add7aa7669`
+- Pre-merge verification: **Run 409**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 410**, push on `main` for the release commit, completed with **success**.
+- Agent Runtime v0.1 is therefore **FROZEN**.
+- The release provides deterministic agent/session state, bounded context and tool work, capability allowlisting, immutable snapshots, cancellation/timeout/retry semantics, typed fail-closed diagnostics, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -28,105 +26,79 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**AGENT-RUNTIME-V0.1-SPEC**
+**POLICY-CAPABILITY-SECURITY-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze and implement the public contract for a standalone native agent runtime:
+Freeze and implement the public contract for a standalone capability-policy engine:
 
-1. immutable agent definitions and validated identity/configuration
-2. deterministic turn/session state machine
-3. bounded conversation memory and context accounting
-4. explicit tool-call request/result envelope contracts
-5. deterministic tool registry and capability allowlisting
-6. cancellation, timeout, retry, and terminal-state semantics
-7. bounded step count, tool calls, output, and diagnostic work
-8. explicit handoff/delegation contract without multi-agent orchestration
-9. failure isolation and recoverable session snapshots
-10. typed fail-closed `AgentError` without arbitrary prompt/tool payload copying
+1. immutable policy definitions and deterministic normalization
+2. explicit allow/deny capability records
+3. hierarchical resource/action matching
+4. deterministic precedence and conflict resolution
+5. contextual decision inputs without hidden ambient authority
+6. bounded policy size, rule count, path/resource length, and diagnostics
+7. fail-closed evaluation on malformed rules and unsupported values
+8. auditable immutable decision records with safe diagnostics
+9. policy composition and versioned snapshots without cross-cube dependencies
+10. no network, identity provider, or external authorization SDK requirement
 11. zero runtime third-party dependencies
-12. unit, contract, integration, failure, recovery, and cross-platform gates
-13. public standalone SPEC plus README/example before release
+12. unit, contract, failure, recovery, and cross-platform verification
+13. standalone SPEC, README, and runnable example before release
 
 ## Scope lock
 
-For Agent Runtime Cube v0.1, the allowed scope is only:
+For Policy / Capability Security Cube v0.1, allowed scope is only:
 
-- local in-process agent coordination
-- immutable agent definition/configuration
-- deterministic session/turn state machine
-- bounded conversation context
-- explicit tool registry and capability allowlisting
-- typed tool-call request/result envelopes
-- cancellation, timeout, retry, and terminal-state behavior
-- bounded step/tool/output/diagnostic work
-- recoverable immutable session snapshots
-- typed fail-closed diagnostics
-- local unit, contract, integration, failure, and recovery tests
-- cross-platform verification
+- local deterministic policy evaluation
+- immutable policy snapshots
+- capability/resource/action matching
+- allow/deny precedence
+- bounded contextual inputs
+- fail-closed errors and safe decision diagnostics
+- immutable audit decision records
+- local composition/versioning of policy snapshots
+- unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
+- network authorization services
+- OAuth/OIDC providers
+- remote policy control planes
+- identity lifecycle management
+- distributed consensus
 - multi-agent orchestration
-- network tool marketplaces
-- vector databases/RAG
-- embeddings/ranking
-- GUI/chat application
-- model training/fine-tuning
-- provider SDKs
-- browser automation features
-- remote deployment/control plane
+- GUI/admin console
+- browser automation
 
 ## Definition of done
 
-A milestone is DONE only when:
-
-- implementation exists
-- public API is documented
-- normal-path tests pass
-- failure-path tests pass
-- cleanup/restart behavior is verified where applicable
-- supported-platform checks pass or documented capability limits exist
-- example usage works
-- release artifact is reproducible
-- no known blocking defect remains
-- `ROADMAP.md` is updated
-- `PROJECT_CONTROL.md` points to the next active milestone
+A milestone is DONE only when implementation, public API documentation, normal and failure-path tests, recovery behavior, examples, reproducible release state, cross-platform gates, and roadmap/control updates all pass.
 
 ## Anti-loop rules
 
 - Do not redesign the whole architecture during a cube release.
-- Do not add a new dependency to solve a local problem without recording the decision.
+- Do not add a dependency to solve a local problem without recording the decision.
 - Do not start a second cube because the current cube is difficult.
 - Do not expand scope because a competitor has more features.
 - Do not call a cube production-ready from source inspection alone.
-- If a problem is outside the active scope, park it and continue.
+- Park out-of-scope work and continue.
 
 ## Lessons-learned rule
 
-Every blocking bug or CI failure must produce:
-
-- root-cause identification
-- minimal fix
-- regression test
-- CI protection when applicable
-- documentation/control update when the lesson affects future work
+Every blocking bug or CI failure must produce root-cause identification, minimal fix, regression coverage, and a control/documentation update when the lesson affects future work.
 
 ## Clean-repository rule
 
-`main` is the product branch. Temporary verification branches and PRs must not become runtime artifacts. Release merges should prefer a clean, single-purpose history. No marker files, generated dependency trees, vendor directories, or unused compatibility layers belong in the product.
-
-## Decision rule
-
-When uncertain, choose the smallest implementation that satisfies the current contract and can later be replaced without breaking consumers.
+`main` is the product branch. Temporary branches and PRs must not become runtime artifacts. Release merges should keep a clean, single-purpose history.
 
 ## Recovery rule
 
-If work is interrupted, read this file first, then `ROADMAP.md`, then the latest Git commit. Resume from the listed immediate next task; do not restart the project from memory.
+If work is interrupted, read this file first, then `ROADMAP.md`, then the latest Git commit. Resume from the listed immediate next task; do not restart from memory.
 
 ## Release sequence
 
 `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE -> NEXT CUBE`
 
-No step may be skipped by calling the project complete early.
+No step may be skipped.
