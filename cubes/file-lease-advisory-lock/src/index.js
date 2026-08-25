@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile, rename, rm, readdir } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, rename, rm, rmdir, readdir } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 
@@ -65,8 +65,8 @@ function normalizeOptions(raw = {}) {
   const uuid = raw.uuid ?? randomUUID;
   capabilityFunction(uuid, 'uuid');
   if (!clock || typeof clock.now !== 'function') fail('INVALID_SEAM', 'clock must expose now()');
-  const fsOps = raw.fsOps ?? { mkdir, readFile, writeFile, rename, rm, readdir };
-  for (const name of ['mkdir', 'readFile', 'writeFile', 'rename', 'rm', 'readdir']) capabilityFunction(fsOps[name], `fsOps.${name}`);
+  const fsOps = raw.fsOps ?? { mkdir, readFile, writeFile, rename, rm, rmdir, readdir };
+  for (const name of ['mkdir', 'readFile', 'writeFile', 'rename', 'rm', 'rmdir', 'readdir']) capabilityFunction(fsOps[name], `fsOps.${name}`);
   return { resourcePath, lockPath, ttlMs, staleRecovery, owner, clock, uuid, fsOps };
 }
 
@@ -157,7 +157,7 @@ export async function acquireLease(options) {
     state = 'releasing';
     await verifyOwnership();
     await fsOps.rm(ownerPath, { force: true });
-    try { await fsOps.rm(lockPath, { recursive: false, force: false }); }
+    try { await fsOps.rmdir(lockPath); }
     catch (error) { if (!['ENOTEMPTY', 'EEXIST', 'ENOENT'].includes(error?.code)) { state = 'failed'; fail('RELEASE_FAILED', 'lock was not safely empty after owner release'); } }
     state = 'released';
     return statusSnapshot(base());
