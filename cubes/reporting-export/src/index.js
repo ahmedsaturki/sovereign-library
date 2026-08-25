@@ -35,7 +35,6 @@ function validateLimits(input = {}) {
   for (const [key, value] of Object.entries(limits)) {
     if (!Number.isSafeInteger(value) || value < 1) fail('INVALID_DEFINITION', `${key} must be a positive safe integer`);
   }
-  if (limits.maxPageSize > limits.maxRows) fail('INVALID_DEFINITION', 'maxPageSize cannot exceed maxRows');
   return limits;
 }
 
@@ -69,15 +68,15 @@ function stableKey(value) {
 
 function compareValues(a, b) {
   if (a === b) return 0;
-  if (a === null) return -1;
-  if (b === null) return 1;
+  if (a === null || a === undefined) return -1;
+  if (b === null || b === undefined) return 1;
   if (typeof a === 'number' && typeof b === 'number') return a < b ? -1 : 1;
   const sa = String(a);
   const sb = String(b);
   return sa < sb ? -1 : 1;
 }
 
-function normalizeColumn(column, limits) {
+function normalizeColumn(column) {
   if (!isObject(column)) fail('INVALID_DEFINITION', 'Column must be an object');
   validatePlainObject(column, 'column');
   if (typeof column.id !== 'string' || !column.id) fail('INVALID_DEFINITION', 'Column id is required');
@@ -89,7 +88,7 @@ function normalizeColumn(column, limits) {
 function normalizeDefinition(definition, limits) {
   validatePlainObject(definition, 'definition');
   if (!Array.isArray(definition.columns) || definition.columns.length < 1 || definition.columns.length > limits.maxColumns) fail('INVALID_DEFINITION', 'Invalid report columns');
-  const columns = definition.columns.map(c => normalizeColumn(c, limits));
+  const columns = definition.columns.map(normalizeColumn);
   const ids = new Set();
   for (const c of columns) {
     if (ids.has(c.id)) fail('INVALID_DEFINITION', `Duplicate column ${c.id}`);
@@ -146,7 +145,7 @@ function createReportEngine(config = {}) {
     const projected = selected.map(item => {
       const row = {};
       for (const col of def.columns) {
-        const value = item.group && def.groupBy.includes(col.id) ? item.value[col.key] ?? null : item.value[col.key] ?? null;
+        const value = item.value[col.key] ?? null;
         if (stringBytes(value) > limits.maxCellBytes) fail('LIMIT_EXCEEDED', `Cell ${col.id} exceeds limit`);
         row[col.id] = value;
       }
