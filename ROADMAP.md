@@ -10,6 +10,10 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Release Plan / Deterministic Publication Plan v0.1
+
+PR #72 was squash-merged as `80c1dcc1a653da8247fdabc0849ecf7d9139259c`. Pre-merge Run 536 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 537 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
 ### Artifact Admission Gate / Release Eligibility v0.1
 
 PR #71 was squash-merged as `29be5dc41556cb7aafa5fc0a4cd1ccb08ef2c157`. Pre-merge Run 530 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 531 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -128,28 +132,29 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Release Plan / Deterministic Publication Plan v0.1
+### Artifact Release Snapshot / Candidate Set v0.1
 
-Target: a standalone deterministic local builder for dry-run release plans over explicit eligible artifacts, explicit dependencies, and explicit release constraints, with no publication side effects.
+Target: a standalone deterministic local snapshot that freezes an explicit candidate artifact set using normalized identity, version, digest, admission verdict, and bounded evidence references without external discovery or mutation.
 
 Initial scope:
-- explicit artifact data and explicit release-plan configuration only
-- uniqueness and dependency validation
-- required admission verdict validation
-- deterministic dependency ordering and release step generation
-- cycle and impossible prerequisite detection
-- bounded immutable dry-run plans and dependency evidence
-- deterministic checksum-protected plan serialization
+- explicit candidate artifact records only
+- deterministic identity/version/digest normalization
+- duplicate/conflict detection for identities, versions, and digests
+- stable candidate ordering independent of input insertion order
+- immutable bounded candidate snapshots
+- bounded evidence references
+- fail-closed malformed/accessor/circular/invalid/oversized input handling
+- deterministic checksum-protected snapshot serialization
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- actual publication or deployment
-- network/filesystem/registry discovery
-- remote release APIs
-- background scheduling/orchestration
+- external candidate discovery
+- network/filesystem/registry scanning
+- publication/deployment
 - signing/trust-chain verification
-- automatic artifact mutation or repair
+- automatic mutation or repair
+- scheduling/orchestration
 - GUI/admin console
 - billing or cost accounting
 
