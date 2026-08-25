@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Metrics / Telemetry v0.1
+
+Release-gate Run 329 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `3c6f171f0469b34a055008b9594d043acb680f6c`.
+
+The release provides bounded counters, gauges, deterministic cumulative histograms, metric and label validation, cardinality limits, immutable snapshots, deterministic JSON export, safe operational recording, and high-resolution timing using native Node timing primitives only.
+
 ### Worker Pool / Parallel Execution v0.1
 
 Release-gate Run 322 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `073ab5b9a27f03d7441bec8549786cd8e8f28f57`.
@@ -48,31 +54,31 @@ The release fixed a real Base64 defect: UTF-8 `Uint8Array` values must be conver
 
 ## Active milestone
 
-### Metrics / Telemetry Cube v0.1
+### Redaction / Secret Safety Cube v0.1
 
-Target: a standalone native instrumentation product for application metrics, bounded cardinality, high-resolution timing, immutable snapshots, deterministic export, and zero runtime third-party dependencies.
+Target: a standalone recursive data-redaction and secret-safety product for logs, diagnostics, configuration snapshots, HTTP payloads, and structured error reporting without third-party runtime dependencies.
 
 Initial scope:
-- counters with monotonic increments
-- gauges with explicit set/add semantics
-- bounded histograms with deterministic buckets
-- deterministic metric names and label-key validation
-- bounded label cardinality
-- immutable snapshots
-- JSON-safe export
-- high-resolution timing helpers using native Node timing primitives
-- reset/close lifecycle
-- failure-safe metric recording that never crashes the caller
+- deterministic sensitive-key matching
+- configurable custom redaction rules
+- string secret-pattern redaction
+- recursive plain-object/array traversal
+- bounded depth, node count, input/output string size
+- circular-reference detection
+- no input mutation
+- immutable/redaction-safe output
+- deterministic replacement policy
+- path-aware diagnostics without exposing secret values
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- network exporters
-- Prometheus/OpenTelemetry protocol clients
-- distributed aggregation
-- persistent metric storage
-- tracing/span correlation
-- third-party metrics packages
+- secret storage or key management
+- encryption/decryption
+- credential rotation
+- network policy enforcement
+- external DLP services
+- third-party redaction packages
 
 ## Parked
 
