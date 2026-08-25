@@ -70,6 +70,7 @@ function delay(clock, ms, signal) {
   if (ms <= 0) return Promise.resolve();
   if (signal?.aborted) return Promise.reject(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
   return new Promise((resolve, reject) => {
+    let removeAbort = null;
     const timer = clock.setTimeout(() => {
       if (removeAbort) removeAbort();
       resolve();
@@ -79,7 +80,6 @@ function delay(clock, ms, signal) {
       if (removeAbort) removeAbort();
       reject(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
     };
-    let removeAbort = null;
     if (signal) {
       signal.addEventListener('abort', onAbort, {once: true});
       removeAbort = () => signal.removeEventListener('abort', onAbort);
@@ -106,8 +106,9 @@ async function runWithAttemptTimeout(operation, attempt, attemptTimeoutMs, paren
     const guarded = attemptTimeoutMs === Infinity ? work : new Promise((resolve, reject) => {
       timer = clock.setTimeout(() => {
         timedOut = true;
-        controller.abort(new RetryError('TIMEOUT', `attempt ${attempt} timed out`, {attempts: attempt, timedOut: true, retryable: true}));
-        reject(new RetryError('TIMEOUT', `attempt ${attempt} timed out`, {attempts: attempt, timedOut: true, retryable: true}));
+        const timeoutError = new RetryError('TIMEOUT', `attempt ${attempt} timed out`, {attempts: attempt, timedOut: true, retryable: true});
+        controller.abort(timeoutError);
+        reject(timeoutError);
       }, attemptTimeoutMs);
       work.then(resolve, reject);
     });
@@ -158,7 +159,12 @@ export class RetryRunner {
         const elapsedNow = Math.max(0, this.clock.now() - startedAt);
         if (elapsedNow + delayMs > this.policy.totalBudgetMs) throw new RetryError('BUDGET_EXCEEDED', 'retry total budget exceeded', {attempts: attempt, retryable: false, lastError: error, cause: error});
         attempts[attempts.length - 1] = snapshot({...attempts[attempts.length - 1], retry: true, delayMs});
-        await delay(this.clock, delayMs, signal);
+        try {
+          await delay(this.clock, delayMs, signal);
+        } catch (delayError) {
+          if (signal?.aborted) throw new RetryError('CANCELLED', 'retry operation cancelled', {attempts: attempt, cancelled: true, cause: signal.reason ?? delayError, lastError: error});
+          throw delayError;
+        }
       }
     }
     throw new RetryError('RETRY_EXHAUSTED', 'retry attempts exhausted', {attempts: this.policy.maxAttempts});
