@@ -49,32 +49,38 @@ Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, a
 ### Validation / Schema Cube v0.1 — RELEASED
 Implemented with Node.js runtime primitives only. Verified on Ubuntu, Windows, and macOS-15-Intel with validation contract/integration/failure tests and the real Browser smoke test. Release-gate Run 170 passed all jobs.
 
+### Result / Error Cube v0.1 — RELEASED
+Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-15-Intel with Result/Error contract/integration/failure tests and the real Browser smoke test. Release-gate Run 179 passed all jobs.
+
 ## Active milestone
 
-### Result / Error Cube v0.1
+### Rate Limiter / Backpressure Cube v0.1
 
-Target: a standalone deterministic Result/Outcome and typed-error vocabulary that can be reused by every future Cube without forcing consumers onto a framework or third-party error library.
+Target: a standalone deterministic rate-limiting and backpressure primitive that can protect Browser, HTTP, Scheduler, Event, and automation workloads without a third-party limiter or external service.
 
 Initial scope:
-- Result success/failure contract
-- typed error base and error codes
-- deterministic serialization-safe diagnostics
-- cause chaining
-- retryable/cancelled/timeout classification
-- error normalization helpers
-- Result mapping/flatMap helpers
-- exhaustive outcome branching helpers
-- immutable result/error snapshots
-- cross-cube interoperability tests
-- local unit/integration/failure tests
+- token-bucket or equivalent bounded native algorithm
+- deterministic clock integration
+- immediate/non-blocking admission check
+- bounded waiting queue
+- cancellation of queued waiters
+- configurable burst capacity
+- configurable refill rate
+- fairness guarantees
+- queue overflow behavior
+- retry-after / wait-duration calculation
+- statistics and immutable snapshots
+- integration with AbortSignal
+- local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- remote error telemetry
-- localization framework
-- tracing backend
-- distributed error registry
-- third-party result/error libraries
+- distributed rate limiting
+- Redis or remote stores
+- cross-process coordination
+- adaptive ML-based throttling
+- third-party limiter libraries
+- HTTP middleware framework
 
 ## Parked
 
