@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Compliance / Policy Evaluator Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Admission Gate / Release Eligibility Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Audit / Drift Reporter v0.1**
-- Release PR: **#69**, squash-merged
-- Release commit: `f939f13437412682600aad691998cae9d5218606`
-- Pre-merge verification: **Run 511**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 512**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Audit / Drift Reporter v0.1 is therefore **FROZEN**.
-- The release provides deterministic baseline/current artifact comparison, unchanged/changed/added/removed classification, digest/version/lifecycle/lineage drift detection, bounded immutable findings, typed fail-closed errors, checksum-protected serialization, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Compliance / Policy Evaluator v0.1**
+- Release PR: **#70**, squash-merged
+- Release commit: `10ea69e80865fda16e385a635fa7bdde17162769`
+- Pre-merge verification: **Run 524**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 525**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Compliance / Policy Evaluator v0.1 is therefore **FROZEN**.
+- The release provides deterministic rule normalization, explicit artifact/rule evaluation, identity/digest/version/lifecycle/lineage/metadata/constraint predicates, bounded immutable findings, typed fail-closed errors, SCP1 checksum-protected serialization, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,35 +26,35 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-COMPLIANCE-POLICY-EVALUATOR-V0.1-SPEC**
+**ARTIFACT-ADMISSION-GATE-RELEASE-ELIGIBILITY-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic artifact compliance/policy evaluator:
+Implement the public contract for a standalone deterministic artifact admission/release eligibility gate:
 
-1. accept only explicit artifact records and explicit policy rules supplied by the caller
-2. normalize policy rules into a stable deterministic form
-3. evaluate identity, digest, version, lifecycle, lineage, metadata, and bounded numeric/string constraints
-4. classify each violation by stable rule id, severity, and category
-5. support deny/allow style predicates without an external policy engine
-6. produce bounded immutable compliance reports with deterministic ordering
-7. fail closed on malformed, accessor, circular, duplicate-rule, invalid-regex, and oversized inputs
-8. provide deterministic report serialization with checksum/integrity protection
-9. no network, filesystem discovery, registry lookup, or automatic repair
+1. accept explicit artifact records plus an explicit admission configuration only
+2. evaluate required compliance verdicts, lifecycle state, digest presence, version validity, provenance/lineage status, and bounded metadata requirements
+3. support deterministic required/optional gate clauses with stable ids
+4. produce a single immutable eligibility verdict plus bounded blocking/non-blocking reasons
+5. preserve evidence references without copying unbounded payloads
+6. fail closed on malformed/accessor/circular/duplicate clause/invalid configuration/oversized inputs
+7. serialize and parse the gate result deterministically with checksum/integrity protection
+8. never mutate artifact inputs and never perform automatic repair
+9. no network, filesystem discovery, registry lookup, or external policy engine required
 10. zero runtime third-party dependencies
 11. unit, contract, failure, recovery, and cross-platform verification
 12. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Compliance / Policy Evaluator v0.1, allowed scope is only:
+For Artifact Admission Gate / Release Eligibility v0.1, allowed scope is only:
 
 - explicit local artifact data
-- explicit local compliance rules
-- deterministic normalization and evaluation
-- bounded immutable compliance findings and reports
+- explicit gate configuration supplied by the caller
+- deterministic eligibility evaluation
+- immutable verdict/evidence summaries
 - typed fail-closed errors
-- deterministic checksum-protected report serialization
+- deterministic checksum-protected result serialization
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
@@ -62,11 +62,10 @@ Explicitly out of scope for v0.1:
 
 - remote policy retrieval
 - network/filesystem/registry discovery
-- automatic repair or mutation of source artifacts
-- distributed policy evaluation
-- signature/trust-chain verification
+- automatic repair, mutation, or publication
+- release scheduling/orchestration
+- signing or trust-chain verification
 - GUI/admin console
-- background scheduler integration
 - billing or cost accounting
 
 ## Definition of done
