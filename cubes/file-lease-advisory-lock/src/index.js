@@ -103,13 +103,19 @@ export async function acquireLease(options) {
   const base = () => ({ leaseId, lockPath, resourcePath, owner, acquiredAt, expiresAt, state });
   const readCurrent = async () => {
     const entries = await fsOps.readdir(lockPath);
-    const ownerFile = entries.find((name) => /^owner-[A-Za-z0-9-]+\.json$/.test(name));
-    if (!ownerFile) fail('MALFORMED_LOCK_RECORD', 'lock directory has no owner record');
-    return parseRecord(await fsOps.readFile(`${lockPath}/${ownerFile}`, 'utf8'));
+    const ownerFiles = entries.filter((name) => /^owner-[A-Za-z0-9-]+\.json$/.test(name));
+    if (ownerFiles.length === 0) fail('NO_OWNER_RECORD', 'lock directory has no owner record');
+    if (ownerFiles.length !== 1) fail('MALFORMED_LOCK_RECORD', 'lock directory has multiple owner records');
+    return parseRecord(await fsOps.readFile(`${lockPath}/${ownerFiles[0]}`, 'utf8'));
   };
   async function recoverStale() {
     if (!staleRecovery) return false;
-    const current = await readCurrent();
+    let current;
+    try { current = await readCurrent(); }
+    catch (error) {
+      if (error instanceof FileLeaseError && error.code === 'NO_OWNER_RECORD') fail('STALE_RECOVERY_REJECTED', 'stale recovery cannot safely replace a lock without an owner record');
+      throw error;
+    }
     if (!current.expiresAt) return false;
     const expiration = Date.parse(current.expiresAt);
     if (!Number.isFinite(expiration) || expiration > clock.now()) return false;
@@ -138,12 +144,15 @@ export async function acquireLease(options) {
   async function verifyOwnership() {
     if (lost || ['released', 'expired'].includes(state)) fail('INVALID_STATE', 'lease is no longer active');
     try {
-      const current = parseRecord(await fsOps.readFile(ownerPath, 'utf8'));
+      const current = await readCurrent();
       if (current.leaseId !== leaseId) { lost = true; state = 'lost'; fail('OWNERSHIP_LOST', 'lease ownership is no longer held'); }
       if (current.expiresAt && Date.parse(current.expiresAt) <= clock.now()) { lost = true; state = 'expired'; fail('LEASE_EXPIRED', 'lease has expired'); }
       return current;
     } catch (error) {
-      if (error instanceof FileLeaseError) throw error;
+      if (error instanceof FileLeaseError) {
+        if (error.code === 'NO_OWNER_RECORD') { lost = true; state = 'lost'; fail('OWNERSHIP_LOST', 'lease owner record is no longer available'); }
+        throw error;
+      }
       lost = true; state = 'lost'; fail('OWNERSHIP_LOST', 'lease owner record is no longer available');
     }
   }
@@ -161,9 +170,17 @@ export async function acquireLease(options) {
     if (state === 'lost' || state === 'expired') { state = 'released'; return statusSnapshot(base()); }
     state = 'releasing';
     await verifyOwnership();
+    const entries = await fsOps.readdir(lockPath);
+    const ownerFile = `owner-${leaseId}.json`;
+    const unexpected = entries.filter((name) => name !== ownerFile);
+    if (unexpected.length > 0) { state = 'failed'; fail('RELEASE_FAILED', 'lock directory contains unexpected entries'); }
     await fsOps.rm(ownerPath, { force: true });
     try { await fsOps.rmdir(lockPath); }
-    catch (error) { if (!['ENOTEMPTY', 'EEXIST', 'ENOENT'].includes(error?.code)) { state = 'failed'; fail('RELEASE_FAILED', 'lock was not safely empty after owner release'); } }
+    catch (error) {
+      if (error?.code === 'ENOENT') { state = 'released'; return statusSnapshot(base()); }
+      if (['ENOTEMPTY', 'EEXIST'].includes(error?.code)) { state = 'failed'; fail('RELEASE_FAILED', 'lock directory was not empty after owner removal'); }
+      state = 'failed'; fail('RELEASE_FAILED', 'lock directory could not be removed safely');
+    }
     state = 'released';
     return statusSnapshot(base());
   }
