@@ -33,6 +33,11 @@ function startFixtureServer() {
   });
 }
 
+async function closeFixtureServer(server) {
+  if (typeof server.closeAllConnections === 'function') server.closeAllConnections();
+  await new Promise(resolve => server.close(resolve));
+}
+
 async function waitForPageReady(browser, timeoutMs = 5000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -60,7 +65,7 @@ test('browser smoke: launch, navigate, evaluate, metadata, screenshot, cleanup',
     assert.equal(metadata.readyState, 'complete');
 
     const bodyText = await browser.evaluate('document.body.innerText');
-    assert.match(bodyText, /Sovereign Browser Cube OK/);
+    assert.match(bodyText, /Sovereign Browser Fixture/);
 
     const png = await browser.screenshot();
     assert.ok(Buffer.isBuffer(png));
@@ -68,7 +73,7 @@ test('browser smoke: launch, navigate, evaluate, metadata, screenshot, cleanup',
     assert.equal(browser.closed, false);
   } finally {
     await browser.close();
-    await new Promise(resolve => fixture.server.close(resolve));
+    await closeFixtureServer(fixture.server);
   }
 
   assert.equal(browser.closed, true);
