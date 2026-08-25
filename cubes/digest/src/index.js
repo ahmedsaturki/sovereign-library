@@ -4,7 +4,6 @@ const DEFAULT_MAX_INPUT_BYTES = 5 * 1024 * 1024;
 const DEFAULT_MAX_CHUNK_BYTES = 1 * 1024 * 1024;
 const DEFAULT_MAX_TOTAL_BYTES = 256 * 1024 * 1024;
 const SUPPORTED_HASHES = new Set(['sha256', 'sha512']);
-const SUPPORTED_HMACS = new Set(['sha256', 'sha512']);
 
 export class DigestError extends Error {
   constructor(code, message, options = {}) {
@@ -47,9 +46,10 @@ function toBuffer(input) {
 
 function digestBuffer(algorithm, input, options, operation) {
   const config = normalizeOptions(options);
+  const normalized = normalizeAlgorithm(algorithm);
   const buffer = toBuffer(input);
   if (buffer.byteLength > config.maxInputBytes) throw new DigestError('INPUT_TOO_LARGE', `Input exceeds ${config.maxInputBytes} bytes`, { operation, statusCode: 413 });
-  try { return Buffer.from(createHash(normalizeAlgorithm(algorithm)).update(buffer).digest()); }
+  try { return Buffer.from(createHash(normalized).update(buffer).digest()); }
   catch (cause) { throw new DigestError('DIGEST_FAILED', 'Digest operation failed', { cause, operation }); }
 }
 
@@ -64,15 +64,11 @@ function hmacBuffer(algorithm, key, input, options, operation) {
   catch (cause) { throw new DigestError('HMAC_FAILED', 'HMAC operation failed', { cause, operation }); }
 }
 
-export function createDigestConfig(options = {}) {
-  return normalizeOptions(options);
-}
-
+export function createDigestConfig(options = {}) { return normalizeOptions(options); }
 export function sha256(input, options = {}) { return digestBuffer('sha256', input, options, 'sha256'); }
 export function sha512(input, options = {}) { return digestBuffer('sha512', input, options, 'sha512'); }
 export function hmacSha256(key, input, options = {}) { return hmacBuffer('sha256', key, input, options, 'hmac-sha256'); }
 export function hmacSha512(key, input, options = {}) { return hmacBuffer('sha512', key, input, options, 'hmac-sha512'); }
-
 export function digestHex(algorithm, input, options = {}) { return digestBuffer(algorithm, input, options, 'digest').toString('hex'); }
 export function hmacHex(algorithm, key, input, options = {}) { return hmacBuffer(algorithm, key, input, options, 'hmac').toString('hex'); }
 
