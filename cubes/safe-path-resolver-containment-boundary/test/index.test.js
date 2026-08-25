@@ -103,7 +103,7 @@ test('malformed, oversized, circular, and accessor inputs fail closed', () => {
   expectCode(() => normalizePath(''), 'INVALID_PATH');
   expectCode(() => normalizePath('a'.repeat(32769)), 'LIMIT_EXCEEDED');
   const circular = {}; circular.self = circular;
-  expectCode(() => isContained('/a', circular), 'CAPABILITY_RESULT_INVALID');
+  expectCode(() => isContained('/a', circular), 'INVALID_PATH');
   expectCode(() => parseReport('{bad'), 'MALFORMED_SERIALIZATION');
 });
 
