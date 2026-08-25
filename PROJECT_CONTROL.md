@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Select and specify the next standalone Sovereign product after freezing **File Lease / Advisory Lock v0.1**.
+Select and specify the next standalone Sovereign product after freezing **Ephemeral Workspace / Scratch Directory v0.1**.
 
 ## Current repository state
 
-- Last released cube: **File Lease / Advisory Lock v0.1**
-- Release PR: **#80**, merged
-- Release commit: `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868`
-- Pre-merge verification: **Run 607**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 522/522 full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 608**, passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- File Lease / Advisory Lock v0.1 is **FROZEN**.
-- The next cube candidate is **Ephemeral Workspace / Scratch Directory v0.1**. Its SPEC is the immediate next deliverable.
+- Last released cube: **Ephemeral Workspace / Scratch Directory v0.1**
+- Release PR: **#81**, merged
+- Release commit: `33b98771c4702a02dbdc3ce267af516bfbd8e43c`
+- Pre-merge verification: **Run 613**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 614**, initially hit a transient macOS-15-Intel runner hang/cancellation during contract tests; Ubuntu and Windows passed. The macOS job was re-run independently on the same release commit and then passed syntax, full repository tests, and real-browser smoke. The rerun establishes the release state as verified across the supported matrix.
+- Ephemeral Workspace / Scratch Directory v0.1 is **FROZEN**.
+- The previous macOS interruption was a runner/infrastructure anomaly, not a product regression: the identical commit passed pre-merge on macOS and passed the clean macOS rerun without code changes.
 
 ## The one-current-task rule
 
@@ -26,30 +26,32 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**EPHEMERAL-WORKSPACE-SCRATCH-DIRECTORY-V0.1-SPEC**
+**ATOMIC-FILE-WRITER-SAFE-REPLACE-V0.1-SPEC**
 
 ### Immediate next task
 
-Write and commit the complete SPEC for **Ephemeral Workspace / Scratch Directory v0.1** before implementation begins.
+Write and commit the complete SPEC for **Atomic File Writer / Safe Replace v0.1** before implementation begins.
 
 The SPEC must lock:
 
-1. standalone workspace lifecycle and public API
-2. safe unique workspace creation without following attacker-controlled paths
-3. bounded ownership metadata and workspace identity
-4. cleanup and idempotent release behavior
-5. optional TTL/expiry semantics without timestamp-only ownership claims
-6. conservative stale/orphan recovery rules
-7. path containment and symlink boundary behavior
-8. deterministic test seams for filesystem, clock, and identity capabilities
-9. cross-platform Ubuntu, Windows, macOS-15-Intel, and relevant WSL behavior
-10. zero-runtime-third-party-dependency boundary
+1. atomic replacement semantics for one destination file
+2. temporary-file creation inside the destination directory
+3. complete-write verification before replacement
+4. optional content digest and deterministic metadata
+5. preservation or explicit control of destination mode/permissions where supported
+6. crash/failure cleanup without deleting an unrelated pre-existing destination
+7. same-filesystem replacement guarantees and cross-device failure behavior
+8. symlink/path containment policy and refusal to follow unsafe destination indirection
+9. bounded input size, metadata, temporary names, and cleanup attempts
+10. deterministic filesystem, clock, identity, and rename capability seams
+11. Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
+12. zero-runtime-third-party-dependency boundary
 
 No implementation starts before the SPEC exists on the control plane.
 
 ## Scope lock
 
-The next cube owns ephemeral workspace creation, identity, lifecycle, cleanup, and recovery. It does not own file watching, advisory locking, file synchronization, process execution, networking, persistence databases, or content parsing.
+The next cube owns safe replacement of one local file from caller-supplied bytes or an explicit stream writer. It does not own general file synchronization, filesystem watching, directory trees, advisory locking, process execution, content parsing, cloud/object storage, or databases.
 
 ## Definition of done
 
