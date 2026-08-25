@@ -10,21 +10,23 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Local Artifact Catalog / Package Index v0.1
+
+PR #63 was squash-merged as `58fdd97ed36bf058843c83e2ad226a20d85fb446`. Pre-merge Run 465 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 466 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
+The release provides deterministic SAC1 catalog state, stable artifact identifiers, exact/prefix/package/version/tag queries, atomic persistence, corruption detection, immutable snapshots, typed fail-closed errors, and zero runtime third-party dependencies.
+
 ### Artifact Bundle / Reproducible Package v0.1
 
 PR #62 was squash-merged as `a1d2655e7d48b63ce6ded71e4e449ea2c3a841dd`. Pre-merge Run 458 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 399 tests, and the real-browser smoke gate. Post-merge Run 459 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
 
-The release provides deterministic SAB1 bundles, canonical metadata and paths, bounded entries, native SHA-256 integrity descriptors, safe verification/extraction, typed fail-closed errors, and zero runtime third-party dependencies.
-
 ### Content-Addressed Storage / CAS v0.1
 
-PR #61 was squash-merged as `63ba1b7e684857e95303b02864c91627a6c601e0`. Pre-merge Run 450 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 451 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
-
-The release provides native SHA-256 content addressing, bounded local object storage, atomic writes, corruption detection, immutable-by-copy reads, bounded metadata, typed fail-closed errors, and zero runtime third-party dependencies.
+PR #61 was squash-merged as `63ba1b7e684857e95303b02864c91627a6c601e0` after full cross-platform verification.
 
 ### Release Manifest / Integrity v0.1
 
-PR #59 was squash-merged as `d1e33a2cfb12303cfe7e810e17241636ffa998db`. Pre-merge Run 437 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 390 tests, and the real-browser smoke gate. Post-merge Run 438 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+PR #59 was squash-merged as `d1e33a2cfb12303cfe7e810e17241636ffa998db` after full cross-platform verification.
 
 ### Release / Verification Harness v0.1
 
@@ -96,31 +98,31 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Local Artifact Catalog / Package Index v0.1
+### Artifact Dependency Graph / Relationship Index v0.1
 
-Target: a standalone deterministic local catalog/index for artifact/package records, exact and prefix/tag/version queries, bounded local state, atomic mutation and recovery, immutable snapshots, and deterministic backup/restore serialization.
+Target: a standalone deterministic local relationship graph for artifact/package nodes and typed directed edges, with bounded adjacency/path queries, cycle detection, atomic mutations, and deterministic backup/restore serialization.
 
 Initial scope:
-- canonical artifact records and stable identifiers
-- deterministic package/version metadata normalization
-- bounded catalog size, record size, identifier length, and query output
-- atomic add/update/remove semantics with recovery
-- deterministic exact/prefix/tag/version queries
-- immutable snapshots and typed fail-closed errors
-- duplicate/conflicting record rejection
-- corruption detection for persisted index state
-- deterministic serialization suitable for backup/restore
+- canonical nodes and typed directed relationships
+- stable relationship identifiers and deterministic adjacency ordering
+- bounded node/edge count, identifier/label lengths, and query output
+- atomic add/remove mutations with recovery
+- exact-neighbor, reverse-neighbor, and bounded path queries
+- cycle detection and duplicate/conflict rejection
+- immutable graph snapshots and typed fail-closed errors
+- deterministic serialization with checksum and corruption detection
+- safe restore without code execution or external resolution
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- remote registries
+- remote graph synchronization
+- remote dependency resolution
+- semantic-version solving
 - package publishing
 - network transport
-- remote dependency resolution
-- signing/key management
 - GUI/admin console
-- full semantic-version solver
+- graph visualization UI
 - background synchronization
 
 ## Parked
