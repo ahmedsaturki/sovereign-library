@@ -1,118 +1,41 @@
 # Sovereign Library
 
-A collection of **standalone, dependency-free software cubes** for building applications, tools, automations, agents, and products.
+A collection of standalone, dependency-free software cubes for applications, tools, automations, agents, and products.
 
-## The rule
+## Release rule
 
-Each cube is a complete product in its own right: independently usable, testable, documented, versioned, and replaceable. Cubes do not depend on other Sovereign cubes unless a contract explicitly says so.
+Each cube is independently usable, documented, tested, cross-platform, failure/recovery hardened, and replaceable.
 
-We study proven implementations, open-source projects, standards, production failures, benchmarks, and expert practice. We extract useful ideas and implement the required capability as our own focused component. We do not copy code blindly; when source code is reused, applicable licenses and attribution requirements are preserved.
+`SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE -> NEXT CUBE`
+
+## Dependency policy
+
+Target: zero runtime third-party dependencies per cube. Standard libraries and native OS primitives are allowed foundations.
+
+## Cross-platform target
+
+Windows, Linux, macOS, and WSL where the capability is supported.
+
+## Released through v0.1
+
+The repository includes the core Browser, HTTP, Filesystem, Process, Data, Storage, Transport, Scheduling, Eventing, Diagnostics, Configuration, Resilience, Concurrency, HTTP Server, Encoding, Streaming, Digest, Serialization, Worker, Metrics, Security, Diff, Canonical JSON, CLI, Search, Workflow, Persistence, Reporting, AI, Agent, Policy, Execution, Release, Artifact, Runtime Capability, Filesystem Watcher, File Lease, Ephemeral Workspace, and Atomic File Writer cubes.
+
+### Latest release
+
+**Atomic File Writer / Safe Replace v0.1** — finalized by corrective PR #84 at `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`.
+
+The corrective release fixed a real Node 24 compatibility issue in the default `fsync` capability without changing the public contract. Corrective Run #622 and post-merge Run #623 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+
+## Active milestone
+
+**Directory Snapshot / Tree Manifest v0.1 SPEC** — the next standalone product. It will own deterministic local directory inventory, stable entry representation and ordering, optional file digesting, explicit symlink policy, bounded manifest generation, and clear concurrent-mutation/error semantics without becoming a sync, watch, storage, or database framework.
 
 ## Repository shape
 
 ```text
-cubes/          standalone reusable products
-contracts/      stable interchange contracts
-adapters/       optional environment/external adapters
-examples/       runnable examples
-specs/          cube specifications and definition-of-done gates
-tests/          repository verification
-docs/           research and extraction notes
+cubes/ contracts/ adapters/ examples/ specs/ tests/ docs/
 ```
-
-## Dependency policy
-
-Target: **zero runtime third-party dependencies per cube**. Language standard libraries, operating-system primitives, open protocols, and web standards are allowed foundations. Third-party packages are not required by the core products.
-
-A cube may use an external runtime such as Chromium when that external program is itself the capability being implemented (for example, Browser Cube uses Chromium through CDP), but the cube must not require a third-party automation framework or SDK.
-
-## Cross-platform target
-
-Windows, Linux, macOS, and WSL where the underlying capability is supported and verifiable.
-
-## Release discipline
-
-A cube is not released because source code exists. It is released only after contract tests, normal-path tests, failure/recovery tests, documentation, examples, clean-checkout verification, and platform checks pass.
-
-The project follows one active cube at a time:
-
-`SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE -> NEXT CUBE`
-
-## Current status
-
-Released through v0.1:
-
-- Browser
-- HTTP Client
-- Filesystem
-- Process / Command
-- Data Engine
-- Storage
-- WebSocket / Transport
-- Task Scheduler / Queue
-- Event / Signal
-- Logger / Diagnostics
-- Configuration / Environment
-- Cache / Memoization
-- Validation / Schema
-- Result / Error
-- Rate Limiter / Backpressure
-- Retry / Resilience
-- Concurrency / Bulkhead
-- Circuit Breaker / Health Gate
-- Timeout / Deadline
-- HTTP Server / Router
-- MIME / Multipart
-- HTTP Metadata
-- URL / Query / Encoding
-- Content-Encoding / Compression
-- Stream / Pipeline
-- Digest / Hash
-- Serialization / Binary Codec
-- Worker Pool / Parallel Execution
-- Metrics / Telemetry
-- Redaction / Secret Safety
-- Diff / Patch
-- Canonical JSON / Normalization
-- CLI / Command Runtime
-- Search / Index
-- Workflow / Durable Orchestration
-- Storage Persistence / Snapshot
-- Reporting / Export
-- AI / Inference Runtime
-- Agent Runtime
-- Policy / Capability Security
-- Execution Engine
-- Release / Verification Harness
-- Release Manifest / Integrity
-- Content-Addressed Storage / CAS
-- Artifact Bundle / Reproducible Package
-- Local Artifact Catalog / Package Index
-- Artifact Dependency Graph / Relationship Index
-- Artifact Lifecycle / Retention Index
-- Artifact Reference Resolver / Locator
-- Artifact Provenance / Lineage Ledger
-- Artifact Reconciliation / Consistency Checker
-- Artifact Audit / Drift Reporter
-- Artifact Compliance / Policy Evaluator
-- Artifact Admission Gate / Release Eligibility
-- Artifact Release Plan / Deterministic Publication Plan
-- Artifact Release Snapshot / Candidate Set
-- Artifact Release Approval / Decision Record
-- Artifact Release Closure Receipt
-- Artifact Release Publication Executor / Boundary
-- Artifact Release Publication Confirmation / Outcome Receipt
-- Runtime Capability Inspector / Preflight
-- Filesystem Watcher / Change Stream
-- File Lease / Advisory Lock
-- Ephemeral Workspace / Scratch Directory
-
-The latest release is **Ephemeral Workspace / Scratch Directory v0.1**, squash-merged as `33b98771c4702a02dbdc3ce267af516bfbd8e43c` via PR #81. Pre-merge Run 613 passed across Ubuntu, Windows, and macOS-15-Intel. Post-merge Run 614 initially experienced a transient macOS-15-Intel runner hang; the same job was rerun on the identical commit and then passed syntax checks, full repository tests, and real-browser smoke. No code or workflow changes were required.
-
-## Active milestone
-
-**Atomic File Writer / Safe Replace v0.1 SPEC** — the next standalone product. It will own safe replacement of one local file, complete candidate writes before replacement, bounded digest verification, path/symlink safety, explicit same-filesystem/cross-device semantics, and deterministic filesystem capability seams without becoming a general sync or storage framework.
 
 ## License
 
-The project license will be selected before the first distributable public code release. Until then, treat this repository as source-available development material and do not assume unrestricted redistribution rights.
+The project license will be selected before the first distributable public code release. Until then, treat this repository as source-available development material.
