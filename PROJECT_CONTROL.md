@@ -6,17 +6,18 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Diff / Patch Cube v0.1** and release it before starting another cube.
+Finish and freeze **Diff / Patch Cube v0.1** before starting another cube.
 
 ## Current repository state
 
-- Last released cube: **Redaction / Secret Safety v0.1**
-- Release PR: **#45**, squash-merged
-- Release commit: `e1040a0464f10f6e20d2ed39b5dd2e9097edae83`
-- Latest main commit: `907680fd2f2c8c7c2fa8c3a3a6e30a81c8b00878`
-- Latest main commit: `docs: release redaction and advance diff patch milestone`
-- Latest release-gate CI: **Run 341**, passed on Ubuntu, Windows, and macOS-15-Intel with full repository tests and real-browser smoke
-- Post-release verification: **Run 342** initially exposed one macOS-15-Intel timing-sensitive Worker Pool timeout test; failed jobs were re-run and the retry is currently in progress. No Redaction regression was observed.
+- Last released cube before current gate: **Redaction / Secret Safety v0.1**
+- Current release PR: **#48**, squash-merged
+- Current release merge commit: `e1acaeea3ec0b02da8998ac30a2f910e64aa2ade`
+- Diff / Patch branch head released into main: `1e7e37c0254fd107ec4b9bc46d689fcc6617ca2d`
+- Latest main feature merge: `e1acaeea3ec0b02da8998ac30a2f910e64aa2ade`
+- Release-gate Run 345: Ubuntu and macOS-15-Intel passed syntax, full repository tests, and real-browser smoke; the Windows job remained queued when GitHub completed the merge.
+- Post-merge verification is therefore required before FREEZE and before the repository is advanced to the next cube.
+- Earlier release-gate Run 341 for Redaction passed on Ubuntu, Windows, and macOS-15-Intel.
 - Duplicate Redaction PR #47 was closed as superseded by PR #45.
 
 ## The one-current-task rule
@@ -27,49 +28,40 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**DIFF-PATCH-V0.1-RELEASE**
+**DIFF-PATCH-V0.1-FREEZE-GATE**
 
 ### Immediate next task
 
-Build and release a standalone native Diff / Patch product:
+Verify the merged Diff / Patch Cube on `main` across the supported CI matrix and complete the freeze:
 
-1. freeze JSON-safe value and path semantics
-2. define deterministic structural diff operations
-3. define strict path validation and operation ordering
-4. implement immutable diff output
-5. implement bounded operation/depth/value limits
-6. implement deterministic patch application
-7. reject malformed, unsafe, ambiguous, or conflicting patch operations
-8. guarantee source immutability for both diff and patch
-9. expose safe typed diagnostics without leaking arbitrary payloads
-10. verify zero runtime third-party dependencies
-11. add unit, contract, integration, failure, and recovery tests
-12. run the supported cross-platform CI matrix and real-browser smoke gate
-13. fix only failures required for the v0.1 gate
-14. squash-merge the release PR
-15. update `ROADMAP.md` and freeze the cube before starting another milestone
+1. run the post-merge repository verification on `main`
+2. require syntax, full repository tests, failure/recovery tests, and real-browser smoke to pass
+3. require Ubuntu, Windows, and macOS-15-Intel verification to pass
+4. record any blocking failure with root cause, minimal fix, and regression protection
+5. update `ROADMAP.md` with the final release record
+6. update `README.md` to reflect the released cube
+7. freeze Diff / Patch v0.1
+8. activate exactly one next cube and exactly one immediate next task
 
-## Scope lock
-
-For Diff / Patch Cube v0.1, the allowed scope is only:
+## Diff / Patch v0.1 scope that has been implemented
 
 - JSON-safe primitives, arrays, and plain objects
 - deterministic structural diff generation
-- deterministic patch operation format
-- add/remove/replace operations
-- strict path parsing and validation
-- bounded operation count and traversal depth
-- bounded string/value sizes
+- deterministic add/remove/replace operation format
+- strict JSON Pointer path parsing and escaping
+- bounded operation count, traversal depth, node count, string size, and serialized value size
 - immutable diff results
-- immutable patch results
+- persistent immutable patch application
 - source immutability
-- deterministic operation ordering
-- conflict/ambiguity rejection
-- typed errors and safe diagnostics
-- local unit/contract/integration/failure/recovery tests
-- cross-platform verification
+- deterministic object ordering
+- conflict and ambiguity rejection
+- typed fail-closed diagnostics without arbitrary payload copying
+- circular-reference detection before recursive traversal
+- zero runtime third-party dependencies
+- public documentation and runnable example
+- unit, contract, integration, failure, and recovery coverage
 
-Explicitly out of scope for v0.1:
+## Explicitly out of scope for Diff / Patch v0.1
 
 - binary diff formats
 - filesystem patching
