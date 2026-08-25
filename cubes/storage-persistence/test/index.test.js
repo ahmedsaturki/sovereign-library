@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createSnapshotStore, SnapshotError } from '../src/index.js';
@@ -47,8 +47,8 @@ test('checksum corruption fails closed', async () => {
     const file = path.join(dir, 'bad.slib');
     const store = createSnapshotStore();
     const snapshot = store.create({ safe: true });
-    await writeFile(file, `${snapshot.envelope}x`);
-    await assert.rejects(() => store.load(file), error => error instanceof SnapshotError && error.code === 'MALFORMED_SNAPSHOT');
+    await writeFile(file, `${snapshot.envelope.slice(0, -2)}0\n`);
+    await assert.rejects(() => store.load(file), error => error instanceof SnapshotError && error.code === 'INTEGRITY_FAILURE');
   });
 });
 
@@ -75,7 +75,7 @@ test('truncated and future-version snapshots fail closed', async () => {
   });
 });
 
-test('oversized payloads are rejected before persistence', async () => {
+test('oversized payloads are rejected before persistence', () => {
   const store = createSnapshotStore({ limits: { maxPayloadBytes: 8 } });
   assert.throws(() => store.create({ value: 'this is too large' }), error => error instanceof SnapshotError && error.code === 'LIMIT_EXCEEDED');
 });
@@ -89,6 +89,14 @@ test('circular values and accessor values fail without evaluating getters', () =
   const accessor = {};
   Object.defineProperty(accessor, 'secret', { get() { evaluated = true; return 'x'; }, enumerable: true });
   assert.throws(() => store.create(accessor), error => error instanceof SnapshotError && error.code === 'UNSUPPORTED_VALUE');
+  assert.equal(evaluated, false);
+});
+
+test('configuration accessors fail closed before evaluation', () => {
+  let evaluated = false;
+  const config = {};
+  Object.defineProperty(config, 'algorithm', { get() { evaluated = true; return 'sha256'; }, enumerable: true });
+  assert.throws(() => createSnapshotStore(config), error => error instanceof SnapshotError && error.code === 'INVALID_CONFIG');
   assert.equal(evaluated, false);
 });
 
@@ -132,7 +140,6 @@ test('malformed metadata and unsupported format fail before payload exposure', a
     const snapshot = store.create({ secret: 'payload' });
     const malformed = snapshot.envelope.replace('SLIBSNAP', 'OTHER');
     await writeFile(file, malformed);
-    const error = await assert.rejects(() => store.load(file), SnapshotError);
-    assert.notEqual(error?.message?.includes('payload'), true);
+    await assert.rejects(() => store.load(file), error => error instanceof SnapshotError && error.code === 'UNSUPPORTED_FORMAT' && !error.message.includes('payload'));
   });
 });
