@@ -72,9 +72,9 @@ test('deadline snapshot is immutable and updates remaining time', () => {
   assert.equal(deadline.snapshot().expired, true);
 });
 
-test('invalid clocks and arguments fail early', () => {
+test('invalid clocks and arguments fail early', async () => {
   assert.throws(() => new Deadline(10, {}), TypeError);
   assert.throws(() => createDeadline(-1), RangeError);
   assert.throws(() => deadlineFromAbsolute(-1), RangeError);
-  assert.throws(() => withDeadline(() => {}, {}), TypeError);
+  await assert.rejects(withDeadline(() => {}, {}), TypeError);
 });
