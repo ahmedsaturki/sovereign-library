@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import {
   snapshotDirectory,
@@ -38,6 +38,15 @@ test('captures deterministic sorted files and directories without following syml
     assert.deepEqual(one.entries, two.entries);
     assert.equal(one.snapshotId, two.snapshotId);
     assert.deepEqual(one.warnings, []);
+  } finally { await cleanup(root); }
+});
+
+test('uses canonical root identity for platform-resolved filesystem paths', async () => {
+  const root = await tempRoot();
+  try {
+    const canonical = (await realpath(root)).replace(/^\\\\\?\\/, '');
+    const snapshot = await snapshotDirectory(root, baseOptions());
+    assert.equal(snapshot.root, resolve(canonical));
   } finally { await cleanup(root); }
 });
 
