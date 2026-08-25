@@ -40,9 +40,37 @@ The project follows one active cube at a time:
 
 ## Current status
 
-**Browser Cube v0.1 — released.**
+Released through v0.1:
 
-The first standalone browser product was verified through GitHub Actions on Windows, Linux, and macOS, including a real Chromium smoke test. The next active milestone is **HTTP Client Cube v0.1**.
+- Browser
+- HTTP Client
+- Filesystem
+- Process / Command
+- Data Engine
+- Storage
+- WebSocket / Transport
+- Task Scheduler / Queue
+- Event / Signal
+- Logger / Diagnostics
+- Configuration / Environment
+- Cache / Memoization
+- Validation / Schema
+- Result / Error
+- Rate Limiter / Backpressure
+- Retry / Resilience
+- Concurrency / Bulkhead
+- Circuit Breaker / Health Gate
+- Timeout / Deadline
+- HTTP Server / Router
+- MIME / Multipart
+- HTTP Metadata
+- URL / Query / Encoding
+
+Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
+
+## Active milestone
+
+**Content-Encoding / Compression Cube v0.1** — native, bounded compression/decompression helpers built on Node.js runtime primitives, with explicit format/size/error contracts.
 
 ## License
 
