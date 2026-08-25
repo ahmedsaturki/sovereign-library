@@ -79,7 +79,7 @@ test('bounds output and arguments without copying payloads into errors', async (
     limits: { maxArgs: 2, maxOutputBytes: 4 },
     commands: [{ name: 'run', handler: () => ({ code: 0, stdout: '12345' }) }],
   });
-  assert.equal((await cli.run(['run', 'x', 'y'])).code, 0);
+  assert.equal((await cli.run(['run', 'x', 'y'])).code, 1);
   const tooMany = await cli.run(['run', 'x', 'y', 'z']);
   assert.equal(tooMany.code, 2);
   const output = await cli.run(['run']);
@@ -92,7 +92,7 @@ test('configuration rejects duplicate definitions and accessors', () => {
   assert.throws(() => createCli({ name: 'demo', commands: [
     { name: 'run', handler: () => ({}) },
     { name: 'run', handler: () => ({}) },
-  ] }), /AMBIGUOUS_CONFIG/);
+  ] }), (error) => error?.code === 'AMBIGUOUS_CONFIG');
   const config = { name: 'demo', get commands() { throw new Error('must not execute'); } };
   assert.throws(() => createCli(config), /Accessor properties are not supported/);
 });
