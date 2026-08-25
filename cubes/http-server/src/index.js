@@ -19,9 +19,7 @@ function assertMethod(method) {
 }
 
 function normalizePath(path) {
-  if (typeof path !== 'string' || path.length === 0 || !path.startsWith('/')) {
-    throw new TypeError('path must be an absolute pathname');
-  }
+  if (typeof path !== 'string' || path.length === 0 || !path.startsWith('/')) throw new TypeError('path must be an absolute pathname');
   if (path.length > 1 && path.endsWith('/')) return path.slice(0, -1);
   return path;
 }
@@ -52,9 +50,7 @@ function compilePath(path) {
 }
 
 export class Router {
-  constructor() {
-    this.routes = [];
-  }
+  constructor() { this.routes = []; }
 
   add(method, path, handler) {
     const normalizedMethod = assertMethod(method);
@@ -84,27 +80,28 @@ export class Router {
       pathMatches.push({ route, params });
     }
     const exact = pathMatches.find(item => item.route.method === normalizedMethod);
-    if (exact) return { type: 'route', ...exact };
+    if (exact) return { type: 'route', ...exact, headOnly: false };
     if (normalizedMethod === 'HEAD') {
       const getRoute = pathMatches.find(item => item.route.method === 'GET');
       if (getRoute) return { type: 'route', ...getRoute, headOnly: true };
     }
-    if (pathMatches.length) return { type: 'method-not-allowed', methods: [...new Set(pathMatches.map(item => item.route.method))].sort() };
+    if (pathMatches.length) {
+      const methods = new Set(pathMatches.map(item => item.route.method));
+      if (methods.has('GET')) methods.add('HEAD');
+      return { type: 'method-not-allowed', methods: [...methods].sort() };
+    }
     return { type: 'not-found' };
   }
 
-  snapshot() {
-    return Object.freeze(this.routes.map(route => Object.freeze({ path: route.path, method: route.method })));
-  }
+  snapshot() { return Object.freeze(this.routes.map(route => Object.freeze({ path: route.path, method: route.method }))); }
 }
 
-function createContext(req, res, match, bodyLimit) {
+function createContext(req, res, bodyLimit) {
   const url = new URL(req.url ?? '/', 'http://localhost');
   const controller = new AbortController();
   const onClose = () => { if (!res.writableEnded) controller.abort(new HttpServerError('REQUEST_CLOSED', 'Request connection closed', { statusCode: 499 })); };
   req.once('aborted', onClose);
   res.once('close', onClose);
-
   let bodyPromise;
   const readBody = async () => {
     if (bodyPromise) return bodyPromise;
@@ -123,14 +120,13 @@ function createContext(req, res, match, bodyLimit) {
     });
     return bodyPromise;
   };
-
   const ctx = {
-    req,
-    res,
+    req, res,
     method: req.method ?? 'GET',
     path: url.pathname,
     query: Object.freeze(Object.fromEntries(url.searchParams.entries())),
-    params: Object.freeze(match?.params ?? {}),
+    params: Object.freeze({}),
+    headOnly: false,
     signal: controller.signal,
     state: Object.create(null),
     getHeader(name) { return req.headers[String(name).toLowerCase()] ?? undefined; },
@@ -151,21 +147,22 @@ function createContext(req, res, match, bodyLimit) {
       if (res.writableEnded) return;
       res.statusCode = code;
       if (!res.hasHeader('content-type')) res.setHeader('content-type', 'text/plain; charset=utf-8');
-      res.end(String(value));
+      if (ctx.headOnly) res.end(); else res.end(String(value));
     },
     async jsonResponse(value, code = res.statusCode) {
       if (res.writableEnded) return;
       res.statusCode = code;
       res.setHeader('content-type', 'application/json; charset=utf-8');
-      res.end(JSON.stringify(value));
+      if (ctx.headOnly) res.end(); else res.end(JSON.stringify(value));
     },
     send(value, code = res.statusCode) {
       if (res.writableEnded) return;
       res.statusCode = code;
+      if (ctx.headOnly) return res.end();
       if (Buffer.isBuffer(value) || typeof value === 'string') res.end(value);
       else { res.setHeader('content-type', 'application/json; charset=utf-8'); res.end(JSON.stringify(value)); }
     },
-    end(value = '') { if (!res.writableEnded) res.end(value); },
+    end(value = '') { if (!res.writableEnded) res.end(ctx.headOnly ? '' : value); },
     cleanup() {
       req.removeListener('aborted', onClose);
       res.removeListener('close', onClose);
@@ -197,7 +194,7 @@ export class HttpApp {
     this.errorHandler = async (error, ctx) => {
       if (ctx.res.writableEnded) return;
       const status = error?.statusCode && Number.isInteger(error.statusCode) ? error.statusCode : 500;
-      ctx.jsonResponse({ error: error?.code ?? 'INTERNAL_ERROR', message: status >= 500 ? 'Internal Server Error' : String(error?.message ?? 'Request failed') }, status);
+      await ctx.jsonResponse({ error: error?.code ?? 'INTERNAL_ERROR', message: status >= 500 ? 'Internal Server Error' : String(error?.message ?? 'Request failed') }, status);
     };
   }
 
@@ -219,34 +216,29 @@ export class HttpApp {
         return ctx.jsonResponse({ error: 'METHOD_NOT_ALLOWED', message: 'Method not allowed' }, 405);
       }
       ctx.params = Object.freeze(matched.params);
+      ctx.headOnly = matched.headOnly;
       await matched.route.handler(ctx);
     };
     const pipeline = compose(this.middleware, terminal);
     return async (req, res) => {
-      const matched = { params: {}, route: null };
-      const ctx = createContext(req, res, matched, this.bodyLimit);
+      const ctx = createContext(req, res, this.bodyLimit);
       try { await pipeline(ctx); }
-      catch (error) { await this.errorHandler(error, ctx); }
+      catch (error) {
+        try { await this.errorHandler(error, ctx); }
+        catch (secondary) { if (!res.writableEnded) res.end(); }
+      }
       finally { ctx.cleanup(); if (!res.writableEnded) res.end(); }
     };
   }
 
   listen(options = {}) {
-    const {
-      port = 0,
-      host,
-      tls,
-      backlog,
-    } = options;
+    const { port = 0, host, tls, backlog } = options;
     const requestHandler = this.handler();
     const server = tls ? https.createServer(tls, requestHandler) : http.createServer(requestHandler);
     const address = () => server.address();
     const listening = new Promise((resolve, reject) => {
       server.once('error', reject);
-      server.listen({ port, host, backlog }, () => {
-        server.removeListener('error', reject);
-        resolve(address());
-      });
+      server.listen({ port, host, backlog }, () => { server.removeListener('error', reject); resolve(address()); });
     });
     return Object.freeze({
       server,
