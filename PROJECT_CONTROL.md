@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Timeout / Deadline Cube v0.1** and release it before starting another cube.
+Finish **Circuit Breaker / Health Gate Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,50 +16,48 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**TIMEOUT-DEADLINE-V0.1-RELEASE**
+**CIRCUIT-BREAKER-HEALTH-GATE-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Timeout / Deadline Cube release gate:
+Re-establish the already-verified Circuit Breaker implementation on the current `main`, then rerun its release gate:
 
-1. write and freeze the deadline contract
-2. define duration and absolute monotonic deadline creation
-3. define remaining-time semantics
-4. verify AbortSignal integration
-5. verify deterministic clock behavior
-6. verify timeout/cancellation/completion races
-7. verify child deadline derivation
-8. verify immutable snapshots and cleanup
-9. run syntax, unit, contract, integration, failure, and recovery tests
-10. verify zero runtime third-party dependencies
-11. run the supported cross-platform CI matrix
-12. fix only failures required for the v0.1 gate
-13. mark the release gate complete
+1. recreate the four verified Circuit Breaker files on the current `main` base
+2. keep lifecycle close semantics separate from CLOSED circuit state
+3. keep the previously verified state-machine and recovery contract unchanged
+4. run syntax, unit, contract, integration, failure, and recovery tests
+5. verify zero runtime third-party dependencies
+6. run the supported cross-platform CI matrix
+7. fix only failures required for the v0.1 gate
+8. squash-merge the release PR
+9. mark the release gate complete
+10. update ROADMAP before starting another cube
 
 ## Scope lock
 
-For Timeout / Deadline Cube v0.1, the allowed scope is only:
+For Circuit Breaker / Health Gate Cube v0.1, the allowed scope is only:
 
-- deadline creation from duration or absolute monotonic deadline
-- remaining-time calculation
-- AbortSignal integration
-- deterministic clock support
-- timeout error with explicit deadline metadata
-- race-safe completion/timeout/cancellation semantics
-- child deadline derivation
-- immutable deadline snapshots
-- cleanup and timer lifecycle
+- closed/open/half-open state machine
+- configurable failure threshold
+- configurable recovery success threshold
+- deterministic cooldown clock
+- half-open probe admission limit
+- manual reset
+- Result/Error-based failure classification
+- immutable state/statistics snapshots
+- AbortSignal-safe probe execution
+- cleanup and close semantics
 - documentation
 - local unit/integration/failure/recovery tests
 
 Explicitly out of scope for v0.1:
 
-- distributed deadlines
-- tracing backend
+- distributed circuit state
 - remote coordination
-- adaptive timeouts
-- third-party timeout libraries
-- workflow orchestration
+- adaptive ML policies
+- external telemetry backend
+- third-party resilience libraries
+- service discovery
 - AI agent runtime
 
 ## Definition of done
