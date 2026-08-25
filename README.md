@@ -88,12 +88,13 @@ Released through v0.1:
 - Content-Addressed Storage / CAS
 - Artifact Bundle / Reproducible Package
 - Local Artifact Catalog / Package Index
+- Artifact Dependency Graph / Relationship Index
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Dependency Graph / Relationship Index v0.1** — standalone deterministic local relationship graph for artifact/package nodes and typed directed edges, bounded adjacency/path queries, cycle detection, atomic mutations, immutable snapshots, and deterministic serialization.
+**Artifact Lifecycle / Retention Index v0.1** — standalone deterministic local lifecycle/retention index for artifact references, explicit lifecycle states, bounded retention evaluation, safe dry-run purge planning, atomic state transitions, immutable snapshots, and checksum-protected serialization.
 
 ## License
 
