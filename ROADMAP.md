@@ -10,6 +10,14 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Directory Walker / Bounded Tree Traversal v0.1
+
+PR #92 was squash-merged as `4d64f6610286524799ebe809021279a7b7be3d40`.
+
+Pre-merge **Run 674** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke. Post-merge **Run 675** passed on all three platforms with the same gates.
+
+The cube is **FROZEN** at `4d64f6610286524799ebe809021279a7b7be3d40`.
+
 ### Safe Path Resolver / Containment Boundary v0.1
 
 PR #90 was squash-merged as `0216f3acd81331c031ac0ae023bfc1322f9064bc`.
@@ -98,41 +106,43 @@ Earlier released cubes remain pinned to their recorded immutable SHAs.
 
 ## Active milestone
 
-### DIRECTORY-WALKER-BOUNDED-TREE-TRAVERSAL-V0.1-SPEC
+### FILESYSTEM-METADATA-STAT-NORMALIZER-V0.1-SPEC
 
-Safe Path Resolver / Containment Boundary v0.1 is complete and frozen.
+Directory Walker / Bounded Tree Traversal v0.1 is complete and frozen.
 
 The next selected standalone product is:
 
-**Directory Walker / Bounded Tree Traversal v0.1**
+**Filesystem Metadata / Stat Normalizer v0.1**
 
 Rationale:
 
-- bounded traversal is a distinct reusable primitive that consumes safe-path semantics without owning them
-- deterministic enumeration provides a stable foundation for indexing, migration, backup, search, and later snapshot consumers
-- explicit entry, depth, and time budgets prevent accidental unbounded work
-- visitor and collected modes can share one traversal core while making memory behavior explicit
-- filesystem operations remain capability-injected, preserving the zero-runtime-dependency and testability boundary
+- normalizes platform-specific filesystem metadata into a stable, dependency-free contract
+- separates metadata semantics from traversal and snapshot concerns
+- gives later cubes a deterministic, immutable representation of `lstat`/`stat` results
+- keeps privacy boundaries explicit so host/user/device metadata is never leaked accidentally
+- supports failure/recovery around races, permission errors, missing entries, and malformed capability results
 
 ### Immediate next task
 
-Write and commit the complete SPEC at `specs/directory-walker-bounded-tree-traversal-v0.1.md` before implementation begins.
+Write and commit the complete SPEC at `specs/filesystem-metadata-stat-normalizer-v0.1.md` before implementation begins.
 
 The SPEC must lock:
 
-- traversal API and deterministic ordering
-- root anchoring and safe-path integration
-- file/directory/symlink/special-entry policies
-- depth, entry-count, path-length, and total-budget limits
-- visitor versus collected-result behavior
-- cancellation, timeout, and backpressure semantics
-- filesystem capability seams with safe data/function separation
-- partial traversal and failure/recovery semantics
+- cross-platform metadata API
+- file/directory/symlink/special kind normalization
+- stable numeric/stat fields across POSIX and Windows
+- timestamp, size, mode, identity and platform-specific field policies
+- capability seam validation and getter/circular protections
+- default non-following symlink behavior and explicit target-resolution policy
+- bounded metadata, integer-safe fields, and path/name limits
+- deterministic serialization/canonical representation
+- privacy-safe field allowlisting
+- missing, permission-denied, malformed and concurrent-change recovery semantics
 - non-mutating guarantees
-- Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
+- Ubuntu, Windows, macOS-15-Intel and relevant WSL verification
 - zero-runtime-third-party-dependency boundary
 
-No unrelated cube implementation starts before the SPEC gate is complete.
+No implementation starts before this SPEC exists on the control plane.
 
 ## Parked
 
