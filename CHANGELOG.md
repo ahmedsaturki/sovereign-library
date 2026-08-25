@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Bounded File Content Reader / Safe Content Access v0.1
+
+- Added the bounded file content reader implementation and deterministic UTF-8/text policies.
+- Added bounded binary/text reads, offsets, EOF semantics, chunked streaming, cancellation, deadlines, and work budgets.
+- Added Safe Path Resolver anchoring and explicit symlink policies.
+- Added capability/data separation, cleanup guarantees, mutation consistency checks, and privacy-safe diagnostics.
+- Rebuilt the contract test suite with explicit syntax-safe lifecycle fixtures after CI parser detection.
+
 ### Host Identity / Environment Fingerprint v0.1
 
 - Added privacy-first local host identity and environment fingerprinting.
