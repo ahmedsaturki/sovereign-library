@@ -33,7 +33,9 @@ test('queue overflow rejects without enqueueing', async () => {
   try {
     const running = pool.submit({ type: 'sleep', ms: 50 });
     const queued = pool.submit({ type: 'sleep', ms: 10 });
-    const overflow = await pool.submit({ type: 'sleep', ms: 10 }).then(() => null, error => error);
+    const overflowTask = pool.submit({ type: 'sleep', ms: 10 });
+    overflowTask.catch(() => {});
+    const overflow = await overflowTask.then(() => null, error => error);
     assert.equal(overflow?.code, 'QUEUE_FULL');
     await running;
     await queued;
@@ -48,6 +50,7 @@ test('queued cancellation rejects before worker execution', async () => {
   try {
     const running = pool.submit({ type: 'sleep', ms: 50 });
     const queued = pool.submit({ type: 'sleep', ms: 10 }, { signal: controller.signal });
+    queued.catch(() => {});
     controller.abort();
     const cancelled = await queued.then(() => null, error => error);
     assert.equal(cancelled?.code, 'CANCELLED');
@@ -63,6 +66,7 @@ test('active cancellation terminates the worker and the pool recovers', async ()
   const controller = new AbortController();
   try {
     const running = pool.submit({ type: 'sleep', ms: 200 }, { signal: controller.signal });
+    running.catch(() => {});
     await new Promise(resolve => setTimeout(resolve, 20));
     controller.abort();
     const cancelled = await running.then(() => null, error => error);
@@ -77,7 +81,9 @@ test('active cancellation terminates the worker and the pool recovers', async ()
 test('worker handler failures are surfaced without killing the pool', async () => {
   const pool = createWorkerPool({ size: 1, workerModule });
   try {
-    const failure = await pool.submit({ type: 'fail', message: 'boom', code: 'EXPECTED' }).then(() => null, error => error);
+    const failedTask = pool.submit({ type: 'fail', message: 'boom', code: 'EXPECTED' });
+    failedTask.catch(() => {});
+    const failure = await failedTask.then(() => null, error => error);
     assert.equal(failure?.name, 'Error');
     assert.equal(failure?.message, 'boom');
     assert.equal(failure?.code, 'EXPECTED');
@@ -90,7 +96,9 @@ test('worker handler failures are surfaced without killing the pool', async () =
 test('real worker crashes are surfaced and the worker is replaced', async () => {
   const pool = createWorkerPool({ size: 1, workerModule });
   try {
-    const failure = await pool.submit({ type: 'crash', code: 17 }).then(() => null, error => error);
+    const crashedTask = pool.submit({ type: 'crash', code: 17 });
+    crashedTask.catch(() => {});
+    const failure = await crashedTask.then(() => null, error => error);
     assert.ok(failure instanceof WorkerPoolError);
     assert.ok(['WORKER_FAILED', 'WORKER_EXITED'].includes(failure.code));
     assert.equal(await pool.submit({ type: 'multiply', value: 6, factor: 7 }), 42);
@@ -100,9 +108,11 @@ test('real worker crashes are surfaced and the worker is replaced', async () => 
 });
 
 test('task timeout terminates and replaces the worker', async () => {
-  const pool = createWorkerPool({ size: 1, workerModule, taskTimeoutMs: 20 });
+  const pool = createWorkerPool({ size: 1, workerModule, taskTimeoutMs: 50 });
   try {
-    const timeoutError = await pool.submit({ type: 'sleep', ms: 100 }).then(() => null, error => error);
+    const timeoutTask = pool.submit({ type: 'sleep', ms: 250 });
+    timeoutTask.catch(() => {});
+    const timeoutError = await timeoutTask.then(() => null, error => error);
     assert.equal(timeoutError?.code, 'TASK_TIMEOUT');
     assert.equal(timeoutError?.statusCode, 408);
     assert.equal(await pool.submit({ type: 'multiply', value: 4, factor: 3 }), 12);
@@ -116,7 +126,9 @@ test('drain stops new submissions and waits for active work', async () => {
   const task = pool.submit({ type: 'sleep', ms: 25, value: 1 });
   await pool.drain();
   assert.deepEqual(await task, { type: 'sleep', ms: 25, value: 1 });
-  const closed = await pool.submit({ type: 'multiply', value: 1, factor: 1 }).then(() => null, error => error);
+  const closedTask = pool.submit({ type: 'multiply', value: 1, factor: 1 });
+  closedTask.catch(() => {});
+  const closed = await closedTask.then(() => null, error => error);
   assert.equal(closed?.code, 'POOL_CLOSED');
 });
 
