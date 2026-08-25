@@ -6,18 +6,19 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Reporting / Export Cube v0.1** and release it before starting another cube.
+Finish **AI / Inference Runtime Cube v0.1** and release it before starting another cube.
 
 ## Current repository state
 
-- Last released cube: **Storage Persistence / Snapshot v0.1**
-- Release PR: **#52**, squash-merged
-- Release commit: `6ed90856cc66c9894ae948731769d23d0e9a40a5`
-- Pre-merge verification: **Run 389**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 390**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke. fileciteturn446file0L1-L6
-- Storage Persistence / Snapshot v0.1 is therefore **FROZEN**.
-- The release provides deterministic versioned snapshot envelopes, checksum verification, atomic replacement, bounded local persistence, immutable loaded snapshots, typed fail-closed diagnostics, and zero runtime third-party dependencies.
-- `ROADMAP.md` and `README.md` must now record the release and activate Reporting / Export.
+- Last released cube: **Reporting / Export v0.1**
+- Release PR: **#53**, squash-merged
+- Release commit: `5f55612ca772d53a87de4e852e6695b71dba7a69`
+- Pre-merge verification: **Run 397**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 398**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Reporting / Export v0.1 is therefore **FROZEN**.
+- The release provides deterministic report snapshots, stable JSON/CSV exports, bounded async CSV streaming, deterministic filtering/order/grouping/aggregation, immutable results, typed fail-closed diagnostics, and zero runtime third-party dependencies.
+- The current CI/release history includes prior cross-platform stability hardening for Worker Pool timing and repeated snapshot/report boundary checks.
+- `ROADMAP.md` and `README.md` must now record Reporting as released and activate AI / Inference Runtime.
 - Duplicate Redaction PR #47 remains closed as superseded by PR #45.
 
 ## The one-current-task rule
@@ -28,40 +29,40 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**REPORTING-EXPORT-V0.1-SPEC**
+**AI-INFERENCE-RUNTIME-V0.1-SPEC**
 
 ### Immediate next task
 
-Freeze the public contract for a standalone native Reporting / Export product:
+Freeze the public contract for a standalone provider-neutral local inference runtime:
 
-1. define immutable report document and section contracts
-2. define deterministic aggregation, ordering, grouping, and pagination semantics
-3. define stable CSV and JSON export formats with explicit escaping/null/date rules
-4. define bounded text/row/cell/output work
-5. define streaming export behavior for large result sets
-6. define reproducible report metadata without environment-specific noise
-7. define immutable report snapshots and source immutability
-8. define typed fail-closed diagnostics without arbitrary payload copying
-9. define cancellation and partial-output behavior
-10. define recovery after failed or interrupted exports
+1. define bounded request/message and response contracts
+2. define deterministic system/user/assistant message normalization
+3. define provider-neutral generation options without model-specific SDK coupling
+4. define immutable request/response snapshots
+5. define synchronous result and streaming delta event semantics
+6. define cancellation and timeout behavior
+7. define bounded context, output, event, and diagnostic work
+8. define a native process/stdio adapter contract without shell execution
+9. define malformed adapter output and provider failure recovery semantics
+10. define typed fail-closed errors without arbitrary payload copying
 11. verify zero runtime third-party dependencies
 12. define unit, contract, integration, failure, recovery, and cross-platform gates
 13. write the standalone cube specification before implementation
 
 ## Scope lock
 
-For Reporting / Export Cube v0.1, the allowed scope is only:
+For AI / Inference Runtime Cube v0.1, the allowed scope is only:
 
-- local in-process report definitions
-- deterministic aggregation and ordering
-- deterministic grouping and bounded pagination
-- immutable report snapshots
-- JSON export
-- CSV export
-- bounded streaming export
-- cancellation-aware output
-- bounded report/output work
-- source immutability
+- local in-process inference runtime coordination
+- normalized system/user/assistant messages
+- provider-neutral generation options
+- bounded request/response/event payloads
+- immutable request/result snapshots
+- synchronous inference result contract
+- streaming delta event contract
+- cancellation and timeout handling
+- native child-process stdio/NDJSON adapter without shell execution
+- bounded stdout/stderr parsing
 - typed fail-closed diagnostics
 - local unit, contract, integration, failure, and recovery tests
 - cross-platform verification
@@ -69,14 +70,16 @@ For Reporting / Export Cube v0.1, the allowed scope is only:
 
 Explicitly out of scope for v0.1:
 
-- PDF rendering
-- chart/image generation
-- spreadsheets with proprietary formats
-- database query engines
-- network reporting APIs
-- external BI services
-- templating engines
-- third-party reporting libraries
+- model weights
+- model training/fine-tuning
+- network provider clients
+- OpenAI/Anthropic/Gemini SDK wrappers
+- agent planning and tool orchestration
+- RAG/vector databases
+- embeddings/search ranking
+- prompt marketplace/templates
+- multi-agent workflows
+- GUI/chat application
 
 ## Definition of done
 
