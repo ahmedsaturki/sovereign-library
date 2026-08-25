@@ -65,12 +65,14 @@ Released through v0.1:
 - MIME / Multipart
 - HTTP Metadata
 - URL / Query / Encoding
+- Content-Encoding / Compression
+- Stream / Pipeline
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Content-Encoding / Compression Cube v0.1** — native, bounded compression/decompression helpers built on Node.js runtime primitives, with explicit format/size/error contracts.
+**Digest / Hash Cube v0.1** — native hashing, HMAC, constant-time byte comparison, and bounded AsyncIterable hashing using Node.js `node:crypto` only.
 
 ## License
 
