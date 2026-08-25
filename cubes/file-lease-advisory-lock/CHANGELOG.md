@@ -11,3 +11,10 @@
 - FLC1 checksum-protected lock records
 - deterministic capability seams for clock, uuid, and filesystem operations
 - cross-platform, zero-runtime-dependency design
+
+## Corrective hardening
+
+- ownership verification now follows the active lock record after stale recovery so an old lease cannot renew against a quarantined successor
+- stale recovery fails closed when a lock directory has no demonstrable owner record
+- release preflights unexpected lock-directory entries and reports `RELEASE_FAILED` without deleting the current owner record
+- added recovery and release regression coverage to the full repository test gate
