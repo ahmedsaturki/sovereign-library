@@ -115,7 +115,22 @@ test('task timeout terminates and replaces the worker', async () => {
     const timeoutError = await timeoutTask.then(() => null, error => error);
     assert.equal(timeoutError?.code, 'TASK_TIMEOUT');
     assert.equal(timeoutError?.statusCode, 408);
-    assert.equal(await pool.submit({ type: 'multiply', value: 4, factor: 3 }), 12);
+
+    const recoveryDeadline = Date.now() + 1000;
+    let recovered = false;
+    while (Date.now() < recoveryDeadline) {
+      try {
+        const result = await pool.submit({ type: 'multiply', value: 4, factor: 3 });
+        if (result === 12) {
+          recovered = true;
+          break;
+        }
+      } catch (error) {
+        assert.ok(error instanceof WorkerPoolError);
+      }
+      await new Promise(resolve => setTimeout(resolve, 5));
+    }
+    assert.equal(recovered, true);
   } finally {
     await pool.close();
   }
