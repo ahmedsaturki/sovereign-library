@@ -6,18 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Select and specify the next standalone Sovereign product after freezing **Atomic File Writer / Safe Replace v0.1**.
+Select and specify the next standalone Sovereign product after freezing **Directory Snapshot / Tree Manifest v0.1**.
 
 ## Current repository state
 
-- Last released cube: **Atomic File Writer / Safe Replace v0.1**
-- Initial release PR: **#82**, merged as `f6bb8d515eade8ac3bd158b851732070c5a9d470`
-- Corrective release PR: **#84**, merged as `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`
-- Initial post-merge Run 620 exposed a real Node 24 compatibility defect: `fsync` was incorrectly imported from `node:fs/promises`.
-- Corrective pre-merge verification: **Run 622**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Corrective post-merge verification: **Run 623**, passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Atomic File Writer / Safe Replace v0.1 is **FROZEN** at corrective release commit `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`.
-- The Node 24 compatibility defect was fixed without changing the public contract; the default `fsync` capability now uses a promisified `node:fs` callback implementation while retaining deterministic injection.
+- Last released cube: **Directory Snapshot / Tree Manifest v0.1**
+- Release PR: **#85**, squash-merged
+- Release commit: `c01cc08e97404d1528fb93d6728fd2ae272871c3`
+- Pre-merge verification: **Run 633**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 635**, passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Directory Snapshot / Tree Manifest v0.1 is **FROZEN** at `c01cc08e97404d1528fb93d6728fd2ae272871c3`.
+- During the release cycle, the cube was hardened against capability/data boundary confusion, manifest-size test fixture error, Windows namespace paths, macOS canonical-root aliases, and contained symlink cycles. The final release keeps the read-only public contract unchanged.
 
 ## The one-current-task rule
 
@@ -27,32 +26,31 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**DIRECTORY-SNAPSHOT-TREE-MANIFEST-V0.1-SPEC**
+**HOST-IDENTITY-FINGERPRINT-V0.1-SPEC**
 
 ### Immediate next task
 
-Write and commit the complete SPEC for **Directory Snapshot / Tree Manifest v0.1** before implementation begins.
+Write and commit the complete SPEC for **Host Identity / Environment Fingerprint v0.1** before implementation begins.
 
 The SPEC must lock:
 
-1. standalone recursive local directory inventory and public API
-2. deterministic traversal and stable entry ordering
-3. explicit file, directory, and symlink representation
-4. configurable symlink policy without unsafe target traversal
-5. bounded depth, entry count, path length, and aggregate manifest size
-6. optional content digesting with caller-selected hash capability
-7. explicit handling of permission errors, vanished entries, and concurrent mutation
-8. deterministic snapshot identity and canonical manifest serialization
-9. clear distinction between logical snapshot and filesystem truth at capture time
-10. deterministic filesystem, clock, identity, digest, and serialization capability seams
-11. Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
-12. zero-runtime-third-party-dependency boundary
+1. standalone local host/environment fingerprint API
+2. explicit stable vs volatile identity fields
+3. privacy-preserving default field set with no secrets or credentials
+4. deterministic normalization and canonical serialization
+5. explicit platform coverage and missing-capability behavior
+6. bounded output size and field cardinality
+7. injectable identity, clock, filesystem, and environment capability seams
+8. reproducibility rules and comparison semantics
+9. fail-closed handling of malformed/accessor/circular inputs
+10. Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
+11. zero-runtime-third-party-dependency boundary
 
 No implementation starts before the SPEC exists on the control plane.
 
 ## Scope lock
 
-The next cube owns deterministic local directory snapshotting and manifest construction. It does not own file watching, atomic file writes, advisory locking, temporary workspace lifecycle, content synchronization, persistence databases, network storage, or document parsing.
+The next cube owns local environment fingerprint construction and comparison-safe identity data. It does not own secret discovery, credential extraction, network inventory, remote host discovery, process supervision, runtime capability probing, or persistent storage.
 
 ## Definition of done
 
