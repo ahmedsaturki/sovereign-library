@@ -38,6 +38,11 @@ function hash(value) { return createHash('sha256').update(value, 'utf8').digest(
 function freezeDeep(value) { if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value; for (const child of Object.values(value)) freezeDeep(child); return Object.freeze(value); }
 function boundedText(value, label, max = MAX_PATH) { if (typeof value !== 'string' || !value) fail('INVALID_INPUT', `${label} must be a non-empty string`); if (value.length > max) fail('LIMIT_EXCEEDED', `${label} exceeds ${max}`); return value; }
 function capabilityFunction(value, label) { if (typeof value !== 'function') fail('INVALID_SEAM', `${label} must be a function`); return value; }
+function nextSafeId(uuid, label) {
+  const id = String(uuid());
+  if (!/^[A-Za-z0-9-]{8,128}$/.test(id)) fail('INVALID_LEASE_ID', `${label} is invalid`);
+  return id;
+}
 
 function normalizeOptions(raw = {}) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) fail('INVALID_OPTIONS', 'options must be a plain object');
@@ -89,8 +94,7 @@ function statusSnapshot(base, extra = {}) { return freezeDeep({ ...base, ...extr
 
 export async function acquireLease(options) {
   const { fsOps, clock, uuid, lockPath, ttlMs, staleRecovery, owner, resourcePath } = normalizeOptions(options);
-  const leaseId = String(uuid());
-  if (!/^[A-Za-z0-9-]{8,128}$/.test(leaseId)) fail('INVALID_LEASE_ID', 'generated lease id is invalid');
+  const leaseId = nextSafeId(uuid, 'generated lease id');
   const ownerPath = `${lockPath}/owner-${leaseId}.json`;
   const acquiredAt = new Date(clock.now()).toISOString();
   const expiresAt = ttlMs > 0 ? new Date(clock.now() + ttlMs).toISOString() : null;
@@ -109,7 +113,8 @@ export async function acquireLease(options) {
     if (!current.expiresAt) return false;
     const expiration = Date.parse(current.expiresAt);
     if (!Number.isFinite(expiration) || expiration > clock.now()) return false;
-    const quarantine = `${lockPath}.stale-${uuid()}`;
+    const quarantineId = nextSafeId(uuid, 'quarantine id');
+    const quarantine = `${lockPath}.stale-${quarantineId}`;
     await fsOps.rename(lockPath, quarantine);
     try { await fsOps.rm(quarantine, { recursive: true, force: true }); } catch { /* best effort */ }
     return true;
