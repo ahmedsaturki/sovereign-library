@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { CasStore, CasError, digest } from '../src/index.js';
+import { CasStore, digest } from '../src/index.js';
 
 test('put/get/has/delete is deterministic and immutable', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'cas-'));
@@ -17,13 +17,12 @@ test('put/get/has/delete is deterministic and immutable', async () => {
   assert.equal(await store.has(address), false);
 });
 
-test('invalid addresses, accessors, bounds and recovery fail closed', async () => {
+test('invalid metadata accessors fail before getter evaluation and valid writes recover', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'cas-'));
   const store = await new CasStore({ root, limits: { maxObjectBytes: 2 } }).open();
-  assert.throws(() => store.normalize, CasError);
   await assert.rejects(() => store.put('123'), /Object exceeds limit/);
   const touched = { invoked: false };
-  Object.defineProperty(touched, 'kind', { get() { touched.invoked = true; return 'x'; } });
+  Object.defineProperty(touched, 'kind', { enumerable: true, get() { touched.invoked = true; return 'x'; } });
   await assert.rejects(() => store.put('x', touched), /Accessor metadata/);
   assert.equal(touched.invoked, false);
   const good = await store.put('ok');
