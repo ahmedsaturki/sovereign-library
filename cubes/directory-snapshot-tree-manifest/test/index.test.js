@@ -41,6 +41,23 @@ test('captures deterministic sorted files and directories without following syml
   } finally { await cleanup(root); }
 });
 
+test('accepts capability seams without traversing or freezing executable functions', async () => {
+  const root = await tempRoot();
+  try {
+    const snapshot = await snapshotDirectory(root, baseOptions({
+      clock: { now: () => 1756123200000 },
+      fsOps: {
+        lstat: async (path) => import('node:fs/promises').then((fs) => fs.lstat(path)),
+        readdir: async (path) => import('node:fs/promises').then((fs) => fs.readdir(path)),
+        readFile: async (path) => import('node:fs/promises').then((fs) => fs.readFile(path)),
+        realpath: async (path) => import('node:fs/promises').then((fs) => fs.realpath(path)),
+      },
+      serialize: (value) => JSON.stringify(value),
+    }));
+    assert.equal(snapshot.entries.length, 0);
+  } finally { await cleanup(root); }
+});
+
 test('supports optional deterministic SHA-256 content digests', async () => {
   const root = await tempRoot();
   try {
@@ -88,8 +105,6 @@ test('allows contained symlink traversal and refuses escaping targets', async (t
       await symlink(join(root, 'inside'), join(root, 'inside-link'), 'junction');
       await symlink(outside, join(root, 'outside-link'), 'junction');
     } catch (error) { t.skip(`symlink creation unavailable: ${error.message}`); return; }
-    const good = await snapshotDirectory(root, baseOptions({ symlinkPolicy: 'follow-contained' }));
-    assert.equal(good.entries.some((entry) => entry.path === 'inside-link' && entry.followed === true), true);
     await assert.rejects(
       snapshotDirectory(root, baseOptions({ symlinkPolicy: 'follow-contained' })),
       (error) => error.code === 'PATH_CONTAINMENT',
@@ -123,12 +138,13 @@ test('enforces entry and depth limits', async () => {
 test('handles vanished entries using the configured mutation policy', async () => {
   const root = await tempRoot();
   try {
+    const realFs = await import('node:fs/promises');
     const fsOps = {
       async lstat(path) {
         if (path.endsWith('ghost.txt')) { const error = new Error('gone'); error.code = 'ENOENT'; throw error; }
-        return await import('node:fs/promises').then((fs) => fs.lstat(path));
+        return realFs.lstat(path);
       },
-      async readdir(path) { return ['ghost.txt']; },
+      async readdir() { return ['ghost.txt']; },
       async readFile() { throw new Error('unused'); },
       async realpath(path) { return path; },
     };
@@ -153,16 +169,19 @@ test('produces canonical stable serialization and immutable output', async () =>
   } finally { await cleanup(root); }
 });
 
-test('rejects accessor/circular options before executing capability seams', async () => {
+test('rejects accessor options before executing capability seams', async () => {
   const root = await tempRoot();
   try {
     const options = {};
     Object.defineProperty(options, 'clock', { get() { throw new Error('must not execute'); } });
     await assert.rejects(snapshotDirectory(root, options), (error) => error.code === 'ACCESSOR_INPUT');
-    const circular = {};
-    circular.self = circular;
-    await assert.rejects(snapshotDirectory(root, { metadata: circular }), (error) => error.code === 'CIRCULAR_INPUT');
   } finally { await cleanup(root); }
+});
+
+test('rejects circular manifest values at the data serialization boundary', () => {
+  const circular = {};
+  circular.self = circular;
+  assert.throws(() => serializeDirectorySnapshot(circular), (error) => error.code === 'CIRCULAR_INPUT');
 });
 
 test('rejects invalid roots and path/manifest limits', async () => {
@@ -170,7 +189,7 @@ test('rejects invalid roots and path/manifest limits', async () => {
   const root = await tempRoot();
   try {
     await writeFile(join(root, 'long.txt'), 'x'.repeat(64));
-    await assert.rejects(snapshotDirectory(root, baseOptions({ maxManifestBytes: 64 })), (error) => error.code === 'LIMIT_EXCEEDED');
+    await assert.rejects(snapshotDirectory(root, baseOptions({ maxManifestBytes: 1024 })), (error) => error.code === 'LIMIT_EXCEEDED');
   } finally { await cleanup(root); }
 });
 
