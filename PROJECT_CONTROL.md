@@ -6,17 +6,16 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Filesystem Watcher / Change Stream v0.1** as the next standalone Sovereign product.
+Build the **File Lease / Advisory Lock v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Runtime Capability Inspector / Preflight v0.1**
-- Release PR: **#78**, squash-merged
-- Release commit: `139a7d6c824b7fe522712c65e1b9ffcf605e134f`
-- Pre-merge verification: **Run 580**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 581**, passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
-- Runtime Capability Inspector / Preflight v0.1 is **FROZEN**.
-- Next cube SPEC is committed at `specs/filesystem-watcher-change-stream-v0.1.md`.
+- Last released cube: **Filesystem Watcher / Change Stream v0.1**
+- Release PR: **#79**, merged
+- Release commit: `239e418e620d06de5d25a9c40905f6efc42334b3`
+- Post-merge verification: **Run 598**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Filesystem Watcher / Change Stream v0.1 is **FROZEN**.
+- Next cube SPEC is committed on branch `file-lease-advisory-lock-v0-1` at `specs/file-lease-advisory-lock-v0.1.md`.
 
 ## The one-current-task rule
 
@@ -26,47 +25,45 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**FILESYSTEM-WATCHER-CHANGE-STREAM-V0.1-SPEC**
+**FILE-LEASE-ADVISORY-LOCK-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract defined in `specs/filesystem-watcher-change-stream-v0.1.md`:
+Implement the public contract defined in `specs/file-lease-advisory-lock-v0.1.md`:
 
-1. normalize create/change/remove/rename events
-2. implement explicit lifecycle, close, error, and recovery behavior
-3. support opt-in deterministic debounce/coalescing
-4. enforce bounded queue and explicit overflow/backpressure policy
-5. implement recursive watching with documented platform limitations
-6. enforce symlink and root containment rules
-7. suppress only documented native noise/duplicates without inventing events
-8. provide a deterministic injected event source for contract tests
-9. verify Ubuntu, Windows, macOS-15-Intel, and WSL boundaries
+1. establish atomic advisory ownership without unsafe read-then-write races
+2. implement deterministic acquisition, busy, release, and recovery outcomes
+3. provide explicit lease identity and bounded owner metadata
+4. support opt-in TTL and safe renewal semantics
+5. implement conservative stale recovery without timestamp-only ownership claims
+6. protect release from deleting a successor owner's lock
+7. implement versioned integrity-protected lock records
+8. enforce path, metadata, and record-size bounds and fail-closed input validation
+9. verify Ubuntu, Windows, macOS-15-Intel, and relevant WSL filesystem boundaries
 10. remain zero-runtime-third-party-dependency and fully documented/tested
 
 ## Scope lock
 
-Allowed scope for Filesystem Watcher / Change Stream v0.1:
+Allowed scope for File Lease / Advisory Lock v0.1:
 
-- read-only observation of explicitly configured filesystem roots
-- native filesystem event adapters
-- normalized immutable event stream
-- bounded queue/backpressure and overflow diagnostics
-- lifecycle/resource management
-- recursive watching within explicit finite bounds
-- optional debounce/coalescing
-- deterministic injected-source testing
+- cooperative advisory lease acquisition for filesystem paths
+- atomic lock ownership establishment using native filesystem primitives
+- immutable bounded lease identity and metadata
+- optional TTL and renewal
+- conservative opt-in stale recovery
+- exact-owner release and ownership-loss protection
+- deterministic test seams and cross-platform verification
 
 Explicitly out of scope:
 
-- synchronizing or copying files
-- modifying watched targets
-- executing commands or child processes
-- network calls
-- persistent databases/indexes
-- cloud brokers
-- telemetry uploads
+- mandatory locking against non-cooperating software
+- modification of protected file contents
+- process execution
+- network/distributed locking
+- database/cloud coordination
 - GUI/admin console
-- content parsing of changed files
+- process termination
+- cluster-wide consensus
 
 ## Definition of done
 
