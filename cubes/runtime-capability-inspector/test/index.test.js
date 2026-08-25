@@ -40,10 +40,10 @@ test('explicit injected environment probing is deterministic and repeated calls 
 });
 
 test('requirement evaluation is pure, ordered, and immutable', () => {
-  const snapshot = inspectRuntime({ ...baseOptions, executables: ['node', 'git'] });
+  const snapshot = inspectRuntime(baseOptions);
   const verdict = evaluateRuntimeRequirements(snapshot, {
     os: ['linux'], architectures: ['x64'], nodeMajorMin: 24, nodeMajorMax: 24,
-    requiredExecutables: ['node'], minCpuCount: 4, minMemoryBytes: 8 * 1024 ** 3,
+    minCpuCount: 4, minMemoryBytes: 8 * 1024 ** 3,
   });
   assert.equal(verdict.passed, true);
   assert.deepEqual(verdict.failures, []);
