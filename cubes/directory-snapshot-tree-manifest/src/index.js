@@ -107,9 +107,13 @@ function canonicalRelativePath(path) {
   return normalized === '' ? '.' : normalized;
 }
 
+function normalizeCanonicalPath(value) {
+  return resolve(normalizeFsComparisonPath(value));
+}
+
 function isContained(root, candidate) {
-  const rootResolved = resolve(normalizeFsComparisonPath(root));
-  const targetResolved = resolve(normalizeFsComparisonPath(candidate));
+  const rootResolved = normalizeCanonicalPath(root);
+  const targetResolved = normalizeCanonicalPath(candidate);
   if (targetResolved === rootResolved) return true;
   const rel = relative(rootResolved, targetResolved);
   return !isAbsolute(rel) && rel !== '..' && !rel.startsWith(`..${sep}`);
@@ -171,7 +175,7 @@ async function walkDirectory(root, current, depth, entries, warnings, options, v
     if (stat.isDirectory?.()) {
       entries.push({ path: rel, type: 'directory', size: 0, mode: stat.mode & 0o7777, mtimeMs: Number.isFinite(stat.mtimeMs) ? stat.mtimeMs : null });
       if (depth >= options.maxDepth) fail('LIMIT_EXCEEDED', `maximum depth exceeded at ${rel}`);
-      const childKey = resolve(normalizeFsComparisonPath(absolute));
+      const childKey = normalizeCanonicalPath(absolute);
       if (visitedDirectories.has(childKey)) fail('CONCURRENT_MUTATION', `directory cycle detected at ${rel}`);
       visitedDirectories.add(childKey);
       await walkDirectory(root, absolute, depth + 1, entries, warnings, options, visitedDirectories);
@@ -183,19 +187,20 @@ async function walkDirectory(root, current, depth, entries, warnings, options, v
       if (options.symlinkPolicy === 'follow-contained') {
         try {
           target = await options.fsOps.realpath(absolute);
-          if (!isContained(root, target)) fail('PATH_CONTAINMENT', `symlink escapes root: ${rel}`);
+          const canonicalTarget = normalizeCanonicalPath(target);
+          if (!isContained(root, canonicalTarget)) fail('PATH_CONTAINMENT', `symlink escapes root: ${rel}`);
           const targetStat = await options.fsOps.lstat(target);
           if (targetStat.isDirectory?.()) {
-            const targetKey = resolve(normalizeFsComparisonPath(target));
+            const targetKey = canonicalTarget;
             const cycle = visitedDirectories.has(targetKey);
-            entries.push({ path: rel, type: 'symlink', target: canonicalRelativePath(relative(root, normalizeFsComparisonPath(target))), followed: !cycle, cycle });
+            entries.push({ path: rel, type: 'symlink', target: canonicalRelativePath(relative(root, canonicalTarget)), followed: !cycle, cycle });
             if (cycle) continue;
             if (depth >= options.maxDepth) fail('LIMIT_EXCEEDED', `maximum depth exceeded at ${rel}`);
             visitedDirectories.add(targetKey);
             await walkDirectory(root, target, depth + 1, entries, warnings, options, visitedDirectories);
             continue;
           }
-          entries.push({ path: rel, type: 'symlink', target: canonicalRelativePath(relative(root, normalizeFsComparisonPath(target))), followed: false, cycle: false });
+          entries.push({ path: rel, type: 'symlink', target: canonicalRelativePath(relative(root, canonicalTarget)), followed: false, cycle: false });
           continue;
         } catch (error) {
           if (error instanceof DirectorySnapshotError) throw error;
@@ -219,9 +224,9 @@ export async function snapshotDirectory(rootPath, rawOptions = {}) {
   if (typeof rootPath !== 'string' || !rootPath) fail('INVALID_ROOT', 'rootPath must be a non-empty string');
   if (rootPath.length > MAX_PATH) fail('LIMIT_EXCEEDED', 'rootPath exceeds maximum length');
   const options = normalizeOptions(rawOptions);
-  const root = resolve(rootPath);
+  const rootInput = resolve(rootPath);
   let rootStat;
-  try { rootStat = await options.fsOps.lstat(root); }
+  try { rootStat = await options.fsOps.lstat(rootInput); }
   catch (error) {
     if (error?.code === 'ENOENT') fail('INVALID_ROOT', 'root path does not exist');
     if (error?.code === 'EACCES' || error?.code === 'EPERM') fail('PERMISSION_DENIED', 'root path is inaccessible');
@@ -229,10 +234,18 @@ export async function snapshotDirectory(rootPath, rawOptions = {}) {
   }
   if (!rootStat.isDirectory?.()) fail('INVALID_ROOT', 'root path must be a directory');
   if (rootStat.isSymbolicLink?.()) fail('INVALID_ROOT', 'root path may not be a symlink');
+
+  let root;
+  try {
+    root = normalizeCanonicalPath(await options.fsOps.realpath(rootInput));
+  } catch {
+    root = normalizeCanonicalPath(rootInput);
+  }
+
   const warnings = [];
   const entries = [];
   const capturedAt = new Date(options.clock.now()).toISOString();
-  const visitedDirectories = new Set([resolve(normalizeFsComparisonPath(root))]);
+  const visitedDirectories = new Set([root]);
   await walkDirectory(root, root, 0, entries, warnings, options, visitedDirectories);
   entries.sort((a, b) => stableCompare(a.path, b.path) || stableCompare(a.type, b.type));
   const logical = { format: FORMAT, root, capturedAt, entries, warnings };
