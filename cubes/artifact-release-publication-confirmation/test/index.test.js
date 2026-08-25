@@ -55,7 +55,6 @@ test('accepts all explicit execution states without side effects', () => {
 test('requires the exact originating closure identity', () => {
   for (const field of ['snapshotId', 'snapshotChecksum', 'approvalId', 'approvalChecksum']) {
     const mismatched = { ...closureReference, [field]: field === 'snapshotChecksum' || field === 'approvalChecksum' ? 'sha256:' + 'c'.repeat(64) : `other-${field}` };
-    assert.throws(() => build([outcome('a')], { }), (error) => error.code === 'CLOSURE_MISMATCH');
     assert.throws(() => buildPublicationConfirmation({ closureReceipt: closure, plan: [plan[0]], outcomeSnapshot: snapshot([outcome('a')], { closure: mismatched }) }), (error) => error.code === 'CLOSURE_MISMATCH');
   }
 });
