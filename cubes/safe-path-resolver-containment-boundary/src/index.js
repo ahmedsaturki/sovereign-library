@@ -12,8 +12,6 @@ export class SafePathResolverError extends Error {
   }
 }
 
-const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
-
 function fail(code, message) {
   throw new SafePathResolverError(code, message);
 }
@@ -72,16 +70,16 @@ function normalizeSeparators(value, options) {
 }
 
 function rootDescriptor(value) {
-  if (value.startsWith('//?/UNC/')) {
+  if (/^\/\/\?\/UNC\//.test(value)) {
     const remainder = value.slice('//?/UNC/'.length);
     const parts = remainder.split('/');
     if (parts.length < 2 || !parts[0] || !parts[1]) fail('ROOT_MISMATCH', 'invalid UNC namespace root');
     return { kind: 'namespace-unc', identity: `namespace-unc:${parts[0]}/${parts[1]}`, prefix: `//?/UNC/${parts[0]}/${parts[1]}`, rest: parts.slice(2) };
   }
-  if (value.startsWith('//?/')) {
-    const remainder = value.slice('//?/');
-    if (!/^[A-Za-z]:\//.test(remainder)) fail('ROOT_MISMATCH', 'unsupported Windows namespace root');
-    return { kind: 'namespace-drive', identity: `namespace-drive:${remainder.slice(0, 2).toUpperCase()}`, prefix: `//?/${remainder.slice(0, 2).toUpperCase()}`, rest: remainder.slice(3).split('/') };
+  if (/^\/\/\?\/[A-Za-z]:($|\/)/.test(value)) {
+    const drive = value.slice(4, 6).toUpperCase();
+    const restStart = value.charAt(6) === '/' ? 7 : 6;
+    return { kind: 'namespace-drive', identity: `namespace-drive:${drive}`, prefix: `//?/${drive}`, rest: value.slice(restStart).split('/') };
   }
   if (/^[A-Za-z]:\//.test(value)) {
     const drive = value.slice(0, 2).toUpperCase();
@@ -210,6 +208,7 @@ export function resolvePath(base, input, options = {}) {
   const normalizedInput = normalizeSeparators(input, opts);
   const inputDescriptor = rootDescriptor(normalizedInput);
   if (inputDescriptor.kind !== 'relative') return parseAndNormalize(normalizedInput, opts).path;
+  parseAndNormalize(normalizedInput, opts);
   const normalizedBase = parseAndNormalize(base, opts);
   if (!normalizedBase.absolute) fail('MISSING_BASE', 'base must be absolute for safe resolution');
   const combined = formatDescriptor(normalizedBase.root, normalizedBase.segments) + (normalizedBase.path.endsWith('/') ? '' : '/') + normalizedInput;
