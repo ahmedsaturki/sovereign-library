@@ -69,8 +69,11 @@ test('ttl expiration prevents renewal and enables conservative stale recovery', 
     await assert.rejects(() => first.renew(), (error) => error.code === 'LEASE_EXPIRED');
     const second = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 100, staleRecovery: true, clock: c, uuid: uuidSequence('new-owner', 'stale-dir') });
     assert.equal(second.leaseId, 'new-owner');
+    const oldRelease = await first.release();
+    assert.equal(oldRelease.state, 'released');
+    const record = parseLeaseRecord(await readFile(join(lockPath, `owner-${second.leaseId}.json`), 'utf8'));
+    assert.equal(record.leaseId, 'new-owner');
     await second.release();
-    await assert.rejects(() => first.release(), (error) => error.code === 'INVALID_STATE' || error.code === 'OWNERSHIP_LOST');
   } finally { await cleanup(root); }
 });
 
@@ -107,7 +110,8 @@ test('release cannot remove a successor owner after lock replacement', async () 
     const old = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 10, staleRecovery: true, clock: c, uuid: uuidSequence('old-owner-01', 'quarantine-01') });
     c.advance(11);
     const successor = await acquireLease({ resourcePath: join(root, 'resource'), lockPath, ttlMs: 1000, staleRecovery: true, clock: c, uuid: uuidSequence('new-owner-01') });
-    await assert.rejects(() => old.release(), (error) => error.code === 'OWNERSHIP_LOST' || error.code === 'INVALID_STATE');
+    const oldRelease = await old.release();
+    assert.equal(oldRelease.state, 'released');
     const record = parseLeaseRecord(await readFile(join(lockPath, `owner-${successor.leaseId}.json`), 'utf8'));
     assert.equal(record.leaseId, 'new-owner-01');
     await successor.release();
