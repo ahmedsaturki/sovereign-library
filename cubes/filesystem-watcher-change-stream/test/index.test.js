@@ -142,3 +142,16 @@ test('debounce is explicit and bounded', async () => {
   assert.equal(event.value.path, 'a.txt');
   await watcher.close();
 });
+
+test('next waits for a pending debounced event instead of returning done at source completion', async () => {
+  const watcher = injected([{ rootId: 'root-1', type: 'changed', path: 'late.txt' }], { debounceMs: 20 });
+  await watcher.start();
+  const event = await Promise.race([
+    watcher.next(),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('debounced event timeout')), 1000)),
+  ]);
+  assert.equal(event.done, false);
+  assert.equal(event.value.path, 'late.txt');
+  assert.equal((await watcher.next()).done, true);
+  await watcher.close();
+});
