@@ -10,6 +10,10 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Reconciliation / Consistency Checker v0.1
+
+PR #68 was squash-merged as `9dfb6833299cbfc42c82afdef5fcf2d3a6175833`. Pre-merge Run 504 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 505 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
 ### Artifact Provenance / Lineage Ledger v0.1
 
 PR #67 was squash-merged as `d1b2795d3a638100a6fbf657cbebeb5ef7aaae82`. Pre-merge Run 497 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 498 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -112,25 +116,26 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Reconciliation / Consistency Checker v0.1
+### Artifact Audit / Drift Reporter v0.1
 
-Target: a standalone deterministic checker for comparing explicit artifact snapshots and reporting missing, extra, duplicate, identity/digest/version conflicts, lineage inconsistencies, and lifecycle mismatches without mutating source data.
+Target: a standalone deterministic local audit/reporting cube for detecting drift between explicit artifact states without mutating source data.
 
 Initial scope:
-- canonical explicit snapshot normalization
-- deterministic identity and digest consistency checks
-- lifecycle and lineage consistency checks from supplied records
-- bounded mismatch reports and deterministic severity/category ordering
-- immutable reports and fail-closed invalid input handling
-- checksum-protected report serialization
+- explicit local artifact records or snapshots only
+- deterministic baseline/current comparison
+- unchanged/changed/added/removed classification
+- identity/digest/version/lifecycle/lineage drift classification
+- bounded immutable severity/category findings
+- fail-closed malformed/accessor/circular/duplicate input handling
+- deterministic checksum-protected report serialization
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 - remote synchronization
 - automatic network/filesystem/registry discovery
-- automatic repair or mutation of source snapshots
-- distributed reconciliation protocols
+- automatic repair or mutation of source data
+- distributed audit protocols
 - trust/signature policy engines
 - GUI/admin console
 - background scheduler integration
