@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { lstat, readdir, readFile, realpath } from 'node:fs/promises';
-import { resolve, relative, sep } from 'node:path';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
 
 const FORMAT = 'DSM1';
 const MAX_DEPTH = 64;
@@ -26,14 +26,8 @@ export class DirectorySnapshotError extends Error {
   }
 }
 
-function fail(code, message, details = null) {
-  throw new DirectorySnapshotError(code, message, details);
-}
-
-function capability(value, label) {
-  if (typeof value !== 'function') fail('INVALID_CAPABILITY', `${label} must be a function`);
-  return value;
-}
+function fail(code, message, details = null) { throw new DirectorySnapshotError(code, message, details); }
+function capability(value, label) { if (typeof value !== 'function') fail('INVALID_CAPABILITY', `${label} must be a function`); return value; }
 
 function validatePlainInput(value, label, seen = new Set(), depth = 0) {
   if (depth > 10) fail('LIMIT_EXCEEDED', `${label} exceeds maximum nesting depth`);
@@ -79,7 +73,6 @@ function normalizeOptions(raw) {
   if (options.maxManifestBytes !== undefined && (!Number.isInteger(options.maxManifestBytes) || options.maxManifestBytes < 1024 || options.maxManifestBytes > MAX_MANIFEST_BYTES)) fail('INVALID_OPTIONS', `maxManifestBytes must be 1024..${MAX_MANIFEST_BYTES}`);
   if (options.maxWarnings !== undefined && (!Number.isInteger(options.maxWarnings) || options.maxWarnings < 1 || options.maxWarnings > MAX_WARNINGS)) fail('INVALID_OPTIONS', `maxWarnings must be 1..${MAX_WARNINGS}`);
   if (options.maxFileDigestBytes !== undefined && (!Number.isInteger(options.maxFileDigestBytes) || options.maxFileDigestBytes < 1 || options.maxFileDigestBytes > MAX_FILE_DIGEST_BYTES)) fail('INVALID_OPTIONS', `maxFileDigestBytes must be 1..${MAX_FILE_DIGEST_BYTES}`);
-
   const clock = options.clock ?? { now: () => Date.now() };
   if (!clock || typeof clock.now !== 'function') fail('INVALID_CAPABILITY', 'clock.now must be a function');
   const fsOps = options.fsOps ?? { lstat, readdir, readFile, realpath };
@@ -91,18 +84,7 @@ function normalizeOptions(raw) {
   }
   const serialize = options.serialize ?? canonicalize;
   capability(serialize, 'serialize');
-  return {
-    ...options,
-    maxDepth: options.maxDepth ?? MAX_DEPTH,
-    maxEntries: options.maxEntries ?? MAX_ENTRIES,
-    maxManifestBytes: options.maxManifestBytes ?? MAX_MANIFEST_BYTES,
-    maxWarnings: options.maxWarnings ?? MAX_WARNINGS,
-    maxFileDigestBytes: options.maxFileDigestBytes ?? MAX_FILE_DIGEST_BYTES,
-    clock,
-    fsOps,
-    digest,
-    serialize,
-  };
+  return { ...options, maxDepth: options.maxDepth ?? MAX_DEPTH, maxEntries: options.maxEntries ?? MAX_ENTRIES, maxManifestBytes: options.maxManifestBytes ?? MAX_MANIFEST_BYTES, maxWarnings: options.maxWarnings ?? MAX_WARNINGS, maxFileDigestBytes: options.maxFileDigestBytes ?? MAX_FILE_DIGEST_BYTES, clock, fsOps, digest, serialize };
 }
 
 function canonicalRelativePath(path) {
@@ -113,8 +95,9 @@ function canonicalRelativePath(path) {
 function isContained(root, candidate) {
   const rootResolved = resolve(root);
   const targetResolved = resolve(candidate);
+  if (targetResolved === rootResolved) return true;
   const rel = relative(rootResolved, targetResolved);
-  return rel === '' || (!rel.startsWith('..') && !targetResolved.startsWith(`${rootResolved}${sep}`) ? false : !rel.startsWith('..'));
+  return !isAbsolute(rel) && rel !== '..' && !rel.startsWith(`..${sep}`);
 }
 
 function addWarning(warnings, options, code, path, message) {
@@ -123,21 +106,14 @@ function addWarning(warnings, options, code, path, message) {
 }
 
 async function statEntry(fsOps, path, relativePath, options, warnings) {
-  try {
-    return await fsOps.lstat(path);
-  } catch (error) {
+  try { return await fsOps.lstat(path); }
+  catch (error) {
     if (error?.code === 'ENOENT') {
-      if (options.mutationPolicy === 'skip-vanished' || options.mutationPolicy === 'record-warning') {
-        addWarning(warnings, options, 'VANISHED_ENTRY', relativePath, 'entry vanished during capture');
-        return null;
-      }
+      if (options.mutationPolicy === 'skip-vanished' || options.mutationPolicy === 'record-warning') { addWarning(warnings, options, 'VANISHED_ENTRY', relativePath, 'entry vanished during capture'); return null; }
       fail('VANISHED_ENTRY', `entry vanished during capture: ${relativePath}`);
     }
     if (error?.code === 'EACCES' || error?.code === 'EPERM') {
-      if (options.mutationPolicy === 'record-warning' || options.mutationPolicy === 'skip-vanished') {
-        addWarning(warnings, options, 'PERMISSION_DENIED', relativePath, 'entry metadata could not be read');
-        return null;
-      }
+      if (options.mutationPolicy === 'record-warning' || options.mutationPolicy === 'skip-vanished') { addWarning(warnings, options, 'PERMISSION_DENIED', relativePath, 'entry metadata could not be read'); return null; }
       fail('PERMISSION_DENIED', `entry metadata could not be read: ${relativePath}`);
     }
     throw error;
@@ -166,13 +142,9 @@ async function walkDirectory(root, current, depth, entries, warnings, options, v
   try { names = await options.fsOps.readdir(current); }
   catch (error) {
     const rel = canonicalRelativePath(relative(root, current));
-    if (options.mutationPolicy === 'record-warning' || options.mutationPolicy === 'skip-vanished') {
-      addWarning(warnings, options, 'DIRECTORY_READ_FAILURE', rel, error?.message ?? 'directory could not be read');
-      return;
-    }
+    if (options.mutationPolicy === 'record-warning' || options.mutationPolicy === 'skip-vanished') { addWarning(warnings, options, 'DIRECTORY_READ_FAILURE', rel, error?.message ?? 'directory could not be read'); return; }
     fail(error?.code === 'EACCES' ? 'PERMISSION_DENIED' : 'DIRECTORY_READ_FAILURE', `directory could not be read: ${rel}`);
   }
-
   const sorted = [...names].map((item) => String(item)).sort((a, b) => a.localeCompare(b));
   for (const name of sorted) {
     if (entries.length >= options.maxEntries) fail('LIMIT_EXCEEDED', 'entry limit exceeded');
@@ -202,8 +174,9 @@ async function walkDirectory(root, current, depth, entries, warnings, options, v
           const targetStat = await options.fsOps.lstat(target);
           if (targetStat.isDirectory?.()) {
             const targetKey = resolve(target);
-            entries.push({ path: rel, type: 'symlink', target: canonicalRelativePath(relative(root, target)), followed: !visitedDirectories.has(targetKey), cycle: visitedDirectories.has(targetKey) });
-            if (visitedDirectories.has(targetKey)) continue;
+            const cycle = visitedDirectories.has(targetKey);
+            entries.push({ path: rel, type: 'symlink', target: canonicalRelativePath(relative(root, target)), followed: !cycle, cycle });
+            if (cycle) continue;
             if (depth >= options.maxDepth) fail('LIMIT_EXCEEDED', `maximum depth exceeded at ${rel}`);
             visitedDirectories.add(targetKey);
             await walkDirectory(root, target, depth + 1, entries, warnings, options, visitedDirectories);
@@ -226,7 +199,6 @@ async function walkDirectory(root, current, depth, entries, warnings, options, v
       entries.push(entry);
       continue;
     }
-
     fail('UNSUPPORTED_ENTRY_TYPE', `unsupported filesystem entry: ${rel}`);
   }
 }
@@ -258,7 +230,6 @@ export async function snapshotDirectory(rootPath, rawOptions = {}) {
   if (typeof serialized !== 'string') fail('SERIALIZATION_FAILURE', 'serialize capability must return a string');
   if (Buffer.byteLength(serialized, 'utf8') > options.maxManifestBytes) fail('LIMIT_EXCEEDED', 'manifest exceeds maximum size');
   const snapshotId = `sha256:${createHash('sha256').update(serialized, 'utf8').digest('hex')}`;
-
   return freezeDeep({ format: FORMAT, root, capturedAt, snapshotId, entries, warnings, serialized });
 }
 
