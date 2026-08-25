@@ -6,16 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **File Lease / Advisory Lock v0.1** as the next standalone Sovereign product.
+Select and specify the next standalone Sovereign product after freezing **File Lease / Advisory Lock v0.1**.
 
 ## Current repository state
 
-- Last released cube: **Filesystem Watcher / Change Stream v0.1**
-- Release PR: **#79**, merged
-- Release commit: `239e418e620d06de5d25a9c40905f6efc42334b3`
-- Post-merge verification: **Run 598**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Filesystem Watcher / Change Stream v0.1 is **FROZEN**.
-- Next cube SPEC is committed on branch `file-lease-advisory-lock-v0-1` at `specs/file-lease-advisory-lock-v0.1.md`.
+- Last released cube: **File Lease / Advisory Lock v0.1**
+- Release PR: **#80**, merged
+- Release commit: `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868`
+- Pre-merge verification: **Run 607**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, 522/522 full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 608**, passed on `main` across Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- File Lease / Advisory Lock v0.1 is **FROZEN**.
+- The next cube candidate is **Ephemeral Workspace / Scratch Directory v0.1**. Its SPEC is the immediate next deliverable.
 
 ## The one-current-task rule
 
@@ -25,45 +26,30 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**FILE-LEASE-ADVISORY-LOCK-V0.1-SPEC**
+**EPHEMERAL-WORKSPACE-SCRATCH-DIRECTORY-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract defined in `specs/file-lease-advisory-lock-v0.1.md`:
+Write and commit the complete SPEC for **Ephemeral Workspace / Scratch Directory v0.1** before implementation begins.
 
-1. establish atomic advisory ownership without unsafe read-then-write races
-2. implement deterministic acquisition, busy, release, and recovery outcomes
-3. provide explicit lease identity and bounded owner metadata
-4. support opt-in TTL and safe renewal semantics
-5. implement conservative stale recovery without timestamp-only ownership claims
-6. protect release from deleting a successor owner's lock
-7. implement versioned integrity-protected lock records
-8. enforce path, metadata, and record-size bounds and fail-closed input validation
-9. verify Ubuntu, Windows, macOS-15-Intel, and relevant WSL filesystem boundaries
-10. remain zero-runtime-third-party-dependency and fully documented/tested
+The SPEC must lock:
+
+1. standalone workspace lifecycle and public API
+2. safe unique workspace creation without following attacker-controlled paths
+3. bounded ownership metadata and workspace identity
+4. cleanup and idempotent release behavior
+5. optional TTL/expiry semantics without timestamp-only ownership claims
+6. conservative stale/orphan recovery rules
+7. path containment and symlink boundary behavior
+8. deterministic test seams for filesystem, clock, and identity capabilities
+9. cross-platform Ubuntu, Windows, macOS-15-Intel, and relevant WSL behavior
+10. zero-runtime-third-party-dependency boundary
+
+No implementation starts before the SPEC exists on the control plane.
 
 ## Scope lock
 
-Allowed scope for File Lease / Advisory Lock v0.1:
-
-- cooperative advisory lease acquisition for filesystem paths
-- atomic lock ownership establishment using native filesystem primitives
-- immutable bounded lease identity and metadata
-- optional TTL and renewal
-- conservative opt-in stale recovery
-- exact-owner release and ownership-loss protection
-- deterministic test seams and cross-platform verification
-
-Explicitly out of scope:
-
-- mandatory locking against non-cooperating software
-- modification of protected file contents
-- process execution
-- network/distributed locking
-- database/cloud coordination
-- GUI/admin console
-- process termination
-- cluster-wide consensus
+The next cube owns ephemeral workspace creation, identity, lifecycle, cleanup, and recovery. It does not own file watching, advisory locking, file synchronization, process execution, networking, persistence databases, or content parsing.
 
 ## Definition of done
 
