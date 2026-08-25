@@ -10,6 +10,10 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Admission Gate / Release Eligibility v0.1
+
+PR #71 was squash-merged as `29be5dc41556cb7aafa5fc0a4cd1ccb08ef2c157`. Pre-merge Run 530 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 531 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
 ### Artifact Compliance / Policy Evaluator v0.1
 
 PR #70 was squash-merged as `10ea69e80865fda16e385a635fa7bdde17162769`. Pre-merge Run 524 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 525 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -124,28 +128,28 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Admission Gate / Release Eligibility v0.1
+### Artifact Release Plan / Deterministic Publication Plan v0.1
 
-Target: a standalone deterministic local gate that decides whether an explicit artifact record is eligible for release using explicit caller-supplied admission clauses, without mutation, discovery, orchestration, or external policy engines.
+Target: a standalone deterministic local builder for dry-run release plans over explicit eligible artifacts, explicit dependencies, and explicit release constraints, with no publication side effects.
 
 Initial scope:
-- explicit artifact data and explicit gate configuration only
-- deterministic required/optional clause evaluation
-- required compliance verdict handling
-- lifecycle, digest presence, version validity, provenance/lineage status, and bounded metadata requirements
-- stable clause ids and deterministic blocking/non-blocking reasons
-- immutable bounded eligibility results
-- fail-closed malformed/accessor/circular/duplicate/invalid/oversized input handling
-- deterministic checksum-protected result serialization
+- explicit artifact data and explicit release-plan configuration only
+- uniqueness and dependency validation
+- required admission verdict validation
+- deterministic dependency ordering and release step generation
+- cycle and impossible prerequisite detection
+- bounded immutable dry-run plans and dependency evidence
+- deterministic checksum-protected plan serialization
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- remote policy retrieval
+- actual publication or deployment
 - network/filesystem/registry discovery
-- automatic repair, mutation, or publication
-- release scheduling/orchestration
-- signing or trust-chain verification
+- remote release APIs
+- background scheduling/orchestration
+- signing/trust-chain verification
+- automatic artifact mutation or repair
 - GUI/admin console
 - billing or cost accounting
 
