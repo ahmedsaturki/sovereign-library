@@ -6,17 +6,17 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build the **Artifact Release Snapshot / Candidate Set Cube v0.1** as the next standalone Sovereign product.
+Build the **Artifact Release Approval / Decision Record Cube v0.1** as the next standalone Sovereign product.
 
 ## Current repository state
 
-- Last released cube: **Artifact Release Plan / Deterministic Publication Plan v0.1**
-- Release PR: **#72**, squash-merged
-- Release commit: `80c1dcc1a653da8247fdabc0849ecf7d9139259c`
-- Pre-merge verification: **Run 536**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Post-merge verification: **Run 537**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-- Artifact Release Plan / Deterministic Publication Plan v0.1 is therefore **FROZEN**.
-- The release provides deterministic dependency-first ordering, explicit admission enforcement, bounded immutable dry-run steps, compact evidence references, typed fail-closed errors, SRP1 checksum-protected serialization, and zero runtime third-party dependencies.
+- Last released cube: **Artifact Release Snapshot / Candidate Set v0.1**
+- Release PR: **#73**, squash-merged
+- Release commit: `62009ced973107cae4ef81c77f535d800e8692fe`
+- Pre-merge verification: **Run 543**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Post-merge verification: **Run 544**, push on `main` for the release commit, completed successfully on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
+- Artifact Release Snapshot / Candidate Set v0.1 is therefore **FROZEN**.
+- The release provides deterministic candidate identity/version/digest/admission normalization, duplicate rejection, bounded immutable snapshots, SCS1 checksum-protected serialization, typed fail-closed errors, and zero runtime third-party dependencies.
 
 ## The one-current-task rule
 
@@ -26,42 +26,42 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ARTIFACT-RELEASE-SNAPSHOT-CANDIDATE-SET-V0.1-SPEC**
+**ARTIFACT-RELEASE-APPROVAL-DECISION-RECORD-V0.1-SPEC**
 
 ### Immediate next task
 
-Implement the public contract for a standalone deterministic release candidate snapshot:
+Implement the public contract for a standalone deterministic release approval/decision record:
 
-1. accept only explicit artifact candidate records supplied by the caller
-2. normalize candidate identity, version, digest, admission verdict, and evidence references into a stable form
-3. reject duplicates, malformed/accessor/circular/oversized inputs, invalid identities, and inconsistent candidate fields
-4. produce a deterministic candidate ordering independent of input insertion order
-5. compute a bounded immutable snapshot with exact candidate counts and stable identity records
-6. prevent duplicate artifact identities or conflicting versions/digests from entering one snapshot
-7. serialize and parse the snapshot with deterministic checksum/integrity protection
-8. never mutate artifacts and never discover candidates externally
-9. no network, filesystem discovery, registry lookup, scheduler, or publication
+1. accept one explicit frozen release snapshot identity plus explicit approval decisions only
+2. validate decision identity, reviewer/actor id, decision state, scope, and evidence references
+3. normalize decisions into stable deterministic ordering
+4. reject duplicate/conflicting decisions for the same approval scope
+5. compute deterministic approval status from required decision scopes
+6. produce bounded immutable decision records without copying unbounded payloads
+7. serialize and parse the record with deterministic checksum/integrity protection
+8. never mutate the referenced snapshot or perform publication side effects
+9. no network, filesystem discovery, registry lookup, scheduler, signing, or external approval service
 10. zero runtime third-party dependencies
 11. unit, contract, failure, recovery, and cross-platform verification
 12. standalone SPEC, README, changelog, and runnable example before release
 
 ## Scope lock
 
-For Artifact Release Snapshot / Candidate Set v0.1, allowed scope is only:
+For Artifact Release Approval / Decision Record v0.1, allowed scope is only:
 
-- explicit local candidate artifact data
-- deterministic identity/version/digest normalization
-- immutable candidate snapshots
-- bounded evidence references
+- explicit frozen snapshot identity
+- explicit approval decision records
+- deterministic scope evaluation
+- immutable bounded approval status and decision evidence
 - typed fail-closed errors
-- deterministic checksum-protected snapshot serialization
+- deterministic checksum-protected decision serialization
 - unit, contract, failure, recovery, and cross-platform tests
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
 
-- external candidate discovery
-- network/filesystem/registry scanning
+- external approval services
+- network/filesystem/registry discovery
 - publication/deployment
 - signing/trust-chain verification
 - automatic mutation or repair
