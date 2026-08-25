@@ -3,9 +3,8 @@ import assert from 'node:assert/strict';
 import {createRetryPolicy, RetryRunner, RetryError} from '../src/index.js';
 import {FakeClock} from '../src/clock.js';
 
-async function flushMicrotasks() {
-  await Promise.resolve();
-  await Promise.resolve();
+async function flushMicrotasks(rounds = 8) {
+  for (let index = 0; index < rounds; index += 1) await Promise.resolve();
 }
 
 test('fixed and exponential policies compute deterministic delays', () => {
@@ -75,7 +74,7 @@ test('AbortSignal cancels during backoff and cleans the timer', async () => {
   const promise = runner.run(() => { throw Object.assign(new Error('temporary'), {retryable: true}); }, {signal: controller.signal});
   await flushMicrotasks();
   controller.abort(new Error('stop'));
-  await assert.rejects(promise, error => error instanceof RetryError && error.code === 'CANCELLED');
+  await assert.rejects(promise, error => error instanceof RetryError && error.code === 'CANCELLED' && error.cancelled === true);
   assert.equal(clock.timers.size, 0);
 });
 
