@@ -5,12 +5,14 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { CasStore, digest } from '../src/index.js';
 
-test('put/get/has/delete is deterministic and immutable', async () => {
+test('put/get/has/delete is deterministic and immutable-by-copy', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'cas-'));
   const store = await new CasStore({ root }).open();
   const address = await store.put(new Uint8Array([1, 2, 3]), { kind: 'test' });
   assert.equal(address, digest(new Uint8Array([1, 2, 3])));
   assert.equal(await store.has(address), true);
+  const snapshot = await store.get(address);
+  snapshot[0] = 99;
   assert.deepEqual([...await store.get(address)], [1, 2, 3]);
   assert.deepEqual(await store.metadata(address), { kind: 'test' });
   assert.equal(await store.delete(address), true);
