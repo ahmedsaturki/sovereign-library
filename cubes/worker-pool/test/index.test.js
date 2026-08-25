@@ -33,7 +33,8 @@ test('queue overflow rejects without enqueueing', async () => {
   try {
     const running = pool.submit({ type: 'sleep', ms: 50 });
     const queued = pool.submit({ type: 'sleep', ms: 10 });
-    await assert.rejects(() => pool.submit({ type: 'sleep', ms: 10 }), { code: 'QUEUE_FULL', statusCode: 429 });
+    const overflow = await pool.submit({ type: 'sleep', ms: 10 }).then(() => null, error => error);
+    assert.equal(overflow?.code, 'QUEUE_FULL');
     await running;
     await queued;
   } finally {
@@ -48,7 +49,9 @@ test('queued cancellation rejects before worker execution', async () => {
     const running = pool.submit({ type: 'sleep', ms: 50 });
     const queued = pool.submit({ type: 'sleep', ms: 10 }, { signal: controller.signal });
     controller.abort();
-    await assert.rejects(queued, { code: 'CANCELLED', statusCode: 499 });
+    const cancelled = await queued.then(() => null, error => error);
+    assert.equal(cancelled?.code, 'CANCELLED');
+    assert.equal(cancelled?.statusCode, 499);
     await running;
   } finally {
     await pool.close();
@@ -62,7 +65,9 @@ test('active cancellation terminates the worker and the pool recovers', async ()
     const running = pool.submit({ type: 'sleep', ms: 200 }, { signal: controller.signal });
     await new Promise(resolve => setTimeout(resolve, 20));
     controller.abort();
-    await assert.rejects(running, { code: 'CANCELLED', statusCode: 499 });
+    const cancelled = await running.then(() => null, error => error);
+    assert.equal(cancelled?.code, 'CANCELLED');
+    assert.equal(cancelled?.statusCode, 499);
     assert.equal(await pool.submit({ type: 'multiply', value: 9, factor: 3 }), 27);
   } finally {
     await pool.close();
@@ -72,7 +77,10 @@ test('active cancellation terminates the worker and the pool recovers', async ()
 test('worker handler failures are surfaced without killing the pool', async () => {
   const pool = createWorkerPool({ size: 1, workerModule });
   try {
-    await assert.rejects(pool.submit({ type: 'fail', message: 'boom', code: 'EXPECTED' }), { name: 'Error', message: 'boom', code: 'EXPECTED' });
+    const failure = await pool.submit({ type: 'fail', message: 'boom', code: 'EXPECTED' }).then(() => null, error => error);
+    assert.equal(failure?.name, 'Error');
+    assert.equal(failure?.message, 'boom');
+    assert.equal(failure?.code, 'EXPECTED');
     assert.equal(await pool.submit({ type: 'multiply', value: 5, factor: 5 }), 25);
   } finally {
     await pool.close();
@@ -82,7 +90,9 @@ test('worker handler failures are surfaced without killing the pool', async () =
 test('real worker crashes are surfaced and the worker is replaced', async () => {
   const pool = createWorkerPool({ size: 1, workerModule });
   try {
-    await assert.rejects(pool.submit({ type: 'crash', code: 17 }), error => error instanceof WorkerPoolError && ['WORKER_FAILED', 'WORKER_EXITED'].includes(error.code));
+    const failure = await pool.submit({ type: 'crash', code: 17 }).then(() => null, error => error);
+    assert.ok(failure instanceof WorkerPoolError);
+    assert.ok(['WORKER_FAILED', 'WORKER_EXITED'].includes(failure.code));
     assert.equal(await pool.submit({ type: 'multiply', value: 6, factor: 7 }), 42);
   } finally {
     await pool.close();
@@ -92,7 +102,9 @@ test('real worker crashes are surfaced and the worker is replaced', async () => 
 test('task timeout terminates and replaces the worker', async () => {
   const pool = createWorkerPool({ size: 1, workerModule, taskTimeoutMs: 20 });
   try {
-    await assert.rejects(pool.submit({ type: 'sleep', ms: 100 }), { code: 'TASK_TIMEOUT', statusCode: 408 });
+    const timeoutError = await pool.submit({ type: 'sleep', ms: 100 }).then(() => null, error => error);
+    assert.equal(timeoutError?.code, 'TASK_TIMEOUT');
+    assert.equal(timeoutError?.statusCode, 408);
     assert.equal(await pool.submit({ type: 'multiply', value: 4, factor: 3 }), 12);
   } finally {
     await pool.close();
@@ -104,7 +116,8 @@ test('drain stops new submissions and waits for active work', async () => {
   const task = pool.submit({ type: 'sleep', ms: 25, value: 1 });
   await pool.drain();
   assert.deepEqual(await task, { type: 'sleep', ms: 25, value: 1 });
-  await assert.rejects(() => pool.submit({ type: 'multiply', value: 1, factor: 1 }), { code: 'POOL_CLOSED' });
+  const closed = await pool.submit({ type: 'multiply', value: 1, factor: 1 }).then(() => null, error => error);
+  assert.equal(closed?.code, 'POOL_CLOSED');
 });
 
 test('close is idempotent and stats are immutable snapshots', async () => {
