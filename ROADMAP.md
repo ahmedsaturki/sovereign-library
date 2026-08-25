@@ -10,6 +10,10 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Artifact Audit / Drift Reporter v0.1
+
+PR #69 was squash-merged as `f939f13437412682600aad691998cae9d5218606`. Pre-merge Run 511 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 512 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
+
 ### Artifact Reconciliation / Consistency Checker v0.1
 
 PR #68 was squash-merged as `9dfb6833299cbfc42c82afdef5fcf2d3a6175833`. Pre-merge Run 504 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and the real-browser smoke gate. Post-merge Run 505 passed on `main` across Ubuntu, Windows, and macOS-15-Intel with the same gates.
@@ -116,27 +120,29 @@ URL / Query / Encoding `0e4f629d60e5c4566d2194ec6744c13ee57a7526`
 
 ## Active milestone
 
-### Artifact Audit / Drift Reporter v0.1
+### Artifact Compliance / Policy Evaluator v0.1
 
-Target: a standalone deterministic local audit/reporting cube for detecting drift between explicit artifact states without mutating source data.
+Target: a standalone deterministic local policy evaluator for explicit artifact records and explicit caller-supplied compliance rules, with no remote policy engine and no mutation of source artifacts.
 
 Initial scope:
-- explicit local artifact records or snapshots only
-- deterministic baseline/current comparison
-- unchanged/changed/added/removed classification
-- identity/digest/version/lifecycle/lineage drift classification
-- bounded immutable severity/category findings
-- fail-closed malformed/accessor/circular/duplicate input handling
+- explicit local artifacts and explicit local policy rules only
+- canonical policy normalization
+- identity/digest/version/lifecycle/lineage/metadata constraint evaluation
+- bounded numeric/string constraints
+- deterministic allow/deny predicates
+- stable rule-id/severity/category violations
+- immutable bounded compliance reports
+- fail-closed malformed/accessor/circular/duplicate-rule/invalid-regex/oversized input handling
 - deterministic checksum-protected report serialization
 - unit, contract, failure, recovery, and cross-platform verification
 - zero runtime third-party dependencies
 
 Explicitly out of scope for v0.1:
-- remote synchronization
-- automatic network/filesystem/registry discovery
-- automatic repair or mutation of source data
-- distributed audit protocols
-- trust/signature policy engines
+- remote policy retrieval
+- network/filesystem/registry discovery
+- automatic repair or mutation of source artifacts
+- distributed policy evaluation
+- signature/trust-chain verification
 - GUI/admin console
 - background scheduler integration
 - billing or cost accounting
