@@ -10,6 +10,12 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
+### Worker Pool / Parallel Execution v0.1
+
+Release-gate Run 322 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `073ab5b9a27f03d7441bec8549786cd8e8f28f57`.
+
+The release uses Node.js `node:worker_threads` only and provides bounded concurrency, FIFO admission, structured-clone task boundaries, active/queued cancellation, task timeouts, worker crash recovery, trusted worker-module loading, immutable stats, and deterministic drain/close lifecycle behavior.
+
 ### Serialization / Binary Codec v0.1
 
 Release-gate Run 308 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `4e4ebf0bd503e72ec27d1984237b41ad47a56adb`.
@@ -42,33 +48,31 @@ The release fixed a real Base64 defect: UTF-8 `Uint8Array` values must be conver
 
 ## Active milestone
 
-### Worker Pool / Parallel Execution Cube v0.1
+### Metrics / Telemetry Cube v0.1
 
-Target: a native bounded worker-thread execution primitive reusable by CPU-heavy tasks, compression, serialization, data processing, and future agent runtimes.
+Target: a standalone native instrumentation product for application metrics, bounded cardinality, high-resolution timing, immutable snapshots, deterministic export, and zero runtime third-party dependencies.
 
 Initial scope:
-- fixed-size or bounded worker pool
-- explicit task submission contract
-- bounded queued tasks
-- FIFO task admission
-- worker lifecycle and replacement
-- task timeout
-- task cancellation before execution
-- deterministic task result/error envelopes
-- graceful drain and shutdown
-- no shared mutable state across workers
+- counters with monotonic increments
+- gauges with explicit set/add semantics
+- bounded histograms with deterministic buckets
+- deterministic metric names and label-key validation
+- bounded label cardinality
+- immutable snapshots
+- JSON-safe export
+- high-resolution timing helpers using native Node timing primitives
+- reset/close lifecycle
+- failure-safe metric recording that never crashes the caller
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- distributed workers
-- remote execution
-- job brokers
-- persistent task queues
-- shared-memory protocols
-- arbitrary module loading from untrusted input
-- third-party worker-pool packages
-- cluster orchestration
+- network exporters
+- Prometheus/OpenTelemetry protocol clients
+- distributed aggregation
+- persistent metric storage
+- tracing/span correlation
+- third-party metrics packages
 
 ## Parked
 
