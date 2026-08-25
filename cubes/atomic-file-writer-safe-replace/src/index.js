@@ -1,5 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { chmod, fsync, lstat, mkdir, open, rename, unlink } from 'node:fs/promises';
+import { fsync as fsyncCallback } from 'node:fs';
+import { chmod, lstat, mkdir, open, rename, unlink } from 'node:fs/promises';
+import { promisify } from 'node:util';
 import { dirname, resolve, sep } from 'node:path';
 
 const FORMAT = 'AFW1';
@@ -7,6 +9,7 @@ const MAX_PATH = 4096;
 const MAX_BYTES = 16 * 1024 * 1024;
 const MAX_METADATA = 4096;
 const HEX_SHA256 = /^[0-9a-f]{64}$/;
+const fsyncAsync = promisify(fsyncCallback);
 
 export class AtomicFileWriterError extends Error {
   constructor(code, message) {
@@ -59,10 +62,6 @@ function toBytes(data) {
   fail('UNSUPPORTED_INPUT', 'data must be string, Buffer, or Uint8Array');
 }
 
-function digest(buffer) {
-  return createHash('sha256').update(buffer).digest('hex');
-}
-
 function freezeDeep(value) {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
   for (const child of Object.values(value)) freezeDeep(child);
@@ -108,7 +107,7 @@ function normalizeOptions(raw, path) {
   if (!clock || typeof clock.now !== 'function') fail('INVALID_CAPABILITY', 'clock must expose now()');
   const fsOps = raw.fsOps ?? { mkdir, open, rename, lstat, unlink, chmod };
   for (const name of ['mkdir', 'open', 'rename', 'lstat', 'unlink', 'chmod']) capability(fsOps[name], `fsOps.${name}`);
-  if (durability !== 'none') capability(raw.fsync ?? fsync, 'fsync');
+  if (durability !== 'none') capability(raw.fsync ?? fsyncAsync, 'fsync');
 
   const expectedDigest = raw.digest ?? null;
   if (expectedDigest !== null) {
@@ -116,16 +115,8 @@ function normalizeOptions(raw, path) {
   }
 
   return {
-    path: resolve(path),
-    modePolicy,
-    mode: raw.mode,
-    durability,
-    metadata,
-    idGenerator,
-    clock,
-    fsOps,
-    fsync: raw.fsync ?? fsync,
-    expectedDigest,
+    path: resolve(path), modePolicy, mode: raw.mode, durability, metadata,
+    idGenerator, clock, fsOps, fsync: raw.fsync ?? fsyncAsync, expectedDigest,
   };
 }
 
@@ -208,9 +199,8 @@ export async function writeFileAtomic(path, input, options = {}) {
       },
     });
 
-    if (bytes) {
-      await writer.write(bytes);
-    } else {
+    if (bytes) await writer.write(bytes);
+    else {
       const result = await input(writer);
       if (result !== undefined) validateData(result, 'writer result');
     }
@@ -246,15 +236,8 @@ export async function writeFileAtomic(path, input, options = {}) {
     }
 
     return freezeDeep({
-      format: FORMAT,
-      operationId,
-      destination,
-      bytesWritten: written,
-      digest: candidateDigest,
-      existedBefore: destinationState.exists,
-      replaced: true,
-      durability,
-      metadata,
+      format: FORMAT, operationId, destination, bytesWritten: written, digest: candidateDigest,
+      existedBefore: destinationState.exists, replaced: true, durability, metadata,
       timestamp: new Date(clock.now()).toISOString(),
     });
   } catch (error) {
