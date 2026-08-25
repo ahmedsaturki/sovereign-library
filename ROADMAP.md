@@ -10,7 +10,13 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Released
 
-All previously released cubes remain frozen on `main`, including URL / Query / Encoding v0.1.
+All previously released cubes remain frozen on `main`, including URL / Query / Encoding v0.1 and Content-Encoding / Compression v0.1.
+
+### Content-Encoding / Compression v0.1
+
+Release-gate Run 290 passed on Ubuntu, Windows, and macOS-15-Intel with the full repository suite and real Browser smoke test. The cube was squash-merged as `ec31bec3c41804ec34d4ee961ef1b745aa306d61`.
+
+The release uses Node.js `node:zlib` runtime primitives only and adds bounded input/output contracts, typed errors, and sync/async gzip/deflate helpers with no runtime third-party dependencies.
 
 ### URL / Query / Encoding v0.1
 
@@ -20,27 +26,31 @@ The release also fixed a real Base64 defect: UTF-8 `Uint8Array` values must be c
 
 ## Active milestone
 
-### Content-Encoding / Compression Cube v0.1
+### Stream / Pipeline Cube v0.1
 
-Target: a standalone native compression/decompression primitive reusable by HTTP, storage, data, and automation cubes without third-party compression frameworks.
+Target: a standalone native bounded streaming/pipeline primitive reusable by HTTP, MIME, compression, storage, and process-oriented cubes without third-party stream frameworks.
 
 Initial scope:
-- gzip compression/decompression
-- deflate/inflate compression/decompression
-- bounded input/output size limits
-- deterministic typed compression/decompression errors
-- immutable configuration snapshots
-- buffer-safe native primitives
+- AsyncIterable source/sink adapters
+- ordered transform stages
+- bounded buffering
+- explicit backpressure
+- cancellation propagation
+- deterministic error propagation
+- cleanup/finalization hooks
+- simple tee/merge only if required by the core contract
 - local unit/integration/failure/recovery tests
 - cross-platform verification
 
 Out of scope until v0.2+:
-- ZIP archives
-- TAR archives
-- password encryption
-- distributed compression workers
-- third-party compression packages
-- HTTP policy/negotiation logic
+- distributed streaming
+- message brokers
+- reactive programming frameworks
+- third-party stream libraries
+- persistent queues
+- workflow DAGs
+- HTTP policy/negotiation
+- archive formats
 
 ## Parked
 
