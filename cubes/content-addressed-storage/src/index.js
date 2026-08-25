@@ -48,7 +48,7 @@ class CasStore {
     return address;
   }
   async has(address) { this._assertOpen(); try { await fs.access(objectPath(this.root, normalizeAddress(address, this.limits))); return true; } catch (error) { if (error?.code === 'ENOENT') return false; throw error; } }
-  async get(address) { this._assertOpen(); const normalized = normalizeAddress(address, this.limits); try { const bytes = await fs.readFile(objectPath(this.root, normalized)); if (digest(bytes) !== normalized) fail('CORRUPT_OBJECT', 'Object digest mismatch'); return Object.freeze(new Uint8Array(bytes)); } catch (error) { if (error?.code === 'ENOENT') fail('NOT_FOUND', 'Object not found'); throw error; } }
+  async get(address) { this._assertOpen(); const normalized = normalizeAddress(address, this.limits); try { const bytes = await fs.readFile(objectPath(this.root, normalized)); if (digest(bytes) !== normalized) fail('CORRUPT_OBJECT', 'Object digest mismatch'); return new Uint8Array(bytes); } catch (error) { if (error?.code === 'ENOENT') fail('NOT_FOUND', 'Object not found'); throw error; } }
   async delete(address) { this._assertOpen(); const normalized = normalizeAddress(address, this.limits); const file = objectPath(this.root, normalized); try { await fs.unlink(file); } catch (error) { if (error?.code === 'ENOENT') return false; throw error; } try { await fs.unlink(`${file}.meta`); } catch (error) { if (error?.code !== 'ENOENT') throw error; } return true; }
   async metadata(address) { this._assertOpen(); const normalized = normalizeAddress(address, this.limits); try { const text = await fs.readFile(`${objectPath(this.root, normalized)}.meta`, 'utf8'); return Object.freeze(JSON.parse(text)); } catch (error) { if (error?.code === 'ENOENT') return Object.freeze({}); throw error; } }
 }
