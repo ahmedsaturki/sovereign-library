@@ -73,12 +73,13 @@ Released through v0.1:
 - Metrics / Telemetry
 - Redaction / Secret Safety
 - Diff / Patch
+- Canonical JSON / Normalization
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Canonical JSON / Normalization Cube v0.1** — standalone deterministic canonicalization engine for JSON-safe values, stable normalized structures, and canonical serialized JSON, with bounded traversal, immutable outputs, strict rejection, and zero runtime third-party dependencies.
+**CLI / Command Runtime v0.1** — standalone native command-line runtime for deterministic argument parsing, subcommands, flags/options, help/version output, bounded I/O, predictable exit semantics, typed diagnostics, and explicit environment handling with zero runtime third-party dependencies.
 
 ## License
 
