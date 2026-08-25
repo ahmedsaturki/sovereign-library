@@ -61,27 +61,35 @@ Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-
 ### Concurrency / Bulkhead Cube v0.1 — RELEASED
 Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-15-Intel with concurrency contract/integration/failure/recovery tests and the real Browser smoke test. Release-gate Run 201 passed all jobs.
 
+### Circuit Breaker / Health Gate Cube v0.1 — RELEASED
+Implemented with native ECMAScript only. Verified on Ubuntu, Windows, and macOS-15-Intel with circuit-breaker state-machine, recovery, failure-classification, and Browser smoke tests. Release-gate Run 212 passed all jobs. Squash-merged to main as `9ff40cec48c2580583e197775125b80950968ab2`.
+
 ## Active milestone
 
-### Circuit Breaker / Health Gate Cube v0.1
+### Timeout / Deadline Cube v0.1
 
-Status: **VERIFICATION PASSED — MERGE PENDING**. Run 205 passed all jobs on Ubuntu, Windows, and macOS-15-Intel, but the original PR was based on an older `main` and was not merged. The implementation must be re-established on the current `main` and pass its own release gate before being listed as RELEASED.
-
-Target: a standalone deterministic failure-isolation primitive that tracks failures, transitions between closed/open/half-open states, controls probe admission, supports cooldown timing and reset semantics, and composes cleanly with Retry, Bulkhead, Rate Limiter, Result/Error, and AbortSignal without a third-party resilience framework.
+Target: a standalone deterministic timeout/deadline primitive that composes cleanly with HTTP, Process, Scheduler, Retry, Rate Limiter, Bulkhead, Circuit Breaker, Result/Error, and AbortSignal without a third-party timeout framework.
 
 Initial scope:
-- closed/open/half-open state machine
-- configurable failure threshold
-- configurable success threshold for recovery
-- deterministic cooldown clock
-- half-open probe admission limit
-- explicit manual reset
-- result/error-based failure classification
-- immutable state/statistics snapshots
-- AbortSignal-safe probe execution
-- cleanup and close semantics
+- deadline creation from duration or absolute monotonic deadline
+- remaining-time calculation
+- AbortSignal integration
+- deterministic clock support
+- timeout error with explicit deadline metadata
+- race-safe completion/timeout/cancellation semantics
+- child deadline derivation
+- immutable deadline snapshots
+- cleanup and timer lifecycle
 - local unit/integration/failure/recovery tests
 - cross-platform verification
+
+Out of scope until v0.2+:
+- distributed deadlines
+- tracing backend
+- remote coordination
+- adaptive timeouts
+- third-party timeout libraries
+- workflow orchestration
 
 ## Parked
 
