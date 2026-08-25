@@ -36,6 +36,7 @@ test('queue overflow is explicit and does not enqueue', async () => {
   const queued = bulkhead.acquire();
   await assert.rejects(bulkhead.acquire(), error => error instanceof BulkheadError && error.code === 'QUEUE_FULL' && error.overflowed === true);
   assert.equal(bulkhead.getStats().queued, 1);
+  assert.equal(bulkhead.getStats().queuedTotal, 1);
   active.release();
   const next = await queued;
   next.release();
@@ -49,6 +50,7 @@ test('queued AbortSignal cancellation removes the waiter', async () => {
   controller.abort(new Error('stop'));
   await assert.rejects(pending, error => error instanceof BulkheadError && error.code === 'CANCELLED' && error.cancelled === true);
   assert.equal(bulkhead.getStats().queued, 0);
+  assert.equal(bulkhead.getStats().cancelled, 1);
   active.release();
 });
 
@@ -68,6 +70,7 @@ test('close rejects queued work and prevents new admissions', async () => {
   assert.throws(() => bulkhead.tryAcquire(), error => error instanceof BulkheadError && error.code === 'CLOSED');
   active.release();
   assert.equal(bulkhead.getStats().closed, true);
+  assert.equal(bulkhead.getStats().queued, 0);
 });
 
 test('statistics are immutable snapshots', () => {
@@ -76,6 +79,8 @@ test('statistics are immutable snapshots', () => {
   assert.equal(Object.isFrozen(snapshot), true);
   assert.equal(snapshot.active, 0);
   assert.equal(snapshot.available, 2);
+  assert.equal(snapshot.queued, 0);
+  assert.equal(snapshot.queuedTotal, 0);
 });
 
 test('invalid configuration fails early', () => {
