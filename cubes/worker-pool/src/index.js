@@ -1,7 +1,8 @@
 import { Worker } from 'node:worker_threads';
 import { randomUUID } from 'node:crypto';
+import { accessSync, constants as fsConstants } from 'node:fs';
 import { EventEmitter } from 'node:events';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 
 const RUNNER_URL = new URL('./worker-runner.js', import.meta.url);
@@ -25,12 +26,19 @@ function assertPositiveInteger(value, name) {
 }
 
 function normalizeWorkerModule(value) {
-  if (value instanceof URL) return value.href;
-  if (typeof value === 'string') {
-    if (value.startsWith('file://')) return value;
-    return pathToFileURL(resolve(value)).href;
+  let href;
+  if (value instanceof URL) {
+    href = value.href;
+  } else if (typeof value === 'string') {
+    href = value.startsWith('file://') ? value : pathToFileURL(resolve(value)).href;
+  } else {
+    throw new WorkerPoolError('INVALID_WORKER_MODULE', 'workerModule must be a file URL, URL, or filesystem path');
   }
-  throw new WorkerPoolError('INVALID_WORKER_MODULE', 'workerModule must be a file URL, URL, or filesystem path');
+  let url;
+  try { url = new URL(href); } catch (cause) { throw new WorkerPoolError('INVALID_WORKER_MODULE', 'workerModule must be a valid file URL or filesystem path', { cause }); }
+  if (url.protocol !== 'file:') throw new WorkerPoolError('INVALID_WORKER_MODULE', 'workerModule must use the file: protocol');
+  try { accessSync(fileURLToPath(url), fsConstants.R_OK); } catch (cause) { throw new WorkerPoolError('INVALID_WORKER_MODULE', `workerModule is not readable: ${url.href}`, { cause }); }
+  return url.href;
 }
 
 function serializeWorkerError(error) {
@@ -68,6 +76,30 @@ export function createWorkerPool(options = {}) {
     }
   }
 
+  async function closeWorkers(reason = new WorkerPoolError('POOL_CLOSED', 'Worker pool closed')) {
+    if (closed) return;
+    closed = true;
+    draining = true;
+    rejectQueued(reason);
+    const active = workers.splice(0);
+    for (const slot of active) {
+      if (slot.task) {
+        const task = slot.task;
+        slot.task = null;
+        slot.busy = false;
+        pending.delete(task.id);
+        clearTimeout(task.timer);
+        task.reject(reason);
+      }
+    }
+    await Promise.all(active.map(async slot => { try { await slot.worker.terminate(); } catch {} slot.stopped = true; }));
+    for (const [id, task] of pending) {
+      clearTimeout(task.timer);
+      task.reject(new WorkerPoolError('POOL_CLOSED', 'Worker pool closed', { taskId: id }));
+      pending.delete(id);
+    }
+  }
+
   async function terminateAndReplace(slot) {
     slot.stopped = true;
     const index = workers.indexOf(slot);
@@ -87,9 +119,8 @@ export function createWorkerPool(options = {}) {
     worker.on('message', message => {
       if (message?.type === 'boot-error') {
         const error = new WorkerPoolError('WORKER_BOOT_FAILED', message.error?.message ?? 'Worker failed to boot', { cause: message.error });
-        slot.stopped = true;
-        if (slot.task) finishTask(slot, 'reject', error);
-        void terminateAndReplace(slot);
+        events.emit('bootError', error);
+        void closeWorkers(error);
         return;
       }
       if (!slot.task || message?.id !== slot.task.id) return;
@@ -204,20 +235,6 @@ export function createWorkerPool(options = {}) {
     draining = true;
     while (queue.length > 0 || [...workers].some(slot => slot.busy)) await new Promise(resolveWait => setTimeout(resolveWait, 1));
     await closeWorkers();
-  }
-
-  async function closeWorkers() {
-    if (closed) return;
-    closed = true;
-    draining = true;
-    rejectQueued(new WorkerPoolError('POOL_CLOSED', 'Worker pool closed'));
-    const active = workers.splice(0);
-    await Promise.all(active.map(async slot => { try { await slot.worker.terminate(); } catch {} slot.stopped = true; }));
-    for (const [id, task] of pending) {
-      clearTimeout(task.timer);
-      task.reject(new WorkerPoolError('POOL_CLOSED', 'Worker pool closed', { taskId: id }));
-      pending.delete(id);
-    }
   }
 
   return Object.freeze({
