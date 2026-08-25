@@ -92,12 +92,13 @@ Released through v0.1:
 - Artifact Lifecycle / Retention Index
 - Artifact Reference Resolver / Locator
 - Artifact Provenance / Lineage Ledger
+- Artifact Reconciliation / Consistency Checker
 
 Every released cube has been verified through GitHub Actions across Ubuntu, Windows, and macOS-15-Intel, including the repository's real-browser smoke gate.
 
 ## Active milestone
 
-**Artifact Reconciliation / Consistency Checker v0.1** — standalone deterministic checker for explicit artifact snapshots, reporting identity/digest/version/lifecycle/lineage inconsistencies without mutating source data.
+**Artifact Audit / Drift Reporter v0.1** — standalone deterministic local audit/reporting cube for detecting drift between explicit artifact states without mutating source data.
 
 ## License
 
