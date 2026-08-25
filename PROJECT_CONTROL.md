@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It exists to keep develo
 
 ## Current mission
 
-Finish **Timeout / Deadline Cube v0.1** and release it before starting another cube.
+Finish **HTTP Server / Router Cube v0.1** and release it before starting another cube.
 
 ## The one-current-task rule
 
@@ -16,51 +16,60 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**TIMEOUT-DEADLINE-V0.1-RELEASE**
+**HTTP-SERVER-ROUTER-V0.1-RELEASE**
 
 ### Immediate next task
 
-Complete the Timeout / Deadline Cube release gate:
+Build and release the native HTTP Server / Router Cube:
 
-1. write and freeze the deadline contract
-2. define duration and absolute monotonic deadline creation
-3. define remaining-time semantics
-4. verify AbortSignal integration
-5. verify deterministic clock behavior
-6. verify timeout/cancellation/completion races
-7. verify child deadline derivation
-8. verify immutable snapshots and cleanup
-9. run syntax, unit, contract, integration, failure, and recovery tests
-10. verify zero runtime third-party dependencies
-11. run the supported cross-platform CI matrix
-12. fix only failures required for the v0.1 gate
-13. squash-merge the release PR
-14. update ROADMAP before starting another cube
+1. freeze the server/router contract
+2. implement native HTTP/HTTPS server creation
+3. implement deterministic method/path routing and params
+4. implement query parsing and bounded request bodies
+5. implement response helpers and headers/status
+6. implement ordered async middleware
+7. implement centralized error and 404/405 handling
+8. integrate request lifecycle cancellation where supported
+9. implement graceful close and connection cleanup
+10. add unit, contract, integration, failure, and recovery tests
+11. verify zero runtime third-party dependencies
+12. run cross-platform CI and real HTTP integration coverage
+13. fix only failures required for the v0.1 gate
+14. squash-merge the release PR
+15. update ROADMAP before starting another cube
 
 ## Scope lock
 
-For Timeout / Deadline Cube v0.1, the allowed scope is only:
+For HTTP Server / Router Cube v0.1, the allowed scope is only:
 
-- deadline creation from duration or absolute monotonic deadline
-- remaining-time calculation
-- AbortSignal integration
-- deterministic clock support
-- timeout error with explicit deadline metadata
-- race-safe completion/timeout/cancellation semantics
-- child deadline derivation
-- immutable deadline snapshots
-- cleanup and timer lifecycle
+- native HTTP/HTTPS server creation
+- method/path routing
+- path parameters
+- query parsing
+- request body limits
+- JSON/text response helpers
+- status/header management
+- ordered middleware
+- async handlers
+- centralized error handling
+- 404 and method-not-allowed behavior
+- request lifecycle propagation where supported
+- graceful close and connection cleanup
+- immutable route/response metadata snapshots
 - documentation
 - local unit/integration/failure/recovery tests
 
 Explicitly out of scope for v0.1:
 
-- distributed deadlines
-- tracing backend
-- remote coordination
-- adaptive timeouts
-- third-party timeout libraries
-- workflow orchestration
+- WebSocket upgrade handling
+- multipart parser
+- sessions/cookies framework
+- authentication/authorization framework
+- compression framework
+- templating engine
+- reverse proxy
+- distributed server state
+- third-party web frameworks
 - AI agent runtime
 
 ## Definition of done
