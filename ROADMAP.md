@@ -10,15 +10,19 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Safe Path Resolver / Containment Boundary v0.1
+
+PR #90 was squash-merged as `0216f3acd81331c031ac0ae023bfc1322f9064bc`.
+
+Exact-SHA external verification at `b52473ee8f4148932ec3d8526bbfe3ef5abac14c` passed: 400+ repository tests, 14/14 cube-specific tests, and browser smoke 1/1. Pre-merge **Run 664** passed on Ubuntu, Windows, and macOS-15-Intel. Post-merge **Run 665**, attempt 2, passed on all three platforms after a transient macOS runner hang on attempt 1.
+
+The cube is **FROZEN** at `0216f3acd81331c031ac0ae023bfc1322f9064bc`.
+
 ### Glob / Path Matcher v0.1
 
 PR #87 was squash-merged as `c9a3d330a16a488e00c28311085204363bab2fc7`.
 
-Pre-merge **Run 654** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-
-Post-merge **Run 655** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke.
-
-Blocking fixes included escape-tokenization ordering and explicit absolute-root anchoring; regression coverage was added and the final platform matrix passed without workflow bypasses.
+Pre-merge **Run 654** and post-merge **Run 655** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, full repository tests, and real-browser smoke. Blocking fixes included escape-tokenization ordering and explicit absolute-root anchoring; regression coverage was added.
 
 The cube is **FROZEN** at `c9a3d330a16a488e00c28311085204363bab2fc7`.
 
@@ -94,37 +98,37 @@ Earlier released cubes remain pinned to their recorded immutable SHAs.
 
 ## Active milestone
 
-### SAFE-PATH-RESOLVER-V0.1-SPEC
+### DIRECTORY-WALKER-BOUNDED-TREE-TRAVERSAL-V0.1-SPEC
 
-Glob / Path Matcher v0.1 is complete and frozen.
+Safe Path Resolver / Containment Boundary v0.1 is complete and frozen.
 
 The next selected standalone product is:
 
-**Safe Path Resolver / Containment Boundary v0.1**
+**Directory Walker / Bounded Tree Traversal v0.1**
 
 Rationale:
 
-- safe path resolution and containment is a distinct reusable boundary between pure path matching and filesystem-aware consumers
-- it provides consistent traversal rejection, root anchoring, drive/UNC handling, and symlink policy for multiple future cubes
-- explicit lexical versus filesystem-aware modes make security-sensitive behavior testable without forcing filesystem access into pure APIs
-- the core can remain zero-runtime-dependency while exposing narrow native capability seams
+- bounded traversal is a distinct reusable primitive that consumes safe-path semantics without owning them
+- deterministic enumeration provides a stable foundation for indexing, migration, backup, search, and later snapshot consumers
+- explicit entry, depth, and time budgets prevent accidental unbounded work
+- visitor and collected modes can share one traversal core while making memory behavior explicit
+- filesystem operations remain capability-injected, preserving the zero-runtime-dependency and testability boundary
 
 ### Immediate next task
 
-Write and commit the complete SPEC at `specs/safe-path-resolver-containment-boundary-v0.1.md` before implementation begins.
+Write and commit the complete SPEC at `specs/directory-walker-bounded-tree-traversal-v0.1.md` before implementation begins.
 
 The SPEC must lock:
 
-- lexical versus filesystem-aware resolution semantics
-- absolute, relative, drive, UNC, namespace, and root behavior
-- explicit base/root scope anchoring
-- traversal and escape rejection
-- symlink-aware versus lexical-only policies
-- deterministic comparison semantics independent of host OS defaults
-- Windows volume and namespace boundaries
-- bounded path lengths, segment counts, and recursion
-- capability seams with safe data/function separation
-- non-mutating behavior and failure/recovery semantics
+- traversal API and deterministic ordering
+- root anchoring and safe-path integration
+- file/directory/symlink/special-entry policies
+- depth, entry-count, path-length, and total-budget limits
+- visitor versus collected-result behavior
+- cancellation, timeout, and backpressure semantics
+- filesystem capability seams with safe data/function separation
+- partial traversal and failure/recovery semantics
+- non-mutating guarantees
 - Ubuntu, Windows, macOS-15-Intel, and relevant WSL verification
 - zero-runtime-third-party-dependency boundary
 
