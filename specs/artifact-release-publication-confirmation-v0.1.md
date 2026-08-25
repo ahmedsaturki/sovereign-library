@@ -10,23 +10,24 @@ The receipt records what the caller says was executed. It does not execute publi
 
 - one explicit publication outcome snapshot produced by the Publication Executor
 - one explicit originating closure receipt identity
-- one finite caller-supplied confirmation metadata object
+- one finite caller-supplied confirmation metadata object (optional)
 - one finite list of caller-supplied commit evidence references and timestamps
 
 ## Public contract
 
-1. validate the originating closure receipt identity and require the outcome to reference the same receipt
-2. validate every outcome against an explicit plan intent identity, destination id, artifact identity, and idempotency key
+1. validate the originating closure receipt identity and require the outcome to reference the exact same `receiptId`, `snapshotId`, `snapshotChecksum`, `approvalId`, and `approvalChecksum`
+2. validate every explicit outcome against an explicit plan intent identity, destination id, artifact identity/digest, and idempotency key
 3. accept only known execution states: `succeeded`, `skipped_idempotent`, `failed`
-4. produce confirmation records only from explicit outcome entries; never infer missing records
+4. produce confirmation records only from explicit outcome entries; never infer missing records from the plan
 5. normalize confirmation ordering deterministically by intent id
 6. preserve destination id, intent id, idempotency key, artifact identity/digest, execution state, and bounded commit evidence
-7. accept timestamps only when explicitly supplied by the caller and validate them deterministically
-8. reject duplicate confirmations, mismatched closure ids, plan/outcome conflicts, invalid states, malformed/accessor/circular inputs, and oversized evidence
-9. produce an immutable confirmation receipt suitable for downstream audit/reconciliation
-10. serialize and parse the receipt with deterministic checksum/integrity protection (`SPC1`)
-11. recover cleanly after rejected input without poisoning later valid confirmation builds
-12. perform no side effects and call no external services
+7. preserve optional finite caller-supplied metadata as opaque data without reinterpretation
+8. accept timestamps only when explicitly supplied by the caller and validate them deterministically; the system clock is never consulted
+9. reject duplicate confirmations, mismatched closure ids, plan/outcome conflicts, invalid states, malformed/accessor/circular inputs, and oversized evidence/metadata
+10. produce an immutable confirmation receipt suitable for downstream audit/reconciliation
+11. serialize and parse the receipt with deterministic checksum/integrity protection (`SPC1`)
+12. recover cleanly after rejected input without poisoning later valid confirmation builds
+13. perform no side effects and call no external services
 
 ## Confirmation state model
 
@@ -34,7 +35,7 @@ The receipt records what the caller says was executed. It does not execute publi
 - `skipped_idempotent`: execution was intentionally skipped because the idempotency key was already committed
 - `failed`: execution returned a terminal failure outcome
 
-A failed outcome remains a record of the executor result; the confirmation cube does not retry or repair it.
+A failed outcome remains a record of the executor result; the confirmation cube does not retry or repair it. A partial outcome list is therefore valid when execution stopped after a terminal failure; missing intents are never inferred.
 
 ## Evidence and timestamps
 
@@ -44,7 +45,7 @@ Timestamps must be supplied as explicit ISO-8601 strings and are normalized only
 
 ## Serialization
 
-Use a versioned checksum-protected envelope (`SPC1`) with deterministic canonical payload ordering and corruption detection.
+Use a versioned checksum-protected envelope (`SPC1`) with deterministic canonical payload ordering and corruption detection. Serialized payloads are bounded to 64 KiB.
 
 ## Out of scope
 
