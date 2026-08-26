@@ -18,7 +18,9 @@ jobs:
           node-version: 24
       - name: Validate declaration config
         run: node -e "const fs=require('fs'); const c=JSON.parse(fs.readFileSync('jsconfig.declarations.json','utf8')); if(c.compilerOptions.allowJs!==true||c.compilerOptions.declaration!==true||c.compilerOptions.emitDeclarationOnly!==true) process.exit(1); if(!Array.isArray(c.include)||c.include.length!==2) process.exit(1);"
+      - name: Validate pinned TypeScript tool
+        run: npx --yes typescript@7.0.2 --version
       - name: Emit pilot declarations
-        run: npx --yes -p typescript@7.0.2 -p @types/node@26.3.0 tsc --project jsconfig.declarations.json
+        run: npx --yes typescript@7.0.2 --project jsconfig.declarations.json
       - name: Verify emitted pilot declarations
         run: node -e "const fs=require('fs'); for (const f of ['.artifacts/declarations/cubes/safe-path-resolver-containment-boundary/src/index.d.ts','.artifacts/declarations/cubes/runtime-capability-inspector/src/index.d.ts']) { if(!fs.existsSync(f)) throw new Error('missing declaration: '+f); const s=fs.readFileSync(f,'utf8'); if(!s.includes('export')) throw new Error('declaration has no public exports: '+f); }"
