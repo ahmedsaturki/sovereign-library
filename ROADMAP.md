@@ -55,22 +55,40 @@ Run #809 passed on Ubuntu, Windows, and macOS-15-Intel with exact generated publ
 
 **Run #835** passed on Ubuntu, Windows, and macOS-15-Intel with byte-identical package reproduction for both pilot candidates, integrity/shasum/file-manifest agreement, security-boundary verification, and browser smoke.
 
-### Completed: Publication Guard Implementation
+### Completed: Publication Guard
 
-`scripts/verify-publication-guard.mjs` is wired into `.github/workflows/verify.yml`. It prevents accidental publication/configuration drift by rejecting publish commands, registry credentials, registry overrides, `publishConfig`, package scripts, and runtime dependency declarations for the first zero-runtime-dependency batch.
+`scripts/verify-publication-guard.mjs` is wired into `.github/workflows/verify.yml`.
 
-**Run #837** is the cross-platform verification for this guard. Ubuntu has already passed the complete matrix; Windows and macOS were still completing the matrix when this roadmap entry was written.
+**Run #840** at commit `b41c224de8538ac3df162c9fb62582373ee95a6e` passed the complete verification matrix on Ubuntu, Windows, and macOS-15-Intel, including publication guard and real browser smoke.
 
-### Active: First Small Public Package Batch — Release Preparation
+### Completed: Release Readiness + Authorization Packet Preparation
+
+The following records are frozen:
+
+- `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`
+- `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`
 
 Candidates:
 
 1. `@sovereign/safe-path-resolver` v0.1.0
 2. `@sovereign/runtime-capability-inspector` v0.1.0
 
-Release-preparation record: `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`.
+### Active: Explicit Release Authorization
 
-Immediate gate: finish the publication-guard verification matrix, freeze the release-readiness evidence, and prepare a release authorization packet. No npm organization, token, registry automation, or publication is authorized yet.
+**Technical readiness is complete.** The next and only active decision is an explicit release-authorization decision for the two candidates.
+
+Until that decision exists, the following remain prohibited:
+
+- npm organization creation or reservation
+- npm token configuration
+- registry automation
+- `npm publish`
+- GitHub Packages publication
+- public release announcements
+
+Once explicitly authorized, the controlled path becomes:
+
+`AUTHORIZED -> FINAL CLEAN VERIFY -> TAG/RELEASE -> PUBLISH -> POST-PUBLISH VERIFY -> FREEZE`
 
 ## Future product direction
 
