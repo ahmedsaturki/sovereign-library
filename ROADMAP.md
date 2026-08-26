@@ -12,27 +12,29 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ### Bounded File Content Reader / Safe Content Access v0.1
 
-PR #94 was merged as `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`.
+PR #94 — `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`
 
-Pre-merge **Run 693** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, **661/661 tests**, and real-browser smoke.
-
-Post-merge **Run 694** passed on the release commit. Mainline Push verification **Run 695** experienced a transient macOS-15-Intel Node.js test-runner hang: the original job and two reruns timed out after the test suite itself reported passing, while the third fresh-run attempt (**macOS Job 98006586509**) passed in 34s with syntax, contract/integration tests, browser smoke, and complete job all green. Ubuntu Job `98006587887` and Windows Job `98006587516` also passed. No product-code or workflow changes were required.
+Pre-merge **Run 693** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, **661/661 tests**, and real-browser smoke. Post-merge **Run 694** passed on the release commit. Mainline Push verification **Run 695** experienced a transient macOS-15-Intel Node.js test-runner hang, resolved by a fresh-run pass (macOS Job `98006586509`, 34s) with syntax, contract/integration tests, browser smoke, and complete job all green. No product-code or workflow changes were required.
 
 The cube is **FROZEN** at `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`.
 
-### Filesystem Metadata / Stat Normalizer v0.1
+### File Lease / Advisory Lock v0.1 — corrective hardening
 
-PR #93 — `44f1acc2f277a2016013146423bd97a7a4e15057`
+Corrective PR #95 — `a2eb715a558d9c88f19e9ff83ff512971e548891`
 
-### Directory Walker / Bounded Tree Traversal v0.1
+PR verification **Run 700** passed on Ubuntu, Windows, and macOS-15-Intel after a macOS-only rerun. Mainline Push verification **Run 701** initially cancelled the macOS-15-Intel job after a runner hang; the same macOS job was rerun on a fresh runner and passed syntax, full tests, browser smoke, and complete job. Ubuntu and Windows passed on the original mainline attempt.
 
-PR #92 — `4d64f6610286524799ebe809021279a7b7be3d40`
+The corrective release is **FROZEN** at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
 
-### Safe Path Resolver / Containment Boundary v0.1
+Hardening closed three contract gaps: stale-recovered successor ownership invalidates the old lease object; orphan lock directories without an owner record fail closed; and release refuses to report success while unexpected lock-directory entries remain.
 
-PR #90 — `0216f3acd81331c031ac0ae023bfc1322f9064bc`
+### Earlier released cubes
 
-### Prior release chain
+Filesystem Metadata / Stat Normalizer v0.1 — PR #93 — `44f1acc2f277a2016013146423bd97a7a4e15057`
+
+Directory Walker / Bounded Tree Traversal v0.1 — PR #92 — `4d64f6610286524799ebe809021279a7b7be3d40`
+
+Safe Path Resolver / Containment Boundary v0.1 — PR #90 — `0216f3acd81331c031ac0ae023bfc1322f9064bc`
 
 Glob / Path Matcher v0.1 — PR #87 — `c9a3d330a16a488e00c28311085204363bab2fc7`
 
@@ -54,26 +56,30 @@ Earlier Artifact Release cubes remain pinned to their recorded immutable SHAs.
 
 ## Active milestone
 
-### FILESYSTEM-LEASE-AND-LOCK-REVIEW
+### ATOMIC-BATCH-FILE-TRANSACTION-SPEC
 
-Bounded File Content Reader / Safe Content Access v0.1 is complete and frozen.
+The File Lease / Advisory Lock review is complete and its corrective release is frozen.
 
-The immediate next task is a **review of the already-released File Lease / Advisory Lock v0.1** using the current Sovereign release bar and lessons learned from Safe Path, Metadata, Directory Walker, and Reader.
+The next task is to write and freeze the SPEC for **Atomic Batch File Transaction / Safe Multi-File Commit v0.1**.
 
-The review must verify:
+The SPEC must define:
 
-- public API and standalone usability
-- cross-platform locking semantics on Ubuntu, Windows, macOS-15-Intel, and relevant WSL
-- stale-owner and abnormal-termination recovery
-- timeout, cancellation, acquisition race, release, and cleanup semantics
-- deterministic failure codes and privacy-safe diagnostics
-- capability-seam boundaries and accessor safety
-- documentation, examples, tests, and zero-runtime-dependency compliance
+- deterministic operation planning and canonical ordering
+- preflight validation before mutation
+- owned temporary files and cleanup
+- safe replacement semantics for multiple local files
+- rollback and recovery after partial failure
+- interruption/crash recovery boundaries and explicit unsupported guarantees
+- containment and symlink policy
+- bounded entry, byte, and work budgets
+- capability seams for filesystem operations, identity, clock, and failure injection
+- immutable deterministic commit/rollback receipts with integrity protection
+- privacy-safe bounded diagnostics
+- explicit platform/filesystem capability reporting
+- zero runtime third-party dependencies
 
-If a concrete gap is found, create a scoped corrective task/PR. If the release is already compliant, close the review and select the next unreleased standalone cube, then write its SPEC before implementation.
-
-No unrelated cube implementation starts before this review gate is complete.
+No implementation begins until the SPEC is committed and the control plane records the SPEC gate as complete.
 
 ## Parked
 
-All other capabilities remain parked until the current review and subsequent cube release are complete. New ideas must not bypass the one-current-task rule.
+All other capabilities remain parked until the current cube release is complete. New ideas must not bypass the one-current-task rule.
