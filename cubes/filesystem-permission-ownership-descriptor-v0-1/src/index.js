@@ -17,12 +17,13 @@ function rejectAccessors(value, path = '$', seen = new Set()) {
   if (!value || typeof value !== 'object') return;
   if (seen.has(value)) throw new PermissionOwnershipError('CIRCULAR_INPUT', 'Circular input rejected');
   seen.add(value);
-  for (const key of Object.keys(value)) {
+  for (const key of Reflect.ownKeys(value)) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    const label = typeof key === 'symbol' ? key.toString() : key;
     if (descriptor?.get || descriptor?.set) {
-      throw new PermissionOwnershipError('ACCESSOR_INPUT', `Accessor input rejected at ${path}.${key}`);
+      throw new PermissionOwnershipError('ACCESSOR_INPUT', `Accessor input rejected at ${path}.${label}`);
     }
-    rejectAccessors(value[key], `${path}.${key}`, seen);
+    if ('value' in descriptor) rejectAccessors(descriptor.value, `${path}.${label}`, seen);
   }
   seen.delete(value);
 }
@@ -151,8 +152,7 @@ export async function inspectPath(path, capabilities, options = {}) {
   assertPlainOptions(options);
   if (typeof path !== 'string' || path.length === 0) throw new PermissionOwnershipError('INVALID_PATH', 'path must be a non-empty string');
   if (!capabilities || typeof capabilities !== 'object') throw new PermissionOwnershipError('INVALID_CAPABILITY', 'capabilities required');
-  const required = ['lstat'];
-  for (const name of required) if (typeof capabilities[name] !== 'function') throw new PermissionOwnershipError('INVALID_CAPABILITY', `${name} capability required`);
+  for (const name of ['lstat']) if (typeof capabilities[name] !== 'function') throw new PermissionOwnershipError('INVALID_CAPABILITY', `${name} capability required`);
   const raw = await capabilities.lstat(path);
   if (!raw || typeof raw !== 'object') throw new PermissionOwnershipError('INVALID_STAT', 'lstat returned malformed metadata');
   const merged = { ...raw, path };
@@ -184,9 +184,7 @@ export function parseDescriptor(serialized) {
   const version = Number(serialized.slice(first + 1, second));
   const body = serialized.slice(second + 1, last);
   const checksum = serialized.slice(last + 1);
-  if (format !== FORMAT || version !== VERSION || !/^[0-9a-f]{64}$/.test(checksum)) {
-    throw new PermissionOwnershipError('MALFORMED_SERIALIZATION', 'invalid serialization header');
-  }
+  if (format !== FORMAT || version !== VERSION || !/^[0-9a-f]{64}$/.test(checksum)) throw new PermissionOwnershipError('MALFORMED_SERIALIZATION', 'invalid serialization header');
   const expected = hashText(body);
   if (!timingSafeEqual(Buffer.from(expected), Buffer.from(checksum))) throw new PermissionOwnershipError('INTEGRITY_FAILURE', 'descriptor integrity check failed');
   let parsed;
