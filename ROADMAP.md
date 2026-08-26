@@ -43,11 +43,11 @@ PR #106 — merge `37bdac72bd86c3a190035f3a36a2cfe497fe2812`
 
 Apache License 2.0 is authoritative on `main`, with `LICENSE`, `NOTICE`, and `docs/LEGAL_AND_DISTRIBUTION_POLICY_V0.1.md`. Registry publication remains separately gated.
 
-### Active: Public API Boundary Freeze
+### Completed: Public API Boundary Freeze
 
-The current readiness gate freezes the first public API candidate surface in `docs/PUBLIC_API_BOUNDARY_V0.1.md`.
+Run #782 passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green.
 
-The first batch candidates are:
+The frozen first batch candidates are:
 
 1. Safe Path Resolver / Containment Boundary
 2. Glob / Path Matcher
@@ -58,14 +58,22 @@ The first batch candidates are:
 7. Directory Snapshot / Tree Manifest
 8. Runtime Capability Inspector
 
-Only symbols explicitly listed in the boundary manifest are public candidates; all other implementation symbols remain internal by default.
+Only symbols explicitly listed in `docs/PUBLIC_API_BOUNDARY_V0.1.md` are public candidates; all other implementation symbols remain internal by default.
 
-### Phase 0 order after API boundary
+### Active: Type / Declaration Strategy
+
+The governing artifact is `docs/DECLARATION_STRATEGY_V0.1.md`.
+
+The repository remains JavaScript-first. The declaration pilot uses JSDoc-driven declaration emission, a repository-level `jsconfig.declarations.json`, and a dedicated `.github/workflows/declarations.yml` gate. The first pilot candidates are Safe Path Resolver and Runtime Capability Inspector.
+
+The pilot must prove declaration emission and public-surface alignment before package tooling begins.
+
+### Phase 0 order after declaration strategy
 
 1. Inventory & Classification — **DONE / FROZEN**
 2. License decision and repository licensing artifacts — **DONE / FROZEN**
-3. Public API boundary freeze — **ACTIVE**
-4. Type/declaration strategy without a full rewrite
+3. Public API boundary freeze — **DONE / VERIFIED**
+4. Type/declaration strategy without a full rewrite — **ACTIVE**
 5. Package contract/tooling (`package.json`, exports, changesets, API extraction)
 6. Reproducible `npm pack` and security verification
 7. First small public package batch

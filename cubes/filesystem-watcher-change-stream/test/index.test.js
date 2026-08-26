@@ -119,29 +119,23 @@ test('native smoke watches a temporary directory without external dependencies',
   const { join } = await import('node:path');
   const directory = await mkdtemp(join(tmpdir(), 'fwc-'));
   const watcher = createWatcher({ roots: [directory], queueCapacity: 32 });
-  const deadline = Date.now() + 3000;
   try {
     await watcher.start();
     const target = join(directory, 'smoke.txt');
+    const nextEvent = watcher.next();
     await writeFile(target, 'a');
     let event;
-    while (Date.now() < deadline) {
-      const remaining = Math.max(1, deadline - Date.now());
-      const candidate = await Promise.race([
-        watcher.next(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('native watcher timeout')), Math.min(remaining, 250))),
-      ]).catch((error) => {
-        if (error?.message === 'native watcher timeout') return null;
-        throw error;
-      });
-      if (candidate?.value && ['created', 'changed'].includes(candidate.value.type)) {
-        event = candidate;
-        break;
-      }
-      if (candidate?.done) break;
-      if (Date.now() < deadline) await appendFile(target, 'b');
+    try {
+      event = await Promise.race([
+        nextEvent,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('native watcher timeout')), 5000)),
+      ]);
+    } catch (error) {
+      if (error?.message !== 'native watcher timeout') throw error;
+      await appendFile(target, 'b');
+      event = await nextEvent;
     }
-    assert.ok(event, 'native watcher must surface a creation/change event');
+    assert.ok(event?.value && ['created', 'changed'].includes(event.value.type), 'native watcher must surface a creation/change event');
     assert.equal(event.value.path, 'smoke.txt');
   } finally {
     await watcher.close();
