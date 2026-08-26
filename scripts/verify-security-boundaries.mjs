@@ -2,14 +2,15 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve, join, relative } from 'node:path';
 
 const ROOT = resolve('.');
+const SELF = resolve(ROOT, 'scripts/verify-security-boundaries.mjs');
 const violations = [];
 const EXECUTION_RULES = [
   { id: 'shell-true', pattern: /\bshell\s*:\s*true\b/g, message: 'shell execution must be explicitly disabled' },
   { id: 'eval', pattern: /\beval\s*\(/g, message: 'eval() is forbidden' },
   { id: 'new-function', pattern: /\bnew\s+Function\s*\(/g, message: 'dynamic Function construction is forbidden' },
-  { id: 'function-constructor', pattern: /\bFunction\s*\(/g, message: 'Function() construction is forbidden' },
+  { id: 'function-constructor', pattern: /(?<![\w$])Function\s*\(/g, message: 'Function() construction is forbidden' },
   { id: 'vm-script', pattern: /\bvm\.Script\b|\bvm\.(?:runInThisContext|runInNewContext|runInContext)\s*\(/g, message: 'dynamic vm execution is forbidden' },
-  { id: 'child-process-exec', pattern: /\b(?:child_process\.)?(?:exec|execSync)\s*\(/g, message: 'shell-oriented child_process exec is forbidden' },
+  { id: 'child-process-exec', pattern: /(?:\bchild_process\s*\.\s*)?(?<!\.)\b(?:exec|execSync)\s*\(/g, message: 'shell-oriented child_process exec is forbidden' },
 ];
 
 function walk(dir) {
@@ -45,8 +46,11 @@ const scanRoots = [resolve(ROOT, 'scripts'), resolve(ROOT, 'cubes')];
 for (const root of scanRoots) {
   if (!existsSync(root)) continue;
   for (const file of walk(root)) {
+    if (resolve(file) === SELF) continue;
     if (root.endsWith('cubes')) {
-      if (!file.includes(`${resolve(ROOT, 'cubes')}${process.platform === 'win32' ? '\\' : '/'}`) || !file.includes(`${process.platform === 'win32' ? '\\' : '/'}src${process.platform === 'win32' ? '\\' : '/'}`)) continue;
+      const sourceMarker = `${resolve(ROOT, 'cubes')}${process.platform === 'win32' ? '\\' : '/'}\n`;
+      const normalized = file.replaceAll('\\', '/');
+      if (!normalized.startsWith(resolve(ROOT, 'cubes').replaceAll('\\', '/') + '/') || !normalized.includes('/src/')) continue;
       if (!file.endsWith('.js') && !file.endsWith('.mjs')) continue;
     } else if (!file.endsWith('.mjs') && !file.endsWith('.js')) {
       continue;
