@@ -49,7 +49,7 @@ Pilot and verify TypeScript declaration generation for the first two public API 
 
 ### Phase 0 order after declaration strategy
 
-4. Type/declaration strategy without a full rewrite — **ACTIVE**
+4. Type/declaration strategy without a full rewrite — **ACTIVE / VERIFICATION PENDING**
 5. Package contract/tooling (`package.json`, exports, changesets, API extraction)
 6. Reproducible `npm pack` and security verification
 7. First small public package batch
@@ -67,7 +67,7 @@ Initial pilot candidates:
 
 The declaration compiler contract is `jsconfig.declarations.json` and emits only into the ignored `.artifacts/declarations` staging directory.
 
-The declaration CI gate is a dedicated job inside `.github/workflows/verify.yml`. It runs with pinned build-time tooling only; these tools are not runtime dependencies of any Cube.
+The earlier standalone declaration workflow produced startup failures with zero jobs, so it was removed. Declaration CI must be re-established and verified through the known-good verification workflow before this gate can be considered DONE.
 
 ## Release sequence
 
