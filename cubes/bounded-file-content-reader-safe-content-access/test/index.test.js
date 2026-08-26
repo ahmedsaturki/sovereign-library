@@ -131,6 +131,19 @@ test('BOM policies are explicit', async () => {
   );
 });
 
+test('stream BOM preserve remains exact when the UTF-8 BOM is split across chunks', async () => {
+  const bytes = new Uint8Array([0xef, 0xbb, 0xbf, 97]);
+  const parts = [];
+  for await (const item of readFileChunks('/x', {
+    mode: 'text',
+    bom: 'preserve',
+    chunkSize: 1,
+  }, capsFor(bytes))) {
+    parts.push(item.data);
+  }
+  assert.equal(parts.join(''), '\uFEFFa');
+});
+
 test('chunked mode is ordered and bounded', async () => {
   const capabilities = capsFor(new TextEncoder().encode('abcdefgh'));
   const chunks = [];
