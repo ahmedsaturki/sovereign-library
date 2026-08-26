@@ -6,19 +6,21 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Specify, implement, verify, release, and freeze the next standalone Sovereign product after completing the **File Lease / Advisory Lock v0.1 review and corrective hardening**.
+Complete **Atomic Batch File Transaction / Safe Multi-File Commit v0.1** through the required release sequence without skipping gates.
 
 ## Current repository state
 
 - Last released cube: **Bounded File Content Reader / Safe Content Access v0.1**
 - Latest corrective release: **File Lease / Advisory Lock v0.1 hardening**
-- Corrective PR: **#95**, merged
-- Corrective release commit: `a2eb715a558d9c88f19e9ff83ff512971e548891`
-- Corrective PR verification: **Run #700**, passed on Ubuntu, Windows, and macOS-15-Intel after a macOS-only rerun; syntax, full tests, browser smoke, and complete jobs all passed.
-- Corrective mainline verification: **Run #701**, Ubuntu and Windows passed on the merge commit; the first macOS post-merge job hung in contract/integration tests and was cancelled, then the same macOS job was rerun on a fresh runner and completed successfully with syntax, full tests, browser smoke, and complete job all passing.
+- Corrective PR: **#95**, merged at `a2eb715a558d9c88f19e9ff83ff512971e548891`
+- Corrective verification: **Run #700**, passed on Ubuntu, Windows, and macOS-15-Intel after a macOS-only rerun.
+- Corrective mainline verification: **Run #701**, passed on Ubuntu and Windows, and passed on macOS after a fresh macOS-only rerun. Syntax, full tests, browser smoke, and complete jobs all passed.
 - File Lease / Advisory Lock v0.1 is **FROZEN** with corrective hardening at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
-- Hardening findings closed by PR #95: successor ownership invalidation after stale recovery, fail-closed orphan-lock recovery, and safe release semantics when unexpected lock-directory entries remain.
-- No runtime third-party dependencies were added.
+- Current active cube: **Atomic Batch File Transaction / Safe Multi-File Commit v0.1**.
+- SPEC commit: `7aa2a82f3acc1b8e4593654894fdb2625aed3789`.
+- Implementation PR: **#96**.
+- Current implementation head: `f3df382b5916429c94bfc6ad60120c8fae684f17`.
+- Current hardening scope: absolute-root enforcement, proof-gated `strong-local` atomicity, truthful post-cleanup rollback availability reporting, immutable ABT1 receipts, bounded planning, and fail-closed recovery.
 
 ## The one-current-task rule
 
@@ -28,17 +30,17 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**ATOMIC-BATCH-FILE-TRANSACTION-SPEC**
+**ATOMIC-BATCH-FILE-TRANSACTION-V0.1**
 
 ### Immediate next task
 
-Write and freeze the SPEC for **Atomic Batch File Transaction / Safe Multi-File Commit v0.1** as a standalone dependency-free filesystem product. The contract must cover: deterministic operation planning, temp-file ownership, all-or-nothing visibility semantics for the supported local filesystem scope, rollback/recovery after partial failure, crash/interruption behavior, preflight validation before mutation, containment/symlink policy, bounded memory/work/entry counts, capability seams, immutable deterministic receipts, integrity protection, privacy-safe diagnostics, and explicit unsupported-platform/unsupported-filesystem behavior.
+Run the final cross-platform Verify on the current implementation head. If failures exist, identify root cause, apply minimal fix plus regression coverage, and repeat. If green, release and freeze before selecting the next cube.
 
-No implementation starts until the SPEC is committed and verified on `main`.
+No implementation of another cube starts before this release gate is complete.
 
 ## Scope lock
 
-The active cube must not redesign the architecture or reopen unrelated cubes. It is limited to the standalone multi-file transactional write/replace contract and its tests, recovery semantics, portability, documentation, and release state.
+Do not redesign the architecture. This cube is limited to bounded batch planning, preflight, owned staging, create/replace/delete operations, rollback/recovery semantics, integrity-protected immutable receipts, capability/data separation, privacy-safe diagnostics, and cross-platform filesystem behavior.
 
 ## Definition of done
 
