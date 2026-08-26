@@ -24,6 +24,7 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Atomic Batch File Transaction / Safe Multi-File Commit v0.1 remains **FROZEN** at `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
 - File Lease / Advisory Lock v0.1 remains **FROZEN** with corrective hardening at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
 - License decision: **Apache License 2.0**, merged by PR #106 at `37bdac72bd86c3a190035f3a36a2cfe497fe2812`.
+- API boundary verification: **Run #782**, passed on Ubuntu, Windows, and macOS-15-Intel.
 - No public package publication is authorized yet.
 
 ## The one-current-task rule
@@ -34,41 +35,39 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-STABILIZATION-API-BOUNDARY-FREEZE**
+**PHASE-0-STABILIZATION-DECLARATION-STRATEGY**
 
 ### Immediate next task
 
-Freeze and verify the first public API boundary for the selected foundational candidates in `docs/PUBLIC_API_BOUNDARY_V0.1.md`. Do not add package.json files, changesets, API Extractor configuration, or publish packages until this gate passes.
+Pilot and verify TypeScript declaration generation for the first two public API candidates using the JSDoc-first strategy. Do not add package-specific `package.json` files, changesets, API Extractor configuration, or publish packages until the declaration gate passes.
 
 ### Completed Phase 0 gates
 
 1. Inventory & Classification — **DONE / FROZEN** in PR #105.
 2. License decision and repository licensing artifacts — **DONE / FROZEN** in PR #106; Apache-2.0 is authoritative on `main`.
+3. Public API boundary freeze — **DONE / VERIFIED**; Run #782 passed on Ubuntu, Windows, and macOS-15-Intel, with eight candidate APIs documented in `docs/PUBLIC_API_BOUNDARY_V0.1.md`.
 
-### Phase 0 order after API boundary
+### Phase 0 order after declaration strategy
 
-3. Public API boundary freeze for selected foundational candidates — **ACTIVE**
-4. Type/declaration strategy without a full rewrite
+4. Type/declaration strategy without a full rewrite — **ACTIVE**
 5. Package contract/tooling (`package.json`, exports, changesets, API extraction)
 6. Reproducible `npm pack` and security verification
 7. First small public package batch
 
-## Current API boundary artifact
+## Declaration strategy artifact
 
-`docs/PUBLIC_API_BOUNDARY_V0.1.md` freezes eight first-batch candidates and treats unlisted module-local symbols as internal by default.
+`docs/DECLARATION_STRATEGY_V0.1.md` is the governing decision record.
 
-Candidate set:
+The repository remains JavaScript-first. Public declarations are produced incrementally from JSDoc with no TypeScript runtime dependency and no full source rewrite.
+
+Initial pilot candidates:
 
 1. Safe Path Resolver / Containment Boundary
-2. Glob / Path Matcher
-3. Filesystem Watcher / Change Stream
-4. File Lease / Advisory Lock
-5. Atomic File Writer / Safe Replace
-6. Ephemeral Workspace / Scratch Directory
-7. Directory Snapshot / Tree Manifest
-8. Runtime Capability Inspector
+2. Runtime Capability Inspector
 
-This is a package-readiness contract, not a publication authorization.
+The declaration compiler contract is `jsconfig.declarations.json` and emits only into the ignored `.artifacts/declarations` staging directory.
+
+The dedicated declaration CI gate is `.github/workflows/declarations.yml`. It uses pinned build-time tools only; these tools are not runtime dependencies of any Cube.
 
 ## Release sequence
 
@@ -87,7 +86,7 @@ A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verif
 - Do not redesign the whole architecture during readiness work.
 - Do not add dependencies merely to solve a local problem without a recorded decision.
 - Do not start a second Cube while a Phase 0 task is active.
-- Do not turn a technically complete Cube into a public package without API/package/security gates.
+- Do not turn a technically complete cube into a public package without API/package/security gates.
 - Do not call a package production-ready from source inspection alone.
 - Park out-of-scope work and continue.
 
