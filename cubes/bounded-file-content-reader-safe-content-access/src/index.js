@@ -107,7 +107,7 @@ function decodeText(bytes, o) {
   const bom = input.length >= 3 && input[0] === 0xef && input[1] === 0xbb && input[2] === 0xbf;
   if (bom && o.bom === 'reject') fail('DECODE_ERROR', 'UTF-8 BOM rejected');
   if (bom && o.bom === 'strip') input = input.subarray(3);
-  let text; try { text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(input); } catch { fail('DECODE_ERROR', 'invalid UTF-8 sequence'); }
+  let text; try { text = new TextDecoder('utf-8', { fatal: true }).decode(input); } catch { fail('DECODE_ERROR', 'invalid UTF-8 sequence'); }
   if (bom && o.bom === 'preserve') text = `\uFEFF${text}`;
   if (o.newline === 'lf') text = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
   return text;
@@ -183,7 +183,7 @@ async function* stream(path, o, c, signal, start) {
   const work = budget(o, start, c.now, signal); check(signal, start, o, c.now); const target = await targetFor(path, o, c, work);
   if (target.kind === 'symlink') { work.spend(); yield freeze({ format: FORMAT, kind: 'symlink', path: target.path, offset: o.offset, requestedBytes: o.length ?? 0, actualBytes: 0, eof: false, consistency: 'best-effort' }); return; }
   const before = await safeStat(c, target.path, work); let handle = null; let primary = null;
-  const decoder = o.mode === 'text' ? new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }) : null;
+  const decoder = o.mode === 'text' ? new TextDecoder('utf-8', { fatal: true }) : null;
   const textState = { newline: o.newline, pendingCR: false }; let firstPrefix = new Uint8Array(0); let first = true;
   try {
     work.spend(); handle = await c.open(target.path, 'r'); if (!handle || typeof handle !== 'object') fail('CAPABILITY_FAILURE', 'open returned invalid handle');
@@ -203,8 +203,7 @@ async function* stream(path, o, c, signal, start) {
           if (combined.length < 3) { firstPrefix = combined; actual += bytesRead; position += bytesRead; first = true; continue; }
           const hasBom = combined[0] === 0xef && combined[1] === 0xbb && combined[2] === 0xbf;
           if (hasBom && o.bom === 'reject') fail('DECODE_ERROR', 'UTF-8 BOM rejected');
-          input = hasBom && o.bom === 'strip' ? combined.subarray(3) : combined.subarray(0);
-          if (hasBom && o.bom === 'preserve') input = combined.subarray(3);
+          input = hasBom && o.bom === 'strip' ? combined.subarray(3) : combined;
           firstPrefix = new Uint8Array(0); first = false;
           let decoded = decoder.decode(input, { stream: true });
           if (hasBom && o.bom === 'preserve') decoded = `\uFEFF${decoded}`;
