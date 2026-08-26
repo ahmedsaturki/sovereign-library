@@ -18,13 +18,14 @@ This is a release-readiness record. It does **not** authorize npm publication.
 - Reproducible packaging: two clean packaging passes produce byte-identical tarballs for both candidates, with integrity, shasum, and file-manifest agreement.
 - Security boundary: forbidden dynamic execution, shell-oriented child-process execution, and public-package dependency boundary checks pass.
 - Publication guard: repository/package configuration is explicitly checked to remain publication-disabled until a later release authorization.
-- Browser smoke: real Chromium smoke test remains part of the same cross-platform verification matrix.
+- Browser smoke: real Chromium smoke test passes on the supported matrix.
 
 ## CI evidence
 
-The latest completed baseline before the publication-guard extension is **Verify Run #835**, which passed all three platforms with the reproducibility, security, and browser gates green.
-
-The publication-guard extension is being verified by the current mainline run **#837** at commit `9e2ca35668e5ad2923a8c6c6c4992483a07b181d`. Ubuntu has already passed the full matrix including the publication guard; Windows and macOS are still completing the same matrix at the time of this record update.
+- Baseline verification: **Verify Run #835** passed Ubuntu, Windows, and macOS-15-Intel.
+- Publication-guard extension: **Verify Run #837** added and exercised the explicit publication guard.
+- Final cross-platform verification: **Verify Run #840** at commit `b41c224de8538ac3df162c9fb62582373ee95a6e` completed with **SUCCESS** on Ubuntu, Windows, and macOS-15-Intel.
+- Run #840 passed the complete matrix on all three platforms: syntax, bounded contract/integration tests, declaration pilot, package tooling, reproducible packaging, security boundaries, publication guard, and real browser smoke.
 
 ## Publication guard invariants
 
@@ -36,6 +37,14 @@ Before explicit release authorization, the repository must continue to satisfy a
 4. No repository configuration injects npm registry credentials or overrides the registry.
 5. Candidate packages contain no runtime dependency declarations for the first zero-runtime-dependency batch.
 6. Candidate packages ship no package scripts.
+
+## Release readiness decision
+
+**TECHNICAL READINESS: VERIFIED.**
+
+The release-readiness gate is complete. The repository is now **READY FOR EXPLICIT RELEASE AUTHORIZATION**.
+
+This record does not itself authorize npm publication. Authorization remains a separate governance decision.
 
 ## Release sequence
 
