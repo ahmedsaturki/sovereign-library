@@ -6,19 +6,18 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Select and specify the next standalone Sovereign product after freezing **Bounded File Content Reader / Safe Content Access v0.1**.
+Specify, implement, verify, release, and freeze the next standalone Sovereign product after completing the **File Lease / Advisory Lock v0.1 review and corrective hardening**.
 
 ## Current repository state
 
 - Last released cube: **Bounded File Content Reader / Safe Content Access v0.1**
-- Release PR: **#94**, merged
-- Release commit: `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`
-- Exact-SHA verification: final Reader verification passed with syntax, 400+ full-suite tests, 14+ Reader-specific tests, and browser smoke before release.
-- Pre-merge verification: **Run 693**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, **661/661 tests**, and real-browser smoke.
-- Mainline release verification: **Run 694**, passed on the release commit.
-- Mainline verification record: **Run 695**, Push verification on `main`; Ubuntu and Windows passed. The macOS-15-Intel job had a transient Node.js test-runner hang on specific runner instances: the original job and first two reruns timed out after the test suite itself passed, while a third fresh-run attempt **Job 98006586509** completed successfully in **34s** with syntax, contract/integration tests, browser smoke, and complete job all passing. No product code or `verify.yml` changes were required.
-- Bounded File Content Reader / Safe Content Access v0.1 is **FROZEN** at `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`.
-- Blocking fixes discovered during Run 687–693 included the test-harness syntax defect, BOM preservation, Safe Path Resolver error mapping, privacy-safe diagnostics, and the correct work-budget boundary. Each produced a minimal fix and regression coverage.
+- Latest corrective release: **File Lease / Advisory Lock v0.1 hardening**
+- Corrective PR: **#95**, merged
+- Corrective release commit: `a2eb715a558d9c88f19e9ff83ff512971e548891`
+- Corrective PR verification: **Run #700**, passed on Ubuntu, Windows, and macOS-15-Intel after a macOS-only rerun; syntax, full tests, browser smoke, and complete jobs all passed.
+- Corrective mainline verification: **Run #701**, Ubuntu and Windows passed on the merge commit; the first macOS post-merge job hung in contract/integration tests and was cancelled, then the same macOS job was rerun on a fresh runner and completed successfully with syntax, full tests, browser smoke, and complete job all passing.
+- File Lease / Advisory Lock v0.1 is **FROZEN** with corrective hardening at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
+- Hardening findings closed by PR #95: successor ownership invalidation after stale recovery, fail-closed orphan-lock recovery, and safe release semantics when unexpected lock-directory entries remain.
 - No runtime third-party dependencies were added.
 
 ## The one-current-task rule
@@ -29,17 +28,17 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**FILESYSTEM-LEASE-AND-LOCK-REVIEW**
+**ATOMIC-BATCH-FILE-TRANSACTION-SPEC**
 
 ### Immediate next task
 
-Review the already-released **File Lease / Advisory Lock v0.1** against the lessons learned from Safe Path, Metadata, Directory Walker, and Reader before selecting the next new cube. Verify that its current public contract, recovery semantics, cross-platform behavior, and documentation still meet the current Sovereign release bar. If gaps are found, create a scoped corrective task; otherwise select and SPEC the next unreleased standalone cube.
+Write and freeze the SPEC for **Atomic Batch File Transaction / Safe Multi-File Commit v0.1** as a standalone dependency-free filesystem product. The contract must cover: deterministic operation planning, temp-file ownership, all-or-nothing visibility semantics for the supported local filesystem scope, rollback/recovery after partial failure, crash/interruption behavior, preflight validation before mutation, containment/symlink policy, bounded memory/work/entry counts, capability seams, immutable deterministic receipts, integrity protection, privacy-safe diagnostics, and explicit unsupported-platform/unsupported-filesystem behavior.
 
-No new cube implementation starts before this review gate is complete.
+No implementation starts until the SPEC is committed and verified on `main`.
 
 ## Scope lock
 
-The review must not redesign the architecture or reopen unrelated cubes. It is limited to the released File Lease / Advisory Lock contract, its tests, recovery behavior, portability, and documentation, plus selecting the next unreleased cube once the review is closed.
+The active cube must not redesign the architecture or reopen unrelated cubes. It is limited to the standalone multi-file transactional write/replace contract and its tests, recovery semantics, portability, documentation, and release state.
 
 ## Definition of done
 
