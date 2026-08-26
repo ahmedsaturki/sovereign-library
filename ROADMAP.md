@@ -72,10 +72,10 @@ Runtime Capability Inspector / Preflight v0.1 — PR #78 — `139a7d6c824b7fe522
 
 ## Active milestone
 
-### NEXT-CUBE-SELECTION
+### SAFE-FILE-QUARANTINE-DELETE-IMPLEMENT
 
-The Bounded File Content Reader / Safe Content Access v0.1 release is complete and frozen.
+Safe File Quarantine / Delete v0.1 is the active cube. Its SPEC is frozen and implementation/testing are in progress on branch `feat/safe-file-quarantine-delete-v0-1`.
 
-The next cube has **not yet been selected**. The immediate task is to inspect the repository's existing standalone product inventory, parked specs, roadmap, and recent PR history; select the next standalone product already supported by project evidence; then create and freeze its SPEC before implementation.
+The cube provides quarantine-first mutation, exact receipt-bound restore, explicit permanent purge from quarantine, integrity-protected manifests, source/quarantine containment, symlink rejection, collision protection, native rename-only movement, bounded rollback/cleanup recovery, immutable receipts, privacy-safe diagnostics, and zero runtime third-party dependencies.
 
-No implementation of another cube starts concurrently. The active milestone must complete the full release sequence before `NEXT CUBE`.
+The next gate is package/test registration followed by `TEST -> FIX -> VERIFY` across Ubuntu, Windows, and macOS-15-Intel.
