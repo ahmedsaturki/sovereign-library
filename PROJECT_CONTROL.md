@@ -6,22 +6,23 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build **Application Lifecycle / Graceful Shutdown Coordinator v0.1** as the next standalone Sovereign product after freezing **Process Supervisor / Managed Child Lifecycle v0.1**.
+Select the next standalone Sovereign product after freezing **Application Lifecycle / Graceful Shutdown Coordinator v0.1**.
 
 ## Current repository state
 
-- Latest released cube: **Process Supervisor / Managed Child Lifecycle v0.1**
-- Release PR: **#102**, merged
-- Release merge commit: `881435f121d09099b9b263fa906f0968c42e4539`
-- Final pre-merge verification: **Run #760**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
-- Process Supervisor / Managed Child Lifecycle v0.1 is **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
+- Latest released cube: **Application Lifecycle / Graceful Shutdown Coordinator v0.1**
+- Release PR: **#104**, merged
+- Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
+- Final pre-merge verification: **Run #768**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+- Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN** at `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4` pending post-merge mainline verification.
+- Process Supervisor / Managed Child Lifecycle v0.1 remains **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
 - Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
 - Safe File Quarantine / Delete v0.1 remains **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
 - Bounded File Content Reader / Safe Content Access v0.1 remains **FROZEN** at `f8db5a309aef655aec86051587bdf12d34f3dd20`.
 - Filesystem Permission / Ownership Descriptor v0.1 remains **FROZEN** at `69028a66b3827ecfee4a70f2460998dd333f02e0`.
 - Atomic Batch File Transaction / Safe Multi-File Commit v0.1 remains **FROZEN** at `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
 - File Lease / Advisory Lock v0.1 remains **FROZEN** with corrective hardening at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
-- No runtime third-party dependencies were added for Release #102.
+- No runtime third-party dependencies were added for Release #104.
 
 ## The one-current-task rule
 
@@ -31,30 +32,21 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**APPLICATION-LIFECYCLE-SHUTDOWN-SPEC**
+**NEXT-CUBE-SELECTION**
 
 ### Immediate next task
 
-Implement the frozen **Application Lifecycle / Graceful Shutdown Coordinator v0.1** SPEC on branch `application-lifecycle-graceful-shutdown-v0-1`, then enter `TEST -> FIX -> VERIFY` on the supported platform matrix. No second cube may start concurrently.
+Inspect the current standalone-product inventory, parked specs, roadmap, branches, open PRs/issues, and existing implementations; choose one non-duplicative next Cube supported by repository evidence; freeze its SPEC before implementation.
 
-### Selection evidence
+No implementation of another Cube may begin until the next SPEC gate is recorded.
 
-- Existing lifecycle-aware cubes provide resource-local close/drain semantics, but no released cube coordinates multiple independent participants at application scope.
-- `http-server`, `worker-pool`, `scheduler`, and `process-supervisor` each own their own lifecycle; none owns a deterministic application-wide shutdown transaction with a shared global deadline.
-- No open PRs or issues exist for graceful shutdown coordination, so this is not duplicating active work.
-- The coordinator will remain a narrow orchestration boundary and will not replace participant-owned lifecycle semantics.
+### Completed Release #104
 
-### Scope lock
+Application Lifecycle / Graceful Shutdown Coordinator v0.1 was released through:
 
-This cube is limited to deterministic participant registration, explicit application lifecycle state, ordered shutdown phases, one global shutdown deadline, bounded per-participant timeout, idempotent/concurrent shutdown semantics, cancellation, stale-transaction protection, bounded outcome/diagnostic summaries, immutable snapshots/errors, capability/data separation, and zero runtime third-party dependencies.
+`SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE`
 
-No process-tree orchestration, distributed shutdown, OS service-manager integration, persistence, hidden remediation, or participant-internal lifecycle ownership is included.
-
-### SPEC gate
-
-**FROZEN** at `specs/application-lifecycle-graceful-shutdown-v0.1.md`, commit `8e811803631b24396b19e73a2fd24b6a5bfc78c0`.
-
-Implementation may proceed within this scope only after the SPEC Gate PR passes.
+Run #768 passed on Ubuntu, Windows, and macOS-15-Intel. The cube now provides deterministic participant registration and ordering, explicit application lifecycle state, one global shutdown transaction, global deadline with bounded participant timeouts, concurrent/idempotent shutdown, cancellation, stale/late completion isolation, bounded outcomes/diagnostics, immutable snapshots/errors, capability/data separation, and zero runtime third-party dependencies.
 
 ## Previous release hardening lessons
 
@@ -65,6 +57,7 @@ Implementation may proceed within this scope only after the SPEC Gate PR passes.
 - Safe File Quarantine is intentionally quarantine-first: irreversible purge requires an exact integrity-validated receipt, and cross-device moves fail closed instead of copying.
 - Recovery Journal explicitly records intent/evidence but never performs implicit replay; recovery decision remains separate from privileged mutation.
 - Process Supervisor CI exposed a capability/data boundary issue around `AbortSignal`; the final implementation keeps executable signal capabilities separate from plain-data validation and normalizes public operation errors to asynchronous Promise rejections.
+- Application Lifecycle CI exposed an overly broad test fixture assumption around global and participant timeout budgets; the release kept the configuration invariant strict and aligned fixtures with the frozen contract.
 
 ## Definition of done
 
