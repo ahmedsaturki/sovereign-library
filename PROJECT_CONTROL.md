@@ -13,8 +13,6 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Latest released cube: **Application Lifecycle / Graceful Shutdown Coordinator v0.1**
 - Release PR: **#104**, merged
 - Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
-- Final pre-merge verification: **Run #768**, passed on Ubuntu, Windows, and macOS-15-Intel.
-- Post-merge mainline verification: **Run #772**, passed on Ubuntu, Windows, and macOS-15-Intel.
 - Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
 - Process Supervisor / Managed Child Lifecycle v0.1 remains **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
 - Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
@@ -27,6 +25,9 @@ This file is the anti-drift control for the repository. It keeps development fin
 - API boundary verification: **Run #782**, passed on Ubuntu, Windows, and macOS-15-Intel.
 - Declaration pilot verification: **Run #809**, passed on Ubuntu, Windows, and macOS-15-Intel, including exact public-surface matching for the first two pilot candidates.
 - Package contract: **DONE / VERIFIED**, merged by PR #108 at `b7b8f985058fb4a13e73cf255dd6fdf7508da5bd`; verification **Run #812** passed on Ubuntu, Windows, and macOS-15-Intel.
+- Package tooling, reproducibility, and security verification: **DONE / VERIFIED** by **Run #835**, passed on Ubuntu, Windows, and macOS-15-Intel.
+- Publication guard implementation: merged in commit `91ff69c40c72b62e97d6e1e07a83f87397acacdc` and wired into CI at `9e2ca35668e5ad2923a8c6c6c4992483a07b181d`.
+- Latest publication-guard verification: **Run #837**, Ubuntu has passed the complete matrix; Windows and macOS are still completing the matrix at the time of this control update.
 - No public package publication is authorized yet.
 
 ## The one-current-task rule
@@ -37,38 +38,32 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-STABILIZATION-PACKAGE-TOOLING**
+**PHASE-0-FIRST-PUBLIC-PACKAGE-BATCH**
 
 ### Immediate next task
 
-Implement the first package-tooling slice for the two declaration-pilot candidates: `@sovereign/safe-path-resolver` and `@sovereign/runtime-capability-inspector`. Add isolated package manifests, exact `exports` maps, generated declaration build paths, and packaging verification without publication or registry configuration. Do not add changesets or API Extractor until the package pack/contents gate is proven.
+Complete the first small public package batch release-preparation gate for `@sovereign/safe-path-resolver` and `@sovereign/runtime-capability-inspector`: finish the publication-guard matrix on all supported platforms, freeze the release-readiness record, and prepare a release authorization packet. Do **not** publish, create/reserve an npm organization, configure npm tokens, or add registry automation until the release authorization gate is explicitly satisfied.
 
 ### Completed Phase 0 gates
 
 1. Inventory & Classification — **DONE / FROZEN** in PR #105.
 2. License decision and repository licensing artifacts — **DONE / FROZEN** in PR #106; Apache-2.0 is authoritative on `main`.
-3. Public API boundary freeze — **DONE / VERIFIED**; Run #782 passed on Ubuntu, Windows, and macOS-15-Intel, with eight candidate APIs documented in `docs/PUBLIC_API_BOUNDARY_V0.1.md`.
-4. Type/declaration strategy without a full rewrite — **DONE / VERIFIED**; Run #809 passed on Ubuntu, Windows, and macOS-15-Intel. The pilot checks exact generated export surfaces for Safe Path Resolver and Runtime Capability Inspector.
+3. Public API boundary freeze — **DONE / VERIFIED**; Run #782 passed on Ubuntu, Windows, and macOS-15-Intel.
+4. Type/declaration strategy without a full rewrite — **DONE / VERIFIED**; Run #809 passed on Ubuntu, Windows, and macOS-15-Intel.
 5. Package contract — **DONE / VERIFIED**; PR #108 merged at `b7b8f985058fb4a13e73cf255dd6fdf7508da5bd`; Run #812 passed on Ubuntu, Windows, and macOS-15-Intel.
+6. Package tooling implementation — **DONE / VERIFIED**.
+7. Reproducible `npm pack` and security verification — **DONE / VERIFIED** by Run #835.
+8. Publication guard implementation — **DONE / WIRED**, cross-platform final verification pending Run #837 completion.
 
-### Phase 0 order after package contract
+## Governing release record
 
-6. Package tooling implementation (`package.json`, exports, packaging verification)
-7. Reproducible `npm pack` and security verification
-8. First small public package batch
+`docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md` is the current release-readiness record for the first two public package candidates.
 
 ## Declaration strategy artifact
 
 `docs/DECLARATION_STRATEGY_V0.1.md` is the governing decision record.
 
 The repository remains JavaScript-first. Public declarations are produced incrementally from JSDoc with no TypeScript runtime dependency and no full source rewrite.
-
-Initial pilot candidates:
-
-1. Safe Path Resolver / Containment Boundary
-2. Runtime Capability Inspector
-
-The declaration compiler contract is `jsconfig.declarations.json` and emits only into the ignored `.artifacts/declarations` staging directory. CI bootstraps pinned build-time tooling into an ignored temporary directory and removes it after verification.
 
 ## Release sequence
 
@@ -87,7 +82,7 @@ A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verif
 - Do not redesign the whole architecture during readiness work.
 - Do not add dependencies merely to solve a local problem without a recorded decision.
 - Do not start a second Cube while a Phase 0 task is active.
-- Do not turn a technically complete cube into a public package without API/package/security gates.
+- Do not turn a technically complete cube into a public package without API/package/security/release-authorization gates.
 - Do not call a package production-ready from source inspection alone.
 - Park out-of-scope work and continue.
 
