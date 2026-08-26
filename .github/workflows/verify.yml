@@ -10,7 +10,7 @@ jobs:
   verify:
     name: Node ${{ matrix.node }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -29,5 +29,7 @@ jobs:
           SOVEREIGN_TEST_FILE_TIMEOUT_MS: 30000
       - name: Declaration pilot
         run: node scripts/verify-declarations.mjs
+      - name: Package tooling verification
+        run: node scripts/verify-package-tooling.mjs
       - name: Real browser smoke test
         run: npm run test:browser
