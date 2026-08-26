@@ -13,9 +13,9 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Latest released cube: **Application Lifecycle / Graceful Shutdown Coordinator v0.1**
 - Release PR: **#104**, merged
 - Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
-- Final pre-merge verification: **Run #768**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+- Final pre-merge verification: **Run #768**, passed on Ubuntu, Windows, and macOS-15-Intel.
 - Post-merge mainline verification: **Run #772**, passed on Ubuntu, Windows, and macOS-15-Intel.
-- Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN** at `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`.
+- Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
 - Process Supervisor / Managed Child Lifecycle v0.1 remains **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
 - Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
 - Safe File Quarantine / Delete v0.1 remains **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
@@ -23,47 +23,52 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Filesystem Permission / Ownership Descriptor v0.1 remains **FROZEN** at `69028a66b3827ecfee4a70f2460998dd333f02e0`.
 - Atomic Batch File Transaction / Safe Multi-File Commit v0.1 remains **FROZEN** at `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
 - File Lease / Advisory Lock v0.1 remains **FROZEN** with corrective hardening at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
-- No runtime third-party dependencies were added for Release #104.
+- License decision: **Apache License 2.0**, merged by PR #106 at `37bdac72bd86c3a190035f3a36a2cfe497fe2812`.
+- No public package publication is authorized yet.
 
 ## The one-current-task rule
 
 At any moment there is exactly **one active milestone** and **one immediate next task**.
 
-Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter the current task unless they are required to satisfy its release gate.
+Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter the current task unless required for its gate.
 
 ## Current milestone
 
-**PHASE-0-STABILIZATION-LICENSE-DECISION**
+**PHASE-0-STABILIZATION-API-BOUNDARY-FREEZE**
 
 ### Immediate next task
 
-Merge and verify the dedicated **Apache-2.0 license decision** and repository distribution-policy artifacts. Do not add npm tooling, public package metadata, or publish any package until this gate is complete.
+Freeze and verify the first public API boundary for the selected foundational candidates in `docs/PUBLIC_API_BOUNDARY_V0.1.md`. Do not add package.json files, changesets, API Extractor configuration, or publish packages until this gate passes.
 
-### Completed Phase 0 gate: Inventory & Classification
+### Completed Phase 0 gates
 
-PR #105 is merged at `b0249a3e4d47665b9da0d76eb6cd1009abef6a8f` after **Run #773** passed on Ubuntu, Windows, and macOS-15-Intel. The inventory/classification decision is frozen in `docs/CUBE_INVENTORY_CLASSIFICATION_V0.1.md`.
+1. Inventory & Classification — **DONE / FROZEN** in PR #105.
+2. License decision and repository licensing artifacts — **DONE / FROZEN** in PR #106; Apache-2.0 is authoritative on `main`.
 
-Artifact Release is classified as a split surface:
+### Phase 0 order after API boundary
 
-- reusable foundation candidates: bundle, catalog, dependency graph, reference resolver;
-- generic governance candidates requiring public API review: admission gate, compliance evaluator, provenance/lineage, reconciliation, audit/drift, retention;
-- product/internal release workflow candidates: release plan, snapshot, approval, closure receipt, publication executor, publication confirmation.
-
-### Phase 0 order after license
-
-1. Inventory & Classification — **DONE / FROZEN**
-2. License decision and repository licensing artifacts — **ACTIVE**
-3. Public API boundary freeze for selected foundational candidates
+3. Public API boundary freeze for selected foundational candidates — **ACTIVE**
 4. Type/declaration strategy without a full rewrite
 5. Package contract/tooling (`package.json`, exports, changesets, API extraction)
 6. Reproducible `npm pack` and security verification
 7. First small public package batch
 
-## Legal decision
+## Current API boundary artifact
 
-The proposed and active licensing decision is **Apache License 2.0**. It is recorded in `docs/LEGAL_AND_DISTRIBUTION_POLICY_V0.1.md` and represented by `LICENSE` + `NOTICE` on the current license branch.
+`docs/PUBLIC_API_BOUNDARY_V0.1.md` freezes eight first-batch candidates and treats unlisted module-local symbols as internal by default.
 
-License adoption authorizes licensing terms; it does **not** authorize public registry publication. Publication remains a separate gated task.
+Candidate set:
+
+1. Safe Path Resolver / Containment Boundary
+2. Glob / Path Matcher
+3. Filesystem Watcher / Change Stream
+4. File Lease / Advisory Lock
+5. Atomic File Writer / Safe Replace
+6. Ephemeral Workspace / Scratch Directory
+7. Directory Snapshot / Tree Manifest
+8. Runtime Capability Inspector
+
+This is a package-readiness contract, not a publication authorization.
 
 ## Release sequence
 
@@ -73,27 +78,16 @@ Cube work follows:
 
 Phase 0 readiness work is controlled by the same one-current-task discipline; it does not authorize parallel Cube implementation.
 
-## Previous release hardening lessons
-
-- Run #722 exposed a negative opaque ownership identifier that was not rejected; root cause was fixed at `2d099e5478d7a69aa34f4fde1279cee92f6aa55d`.
-- Aggregate full-suite execution could hide a cross-platform hang. The release gate uses `scripts/run-tests-bounded.mjs` so the canonical test corpus is executed one file at a time with a 30-second per-file ceiling and explicit failing-file identity.
-- Native filesystem watcher smoke tests can race differently on macOS; cleanup-safe smoke semantics are required.
-- The bounded content reader exposed a BOM edge case across collected and streaming reads; duplicate BOM preservation and split-chunk coverage were added before release.
-- Safe File Quarantine is intentionally quarantine-first: irreversible purge requires an exact integrity-validated receipt, and cross-device moves fail closed instead of copying.
-- Recovery Journal explicitly records intent/evidence but never performs implicit replay; recovery decision remains separate from privileged mutation.
-- Process Supervisor CI exposed a capability/data boundary issue around `AbortSignal`; the final implementation keeps executable signal capabilities separate from plain-data validation and normalizes public operation errors to asynchronous Promise rejections.
-- Application Lifecycle CI exposed an overly broad fixture assumption around global and participant timeout budgets; the release kept the configuration invariant strict and aligned fixtures with the frozen contract.
-
 ## Definition of done
 
-A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verified, documented, and merged to `main` with the control plane updated to the next single task.
+A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verified, documented, and merged to `main` with the control plane advanced to exactly one next task.
 
 ## Anti-loop rules
 
 - Do not redesign the whole architecture during readiness work.
 - Do not add dependencies merely to solve a local problem without a recorded decision.
 - Do not start a second Cube while a Phase 0 task is active.
-- Do not turn a technically complete cube into a public package without API/package/security gates.
+- Do not turn a technically complete Cube into a public package without API/package/security gates.
 - Do not call a package production-ready from source inspection alone.
 - Park out-of-scope work and continue.
 
