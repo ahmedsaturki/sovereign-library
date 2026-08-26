@@ -10,6 +10,18 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Safe File Quarantine / Delete v0.1
+
+PR #100 — release merge `699d4181f0775af93b62d78f47fb00de42ec346e`
+
+Release-candidate head: `5cbfc565fbda6735c293f1c2d3c1309291a9a6d0`
+
+Final cross-platform **Run 738** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+
+The cube is **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
+
+The release establishes a quarantine-first destructive boundary, exact receipt-bound restore, explicit permanent purge, SFQ1 integrity-protected manifests, source/quarantine containment, symlink rejection, collision protection, native rename-only movement, bounded rollback and cleanup recovery, immutable receipts, privacy-safe diagnostics, and zero runtime third-party dependencies.
+
 ### Bounded File Content Reader / Safe Content Access v0.1
 
 PR #99 — release merge `f8db5a309aef655aec86051587bdf12d34f3dd20`
@@ -19,8 +31,6 @@ Release-candidate head: `8c0c7c6455ba617bfcd8d7116b46adce66681d93`
 Final cross-platform **Run 734** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
 
 The cube is **FROZEN** at `f8db5a309aef655aec86051587bdf12d34f3dd20`.
-
-The release hardens bounded binary/text reads, offsets and EOF semantics, strict UTF-8/BOM/newline policies, ordered chunk streaming, work/deadline/cancellation boundaries, explicit symlink and changing-file behavior, Safe Path Resolver anchoring, capability/data separation, bounded privacy-safe diagnostics, cleanup-safe failure handling, immutable results, and zero runtime third-party dependencies.
 
 ### Filesystem Permission / Ownership Descriptor v0.1
 
@@ -72,10 +82,10 @@ Runtime Capability Inspector / Preflight v0.1 — PR #78 — `139a7d6c824b7fe522
 
 ## Active milestone
 
-### SAFE-FILE-QUARANTINE-DELETE-IMPLEMENT
+### NEXT-CUBE-SELECTION
 
-Safe File Quarantine / Delete v0.1 is the active cube. Its SPEC is frozen and implementation/testing are in progress on branch `feat/safe-file-quarantine-delete-v0-1`.
+Safe File Quarantine / Delete v0.1 is complete and frozen.
 
-The cube provides quarantine-first mutation, exact receipt-bound restore, explicit permanent purge from quarantine, integrity-protected manifests, source/quarantine containment, symlink rejection, collision protection, native rename-only movement, bounded rollback/cleanup recovery, immutable receipts, privacy-safe diagnostics, and zero runtime third-party dependencies.
+The next cube has **not yet been selected**. The immediate task is to inspect the repository's existing standalone product inventory, parked specs, roadmap, branch/PR history, and current architecture gaps; select the next standalone product supported by project evidence; then create and freeze its SPEC before implementation.
 
-The next gate is package/test registration followed by `TEST -> FIX -> VERIFY` across Ubuntu, Windows, and macOS-15-Intel.
+No implementation of another cube starts concurrently. The active milestone must complete the full release sequence before `NEXT CUBE`.
