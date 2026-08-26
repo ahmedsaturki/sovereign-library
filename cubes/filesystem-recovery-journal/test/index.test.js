@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, appendFile, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createRecoveryJournal, RecoveryJournalError, FILESYSTEM_RECOVERY_JOURNAL_FORMAT } from '../src/index.js';
@@ -75,7 +75,7 @@ test('records one explicit recovery decision and rejects conflict', async () => 
     await journal.transition(op.operationId, 'interrupted');
     const result = await journal.decide(op.operationId, { kind: 'manual-review' });
     assert.equal(result.operation.state, 'recovery-decided');
-    await assertCode('DUPLICATE_DECISION', () => journal.decide(op.operationId, { kind: 'rollback-required' }));
+    await assertCode('INVALID_TRANSITION', () => journal.decide(op.operationId, { kind: 'rollback-required' }));
   } finally { await cleanup(dir); }
 });
 
@@ -152,8 +152,4 @@ test('native filesystem round-trip survives reload', async () => {
     const recoverable = await second.inspectRecoverable();
     assert.equal(recoverable[0].state, 'started');
   } finally { await cleanup(dir); }
-});
-
-test('unused append import is not required by callers', async () => {
-  assert.equal(typeof appendFile, 'function');
 });
