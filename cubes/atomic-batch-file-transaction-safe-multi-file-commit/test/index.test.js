@@ -3,10 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, rm, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { planBatch, commitBatch, serializeReceipt, parseReceipt, AtomicBatchError, recoverBatch } from '../src/index.js';
+import { planBatch, commitBatch, serializeReceipt, parseReceipt, AtomicBatchError, recoverBatch, rollbackBatch } from '../src/index.js';
 
 async function root() { return mkdtemp(join(tmpdir(), 'abt-')); }
-
 async function cleanup(path) { await rm(path, { recursive: true, force: true }); }
 
  test('plans deterministically and rejects duplicates before mutation', async () => {
@@ -24,12 +23,22 @@ async function cleanup(path) { await rm(path, { recursive: true, force: true });
   } finally { await cleanup(r); }
 });
 
-test('preflight validates containment and expected destination state', async () => {
+test('rejects relative roots and validates containment/preconditions before mutation', async () => {
+  assert.throws(() => planBatch({ root: 'relative-root', operations: [] }), (e) => e.code === 'INVALID_ROOT');
   const r = await root();
   try {
     assert.throws(() => planBatch({ root: r, operations: [{ type: 'create', destination: '../escape', content: 'x' }] }), (e) => e.code === 'ROOT_ESCAPE');
     const p = planBatch({ root: r, operations: [{ type: 'create', destination: 'x', content: 'x', expected: { exists: true } }] });
     await assert.rejects(() => commitBatch(p), (e) => e.code === 'PRECONDITION_FAILED');
+  } finally { await cleanup(r); }
+});
+
+test('strong-local requires explicit atomicity proof', async () => {
+  const r = await root();
+  try {
+    assert.throws(() => planBatch({ root: r, operations: [] }, {}, { atomicity: 'strong-local' }), (e) => e.code === 'ATOMICITY_UNPROVEN');
+    const p = planBatch({ root: r, operations: [] }, { atomicityProof: () => true }, { atomicity: 'strong-local' });
+    assert.equal(p.guaranteeLevel, 'strong-local');
   } finally { await cleanup(r); }
 });
 
@@ -41,12 +50,15 @@ test('commit creates/replaces/deletes a bounded batch and returns immutable rece
     const p = planBatch({ root: r, transactionId: 't2', operations: [
       { type: 'create', destination: 'new.txt', content: 'new' },
       { type: 'replace', destination: 'old.txt', content: 'updated' },
+      { type: 'delete', destination: 'gone.txt' },
     ] });
     const receipt = await commitBatch(p);
     assert.equal(receipt.state, 'committed');
     assert.equal(await readFile(join(r, 'new.txt'), 'utf8'), 'new');
     assert.equal(await readFile(existing, 'utf8'), 'updated');
     assert.equal(Object.isFrozen(receipt), true);
+    assert.equal(receipt.rollback.available, false);
+    await assert.rejects(() => rollbackBatch(receipt), (e) => e.code === 'ROLLBACK_UNAVAILABLE');
   } finally { await cleanup(r); }
 });
 
