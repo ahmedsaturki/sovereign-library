@@ -27,5 +27,14 @@ jobs:
         run: node scripts/run-tests-bounded.mjs
         env:
           SOVEREIGN_TEST_FILE_TIMEOUT_MS: 30000
+      - name: Declaration config check
+        if: matrix.os == 'ubuntu-latest'
+        run: node -e "const fs=require('fs'); const c=JSON.parse(fs.readFileSync('jsconfig.declarations.json','utf8')); if(c.compilerOptions.allowJs!==true||c.compilerOptions.declaration!==true||c.compilerOptions.emitDeclarationOnly!==true) throw new Error('invalid declaration compiler contract'); if(!Array.isArray(c.include)||c.include.length!==2) throw new Error('invalid pilot include set');"
+      - name: Emit pilot declarations
+        if: matrix.os == 'ubuntu-latest'
+        run: npx --yes -p typescript@7.0.2 -p @types/node@26.2.0 tsc --project jsconfig.declarations.json
+      - name: Verify pilot declaration surface
+        if: matrix.os == 'ubuntu-latest'
+        run: node -e "const fs=require('fs'); const files={safe:'.artifacts/declarations/cubes/safe-path-resolver-containment-boundary/src/index.d.ts',runtime:'.artifacts/declarations/cubes/runtime-capability-inspector/src/index.d.ts'}; for (const [name,f] of Object.entries(files)) { if(!fs.existsSync(f)) throw new Error('missing declaration: '+name); const s=fs.readFileSync(f,'utf8'); if(!s.includes('export')) throw new Error('declaration has no exports: '+name); }"
       - name: Real browser smoke test
         run: npm run test:browser
