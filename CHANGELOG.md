@@ -9,6 +9,7 @@
 - Added capability seams for filesystem mutation, identity, clock, and test failure injection.
 - Added ABT1 SHA-256 integrity-protected immutable receipts with bounded parsing.
 - Added privacy-safe bounded diagnostics and explicit guarantee/durability levels.
+- Hardened absolute-root enforcement, proof-gated `strong-local` atomicity, and truthful post-cleanup rollback availability reporting.
 
 ### File Lease / Advisory Lock v0.1 — corrective hardening
 
