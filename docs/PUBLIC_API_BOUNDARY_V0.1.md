@@ -16,6 +16,8 @@ Freeze the first public-package candidate surface before package tooling. Only s
 - `comparePaths`
 - `serializeReport`
 - `parseReport`
+- `SAFE_PATH_RESOLVER_FORMAT`
+- `SAFE_PATH_RESOLVER_LIMITS`
 
 ### 2. Glob / Path Matcher
 - `GlobPathMatcherError`
