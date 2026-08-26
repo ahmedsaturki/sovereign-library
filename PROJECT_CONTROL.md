@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Select and specify the next standalone Sovereign product after freezing **Filesystem Recovery Journal / Operation Ledger v0.1**.
+Build **Process Supervisor / Managed Child Lifecycle v0.1** as the next standalone Sovereign product after freezing **Filesystem Recovery Journal / Operation Ledger v0.1**.
 
 ## Current repository state
 
@@ -21,7 +21,6 @@ Select and specify the next standalone Sovereign product after freezing **Filesy
 - Filesystem Permission / Ownership Descriptor v0.1 remains **FROZEN** at `69028a66b3827ecfee4a70f2460998dd333f02e0`.
 - Atomic Batch File Transaction / Safe Multi-File Commit v0.1 remains **FROZEN** at `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
 - File Lease / Advisory Lock v0.1 remains **FROZEN** with corrective hardening at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
-- Safe File Quarantine / Delete post-merge **Run #739** and control-plane **Run #740** passed on Ubuntu, Windows, and macOS-15-Intel.
 - No runtime third-party dependencies were added.
 
 ## The one-current-task rule
@@ -32,15 +31,29 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**NEXT-CUBE-SELECTION**
+**PROCESS-SUPERVISOR-SPEC**
 
 ### Immediate next task
 
-Inspect the repository's current standalone-product inventory, parked specs, roadmap, branch/PR history, and the latest released cube; select the next standalone product without repeating an implemented scope, then freeze its SPEC before implementation. No implementation begins until the SPEC gate is explicitly recorded here.
+Implement the frozen **Process Supervisor / Managed Child Lifecycle v0.1** SPEC on branch `process-supervisor-managed-child-v0-1`, then enter `TEST -> FIX -> VERIFY` on the supported platform matrix. No second cube may start concurrently.
 
-The previous cube, **Filesystem Recovery Journal / Operation Ledger v0.1**, is complete and frozen after full cross-platform Run #743 and merge PR #101.
+### Selection evidence
 
-No other cube may start concurrently.
+- `cubes/process/src/index.js` provides one-shot child process execution but does not own long-lived supervisor lifecycle semantics.
+- No released cube currently provides managed-child state, bounded graceful-to-forced stop escalation, bounded restart budgets, stale-generation protection, or supervisor-level health observation.
+- Existing scheduler, timeout/deadline, concurrency, and process primitives are composable foundations and their scopes remain unchanged.
+
+### Scope lock
+
+This cube is limited to explicit supervisor lifecycle state, one active child per supervisor, start/stop/restart/inspect/close semantics, bounded graceful-stop escalation, opt-in bounded restart/backoff policy, read-only health observations, bounded output/diagnostic accounting, AbortSignal/deadline handling, immutable snapshots/errors, capability/data separation, stale-generation protection, and zero runtime third-party dependencies.
+
+No shell composition, process-tree orchestration, OS service-manager integration, cross-host supervision, persistence, distributed coordination, or hidden health remediation is included.
+
+### SPEC gate
+
+**FROZEN** at `specs/process-supervisor-managed-child-lifecycle-v0.1.md`, commit `e65ce7591c097ef7f0fb12f5e869110bf1f4374f`.
+
+Implementation may proceed within this scope only.
 
 ## Previous release hardening lessons
 
