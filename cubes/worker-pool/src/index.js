@@ -106,21 +106,20 @@ export function createWorkerPool(options = {}) {
     const index = workers.indexOf(slot);
     if (index !== -1) workers.splice(index, 1);
 
-    // Publish the replacement before awaiting termination of the old worker.
-    // The replacement is not considered schedulable until its `online` event fires.
-    // This prevents a recovery task from racing the worker bootstrap path on slower
-    // platforms such as macOS.
+    // Replacement workers wait for their native `online` event before receiving
+    // recovery work. Initial workers keep the historical buffered-postMessage
+    // behavior so queue capacity semantics remain unchanged.
     if (!closed && !draining) {
-      createWorkerSlot();
+      createWorkerSlot(true);
       pump();
     }
 
     try { await slot.worker.terminate(); } catch {}
   }
 
-  function createWorkerSlot() {
+  function createWorkerSlot(waitForOnline = false) {
     const worker = new Worker(RUNNER_URL, { workerData: { moduleUrl } });
-    const slot = { worker, busy: false, ready: false, task: null, stopped: false };
+    const slot = { worker, busy: false, ready: !waitForOnline, task: null, stopped: false };
     workers.push(slot);
 
     worker.once('online', () => {
@@ -225,7 +224,7 @@ export function createWorkerPool(options = {}) {
     }
   }
 
-  for (let index = 0; index < size; index += 1) createWorkerSlot();
+  for (let index = 0; index < size; index += 1) createWorkerSlot(false);
 
   function submit(payload, options = {}) {
     if (closed || draining) return Promise.reject(new WorkerPoolError('POOL_CLOSED', 'Worker pool is not accepting new tasks'));
