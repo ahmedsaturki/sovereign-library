@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { runNpm } from './npm-cli.mjs';
 
 const configPath = resolve('jsconfig.declarations.json');
@@ -82,18 +83,15 @@ try {
   if (!existsSync(tsc)) throw new Error(`missing pinned TypeScript compiler: ${tsc}`);
   if (!existsSync(typeRoots)) throw new Error(`missing pinned Node type roots: ${typeRoots}`);
 
-  const result = runNpm([], { stdio: 'ignore' });
-  if (result.status !== 0) throw new Error(`unexpected npm helper state: ${result.status}`);
-
-  const compiler = await import('node:child_process').then(({ spawnSync }) => spawnSync(process.execPath, [
+  const result = spawnSync(process.execPath, [
     tsc,
     '--project', configPath,
     '--typeRoots', typeRoots,
     '--pretty', 'false',
-  ], { stdio: 'inherit', shell: false }));
+  ], { stdio: 'inherit', shell: false });
 
-  if (compiler.error) throw compiler.error;
-  if (compiler.status !== 0) throw new Error(`declaration compiler exited with status ${compiler.status}`);
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`declaration compiler exited with status ${result.status}`);
 
   assertExactExports('Safe Path Resolver', expectedFiles.safePathResolver, expectedExports.safePathResolver);
   assertExactExports('Runtime Capability Inspector', expectedFiles.runtimeCapability, expectedExports.runtimeCapability);
