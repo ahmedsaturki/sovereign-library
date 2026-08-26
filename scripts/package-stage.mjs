@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -73,8 +73,7 @@ function writeDeclarationConfig(target, source, outDir) {
   };
   const configPath = resolve('.artifacts/package-declarations', `${target}.json`);
   mkdirSync(dirname(configPath), { recursive: true });
-  const text = `${JSON.stringify(config, null, 2)}\n`;
-  require('node:fs').writeFileSync(configPath, text);
+  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
   return configPath;
 }
 
