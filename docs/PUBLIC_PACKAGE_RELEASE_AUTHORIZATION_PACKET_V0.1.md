@@ -13,8 +13,8 @@ This packet records the evidence required before the first small public package 
 
 ## Evidence baseline
 
-- Mainline commit: `b41c224de8538ac3df162c9fb62582373ee95a6e`
-- Verify Run: **#840** (`32958070206`)
+- Mainline evidence commit: `f14bbd9229fcda23f00602cfc9288881c61e213e`
+- Final pre-authorization verify run: **#845** (`32958492048`)
 - Cross-platform result: **SUCCESS** on Ubuntu, Windows, and macOS-15-Intel.
 - Declaration pilot: PASS on all three platforms.
 - Package tooling verification: PASS on all three platforms.
