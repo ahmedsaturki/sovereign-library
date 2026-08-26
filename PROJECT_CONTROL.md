@@ -67,7 +67,7 @@ Initial pilot candidates:
 
 The declaration compiler contract is `jsconfig.declarations.json` and emits only into the ignored `.artifacts/declarations` staging directory.
 
-The dedicated declaration CI gate is `.github/workflows/declarations.yml`. It uses pinned build-time tools only; these tools are not runtime dependencies of any Cube.
+The declaration CI gate is a dedicated job inside `.github/workflows/verify.yml`. It runs with pinned build-time tooling only; these tools are not runtime dependencies of any Cube.
 
 ## Release sequence
 
