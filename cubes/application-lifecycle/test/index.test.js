@@ -53,7 +53,7 @@ test('participant timeout is isolated and shutdown can continue', async () => {
 
 test('global deadline skips participants that cannot start in time', async () => {
   const c = caps();
-  const lifecycle = createApplicationLifecycle({ globalShutdownTimeoutMs: 10 }, c);
+  const lifecycle = createApplicationLifecycle({ defaultTimeoutMs: 5, globalShutdownTimeoutMs: 10 }, c);
   const called = [];
   lifecycle.register({ id: 'one', timeoutMs: 100 }, { close: async () => { called.push('one'); c.advance(11); } });
   lifecycle.register({ id: 'two', timeoutMs: 100 }, { close: async () => { called.push('two'); } });
@@ -104,7 +104,7 @@ test('pre-aborted shutdown fails before participant invocation', async () => {
 });
 
 test('active cancellation stops admitting new participants', async () => {
-  const lifecycle = createApplicationLifecycle({ globalShutdownTimeoutMs: 100 }, caps());
+  const lifecycle = createApplicationLifecycle({ defaultTimeoutMs: 5, globalShutdownTimeoutMs: 100 }, caps());
   let release;
   const blocker = new Promise((resolve) => { release = resolve; });
   const calls = [];
