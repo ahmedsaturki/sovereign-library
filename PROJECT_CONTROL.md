@@ -25,6 +25,7 @@ This file is the anti-drift control for the repository. It keeps development fin
 - File Lease / Advisory Lock v0.1 remains **FROZEN** with corrective hardening at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
 - License decision: **Apache License 2.0**, merged by PR #106 at `37bdac72bd86c3a190035f3a36a2cfe497fe2812`.
 - API boundary verification: **Run #782**, passed on Ubuntu, Windows, and macOS-15-Intel.
+- Declaration pilot verification: **Run #809**, passed on Ubuntu, Windows, and macOS-15-Intel, including exact public-surface matching for the first two pilot candidates.
 - No public package publication is authorized yet.
 
 ## The one-current-task rule
@@ -35,21 +36,21 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-STABILIZATION-DECLARATION-STRATEGY**
+**PHASE-0-STABILIZATION-PACKAGE-CONTRACT-TOOLING**
 
 ### Immediate next task
 
-Pilot and verify TypeScript declaration generation for the first two public API candidates using the JSDoc-first strategy. Do not add package-specific `package.json` files, changesets, API Extractor configuration, or publish packages until the declaration gate passes.
+Write and freeze the package contract for the first public-package candidate batch. The contract must define scoped package naming, independent versioning, Node 24 compatibility, entry-point/export rules, ESM/CJS policy, generated declaration placement, license metadata, repository metadata, files included in the tarball, and publication exclusions. Do not publish, register an npm organization, or introduce a changeset/API Extractor baseline until the package contract gate passes.
 
 ### Completed Phase 0 gates
 
 1. Inventory & Classification — **DONE / FROZEN** in PR #105.
 2. License decision and repository licensing artifacts — **DONE / FROZEN** in PR #106; Apache-2.0 is authoritative on `main`.
 3. Public API boundary freeze — **DONE / VERIFIED**; Run #782 passed on Ubuntu, Windows, and macOS-15-Intel, with eight candidate APIs documented in `docs/PUBLIC_API_BOUNDARY_V0.1.md`.
+4. Type/declaration strategy without a full rewrite — **DONE / VERIFIED**; Run #809 passed on Ubuntu, Windows, and macOS-15-Intel. The pilot now checks exact generated export surfaces for Safe Path Resolver and Runtime Capability Inspector.
 
 ### Phase 0 order after declaration strategy
 
-4. Type/declaration strategy without a full rewrite — **ACTIVE / VERIFICATION PENDING**
 5. Package contract/tooling (`package.json`, exports, changesets, API extraction)
 6. Reproducible `npm pack` and security verification
 7. First small public package batch
@@ -65,9 +66,7 @@ Initial pilot candidates:
 1. Safe Path Resolver / Containment Boundary
 2. Runtime Capability Inspector
 
-The declaration compiler contract is `jsconfig.declarations.json` and emits only into the ignored `.artifacts/declarations` staging directory.
-
-The earlier standalone declaration workflow produced startup failures with zero jobs, so it was removed. Declaration CI must be re-established and verified through the known-good verification workflow before this gate can be considered DONE.
+The declaration compiler contract is `jsconfig.declarations.json` and emits only into the ignored `.artifacts/declarations` staging directory. CI bootstraps pinned build-time tooling into an ignored temporary directory and removes it after verification.
 
 ## Release sequence
 
