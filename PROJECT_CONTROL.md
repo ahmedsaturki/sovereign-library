@@ -6,22 +6,24 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-Build **Process Supervisor / Managed Child Lifecycle v0.1** as the next standalone Sovereign product after freezing **Filesystem Recovery Journal / Operation Ledger v0.1**.
+Select the next standalone Sovereign product after freezing **Process Supervisor / Managed Child Lifecycle v0.1**.
 
 ## Current repository state
 
-- Latest released cube: **Filesystem Recovery Journal / Operation Ledger v0.1**
-- Release PR: **#101**, merged
-- Release merge commit: `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`
-- Final pre-merge verification: **Run #743**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
-- Filesystem Recovery Journal / Operation Ledger v0.1 is **FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
-- Filesystem Recovery Journal SPEC is frozen at `122d85d5bb9b97d5e67d496a40e1a055d9531e44`.
+- Latest released cube: **Process Supervisor / Managed Child Lifecycle v0.1**
+- Release PR: **#102**, merged
+- Release merge commit: `881435f121d09099b9b263fa906f0968c42e4539`
+- Final pre-merge verification: **Run #760**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+- Post-merge mainline verification: **Run #761**, validating the release merge on `main`.
+- Process Supervisor / Managed Child Lifecycle v0.1 is **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
+- Process Supervisor SPEC is frozen at `e65ce7591c097ef7f0fb12f5e869110bf1f4374f`.
+- Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
 - Safe File Quarantine / Delete v0.1 remains **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
 - Bounded File Content Reader / Safe Content Access v0.1 remains **FROZEN** at `f8db5a309aef655aec86051587bdf12d34f3dd20`.
 - Filesystem Permission / Ownership Descriptor v0.1 remains **FROZEN** at `69028a66b3827ecfee4a70f2460998dd333f02e0`.
 - Atomic Batch File Transaction / Safe Multi-File Commit v0.1 remains **FROZEN** at `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
 - File Lease / Advisory Lock v0.1 remains **FROZEN** with corrective hardening at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
-- No runtime third-party dependencies were added.
+- No runtime third-party dependencies were added for Release #102.
 
 ## The one-current-task rule
 
@@ -31,29 +33,21 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PROCESS-SUPERVISOR-SPEC**
+**NEXT-CUBE-SELECTION**
 
 ### Immediate next task
 
-Implement the frozen **Process Supervisor / Managed Child Lifecycle v0.1** SPEC on branch `process-supervisor-managed-child-v0-1`, then enter `TEST -> FIX -> VERIFY` on the supported platform matrix. No second cube may start concurrently.
+Inspect the current standalone-product inventory, parked specs, roadmap, branches, open PRs, and existing implementations; choose one non-duplicative next Cube supported by repository evidence; freeze its SPEC before implementation.
 
-### Selection evidence
+No implementation may begin until the new SPEC gate is recorded.
 
-- `cubes/process/src/index.js` provides one-shot child process execution but does not own long-lived supervisor lifecycle semantics.
-- No released cube currently provides managed-child state, bounded graceful-to-forced stop escalation, bounded restart budgets, stale-generation protection, or supervisor-level health observation.
-- Existing scheduler, timeout/deadline, concurrency, and process primitives are composable foundations and their scopes remain unchanged.
+### Completed Release #102
 
-### Scope lock
+Process Supervisor / Managed Child Lifecycle v0.1 was released through:
 
-This cube is limited to explicit supervisor lifecycle state, one active child per supervisor, start/stop/restart/inspect/close semantics, bounded graceful-stop escalation, opt-in bounded restart/backoff policy, read-only health observations, bounded output/diagnostic accounting, AbortSignal/deadline handling, immutable snapshots/errors, capability/data separation, stale-generation protection, and zero runtime third-party dependencies.
+`SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE`
 
-No shell composition, process-tree orchestration, OS service-manager integration, cross-host supervision, persistence, distributed coordination, or hidden health remediation is included.
-
-### SPEC gate
-
-**FROZEN** at `specs/process-supervisor-managed-child-lifecycle-v0.1.md`, commit `e65ce7591c097ef7f0fb12f5e869110bf1f4374f`.
-
-Implementation may proceed within this scope only.
+Run #760 passed on Ubuntu, Windows, and macOS-15-Intel. The cube now provides explicit managed-child lifecycle state, bounded graceful-to-forced stop escalation, opt-in bounded restarts, stale-generation protection, read-only health inspection, bounded output/diagnostics, cancellation/deadline handling, immutable snapshots/errors, capability/data separation, and zero runtime third-party dependencies.
 
 ## Previous release hardening lessons
 
@@ -63,6 +57,7 @@ Implementation may proceed within this scope only.
 - The bounded content reader exposed a BOM edge case across collected and streaming reads; duplicate BOM preservation and split-chunk coverage were added before release.
 - Safe File Quarantine is intentionally quarantine-first: irreversible purge requires an exact integrity-validated receipt, and cross-device moves fail closed instead of copying.
 - Recovery Journal explicitly records intent/evidence but never performs implicit replay; recovery decision remains separate from privileged mutation.
+- Process Supervisor CI exposed a capability/data boundary issue around `AbortSignal`; the final implementation keeps executable signal capabilities separate from plain-data validation and normalizes public operation errors to asynchronous Promise rejections.
 
 ## Definition of done
 
