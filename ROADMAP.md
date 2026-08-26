@@ -10,21 +10,27 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Application Lifecycle / Graceful Shutdown Coordinator v0.1
+
+PR #104 — release merge `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
+
+Final cross-platform **Run 768** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+
+The cube is **FROZEN** at `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4` pending post-merge mainline verification.
+
+The release provides deterministic participant registration/order, explicit application lifecycle state, one global shutdown transaction, global deadline with bounded participant timeouts, concurrent/idempotent shutdown semantics, cancellation, stale/late completion isolation, bounded outcomes/diagnostics, immutable snapshots/errors, capability/data separation, and zero runtime third-party dependencies.
+
 ### Process Supervisor / Managed Child Lifecycle v0.1
 
 PR #102 — release merge `881435f121d09099b9b263fa906f0968c42e4539`
 
-Final cross-platform **Run 760** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+Final cross-platform **Run 760** passed on Ubuntu, Windows, and macOS-15-Intel.
 
 The cube is **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
-
-The release adds one-child supervisor ownership, explicit lifecycle state, bounded graceful-to-forced stop escalation, opt-in restart budgets with deterministic backoff, stale-generation protection, read-only health inspection, bounded output/diagnostics, cancellation/deadline handling, immutable snapshots/errors, capability/data separation, and zero runtime third-party dependencies.
 
 ### Filesystem Recovery Journal / Operation Ledger v0.1
 
 PR #101 — release merge `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`
-
-Final cross-platform **Run 743** passed on Ubuntu, Windows, and macOS-15-Intel.
 
 The cube is **FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
 
@@ -34,24 +40,28 @@ PR #100 — release merge `699d4181f0775af93b62d78f47fb00de42ec346e`
 
 The cube is **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
 
+### Bounded File Content Reader / Safe Content Access v0.1
+
+PR #99 — release merge `f8db5a309aef655aec86051587bdf12d34f3dd20`
+
+The cube is **FROZEN** at `f8db5a309aef655aec86051587bdf12d34f3dd20`.
+
+### Filesystem Permission / Ownership Descriptor v0.1
+
+PR #98 — release merge `69028a66b3827ecfee4a70f2460998dd333f02e0`
+
+The cube is **FROZEN** at `69028a66b3827ecfee4a70f2460998dd333f02e0`.
+
 ### Earlier released cubes
 
 Earlier releases remain pinned in repository history and are listed in the release control documents.
 
 ## Active milestone
 
-### APPLICATION-LIFECYCLE-SHUTDOWN-SPEC
+### NEXT-CUBE-SELECTION
 
-**Application Lifecycle / Graceful Shutdown Coordinator v0.1** is the single active cube.
+**Application Lifecycle / Graceful Shutdown Coordinator v0.1** is complete and frozen after PR #104 / Run #768. The next Cube is not selected yet.
 
-Selection evidence:
-- lifecycle-aware cubes already own local close/drain behavior;
-- no released cube coordinates multiple independent participants at application scope;
-- no open PRs or issues cover this coordination boundary;
-- the coordinator is deliberately scoped as orchestration only, not as a replacement for participant-owned shutdown semantics.
-
-The frozen scope is recorded in `specs/application-lifecycle-graceful-shutdown-v0.1.md`.
-
-The next gate is SPEC verification, then implementation, standalone documentation/example, package/test registration, and `TEST -> FIX -> VERIFY` across Ubuntu, Windows, and macOS-15-Intel.
+The next gate is a fresh inventory of the current standalone-product surface, parked specs, roadmap, branches, open PRs/issues, and existing implementations. Choose exactly one non-duplicative next Cube, freeze its SPEC, then implement it.
 
 No second cube may start concurrently.
