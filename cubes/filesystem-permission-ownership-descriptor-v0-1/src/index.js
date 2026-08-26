@@ -85,6 +85,7 @@ function normalizeMode(value, platform) {
 
 function normalizeId(value, field, exposed) {
   if (value === null || value === undefined) return null;
+  if (typeof value === 'number' && (!Number.isSafeInteger(value) || value < 0)) throw new PermissionOwnershipError('MALFORMED_CAPABILITY_RESULT', `${field} must be a non-negative safe integer`);
   if (!(typeof value === 'string' || Number.isSafeInteger(value))) throw new PermissionOwnershipError('MALFORMED_CAPABILITY_RESULT', `${field} must be a bounded string or safe integer`);
   if (String(value).length > MAX_IDENTIFIER_LENGTH) throw new PermissionOwnershipError('LIMIT_EXCEEDED', `${field} exceeds the maximum length`);
   return exposed ? value : null;
@@ -171,14 +172,7 @@ function buildDescriptor(raw, options, seams = {}) {
     group: normalizeIdentity(raw, 'group', options, hash),
     acl,
     flags,
-    capabilities: Object.freeze({
-      modeBits: mode !== null,
-      numericOwnerIds: raw.uid !== undefined || raw.gid !== undefined,
-      ownerNames: raw.username !== undefined || raw.groupname !== undefined,
-      writable: platform === 'windows' ? raw.readonly !== undefined : mode !== null,
-      nativeAcl: acl === 'available',
-      flags: raw.flags !== undefined,
-    }),
+    capabilities: Object.freeze({ modeBits: mode !== null, numericOwnerIds: raw.uid !== undefined || raw.gid !== undefined, ownerNames: raw.username !== undefined || raw.groupname !== undefined, writable: platform === 'windows' ? raw.readonly !== undefined : mode !== null, nativeAcl: acl === 'available', flags: raw.flags !== undefined }),
     permission: permissions,
     observedAt,
     source: Object.freeze({ kind: raw.kind ?? 'other', path, link: raw.link === true }),
@@ -215,9 +209,7 @@ export async function inspectPath(path, capabilities, options = {}) {
 
 export function createNodeCapabilities({ lstat, platform, clock, hash, resolvePath, validatePath, cancelled }) {
   if (typeof lstat !== 'function') throw new PermissionOwnershipError('INVALID_CAPABILITY', 'lstat function required');
-  for (const [name, fn] of Object.entries({ platform, clock, hash, resolvePath, validatePath, cancelled })) {
-    if (fn !== undefined && typeof fn !== 'function') throw new PermissionOwnershipError('INVALID_CAPABILITY', `${name} capability must be callable`);
-  }
+  for (const [name, fn] of Object.entries({ platform, clock, hash, resolvePath, validatePath, cancelled })) if (fn !== undefined && typeof fn !== 'function') throw new PermissionOwnershipError('INVALID_CAPABILITY', `${name} capability must be callable`);
   return Object.freeze({ lstat, platform, clock, hash, resolvePath, validatePath, cancelled });
 }
 
