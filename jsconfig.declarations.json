@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowJs": true,
+    "checkJs": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": ".artifacts/declarations",
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": [
+    "cubes/safe-path-resolver-containment-boundary/src/**/*.js",
+    "cubes/runtime-capability-inspector/src/**/*.js"
+  ],
+  "exclude": [
+    "**/test/**",
+    "**/examples/**",
+    ".artifacts/**",
+    "node_modules/**"
+  ]
+}
