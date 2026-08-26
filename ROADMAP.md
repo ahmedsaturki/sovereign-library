@@ -14,8 +14,6 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 PR #100 — release merge `699d4181f0775af93b62d78f47fb00de42ec346e`
 
-Release-candidate head: `5cbfc565fbda6735c293f1c2d3c1309291a9a6d0`
-
 Final cross-platform **Run 738** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
 
 The cube is **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
@@ -26,9 +24,7 @@ The release establishes a quarantine-first destructive boundary, exact receipt-b
 
 PR #99 — release merge `f8db5a309aef655aec86051587bdf12d34f3dd20`
 
-Release-candidate head: `8c0c7c6455ba617bfcd8d7116b46adce66681d93`
-
-Final cross-platform **Run 734** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+Final cross-platform **Run 734** passed on Ubuntu, Windows, and macOS-15-Intel.
 
 The cube is **FROZEN** at `f8db5a309aef655aec86051587bdf12d34f3dd20`.
 
@@ -36,27 +32,13 @@ The cube is **FROZEN** at `f8db5a309aef655aec86051587bdf12d34f3dd20`.
 
 PR #98 — release merge `69028a66b3827ecfee4a70f2460998dd333f02e0`
 
-Release-candidate head: `463f1c539124fb54c449d1c15283e329d031abdb`
-
-Final cross-platform **Run 727** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
-
 The cube is **FROZEN** at `69028a66b3827ecfee4a70f2460998dd333f02e0`.
 
-### Atomic Batch File Transaction / Safe Multi-File Commit v0.1
-
-PR #96 — `1fae6399eb2710b53cc8f53878138ae9a24a241d`
-
-Pre-merge **Run 710** and Mainline Push **Run 712** passed on Ubuntu, Windows, and macOS-15-Intel.
-
-The cube is **FROZEN** at `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
-
-### File Lease / Advisory Lock v0.1 — corrective hardening
-
-Corrective PR #95 — `a2eb715a558d9c88f19e9ff83ff512971e548891`
-
-The corrective release is **FROZEN** at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
-
 ### Earlier released cubes
+
+Atomic Batch File Transaction / Safe Multi-File Commit v0.1 — PR #96 — `1fae6399eb2710b53cc8f53878138ae9a24a241d`
+
+File Lease / Advisory Lock v0.1 — corrective PR #95 — `a2eb715a558d9c88f19e9ff83ff512971e548891`
 
 Filesystem Metadata / Stat Normalizer v0.1 — PR #93 — `44f1acc2f277a2016013146423bd97a7a4e15057`
 
@@ -80,12 +62,14 @@ Filesystem Watcher / Change Stream v0.1 — PR #79 — `239e418e620d06de5d25a9c4
 
 Runtime Capability Inspector / Preflight v0.1 — PR #78 — `139a7d6c824b7fe522712c65e1b9ffcf605e134f4`
 
+Earlier Artifact Release cubes remain pinned in repository history.
+
 ## Active milestone
 
-### NEXT-CUBE-SELECTION
+### FILESYSTEM-RECOVERY-JOURNAL-IMPLEMENT
 
-Safe File Quarantine / Delete v0.1 is complete and frozen.
+Filesystem Recovery Journal / Operation Ledger v0.1 is the single active cube. Its SPEC is frozen in `specs/filesystem-recovery-journal-v0.1.md` on branch `feat/filesystem-recovery-journal-v0-1`.
 
-The next cube has **not yet been selected**. The immediate task is to inspect the repository's existing standalone product inventory, parked specs, roadmap, branch/PR history, and current architecture gaps; select the next standalone product supported by project evidence; then create and freeze its SPEC before implementation.
+The cube fills the current filesystem recovery gap by recording explicit operation intent, deterministic lifecycle transitions, bounded recovery evidence, integrity-protected FRJ1 records, interrupted-operation inspection, and explicit caller recovery decisions without performing hidden mutation.
 
-No implementation of another cube starts concurrently. The active milestone must complete the full release sequence before `NEXT CUBE`.
+The next gate is implementation, standalone documentation/example, package/test registration, then `TEST -> FIX -> VERIFY` across Ubuntu, Windows, and macOS-15-Intel.
