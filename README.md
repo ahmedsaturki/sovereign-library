@@ -18,15 +18,17 @@ Windows, Linux, macOS, and WSL where the capability is supported.
 
 ## Latest release
 
-**Filesystem Recovery Journal / Operation Ledger v0.1** — PR #101, merge commit `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
+**Process Supervisor / Managed Child Lifecycle v0.1** — PR #102, merge commit `881435f121d09099b9b263fa906f0968c42e4539`.
 
-Final pre-merge **Run #743** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green.
+Final pre-merge **Run #760** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green.
 
-The cube provides deterministic FRJ1 append-only operation records, explicit lifecycle sequencing, bounded interrupted-operation inspection, explicit caller recovery decisions, integrity validation, immutable snapshots, persistence failure semantics, privacy-safe diagnostics, and zero runtime third-party dependencies. Recovery inspection never performs hidden filesystem mutation.
+The cube provides one-child supervisor ownership, explicit lifecycle state, graceful-to-forced stop escalation, bounded restart policy, stale-generation protection, read-only health inspection, bounded output/diagnostics, cancellation/deadline handling, immutable snapshots/errors, capability/data separation, native Node.js primitives, and zero runtime third-party dependencies.
 
-**FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
+**FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
 
 ## Previous recent releases
+
+**Filesystem Recovery Journal / Operation Ledger v0.1** — PR #101 — `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`
 
 **Safe File Quarantine / Delete v0.1** — PR #100 — `699d4181f0775af93b62d78f47fb00de42ec346e`
 
@@ -42,9 +44,9 @@ Earlier releases remain pinned in `ROADMAP.md`.
 
 **NEXT-CUBE-SELECTION**
 
-The Filesystem Recovery Journal / Operation Ledger release is complete and frozen. The next standalone cube is not yet selected.
+Process Supervisor / Managed Child Lifecycle v0.1 is complete and frozen. The next standalone cube is not yet selected.
 
-The next gate is to inspect the current standalone-product inventory, parked specs, roadmap, branches and PR history; choose the next non-duplicative product supported by project evidence; and freeze its SPEC before implementation.
+The next gate is to inspect the current standalone-product inventory, parked specs, roadmap, branches, open PRs/issues, and existing implementations; choose one non-duplicative product supported by repository evidence; and freeze its SPEC before implementation.
 
 ## Repository shape
 
