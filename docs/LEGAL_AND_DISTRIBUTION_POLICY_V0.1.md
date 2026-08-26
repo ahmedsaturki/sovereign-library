@@ -26,6 +26,10 @@ Public package publication remains a separate gated task requiring, at minimum:
 6. Versioning/publishing policy.
 7. CI publication controls.
 
+## CI publication invariant
+
+Every distributable-package change must pass the repository release verification workflow on the supported platform matrix before publication. A technically complete package without a green CI gate is not publishable.
+
 ## Ownership and contributions
 
 Project attribution is recorded in `NOTICE`. Contributions intentionally submitted for inclusion are governed by Apache-2.0 unless a separate written agreement states otherwise.
