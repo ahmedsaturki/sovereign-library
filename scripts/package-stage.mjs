@@ -1,6 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { runNpm } from './npm-cli.mjs';
 
 const ROOT = resolve('.');
 const TOOLS_DIR = resolve('.artifacts/package-tools');
@@ -96,20 +97,17 @@ function main() {
 
   rmSync(TOOLS_DIR, { recursive: true, force: true });
   mkdirSync(TOOLS_DIR, { recursive: true });
-  const onWindows = process.platform === 'win32';
-  const npm = onWindows ? 'npm.cmd' : 'npm';
-  const install = spawnSync(npm, [
+  const install = runNpm([
     'install', '--no-save', '--no-package-lock', '--ignore-scripts', '--prefix', TOOLS_DIR,
     'typescript@7.0.2', '@types/node@26.2.0',
-  ], { stdio: 'inherit', shell: onWindows });
-  if (install.error) throw install.error;
+  ]);
   if (install.status !== 0) fail(`tool installation exited with status ${install.status}`);
   const tsc = resolve(TOOLS_DIR, 'node_modules/typescript/bin/tsc');
   const typeRoots = resolve(TOOLS_DIR, 'node_modules/@types');
   if (!existsSync(tsc) || !existsSync(typeRoots)) fail('pinned declaration toolchain was not installed');
 
   const configPath = writeDeclarationConfig(candidate, resolve(src, 'index.js'), dist);
-  const result = spawnSync(process.execPath, [tsc, '--project', configPath, '--typeRoots', typeRoots, '--pretty', 'false'], { stdio: 'inherit' });
+  const result = spawnSync(process.execPath, [tsc, '--project', configPath, '--typeRoots', typeRoots, '--pretty', 'false'], { stdio: 'inherit', shell: false });
   if (result.error) throw result.error;
   if (result.status !== 0) fail(`declaration compiler exited with status ${result.status}`);
   const declaration = resolve(dist, 'index.d.ts');
