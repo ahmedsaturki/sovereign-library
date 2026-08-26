@@ -18,57 +18,31 @@ Windows, Linux, macOS, and WSL where the capability is supported.
 
 ## Latest release
 
-**Atomic Batch File Transaction / Safe Multi-File Commit v0.1** — PR #96, release commit `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
+**Safe File Quarantine / Delete v0.1** — PR #100, merge commit `699d4181f0775af93b62d78f47fb00de42ec346e`.
 
-Pre-merge Run #710 passed on Ubuntu, Windows, and macOS-15-Intel with syntax, full contract/integration tests, browser smoke, and complete jobs. Mainline Push Run #712 passed on all three platforms with every gate green.
+Final pre-merge Run #738 passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green. Post-merge Run #739 and control-plane Run #740 also passed on all three platforms.
 
-The cube provides deterministic bounded multi-file transaction planning, preflight validation, owned staging, create/replace/delete operations, fail-closed rollback/recovery semantics, ABT1 integrity-protected immutable receipts, explicit guarantee levels, privacy-safe diagnostics, and zero runtime third-party dependencies. It does not claim universal multi-file atomicity or power-loss guarantees beyond explicitly reported filesystem capabilities.
+The cube provides quarantine-first destructive boundaries, exact receipt-bound restore, explicit permanent purge, SFQ1 integrity-protected manifests, containment and symlink safety, native rename-only movement, bounded rollback/cleanup recovery, immutable receipts, privacy-safe diagnostics, and zero runtime third-party dependencies.
 
-**FROZEN** at `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
+**FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
 
-## Latest corrective hardening
+## Previous recent releases
 
-**File Lease / Advisory Lock v0.1** — corrective PR #95, release commit `a2eb715a558d9c88f19e9ff83ff512971e548891`.
+**Bounded File Content Reader / Safe Content Access v0.1** — PR #99 — `f8db5a309aef655aec86051587bdf12d34f3dd20`
 
-The corrective hardening closes stale-successor ownership, orphan-lock recovery, and unexpected lock-directory release gaps.
+**Filesystem Permission / Ownership Descriptor v0.1** — PR #98 — `69028a66b3827ecfee4a70f2460998dd333f02e0`
 
-**FROZEN** at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
+**Atomic Batch File Transaction / Safe Multi-File Commit v0.1** — PR #96 — `1fae6399eb2710b53cc8f53878138ae9a24a241d`
 
-## Previous released cubes
-
-Filesystem Metadata / Stat Normalizer v0.1 — PR #93 — `44f1acc2f277a2016013146423bd97a7a4e15057`
-
-Directory Walker / Bounded Tree Traversal v0.1 — PR #92 — `4d64f6610286524799ebe809021279a7b7be3d40`
-
-Safe Path Resolver / Containment Boundary v0.1 — PR #90 — `0216f3acd81331c031ac0ae023bfc1322f9064bc`
-
-Glob / Path Matcher v0.1 — PR #87 — `c9a3d330a16a488e00c28311085204363bab2fc7`
-
-Host Identity / Environment Fingerprint v0.1 — PR #86 — `a7264db2b61c5cdc6ad33b04fc3a97c4fe47d24e`
-
-Directory Snapshot / Tree Manifest v0.1 — PR #85 — `c01cc08e97404d1528fb93d6728fd2ae272871c3`
-
-Atomic File Writer / Safe Replace v0.1 — corrective PR #84 — `4479ae230ccc0ec4ecc1875fcbd16919a80e71bf`
-
-Ephemeral Workspace / Scratch Directory v0.1 — PR #81 — `33b98771c4702a02dbdc3ce267af516bfbd8e43c`
-
-File Lease / Advisory Lock v0.1 — PR #80 — `b3d4f1dc61a6ed64d642fc0a9a92466c01da2868`
-
-Filesystem Watcher / Change Stream v0.1 — PR #79 — `239e418e620d06de5d25a9c40905f6efc42334b3`
-
-Runtime Capability Inspector / Preflight v0.1 — PR #78 — `139a7d6c824b7fe522712c65e1b9ffcf605e134f4`
-
-Earlier Artifact Release cubes remain pinned in `ROADMAP.md`.
+Earlier releases remain pinned in `ROADMAP.md`.
 
 ## Active milestone
 
-**FILESYSTEM-PERMISSION-OWNERSHIP-DESCRIPTOR-SPEC**
+**FILESYSTEM-RECOVERY-JOURNAL-IMPLEMENT**
 
-The Atomic Batch File Transaction release is complete and frozen.
+The next standalone cube is **Filesystem Recovery Journal / Operation Ledger v0.1**. Its SPEC is frozen on the active feature branch before implementation.
 
-The next task is to write and freeze the SPEC for **Filesystem Permission / Ownership Descriptor v0.1** before any implementation begins.
-
-The planned contract covers normalized cross-platform permission and ownership metadata, non-mutating inspection by default, capability detection, privacy-safe identifiers, deterministic immutable serialization, bounded metadata collection, explicit unsupported-platform/filesystem behavior, capability/data separation, failure/cancellation/recovery semantics, and zero runtime third-party dependencies.
+The cube provides explicit bounded operation intents, deterministic lifecycle sequencing, integrity-protected FRJ1 records, interrupted-operation inspection, explicit recovery decisions, immutable snapshots, persistence failure semantics, privacy-safe diagnostics, and zero runtime third-party dependencies. Recovery inspection never performs hidden filesystem mutation.
 
 ## Repository shape
 
