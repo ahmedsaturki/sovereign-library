@@ -10,21 +10,27 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Process Supervisor / Managed Child Lifecycle v0.1
+
+PR #102 — release merge `881435f121d09099b9b263fa906f0968c42e4539`
+
+Final cross-platform **Run 760** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+
+The cube is **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
+
+The release adds one-child supervisor ownership, explicit lifecycle state, bounded graceful-to-forced stop escalation, opt-in restart budgets with deterministic backoff, stale-generation protection, read-only health inspection, bounded output/diagnostics, cancellation/deadline handling, immutable snapshots/errors, capability/data separation, and zero runtime third-party dependencies.
+
 ### Filesystem Recovery Journal / Operation Ledger v0.1
 
 PR #101 — release merge `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`
 
-Final cross-platform **Run 743** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+Final cross-platform **Run 743** passed on Ubuntu, Windows, and macOS-15-Intel.
 
 The cube is **FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
-
-The release adds deterministic FRJ1 append-only operation records, explicit lifecycle sequencing, bounded interrupted-operation inspection, explicit caller recovery decisions, integrity validation, immutable snapshots, persistence failure semantics, privacy-safe diagnostics, and zero runtime third-party dependencies. Recovery inspection never performs hidden filesystem mutation.
 
 ### Safe File Quarantine / Delete v0.1
 
 PR #100 — release merge `699d4181f0775af93b62d78f47fb00de42ec346e`
-
-Final cross-platform **Run 738** passed on Ubuntu, Windows, and macOS-15-Intel.
 
 The cube is **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
 
@@ -72,17 +78,10 @@ Earlier Artifact Release cubes remain pinned in repository history.
 
 ## Active milestone
 
-### PROCESS-SUPERVISOR-SPEC
+### NEXT-CUBE-SELECTION
 
-**Process Supervisor / Managed Child Lifecycle v0.1** is the single active cube.
+The Process Supervisor / Managed Child Lifecycle v0.1 release is complete and frozen.
 
-Selection evidence:
-- `cubes/process` currently provides one-shot process execution only.
-- No released cube owns supervisor lifecycle state, bounded graceful-to-forced stop escalation, bounded restart budgets, stale-generation protection, or supervisor-level health observation.
-- Existing scheduler, timeout/deadline, concurrency, and process primitives can be composed without duplicating their scopes.
-
-The frozen scope is recorded in `specs/process-supervisor-managed-child-lifecycle-v0.1.md`.
-
-The next gate is implementation, standalone documentation/example, package/test registration, then `TEST -> FIX -> VERIFY` across Ubuntu, Windows, and macOS-15-Intel.
+The next Cube is not selected yet. The next gate is a fresh inventory of the current standalone-product surface, parked specs, existing implementations, branches, open PRs/issues, and dependency gaps. Choose exactly one non-duplicative next Cube, freeze its SPEC, then implement it.
 
 No second cube may start concurrently.
