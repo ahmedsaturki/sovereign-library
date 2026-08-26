@@ -6,10 +6,54 @@ const configPath = resolve('jsconfig.declarations.json');
 const outDir = resolve('.artifacts/declarations');
 const toolsDir = resolve('.artifacts/declaration-tools');
 const typeRoots = resolve(toolsDir, 'node_modules/@types');
-const expected = [
-  resolve('.artifacts/declarations/cubes/safe-path-resolver-containment-boundary/src/index.d.ts'),
-  resolve('.artifacts/declarations/cubes/runtime-capability-inspector/src/index.d.ts'),
-];
+const expectedFiles = {
+  safePathResolver: resolve('.artifacts/declarations/cubes/safe-path-resolver-containment-boundary/src/index.d.ts'),
+  runtimeCapability: resolve('.artifacts/declarations/cubes/runtime-capability-inspector/src/index.d.ts'),
+};
+
+const expectedExports = {
+  safePathResolver: new Set([
+    'SafePathResolverError', 'normalizePath', 'resolvePath', 'isContained',
+    'resolveContained', 'canonicalizePath', 'comparePaths', 'serializeReport', 'parseReport',
+  ]),
+  runtimeCapability: new Set([
+    'RuntimeCapabilityError', 'inspectRuntime', 'evaluateRuntimeRequirements',
+    'serializeRuntimeReport', 'parseRuntimeReport', 'RUNTIME_CAPABILITY_FORMAT',
+    'RUNTIME_OS_FAMILIES', 'RUNTIME_ARCHITECTURES',
+  ]),
+};
+
+function extractDeclarationExports(text) {
+  const found = new Set();
+  const patterns = [
+    /export\s+(?:declare\s+)?(?:class|function|const|let|var|interface|type|enum)\s+([A-Za-z_$][\w$]*)/g,
+    /export\s*\{([^}]+)\}/g,
+  ];
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      if (pattern.source.startsWith('export\\s*\\{')) {
+        for (const item of match[1].split(',')) {
+          const name = item.trim().split(/\s+as\s+/)[0];
+          if (name) found.add(name);
+        }
+      } else {
+        found.add(match[1]);
+      }
+    }
+  }
+  return found;
+}
+
+function assertExactExports(label, file, expected) {
+  if (!existsSync(file)) throw new Error(`missing generated declaration: ${label}`);
+  const exports = extractDeclarationExports(readFileSync(file, 'utf8'));
+  const missing = [...expected].filter((name) => !exports.has(name));
+  const unexpected = [...exports].filter((name) => !expected.has(name));
+  if (missing.length || unexpected.length) {
+    throw new Error(`declaration surface mismatch for ${label}; missing=[${missing.join(',')}] unexpected=[${unexpected.join(',')}]`);
+  }
+}
 
 const config = JSON.parse(readFileSync(configPath, 'utf8'));
 if (config?.compilerOptions?.allowJs !== true) throw new Error('declaration config must enable allowJs');
@@ -50,13 +94,10 @@ try {
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`declaration compiler exited with status ${result.status}`);
 
-  for (const file of expected) {
-    if (!existsSync(file)) throw new Error(`missing generated declaration: ${file}`);
-    const text = readFileSync(file, 'utf8');
-    if (!/\bexport\b/.test(text)) throw new Error(`generated declaration has no exports: ${file}`);
-  }
+  assertExactExports('Safe Path Resolver', expectedFiles.safePathResolver, expectedExports.safePathResolver);
+  assertExactExports('Runtime Capability Inspector', expectedFiles.runtimeCapability, expectedExports.runtimeCapability);
 
-  console.log('[declarations] pilot generation and basic surface verification passed');
+  console.log('[declarations] pilot generation and frozen public-surface verification passed');
 } finally {
   rmSync(toolsDir, { recursive: true, force: true });
 }
