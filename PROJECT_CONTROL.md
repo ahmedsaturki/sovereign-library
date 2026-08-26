@@ -26,6 +26,7 @@ This file is the anti-drift control for the repository. It keeps development fin
 - License decision: **Apache License 2.0**, merged by PR #106 at `37bdac72bd86c3a190035f3a36a2cfe497fe2812`.
 - API boundary verification: **Run #782**, passed on Ubuntu, Windows, and macOS-15-Intel.
 - Declaration pilot verification: **Run #809**, passed on Ubuntu, Windows, and macOS-15-Intel, including exact public-surface matching for the first two pilot candidates.
+- Package contract: **DONE / VERIFIED**, merged by PR #108 at `b7b8f985058fb4a13e73cf255dd6fdf7508da5bd`; verification **Run #812** passed on Ubuntu, Windows, and macOS-15-Intel.
 - No public package publication is authorized yet.
 
 ## The one-current-task rule
@@ -36,24 +37,25 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-STABILIZATION-PACKAGE-CONTRACT-TOOLING**
+**PHASE-0-STABILIZATION-PACKAGE-TOOLING**
 
 ### Immediate next task
 
-Write and freeze the package contract for the first public-package candidate batch. The contract must define scoped package naming, independent versioning, Node 24 compatibility, entry-point/export rules, ESM/CJS policy, generated declaration placement, license metadata, repository metadata, files included in the tarball, and publication exclusions. Do not publish, register an npm organization, or introduce a changeset/API Extractor baseline until the package contract gate passes.
+Implement the first package-tooling slice for the two declaration-pilot candidates: `@sovereign/safe-path-resolver` and `@sovereign/runtime-capability-inspector`. Add isolated package manifests, exact `exports` maps, generated declaration build paths, and packaging verification without publication or registry configuration. Do not add changesets or API Extractor until the package pack/contents gate is proven.
 
 ### Completed Phase 0 gates
 
 1. Inventory & Classification — **DONE / FROZEN** in PR #105.
 2. License decision and repository licensing artifacts — **DONE / FROZEN** in PR #106; Apache-2.0 is authoritative on `main`.
 3. Public API boundary freeze — **DONE / VERIFIED**; Run #782 passed on Ubuntu, Windows, and macOS-15-Intel, with eight candidate APIs documented in `docs/PUBLIC_API_BOUNDARY_V0.1.md`.
-4. Type/declaration strategy without a full rewrite — **DONE / VERIFIED**; Run #809 passed on Ubuntu, Windows, and macOS-15-Intel. The pilot now checks exact generated export surfaces for Safe Path Resolver and Runtime Capability Inspector.
+4. Type/declaration strategy without a full rewrite — **DONE / VERIFIED**; Run #809 passed on Ubuntu, Windows, and macOS-15-Intel. The pilot checks exact generated export surfaces for Safe Path Resolver and Runtime Capability Inspector.
+5. Package contract — **DONE / VERIFIED**; PR #108 merged at `b7b8f985058fb4a13e73cf255dd6fdf7508da5bd`; Run #812 passed on Ubuntu, Windows, and macOS-15-Intel.
 
-### Phase 0 order after declaration strategy
+### Phase 0 order after package contract
 
-5. Package contract/tooling (`package.json`, exports, changesets, API extraction)
-6. Reproducible `npm pack` and security verification
-7. First small public package batch
+6. Package tooling implementation (`package.json`, exports, packaging verification)
+7. Reproducible `npm pack` and security verification
+8. First small public package batch
 
 ## Declaration strategy artifact
 
