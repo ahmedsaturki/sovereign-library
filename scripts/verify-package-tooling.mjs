@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const ROOT = resolve('.');
+const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const CANDIDATES = [
   {
     id: 'safe-path-resolver',
@@ -61,7 +62,7 @@ for (const candidate of CANDIDATES) {
   run(process.execPath, [candidate.script, candidate.id]);
   const packDir = resolve('.artifacts/package-verify', candidate.id);
   rmSync(packDir, { recursive: true, force: true });
-  const packJsonText = run('npm', ['pack', '--json', '--ignore-scripts', '--pack-destination', packDir], candidate.packageDir);
+  const packJsonText = run(NPM, ['pack', '--json', '--ignore-scripts', '--pack-destination', packDir], candidate.packageDir);
   const packResult = JSON.parse(packJsonText);
   if (!Array.isArray(packResult) || packResult.length !== 1) fail(`${candidate.id} npm pack did not return exactly one package result`);
   const files = new Set((packResult[0].files ?? []).map((entry) => String(entry.path).replaceAll('\\', '/')));
