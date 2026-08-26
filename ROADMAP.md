@@ -14,11 +14,9 @@ A Cube is released only after clean syntax checks, unit/contract tests, integrat
 
 PR #104 — release merge `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
 
-Final pre-merge **Run 768** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+Final pre-merge **Run 768** passed on Ubuntu, Windows, and macOS-15-Intel. Post-merge **Run 772** also passed on all three platforms.
 
-Post-merge **Run 772** also passed on Ubuntu, Windows, and macOS-15-Intel.
-
-The Cube is **FROZEN** at `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`.
+The Cube is **FROZEN**.
 
 ## Recent frozen releases
 
@@ -39,22 +37,34 @@ Run #773 passed on Ubuntu, Windows, and macOS-15-Intel. The classification recor
 
 Artifact Release is split into reusable foundation candidates, generic governance candidates, and product/internal release workflow components; it is not treated as a single public package batch.
 
-### Active: License Decision
+### Completed: License Decision
 
-The current readiness gate is **Apache License 2.0 adoption and repository distribution policy**.
+PR #106 — merge `37bdac72bd86c3a190035f3a36a2cfe497fe2812`
 
-The gate adds:
+Apache License 2.0 is authoritative on `main`, with `LICENSE`, `NOTICE`, and `docs/LEGAL_AND_DISTRIBUTION_POLICY_V0.1.md`. Registry publication remains separately gated.
 
-- `LICENSE`
-- `NOTICE`
-- `docs/LEGAL_AND_DISTRIBUTION_POLICY_V0.1.md`
-- control-plane updates recording the decision and keeping registry publication separate.
+### Active: Public API Boundary Freeze
 
-### Phase 0 order after license
+The current readiness gate freezes the first public API candidate surface in `docs/PUBLIC_API_BOUNDARY_V0.1.md`.
+
+The first batch candidates are:
+
+1. Safe Path Resolver / Containment Boundary
+2. Glob / Path Matcher
+3. Filesystem Watcher / Change Stream
+4. File Lease / Advisory Lock
+5. Atomic File Writer / Safe Replace
+6. Ephemeral Workspace / Scratch Directory
+7. Directory Snapshot / Tree Manifest
+8. Runtime Capability Inspector
+
+Only symbols explicitly listed in the boundary manifest are public candidates; all other implementation symbols remain internal by default.
+
+### Phase 0 order after API boundary
 
 1. Inventory & Classification — **DONE / FROZEN**
-2. License decision and repository licensing artifacts — **ACTIVE**
-3. Public API boundary freeze for selected foundational candidates
+2. License decision and repository licensing artifacts — **DONE / FROZEN**
+3. Public API boundary freeze — **ACTIVE**
 4. Type/declaration strategy without a full rewrite
 5. Package contract/tooling (`package.json`, exports, changesets, API extraction)
 6. Reproducible `npm pack` and security verification
