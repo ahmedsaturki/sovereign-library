@@ -6,7 +6,7 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-**Phase 0 — Stabilization & Package Readiness** after freezing **Application Lifecycle / Graceful Shutdown Coordinator v0.1**.
+**Phase 0 — First Public Package Batch / Release Authorization Readiness** after freezing **Application Lifecycle / Graceful Shutdown Coordinator v0.1**.
 
 ## Current repository state
 
@@ -27,7 +27,9 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Package contract: **DONE / VERIFIED**, merged by PR #108 at `b7b8f985058fb4a13e73cf255dd6fdf7508da5bd`; verification **Run #812** passed on Ubuntu, Windows, and macOS-15-Intel.
 - Package tooling, reproducibility, and security verification: **DONE / VERIFIED** by **Run #835**, passed on Ubuntu, Windows, and macOS-15-Intel.
 - Publication guard implementation: merged in commit `91ff69c40c72b62e97d6e1e07a83f87397acacdc` and wired into CI at `9e2ca35668e5ad2923a8c6c6c4992483a07b181d`.
-- Latest publication-guard verification: **Run #837**, Ubuntu has passed the complete matrix; Windows and macOS are still completing the matrix at the time of this control update.
+- Final publication-guard verification: **Run #840**, commit `b41c224de8538ac3df162c9fb62582373ee95a6e`, passed completely on Ubuntu, Windows, and macOS-15-Intel.
+- Release-readiness evidence is frozen in `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`.
+- Release authorization packet is frozen in `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`.
 - No public package publication is authorized yet.
 
 ## The one-current-task rule
@@ -38,11 +40,11 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-FIRST-PUBLIC-PACKAGE-BATCH**
+**PHASE-0-RELEASE-AUTHORIZATION-READY**
 
 ### Immediate next task
 
-Complete the first small public package batch release-preparation gate for `@sovereign/safe-path-resolver` and `@sovereign/runtime-capability-inspector`: finish the publication-guard matrix on all supported platforms, freeze the release-readiness record, and prepare a release authorization packet. Do **not** publish, create/reserve an npm organization, configure npm tokens, or add registry automation until the release authorization gate is explicitly satisfied.
+Obtain the explicit release-authorization decision for the two verified candidates: `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. Until that decision exists, do not publish, create/reserve an npm organization, configure npm tokens, add registry automation, or announce a public release.
 
 ### Completed Phase 0 gates
 
@@ -53,11 +55,14 @@ Complete the first small public package batch release-preparation gate for `@sov
 5. Package contract — **DONE / VERIFIED**; PR #108 merged at `b7b8f985058fb4a13e73cf255dd6fdf7508da5bd`; Run #812 passed on Ubuntu, Windows, and macOS-15-Intel.
 6. Package tooling implementation — **DONE / VERIFIED**.
 7. Reproducible `npm pack` and security verification — **DONE / VERIFIED** by Run #835.
-8. Publication guard implementation — **DONE / WIRED**, cross-platform final verification pending Run #837 completion.
+8. Publication guard — **DONE / WIRED / VERIFIED** by Run #840 on all supported platforms.
+9. Release-readiness record — **DONE / FROZEN**.
+10. Release authorization packet — **DONE / FROZEN**.
 
-## Governing release record
+## Governing release records
 
-`docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md` is the current release-readiness record for the first two public package candidates.
+- `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`
+- `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`
 
 ## Declaration strategy artifact
 
@@ -73,6 +78,10 @@ Cube work follows:
 
 Phase 0 readiness work is controlled by the same one-current-task discipline; it does not authorize parallel Cube implementation.
 
+The public package release path is:
+
+`READY -> EXPLICIT AUTHORIZATION -> FINAL CLEAN VERIFY -> TAG/RELEASE -> PUBLISH -> POST-PUBLISH VERIFY -> FREEZE`
+
 ## Definition of done
 
 A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verified, documented, and merged to `main` with the control plane advanced to exactly one next task.
@@ -84,6 +93,7 @@ A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verif
 - Do not start a second Cube while a Phase 0 task is active.
 - Do not turn a technically complete cube into a public package without API/package/security/release-authorization gates.
 - Do not call a package production-ready from source inspection alone.
+- Do not treat CI success as publication authorization.
 - Park out-of-scope work and continue.
 
 ## Recovery rule
