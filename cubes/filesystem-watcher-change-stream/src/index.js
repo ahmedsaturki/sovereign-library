@@ -76,7 +76,21 @@ function normalizeOptions(options) {
 
 function publicPath(rootPath, candidate) { const absolute = resolve(rootPath, candidate); const rel = relative(rootPath, absolute); if (rel === '' || (!rel.startsWith(`..${sep}`) && rel !== '..' && !isAbsolute(rel))) return rel.split(sep).join('/'); fail('PATH_ESCAPE', 'event path escapes watcher root'); }
 function eventSize(event) { if (Buffer.byteLength(JSON.stringify(event), 'utf8') > MAX_EVENT) fail('EVENT_TOO_LARGE', `event exceeds ${MAX_EVENT} bytes`); }
-function classifyNative(root, filename, action) { const name = filename == null ? '' : String(filename); const path = publicPath(root.path, name); if (action === 'change') return { type: 'changed', path }; if (action === 'rename') return existsSync(resolve(root.path, name)) ? { type: 'created', path } : { type: 'removed', path }; fail('NATIVE_EVENT', `unsupported native action ${action}`); }
+
+async function classifyNative(root, filename, action) {
+  const name = filename == null ? '' : String(filename);
+  const path = publicPath(root.path, name);
+  if (action === 'change') return { type: 'changed', path };
+  if (action === 'rename') {
+    const candidate = resolve(root.path, name);
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      if (existsSync(candidate)) return { type: 'created', path };
+      if (attempt < 4) await new Promise((resolveDelay) => setTimeout(resolveDelay, 10));
+    }
+    return { type: 'removed', path };
+  }
+  fail('NATIVE_EVENT', `unsupported native action ${action}`);
+}
 function nativeWatchPath(rootPath) { if (process.platform !== 'win32') return rootPath; try { return realpathSync.native(rootPath); } catch { return rootPath; } }
 
 export function createWatcher(rawOptions) {
@@ -103,7 +117,7 @@ export function createWatcher(rawOptions) {
     const timer = setTimeout(() => { pendingTimers.delete(key); enqueue(baseEvent); finishIfIdle(); }, options.debounceMs);
     pendingTimers.set(key, timer);
   }
-  function handleNative(root, action, filename) { try { emit({ rootId: root.rootId, ...classifyNative(root, filename, action) }); } catch (error) { emitError(error); void close(); } }
+  async function handleNative(root, action, filename) { try { emit({ rootId: root.rootId, ...await classifyNative(root, filename, action) }); } catch (error) { emitError(error); void close(); } }
   async function startInjected(source) {
     if (!source || typeof source[Symbol.asyncIterator] !== 'function') fail('INVALID_SOURCE', 'injected source must be AsyncIterable');
     for await (const raw of source) {
@@ -115,7 +129,7 @@ export function createWatcher(rawOptions) {
   }
   async function start() {
     if (state === 'running') return snapshotStats(); if (state === 'closing' || state === 'closed') fail('CLOSED', 'watcher is closed'); state = 'starting';
-    try { if (options.source) { state = 'running'; startInjected(options.source).catch((error) => { emitError(error); void close(); }); } else { for (const root of options.roots) { const handle = nativeWatch(nativeWatchPath(root.path), { recursive: options.recursive }, (action, filename) => handleNative(root, action, filename)); handle.on('error', emitError); watchers.push(handle); } state = 'running'; } return snapshotStats(); }
+    try { if (options.source) { state = 'running'; startInjected(options.source).catch((error) => { emitError(error); void close(); }); } else { for (const root of options.roots) { const handle = nativeWatch(nativeWatchPath(root.path), { recursive: options.recursive }, (action, filename) => { void handleNative(root, action, filename); }); handle.on('error', emitError); watchers.push(handle); } state = 'running'; } return snapshotStats(); }
     catch (error) { emitError(error); await close(); throw error; }
   }
   async function next() { if (queue.length) return { value: queue.shift(), done: false }; if (terminalError) return Promise.reject(terminalError); if (closed) return { value: undefined, done: true }; if (sourceEnded && pendingTimers.size === 0) return { value: undefined, done: true }; return new Promise((resolveNext, rejectNext) => waiters.push({ resolve: resolveNext, reject: rejectNext })); }
