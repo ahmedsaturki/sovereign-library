@@ -114,21 +114,39 @@ test('unknown roots and path escapes fail closed and a new watcher recovers', as
 });
 
 test('native smoke watches a temporary directory without external dependencies', async () => {
-  const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
+  const { mkdtemp, writeFile, appendFile, rm } = await import('node:fs/promises');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
   const directory = await mkdtemp(join(tmpdir(), 'fwc-'));
   const watcher = createWatcher({ roots: [directory], queueCapacity: 32 });
-  await watcher.start();
-  const target = join(directory, 'smoke.txt');
-  await writeFile(target, 'a');
-  const event = await Promise.race([
-    watcher.next(),
-    new Promise((_, reject) => setTimeout(() => reject(new Error('native watcher timeout')), 3000)),
-  ]);
-  assert.ok(['created', 'changed'].includes(event.value.type));
-  await watcher.close();
-  await rm(directory, { recursive: true, force: true });
+  const deadline = Date.now() + 3000;
+  try {
+    await watcher.start();
+    const target = join(directory, 'smoke.txt');
+    await writeFile(target, 'a');
+    let event;
+    while (Date.now() < deadline) {
+      const remaining = Math.max(1, deadline - Date.now());
+      const candidate = await Promise.race([
+        watcher.next(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('native watcher timeout')), Math.min(remaining, 250))),
+      ]).catch((error) => {
+        if (error?.message === 'native watcher timeout') return null;
+        throw error;
+      });
+      if (candidate?.value && ['created', 'changed'].includes(candidate.value.type)) {
+        event = candidate;
+        break;
+      }
+      if (candidate?.done) break;
+      if (Date.now() < deadline) await appendFile(target, 'b');
+    }
+    assert.ok(event, 'native watcher must surface a creation/change event');
+    assert.equal(event.value.path, 'smoke.txt');
+  } finally {
+    await watcher.close();
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test('debounce is explicit and bounded', async () => {

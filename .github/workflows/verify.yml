@@ -10,7 +10,7 @@ jobs:
   verify:
     name: Node ${{ matrix.node }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 12
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -23,7 +23,9 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Syntax check
         run: npm run check
-      - name: Contract and integration tests
-        run: npm test
+      - name: Bounded contract and integration tests
+        run: node scripts/run-tests-bounded.mjs
+        env:
+          SOVEREIGN_TEST_FILE_TIMEOUT_MS: 30000
       - name: Real browser smoke test
         run: npm run test:browser

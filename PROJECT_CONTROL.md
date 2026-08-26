@@ -32,9 +32,21 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ### Immediate next task
 
-Implement **Filesystem Permission / Ownership Descriptor v0.1** from the frozen SPEC at `specs/filesystem-permission-ownership-descriptor-v0.1.md` (SPEC commit `fc5bbf3c8c9125699c3a0e2b5c2fc817592e24d5`). The implementation must remain standalone and dependency-free, preserve the non-mutating default, keep platform capabilities explicit, and enter the normal `IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE` sequence.
+Complete verification and release of **Filesystem Permission / Ownership Descriptor v0.1** from the frozen SPEC at `specs/filesystem-permission-ownership-descriptor-v0.1.md` (SPEC commit `fc5bbf3c8c9125699c3a0e2b5c2fc817592e24d5`). The implementation remains standalone and dependency-free, preserves the non-mutating default, keeps platform capabilities explicit, and is in the normal `IMPLEMENT -> TEST -> FIX -> VERIFY` sequence.
 
-The SPEC gate is complete. No other cube may start concurrently.
+The SPEC, implementation, tests, failure/recovery hardening, and documentation gates are complete. **PR #98** is the release candidate.
+
+### Verification status
+
+- **Run #722:** failed on Ubuntu and Windows because the regression suite correctly exposed a negative opaque ownership identifier that was not rejected. Root cause was identified and fixed at commit `2d099e5478d7a69aa34f4fde1279cee92f6aa55d`.
+- **Run #723:** Ubuntu and Windows passed syntax, full tests, browser smoke, and complete jobs; macOS-15-Intel remained stuck inside the aggregate `npm test` step and was not treated as a release success.
+- **Run #724:** uses the new cross-platform bounded test runner `scripts/run-tests-bounded.mjs`, which executes the canonical test-file list one file at a time with a 30-second per-file ceiling. Ubuntu has already completed the bounded contract/integration suite successfully; macOS-15-Intel and Windows are still running.
+
+### CI hardening lesson
+
+The aggregate full-suite command could leave the cross-platform release gate opaque when one runner stopped making progress. The release gate now keeps the same test corpus but bounds each test file independently so the next failure identifies the exact file instead of producing a silent suite-level hang.
+
+No other cube may start concurrently.
 
 ## Scope lock
 
