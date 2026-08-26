@@ -15,7 +15,7 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
 - Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
 - Process Supervisor / Managed Child Lifecycle v0.1 remains **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
-- Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
+- Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0df16265b6c6897812c56ca2`.
 - Safe File Quarantine / Delete v0.1 remains **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
 - Bounded File Content Reader / Safe Content Access v0.1 remains **FROZEN** at `f8db5a309aef655aec86051587bdf12d34f3dd20`.
 - Filesystem Permission / Ownership Descriptor v0.1 remains **FROZEN** at `69028a66b3827ecfee4a70f2460998dd333f02e0`.
@@ -27,7 +27,7 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Package contract: **DONE / VERIFIED**, merged by PR #108 at `b7b8f985058fb4a13e73cf255dd6fdf7508da5bd`; verification **Run #812** passed on Ubuntu, Windows, and macOS-15-Intel.
 - Package tooling, reproducibility, and security verification: **DONE / VERIFIED** by **Run #835**, passed on Ubuntu, Windows, and macOS-15-Intel.
 - Publication guard implementation: merged in commit `91ff69c40c72b62e97d6e1e07a83f87397acacdc` and wired into CI at `9e2ca35668e5ad2923a8c6c6c4992483a07b181d`.
-- Final publication-guard verification: **Run #840**, commit `b41c224de8538ac3df162c9fb62582373ee95a6e`, passed completely on Ubuntu, Windows, and macOS-15-Intel.
+- Final pre-authorization verification: **Run #845**, commit `f14bbd9229fcda23f00602cfc9288881c61e213e`, passed completely on Ubuntu, Windows, and macOS-15-Intel.
 - Release-readiness evidence is frozen in `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`.
 - Release authorization packet is frozen in `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`.
 - No public package publication is authorized yet.
@@ -55,7 +55,7 @@ Obtain the explicit release-authorization decision for the two verified candidat
 5. Package contract — **DONE / VERIFIED**; PR #108 merged at `b7b8f985058fb4a13e73cf255dd6fdf7508da5bd`; Run #812 passed on Ubuntu, Windows, and macOS-15-Intel.
 6. Package tooling implementation — **DONE / VERIFIED**.
 7. Reproducible `npm pack` and security verification — **DONE / VERIFIED** by Run #835.
-8. Publication guard — **DONE / WIRED / VERIFIED** by Run #840 on all supported platforms.
+8. Publication guard — **DONE / WIRED / VERIFIED** by Run #845 on all supported platforms.
 9. Release-readiness record — **DONE / FROZEN**.
 10. Release authorization packet — **DONE / FROZEN**.
 
