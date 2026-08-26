@@ -10,23 +10,29 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
+### Filesystem Permission / Ownership Descriptor v0.1
+
+PR #98 — release merge `69028a66b3827ecfee4a70f2460998dd333f02e0`
+
+Release-candidate head: `463f1c539124fb54c449d1c15283e329d031abdb`
+
+Final cross-platform **Run 727** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs all green.
+
+The cube is **FROZEN** at `69028a66b3827ecfee4a70f2460998dd333f02e0`.
+
+The release closed tri-state portable permission semantics, explicit Windows readonly behavior, explicit ACL states, bounded deterministic platform flags, privacy-safe ownership classification, injected capability seams, fail-closed path/platform/capability validation, cancellation semantics, deterministic PPO1 serialization, and cross-platform CI observability hardening.
+
 ### Atomic Batch File Transaction / Safe Multi-File Commit v0.1
 
 PR #96 — `1fae6399eb2710b53cc8f53878138ae9a24a241d`
 
-Pre-merge **Run 710** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, full contract/integration tests, browser smoke, and complete jobs all green.
-
-Mainline Push verification **Run 712** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, full tests, browser smoke, and complete jobs all green.
+Pre-merge **Run 710** and Mainline Push **Run 712** passed on Ubuntu, Windows, and macOS-15-Intel.
 
 The cube is **FROZEN** at `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
-
-Hardening closed absolute-root enforcement, proof-gated `strong-local` capability claims, truthful post-cleanup rollback availability, immutable ABT1 receipts, bounded planning, and fail-closed recovery.
 
 ### File Lease / Advisory Lock v0.1 — corrective hardening
 
 Corrective PR #95 — `a2eb715a558d9c88f19e9ff83ff512971e548891`
-
-Run 700 and Run 701 passed across the supported matrix after targeted macOS reruns.
 
 The corrective release is **FROZEN** at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
 
@@ -56,12 +62,12 @@ Runtime Capability Inspector / Preflight v0.1 — PR #78 — `139a7d6c824b7fe522
 
 ## Active milestone
 
-### FILESYSTEM-PERMISSION-OWNERSHIP-DESCRIPTOR-SPEC
+### BOUNDED-FILE-CONTENT-READER-SAFE-CONTENT-ACCESS-SPEC
 
-The Atomic Batch File Transaction release is complete and frozen.
+The Filesystem Permission / Ownership Descriptor release is complete and frozen.
 
-The SPEC for **Filesystem Permission / Ownership Descriptor v0.1** is frozen on `main` at `fc5bbf3c8c9125699c3a0e2b5c2fc817592e24d5`.
+The next cube is **Bounded File Content Reader / Safe Content Access v0.1**. Existing work is present in PR #94 from an earlier project state, but it is not treated as release-ready. The next step is to read and freeze the current SPEC, compare it against the existing implementation/tests, identify drift, and apply only the smallest compliant delta.
 
-The immediate next task is implementation from that SPEC. The contract covers normalized cross-platform permission/ownership metadata, non-mutating inspection by default, explicit capability detection, privacy-safe identifiers, deterministic immutable serialization, bounded metadata collection, explicit unsupported-platform/filesystem behavior, capability/data separation, failure/cancellation/recovery semantics, and zero runtime third-party dependencies.
+The contract covers bounded binary/text reads, offsets and EOF behavior, strict UTF-8/BOM/newline policies, chunked streaming, cancellation/deadline, changing-file checks, explicit symlink policies, Safe Path Resolver anchoring, capability/data separation, privacy-safe diagnostics, guaranteed handle cleanup, failure/recovery semantics, and zero runtime third-party dependencies.
 
 No implementation of another cube starts concurrently; the active milestone must complete the full release sequence before NEXT CUBE.
