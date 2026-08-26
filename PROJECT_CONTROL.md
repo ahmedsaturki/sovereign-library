@@ -17,7 +17,7 @@ Select and specify the next standalone Sovereign product after freezing **Atomic
 - Mainline Push verification: **Run #712**, passed on Ubuntu, Windows, and macOS-15-Intel with syntax, full tests, browser smoke, and complete jobs all green.
 - Atomic Batch File Transaction / Safe Multi-File Commit v0.1 is **FROZEN** at `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
 - File Lease / Advisory Lock v0.1 remains **FROZEN** with corrective hardening at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
-- The Atomic Batch hardening closed: absolute-root enforcement, proof-gated `strong-local` atomicity, truthful post-cleanup rollback availability, immutable ABT1 receipts, bounded planning, and fail-closed recovery.
+- The Atomic Batch hardening closed absolute-root enforcement, proof-gated `strong-local` capability claims, truthful post-cleanup rollback availability, immutable ABT1 receipts, bounded planning, and fail-closed recovery.
 - No runtime third-party dependencies were added.
 
 ## The one-current-task rule
@@ -32,13 +32,13 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ### Immediate next task
 
-Write and freeze the SPEC for **Filesystem Permission / Ownership Descriptor v0.1** as a standalone dependency-free cube. The SPEC must define normalized cross-platform permission/ownership metadata, capability detection, safe non-mutating inspection by default, explicit mutation opt-in boundaries if supported, privacy-safe identifiers, deterministic serialization, unsupported-platform behavior, bounded work, capability/data separation, failure/recovery semantics, and zero runtime third-party dependencies.
+Implement **Filesystem Permission / Ownership Descriptor v0.1** from the frozen SPEC at `specs/filesystem-permission-ownership-descriptor-v0.1.md` (SPEC commit `fc5bbf3c8c9125699c3a0e2b5c2fc817592e24d5`). The implementation must remain standalone and dependency-free, preserve the non-mutating default, keep platform capabilities explicit, and enter the normal `IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE` sequence.
 
-No implementation starts until the SPEC is committed and the SPEC gate is recorded in this control plane.
+The SPEC gate is complete. No other cube may start concurrently.
 
 ## Scope lock
 
-Do not redesign the architecture or reopen frozen cubes. The active milestone is limited to the permission/ownership descriptor contract, portability, capability seams, documentation, tests, and release state.
+The active cube is limited to normalized permission/ownership descriptors, capability detection, privacy-safe identifiers, deterministic immutable serialization, bounded metadata collection, explicit unsupported-platform behavior, capability/data separation, and failure/cancellation semantics.
 
 ## Definition of done
 
