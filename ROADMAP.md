@@ -29,27 +29,31 @@ The Cube is **FROZEN** at `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`.
 - Filesystem Permission / Ownership Descriptor v0.1 — PR #98 — `69028a66b3827ecfee4a70f2460998dd333f02e0`
 - Atomic Batch File Transaction / Safe Multi-File Commit v0.1 — PR #96 — `1fae6399eb2710b53cc8f53878138ae9a24a241d`
 
-## Active milestone
+## Phase 0 — Stabilization & Package Readiness
 
-### PHASE-0-STABILIZATION-INVENTORY-CLASSIFICATION
+### Completed: Inventory & Classification
 
-The first post-release Phase 0 task is **Inventory & Classification**.
+PR #105 — merge `b0249a3e4d47665b9da0d76eb6cd1009abef6a8f`
 
-### Immediate next task
+Run #773 passed on Ubuntu, Windows, and macOS-15-Intel. The classification record is frozen at `docs/CUBE_INVENTORY_CLASSIFICATION_V0.1.md`.
 
-Complete and verify the repository inventory/classification record, including:
+Artifact Release is split into reusable foundation candidates, generic governance candidates, and product/internal release workflow components; it is not treated as a single public package batch.
 
-- current `cubes/` surface and documentation/test markers;
-- Released/Frozen vs implementation-complete vs incubating vs experimental vs product-internal classification;
-- Artifact Release series split into reusable foundation, generic governance, and product-internal workflow layers;
-- provisional first public package candidate set.
+### Active: License Decision
 
-The decision record is `docs/CUBE_INVENTORY_CLASSIFICATION_V0.1.md`.
+The current readiness gate is **Apache License 2.0 adoption and repository distribution policy**.
 
-### Phase 0 order after inventory
+The gate adds:
 
-1. Inventory & Classification
-2. License decision and repository licensing artifacts
+- `LICENSE`
+- `NOTICE`
+- `docs/LEGAL_AND_DISTRIBUTION_POLICY_V0.1.md`
+- control-plane updates recording the decision and keeping registry publication separate.
+
+### Phase 0 order after license
+
+1. Inventory & Classification — **DONE / FROZEN**
+2. License decision and repository licensing artifacts — **ACTIVE**
 3. Public API boundary freeze for selected foundational candidates
 4. Type/declaration strategy without a full rewrite
 5. Package contract/tooling (`package.json`, exports, changesets, API extraction)
