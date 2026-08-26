@@ -20,7 +20,8 @@ if (!Array.isArray(config.include) || config.include.length !== 2) throw new Err
 rmSync(outDir, { recursive: true, force: true });
 rmSync(toolsDir, { recursive: true, force: true });
 
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const onWindows = process.platform === 'win32';
+const npm = onWindows ? 'npm.cmd' : 'npm';
 const install = spawnSync(npm, [
   'install',
   '--no-save',
@@ -29,7 +30,7 @@ const install = spawnSync(npm, [
   '--prefix', toolsDir,
   'typescript@7.0.2',
   '@types/node@26.2.0',
-], { stdio: 'inherit', shell: false });
+], { stdio: 'inherit', shell: onWindows });
 
 if (install.error) throw install.error;
 if (install.status !== 0) throw new Error(`declaration tool installation exited with status ${install.status}`);
