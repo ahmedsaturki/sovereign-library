@@ -64,7 +64,9 @@ Only symbols explicitly listed in `docs/PUBLIC_API_BOUNDARY_V0.1.md` are public 
 
 The governing artifact is `docs/DECLARATION_STRATEGY_V0.1.md`.
 
-The repository remains JavaScript-first. The declaration pilot uses JSDoc-driven declaration emission, a repository-level `jsconfig.declarations.json`, and a dedicated `.github/workflows/declarations.yml` gate. The first pilot candidates are Safe Path Resolver and Runtime Capability Inspector.
+The repository remains JavaScript-first. The declaration pilot uses JSDoc-driven declaration emission and a repository-level `jsconfig.declarations.json`. The first pilot candidates are Safe Path Resolver and Runtime Capability Inspector.
+
+The pilot is executed as a dedicated job inside `.github/workflows/verify.yml`, sharing the repository's verified CI entry point. No separate declaration workflow is maintained.
 
 The pilot must prove declaration emission and public-surface alignment before package tooling begins.
 
