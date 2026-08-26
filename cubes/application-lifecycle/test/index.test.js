@@ -105,7 +105,7 @@ test('pre-aborted shutdown fails before participant invocation', async () => {
 });
 
 test('active cancellation stops admitting new participants', async () => {
-  const lifecycle = createApplicationLifecycle({ globalShutdownTimeoutMs: 100 }, caps());
+  const lifecycle = createApplicationLifecycle({ globalShutdownTimeoutMs: 100, defaultTimeoutMs: 100 }, caps());
   let release;
   const blocker = new Promise((resolve) => { release = resolve; });
   const calls = [];
