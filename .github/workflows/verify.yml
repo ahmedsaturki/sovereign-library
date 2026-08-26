@@ -31,5 +31,9 @@ jobs:
         run: node scripts/verify-declarations.mjs
       - name: Package tooling verification
         run: node scripts/verify-package-tooling.mjs
+      - name: Reproducible package verification
+        run: node scripts/verify-reproducible-package.mjs
+      - name: Security boundary verification
+        run: node scripts/verify-security-boundaries.mjs
       - name: Real browser smoke test
         run: npm run test:browser
