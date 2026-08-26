@@ -1,22 +1,399 @@
 import { open as nativeOpen, lstat as nativeLstat, stat as nativeStat, realpath as nativeRealpath } from 'node:fs/promises';
 import { resolveContained } from '../../safe-path-resolver-containment-boundary/src/index.js';
 
-const HARD_MAX_PATH=32*1024,HARD_MAX_BYTES=64*1024*1024,HARD_MAX_CHUNK=4*1024*1024,HARD_MAX_WORK=10_000_000,HARD_MAX_DIAGNOSTICS=2048;
-const DEFAULTS=Object.freeze({mode:'binary',offset:0,length:null,chunkSize:64*1024,maxBytes:8*1024*1024,maxChunks:100_000,maxWorkUnits:1_000_000,maxPathLength:HARD_MAX_PATH,maxDiagnosticBytes:HARD_MAX_DIAGNOSTICS,deadlineMs:null,root:null,symlinkPolicy:'reject',bom:'strip',newline:'preserve',consistency:'strict',partial:'throw'});
-export class FileContentReaderError extends Error{constructor(code,message,details={}){super(message);this.name='FileContentReaderError';this.code=code;this.details=Object.freeze({...details});}}
-const fail=(c,m,d)=>{throw new FileContentReaderError(c,m,d)};
-function assertContainer(v,label){if(v===null||typeof v!=='object'||Array.isArray(v))fail('INVALID_OPTIONS',`${label} must be an object`);for(const k of Object.getOwnPropertyNames(v)){const d=Object.getOwnPropertyDescriptor(v,k);if(!d||!('value'in d))fail('ACCESSOR_INPUT',`${label}.${k} is accessor-backed`);}}
-function validatePlain(v,label,seen=new Set(),depth=0){if(depth>12)fail('INVALID_OPTIONS',`${label} exceeds validation depth`);if(v===null)return;const t=typeof v;if(['function','symbol','bigint','undefined'].includes(t))fail('INVALID_OPTIONS',`${label} contains unsupported data`);if(t==='number'&&!Number.isFinite(v))fail('INVALID_OPTIONS',`${label} contains non-finite number`);if(t!=='object')return;if(seen.has(v))fail('INVALID_OPTIONS',`${label} is circular`);const p=Object.getPrototypeOf(v);if(!Array.isArray(v)&&p!==Object.prototype&&p!==null)fail('INVALID_OPTIONS',`${label} must be plain data`);seen.add(v);for(const k of Object.getOwnPropertyNames(v)){const d=Object.getOwnPropertyDescriptor(v,k);if(!d||!('value'in d))fail('ACCESSOR_INPUT',`${label}.${k} is accessor-backed`);validatePlain(d.value,`${label}.${k}`,seen,depth+1)}seen.delete(v)}
-function opts(data){assertContainer(data,'options');validatePlain(data,'options');const o={...DEFAULTS,...data};if(!['binary','text'].includes(o.mode))fail('INVALID_OPTIONS','invalid mode');if(!Number.isSafeInteger(o.offset)||o.offset<0)fail('INVALID_OPTIONS','invalid offset');if(o.length!==null&&(!Number.isSafeInteger(o.length)||o.length<0))fail('INVALID_OPTIONS','invalid length');if(!Number.isSafeInteger(o.chunkSize)||o.chunkSize<1||o.chunkSize>HARD_MAX_CHUNK)fail('INVALID_OPTIONS','invalid chunkSize');if(!Number.isSafeInteger(o.maxBytes)||o.maxBytes<0||o.maxBytes>HARD_MAX_BYTES)fail('INVALID_OPTIONS','invalid maxBytes');if(!Number.isSafeInteger(o.maxChunks)||o.maxChunks<1)fail('INVALID_OPTIONS','invalid maxChunks');if(!Number.isSafeInteger(o.maxWorkUnits)||o.maxWorkUnits<1||o.maxWorkUnits>HARD_MAX_WORK)fail('INVALID_OPTIONS','invalid maxWorkUnits');if(!Number.isSafeInteger(o.maxPathLength)||o.maxPathLength<1||o.maxPathLength>HARD_MAX_PATH)fail('INVALID_OPTIONS','invalid maxPathLength');if(!Number.isSafeInteger(o.maxDiagnosticBytes)||o.maxDiagnosticBytes<1||o.maxDiagnosticBytes>HARD_MAX_DIAGNOSTICS)fail('INVALID_OPTIONS','invalid maxDiagnosticBytes');if(o.deadlineMs!==null&&(!Number.isFinite(o.deadlineMs)||o.deadlineMs<=0))fail('INVALID_OPTIONS','invalid deadlineMs');if(o.root!==null&&(!o.root||typeof o.root!=='string'||o.root.includes('\0')||o.root.length>o.maxPathLength))fail('INVALID_OPTIONS','invalid root');if(!['reject','report','follow-contained'].includes(o.symlinkPolicy))fail('INVALID_OPTIONS','invalid symlinkPolicy');if(!['strip','preserve','reject'].includes(o.bom))fail('INVALID_OPTIONS','invalid bom');if(!['preserve','lf'].includes(o.newline))fail('INVALID_OPTIONS','invalid newline');if(!['strict','best-effort'].includes(o.consistency))fail('INVALID_OPTIONS','invalid consistency');if(!['throw','return'].includes(o.partial))fail('INVALID_OPTIONS','invalid partial');if(o.offset>Number.MAX_SAFE_INTEGER-(o.length??0))fail('INVALID_OPTIONS','offset + length overflow');return Object.freeze(o)}
-function assertCaps(c){assertContainer(c,'capabilities');for(const k of Object.getOwnPropertyNames(c)){const d=Object.getOwnPropertyDescriptor(c,k);if(typeof d.value!=='function')fail('CAPABILITY_FAILURE',`${k} must be a function`)}for(const k of ['open','read','close','lstat'])if(typeof c[k]!=='function')fail('CAPABILITY_FAILURE',`${k} capability required`)}
-const defaultCapabilities=Object.freeze({open:async p=>nativeOpen(p,'r'),read:async(h,b,o,l,p)=>h.read(b,o,l,p),close:async h=>h.close(),lstat:nativeLstat,stat:nativeStat,realpath:nativeRealpath,contain:async(t,r)=>{try{resolveContained(r,t,{separatorNormalization:true,normalizeDotSegments:true});return true}catch{return false}},now:()=>Date.now()});
-const mapError=e=>e instanceof FileContentReaderError?e:e?.code==='ENOENT'?new FileContentReaderError('NOT_FOUND','file not found'):e?.code==='EACCES'||e?.code==='EPERM'?new FileContentReaderError('PERMISSION_DENIED','permission denied'):new FileContentReaderError('READ_FAILURE','read failed');
-const frozen=v=>Object.freeze(v); const aborted=s=>{if(s?.aborted)fail('ABORTED','read aborted')};
-function decodeUtf8(bytes,o){let b=bytes;const bom=b.length>=3&&b[0]===239&&b[1]===187&&b[2]===191;if(bom&&o.bom==='reject')fail('DECODE_ERROR','BOM rejected');if(bom)b=b.subarray(3);let t;try{t=new TextDecoder('utf-8',{fatal:true}).decode(b)}catch{fail('DECODE_ERROR','invalid UTF-8')};if(bom&&o.bom==='preserve')t='\uFEFF'+t;if(o.newline==='lf')t=t.replaceAll('\r\n','\n').replaceAll('\r','\n');return t}
-async function safePath(input,o){if(o.root){try{return resolveContained(o.root,input,{separatorNormalization:true,normalizeDotSegments:true})}catch{fail('ROOT_ESCAPE','path escapes root')}}if(/^[.]{1,2}(?:[\\/]|$)/.test(input))fail('INVALID_PATH','relative path requires root');return input}
-async function targetFor(input,o,c){const p=await safePath(input,o),st=await c.lstat(p);if(!st?.isSymbolicLink?.())return{path:p,kind:'regular'};if(o.symlinkPolicy==='reject')fail('SYMLINK_REJECTED','symlink reading disabled',{path:p});if(o.symlinkPolicy==='report')return{path:p,kind:'symlink'};if(!o.root||typeof c.realpath!=='function'||typeof c.contain!=='function')fail('CAPABILITY_FAILURE','follow-contained requires root, realpath, contain');const real=await c.realpath(p);if(!(await c.contain(real,o.root)))fail('ROOT_ESCAPE','symlink target outside root');return{path:real,kind:'regular'}}
-async function statSafe(c,p){if(typeof c.stat!=='function')return null;try{return await c.stat(p)}catch{return null}}
-async function collected(input,o,c,signal,start){aborted(signal);const t=await targetFor(input,o,c);if(t.kind==='symlink')return frozen({kind:'symlink',path:t.path,offset:o.offset,requestedBytes:o.length??0,actualBytes:0,eof:false,consistency:'best-effort'});if(o.length===0)return frozen({kind:'file',path:t.path,offset:o.offset,requestedBytes:0,actualBytes:0,eof:false,consistency:'strict',...(o.mode==='text'?{text:''}:{data:new Uint8Array(0)})});const before=await statSafe(c,t.path);let h=null;try{h=await c.open(t.path);const lim=Math.min(o.length??o.maxBytes,o.maxBytes);let total=0,pos=o.offset,work=0,nch=0;const parts=[];while(total<lim){aborted(signal);if(++work>o.maxWorkUnits)fail('WORK_BUDGET_EXCEEDED','work budget exceeded');if(o.deadlineMs!==null&&c.now()-start>=o.deadlineMs)fail('DEADLINE_EXCEEDED','deadline exceeded');if(nch>=o.maxChunks)fail('LIMIT_EXCEEDED','maximum chunks exceeded');const size=Math.min(o.chunkSize,lim-total),buf=new Uint8Array(size),r=await c.read(h,buf,0,size,pos),n=Number(r?.bytesRead);if(!Number.isSafeInteger(n)||n<0||n>size)fail('CAPABILITY_FAILURE','invalid bytesRead');if(n===0)break;parts.push(buf.subarray(0,n));total+=n;pos+=n;nch++;if(n<size)break}const bytes=new Uint8Array(total);let cur=0;for(const p of parts){bytes.set(p,cur);cur+=p.length}const after=await statSafe(c,t.path);let consistency='strict';if(o.consistency==='strict'&&before&&after){if(before.size!==after.size||before.mtimeMs!==after.mtimeMs||before.ino!==after.ino||before.dev!==after.dev)fail('CHANGED_DURING_READ','file changed during read')}else consistency='best-effort';const base={kind:'file',path:t.path,offset:o.offset,requestedBytes:lim,actualBytes:total,eof:total<lim,consistency};return frozen(o.mode==='text'?{...base,text:decodeUtf8(bytes,o)}:{...base,data:bytes})}catch(e){const m=mapError(e);if(o.partial==='return')return frozen({ok:false,error:frozen({code:m.code,message:m.message.slice(0,o.maxDiagnosticBytes)})});throw m}finally{if(h)try{await c.close(h)}catch{}}}
-export async function readFileContent(path,options={},capabilities=defaultCapabilities){assertContainer(options,'options');assertCaps(capabilities);const signal=Object.prototype.hasOwnProperty.call(options,'signal')?options.signal:undefined;if(signal!==undefined&&(typeof signal!=='object'||typeof signal.aborted!=='boolean'))fail('INVALID_OPTIONS','invalid signal');const data={};for(const k of Object.getOwnPropertyNames(options))if(k!=='signal'&&k!=='onChunk')data[k]=options[k];const o=opts(data);if(typeof path!=='string'||!path||path.includes('\0')||path.length>o.maxPathLength)fail('INVALID_PATH','invalid path');const start=capabilities.now();try{return await collected(path,o,capabilities,signal,start)}catch(e){if(e instanceof FileContentReaderError)throw e;throw mapError(e)}}
-export async function* readFileChunks(path,options={},capabilities=defaultCapabilities){assertContainer(options,'options');assertCaps(capabilities);const signal=Object.prototype.hasOwnProperty.call(options,'signal')?options.signal:undefined;if(signal!==undefined&&(typeof signal!=='object'||typeof signal.aborted!=='boolean'))fail('INVALID_OPTIONS','invalid signal');const data={};for(const k of Object.getOwnPropertyNames(options))if(k!=='signal'&&k!=='onChunk')data[k]=options[k];const o=opts(data);if(typeof path!=='string'||!path||path.includes('\0')||path.length>o.maxPathLength)fail('INVALID_PATH','invalid path');const start=capabilities.now();aborted(signal);let t;try{t=await targetFor(path,o,capabilities)}catch(e){if(e instanceof FileContentReaderError)throw e;throw mapError(e)}if(t.kind==='symlink'){yield frozen({kind:'symlink',path:t.path,offset:o.offset,requestedBytes:o.length??0,actualBytes:0,eof:false,consistency:'best-effort'});return}const before=await statSafe(capabilities,t.path);let h=null;try{h=await capabilities.open(t.path);const lim=Math.min(o.length??o.maxBytes,o.maxBytes);let total=0,pos=o.offset,work=0,nch=0;while(total<lim){aborted(signal);if(++work>o.maxWorkUnits)fail('WORK_BUDGET_EXCEEDED','work budget exceeded');if(o.deadlineMs!==null&&capabilities.now()-start>=o.deadlineMs)fail('DEADLINE_EXCEEDED','deadline exceeded');if(nch>=o.maxChunks)fail('LIMIT_EXCEEDED','maximum chunks exceeded');const size=Math.min(o.chunkSize,lim-total),buf=new Uint8Array(size),r=await capabilities.read(h,buf,0,size,pos),n=Number(r?.bytesRead);if(!Number.isSafeInteger(n)||n<0||n>size)fail('CAPABILITY_FAILURE','invalid bytesRead');if(n===0)break;const raw=buf.subarray(0,n),payload=o.mode==='text'?decodeUtf8(raw,{...o,bom:total===0?o.bom:'preserve'}):new Uint8Array(raw);yield frozen({path:t.path,offset:pos,actualBytes:n,chunkIndex:nch,eof:n<size,data:payload});total+=n;pos+=n;nch++;if(n<size)break}const after=await statSafe(capabilities,t.path);if(o.consistency==='strict'&&before&&after&&(before.size!==after.size||before.mtimeMs!==after.mtimeMs||before.ino!==after.ino||before.dev!==after.dev))fail('CHANGED_DURING_READ','file changed during read')}finally{if(h)try{await capabilities.close(h)}catch{}}}
+const FORMAT = 'FCR1';
+const HARD_MAX_PATH = 32 * 1024;
+const HARD_MAX_BYTES = 64 * 1024 * 1024;
+const HARD_MAX_CHUNK = 4 * 1024 * 1024;
+const HARD_MAX_WORK = 10_000_000;
+const HARD_MAX_DIAGNOSTICS = 2048;
+
+const DEFAULTS = Object.freeze({
+  mode: 'binary', offset: 0, length: null, chunkSize: 64 * 1024,
+  maxBytes: 8 * 1024 * 1024, maxChunks: 100_000, maxWorkUnits: 1_000_000,
+  maxPathLength: HARD_MAX_PATH, maxDiagnosticBytes: HARD_MAX_DIAGNOSTICS,
+  deadlineMs: null, root: null, symlinkPolicy: 'reject', bom: 'strip',
+  newline: 'preserve', consistency: 'strict', partial: 'throw',
+});
+
+export class FileContentReaderError extends Error {
+  constructor(code, message, details = {}) {
+    super(message);
+    this.name = 'FileContentReaderError';
+    this.code = code;
+    this.details = Object.freeze({ ...details });
+    Object.freeze(this);
+  }
+}
+
+const fail = (code, message, details = {}) => {
+  throw new FileContentReaderError(code, message, details);
+};
+
+function boundedMessage(error, maxBytes) {
+  const message = typeof error?.message === 'string' ? error.message : '';
+  return message.slice(0, maxBytes);
+}
+
+function assertContainer(value, label) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) fail('INVALID_OPTIONS', `${label} must be an object`);
+  for (const key of Object.getOwnPropertyNames(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', `${label}.${key} is accessor-backed`);
+  }
+}
+
+function validatePlain(value, label, seen = new Set(), depth = 0) {
+  if (depth > 12) fail('INVALID_OPTIONS', `${label} exceeds validation depth`);
+  if (value === null) return;
+  const type = typeof value;
+  if (['function', 'symbol', 'bigint', 'undefined'].includes(type)) fail('INVALID_OPTIONS', `${label} contains unsupported data`);
+  if (type === 'number' && !Number.isFinite(value)) fail('INVALID_OPTIONS', `${label} contains non-finite number`);
+  if (type !== 'object') return;
+  if (seen.has(value)) fail('CIRCULAR_INPUT', `${label} is circular`);
+  const proto = Object.getPrototypeOf(value);
+  if (!Array.isArray(value) && proto !== Object.prototype && proto !== null) fail('INVALID_OPTIONS', `${label} must be plain data`);
+  seen.add(value);
+  for (const key of Object.getOwnPropertyNames(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !('value' in descriptor)) fail('ACCESSOR_INPUT', `${label}.${key} is accessor-backed`);
+    validatePlain(descriptor.value, `${label}.${key}`, seen, depth + 1);
+  }
+  seen.delete(value);
+}
+
+function normalizeOptions(input = {}) {
+  assertContainer(input, 'options');
+  validatePlain(input, 'options');
+  const options = Object.freeze({ ...DEFAULTS, ...input });
+  if (!['binary', 'text'].includes(options.mode)) fail('INVALID_OPTIONS', 'mode must be binary or text');
+  if (!Number.isSafeInteger(options.offset) || options.offset < 0) fail('INVALID_OPTIONS', 'offset must be a non-negative safe integer');
+  if (options.length !== null && (!Number.isSafeInteger(options.length) || options.length < 0)) fail('INVALID_OPTIONS', 'length must be a non-negative safe integer or null');
+  if (options.length !== null && options.offset > Number.MAX_SAFE_INTEGER - options.length) fail('OFFSET_LIMIT_EXCEEDED', 'offset + length exceeds safe integer range');
+  if (!Number.isSafeInteger(options.chunkSize) || options.chunkSize < 1 || options.chunkSize > HARD_MAX_CHUNK) fail('INVALID_OPTIONS', 'chunkSize is invalid');
+  if (!Number.isSafeInteger(options.maxBytes) || options.maxBytes < 0 || options.maxBytes > HARD_MAX_BYTES) fail('INVALID_OPTIONS', 'maxBytes is invalid');
+  if (!Number.isSafeInteger(options.maxChunks) || options.maxChunks < 1) fail('INVALID_OPTIONS', 'maxChunks is invalid');
+  if (!Number.isSafeInteger(options.maxWorkUnits) || options.maxWorkUnits < 1 || options.maxWorkUnits > HARD_MAX_WORK) fail('INVALID_OPTIONS', 'maxWorkUnits is invalid');
+  if (!Number.isSafeInteger(options.maxPathLength) || options.maxPathLength < 1 || options.maxPathLength > HARD_MAX_PATH) fail('INVALID_OPTIONS', 'maxPathLength is invalid');
+  if (!Number.isSafeInteger(options.maxDiagnosticBytes) || options.maxDiagnosticBytes < 1 || options.maxDiagnosticBytes > HARD_MAX_DIAGNOSTICS) fail('INVALID_OPTIONS', 'maxDiagnosticBytes is invalid');
+  if (options.deadlineMs !== null && (!Number.isSafeInteger(options.deadlineMs) || options.deadlineMs < 1)) fail('INVALID_OPTIONS', 'deadlineMs is invalid');
+  if (options.root !== null && (typeof options.root !== 'string' || options.root.length === 0 || options.root.includes('\0') || options.root.length > options.maxPathLength)) fail('INVALID_OPTIONS', 'root is invalid');
+  if (!['reject', 'report', 'follow-contained'].includes(options.symlinkPolicy)) fail('INVALID_OPTIONS', 'symlinkPolicy is invalid');
+  if (!['strip', 'preserve', 'reject'].includes(options.bom)) fail('INVALID_OPTIONS', 'bom policy is invalid');
+  if (!['preserve', 'lf'].includes(options.newline)) fail('INVALID_OPTIONS', 'newline policy is invalid');
+  if (!['strict', 'best-effort'].includes(options.consistency)) fail('INVALID_OPTIONS', 'consistency policy is invalid');
+  if (!['throw', 'return'].includes(options.partial)) fail('INVALID_OPTIONS', 'partial policy is invalid');
+  if (options.partial === 'return' && options.mode === 'text') {
+    // Still bounded, but errors return a compact snapshot instead of content.
+  }
+  return options;
+}
+
+function assertCapabilities(capabilities) {
+  assertContainer(capabilities, 'capabilities');
+  for (const key of Object.getOwnPropertyNames(capabilities)) {
+    const descriptor = Object.getOwnPropertyDescriptor(capabilities, key);
+    if (typeof descriptor.value !== 'function') fail('CAPABILITY_FAILURE', `${key} capability must be a function`);
+  }
+  for (const key of ['open', 'read', 'close', 'lstat', 'now']) {
+    if (typeof capabilities[key] !== 'function') fail('CAPABILITY_FAILURE', `${key} capability is required`);
+  }
+}
+
+const defaultCapabilities = Object.freeze({
+  open: async (path) => nativeOpen(path, 'r'),
+  read: async (handle, buffer, offset, length, position) => handle.read(buffer, offset, length, position),
+  close: async (handle) => handle.close(),
+  lstat: nativeLstat,
+  stat: nativeStat,
+  realpath: nativeRealpath,
+  contain: async (target, root) => {
+    try { resolveContained(root, target, { separatorNormalization: true, normalizeDotSegments: true }); return true; } catch { return false; }
+  },
+  now: () => Date.now(),
+});
+
+function normalizePath(path, options) {
+  if (typeof path !== 'string' || path.length === 0) fail('INVALID_PATH', 'path must be a non-empty string');
+  if (path.includes('\0')) fail('INVALID_PATH', 'path contains NUL');
+  if (path.length > options.maxPathLength) fail('PATH_LIMIT_EXCEEDED', 'path exceeds maximum length');
+  return path;
+}
+
+function isAbsolutePath(path) {
+  return path.startsWith('/') || path.startsWith('\\\\') || /^[A-Za-z]:[\\/]/.test(path);
+}
+
+async function resolveInputPath(path, options) {
+  if (options.root !== null) {
+    try {
+      return resolveContained(options.root, path, { separatorNormalization: true, normalizeDotSegments: true });
+    } catch {
+      fail('ROOT_ESCAPE', 'path escapes declared root');
+    }
+  }
+  if (!isAbsolutePath(path)) fail('INVALID_PATH', 'relative path requires an explicit root');
+  return path;
+}
+
+function statSnapshot(stat) {
+  if (!stat || typeof stat !== 'object') return null;
+  const snapshot = {
+    size: Number.isSafeInteger(stat.size) && stat.size >= 0 ? stat.size : null,
+    mtimeMs: Number.isFinite(stat.mtimeMs) ? stat.mtimeMs : null,
+    ino: Number.isSafeInteger(stat.ino) && stat.ino >= 0 ? stat.ino : null,
+    dev: Number.isSafeInteger(stat.dev) && stat.dev >= 0 ? stat.dev : null,
+  };
+  return Object.freeze(snapshot);
+}
+
+function sameSnapshot(before, after) {
+  if (!before || !after) return null;
+  return before.size === after.size && before.mtimeMs === after.mtimeMs && before.ino === after.ino && before.dev === after.dev;
+}
+
+function decodeText(bytes, options) {
+  let value = bytes;
+  const hasBom = value.length >= 3 && value[0] === 0xef && value[1] === 0xbb && value[2] === 0xbf;
+  if (hasBom && options.bom === 'reject') fail('DECODE_ERROR', 'UTF-8 BOM rejected');
+  if (hasBom) value = value.subarray(3);
+  let text;
+  try { text = new TextDecoder('utf-8', { fatal: true }).decode(value); } catch { fail('DECODE_ERROR', 'invalid UTF-8 sequence'); }
+  if (hasBom && options.bom === 'preserve') text = `\uFEFF${text}`;
+  if (options.newline === 'lf') text = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+  return text;
+}
+
+function throwIfAborted(signal) { if (signal?.aborted) fail('ABORTED', 'read aborted'); }
+
+function throwIfDeadline(start, options, now) {
+  if (options.deadlineMs !== null && now() - start >= options.deadlineMs) fail('DEADLINE_EXCEEDED', 'deadline exceeded');
+}
+
+function createWorkBudget(options, start, now, signal) {
+  let units = 0;
+  return {
+    spend(count = 1) {
+      units += count;
+      if (units > options.maxWorkUnits) fail('WORK_BUDGET_EXCEEDED', 'work budget exceeded');
+      throwIfAborted(signal);
+      throwIfDeadline(start, options, now);
+    },
+    value() { return units; },
+  };
+}
+
+async function identifyTarget(path, options, capabilities, work) {
+  const resolved = await resolveInputPath(path, options);
+  work.spend();
+  let stat;
+  try { stat = await capabilities.lstat(resolved); } catch (error) { throw mapNativeError(error); }
+  if (!stat || typeof stat.isSymbolicLink !== 'function') fail('CAPABILITY_FAILURE', 'malformed lstat result');
+  const symlink = stat.isSymbolicLink();
+  if (!symlink) return Object.freeze({ path: resolved, kind: 'file' });
+  if (options.symlinkPolicy === 'reject') fail('SYMLINK_REJECTED', 'symlink reading is disabled');
+  if (options.symlinkPolicy === 'report') return Object.freeze({ path: resolved, kind: 'symlink' });
+  if (typeof capabilities.realpath !== 'function' || typeof capabilities.contain !== 'function' || options.root === null) fail('CAPABILITY_FAILURE', 'follow-contained requires root, realpath and containment capabilities');
+  work.spend();
+  const target = await capabilities.realpath(resolved);
+  work.spend();
+  let contained = false;
+  try { contained = await capabilities.contain(target, options.root); } catch { contained = false; }
+  if (!contained) fail('ROOT_ESCAPE', 'symlink target escapes declared root');
+  return Object.freeze({ path: target, kind: 'file' });
+}
+
+function mapNativeError(error) {
+  if (error instanceof FileContentReaderError) return error;
+  if (error?.code === 'ENOENT') return new FileContentReaderError('NOT_FOUND', 'file not found');
+  if (error?.code === 'EACCES' || error?.code === 'EPERM') return new FileContentReaderError('PERMISSION_DENIED', 'permission denied');
+  return new FileContentReaderError('READ_FAILURE', 'filesystem read failed');
+}
+
+async function safeStat(capabilities, path, work) {
+  if (typeof capabilities.stat !== 'function') return null;
+  work.spend();
+  try { return statSnapshot(await capabilities.stat(path)); } catch { return null; }
+}
+
+async function closeOwnedHandle(handle, capabilities, primaryError, options) {
+  if (!handle) return primaryError;
+  try {
+    await capabilities.close(handle);
+  } catch (error) {
+    const cleanup = new FileContentReaderError('CLOSE_FAILURE', 'file handle cleanup failed', { secondary: boundedMessage(error, options.maxDiagnosticBytes) });
+    if (primaryError) return new FileContentReaderError(primaryError.code, primaryError.message, { ...primaryError.details, cleanup: { code: cleanup.code, message: cleanup.message } });
+    return cleanup;
+  }
+  return primaryError;
+}
+
+async function readCollected(path, options, capabilities, signal, start) {
+  throwIfAborted(signal);
+  const work = createWorkBudget(options, start, capabilities.now, signal);
+  const target = await identifyTarget(path, options, capabilities, work);
+  if (target.kind === 'symlink') return Object.freeze({ format: FORMAT, kind: 'symlink', path: target.path, offset: options.offset, requestedBytes: options.length ?? 0, actualBytes: 0, eof: false, consistency: 'best-effort' });
+  if (options.length === 0) return Object.freeze({ format: FORMAT, kind: 'file', path: target.path, offset: options.offset, requestedBytes: 0, actualBytes: 0, eof: false, consistency: 'strict', ...(options.mode === 'text' ? { text: '' } : { data: new Uint8Array(0) }) });
+
+  const before = await safeStat(capabilities, target.path, work);
+  let handle = null;
+  let primaryError = null;
+  try {
+    work.spend();
+    handle = await capabilities.open(target.path, 'r');
+    if (!handle || typeof handle !== 'object') fail('CAPABILITY_FAILURE', 'open returned an invalid handle');
+    const requestedBytes = Math.min(options.length ?? options.maxBytes, options.maxBytes);
+    const chunks = [];
+    let actualBytes = 0;
+    let position = options.offset;
+    let chunkIndex = 0;
+
+    while (actualBytes < requestedBytes) {
+      work.spend();
+      const size = Math.min(options.chunkSize, requestedBytes - actualBytes);
+      const buffer = new Uint8Array(size);
+      let readResult;
+      try { readResult = await capabilities.read(handle, buffer, 0, size, position); } catch (error) { throw mapNativeError(error); }
+      work.spend();
+      const bytesRead = Number(readResult?.bytesRead);
+      if (!Number.isSafeInteger(bytesRead) || bytesRead < 0 || bytesRead > size) fail('CAPABILITY_FAILURE', 'read returned invalid bytesRead');
+      if (bytesRead === 0) break;
+      chunks.push(buffer.subarray(0, bytesRead));
+      actualBytes += bytesRead;
+      position += bytesRead;
+      chunkIndex += 1;
+      if (chunkIndex > options.maxChunks) fail('LIMIT_EXCEEDED', 'maximum chunk count exceeded');
+      if (bytesRead < size) break;
+    }
+
+    work.spend();
+    const bytes = new Uint8Array(actualBytes);
+    let cursor = 0;
+    for (const chunk of chunks) { bytes.set(chunk, cursor); cursor += chunk.length; }
+    if (options.mode === 'text') work.spend();
+    const after = await safeStat(capabilities, target.path, work);
+    let consistency = 'best-effort';
+    const changed = sameSnapshot(before, after);
+    if (options.consistency === 'strict' && changed === false) fail('CHANGED_DURING_READ', 'file changed during read');
+    if (changed === true) consistency = 'strict';
+
+    const base = Object.freeze({ format: FORMAT, kind: 'file', path: target.path, offset: options.offset, requestedBytes, actualBytes, eof: actualBytes < requestedBytes, consistency });
+    return Object.freeze(options.mode === 'text' ? { ...base, text: decodeText(bytes, options) } : { ...base, data: bytes });
+  } catch (error) {
+    primaryError = error instanceof FileContentReaderError ? error : mapNativeError(error);
+    if (options.partial === 'return') {
+      primaryError = Object.freeze(new FileContentReaderError(primaryError.code, primaryError.message.slice(0, options.maxDiagnosticBytes), primaryError.details));
+    }
+    if (options.partial === 'return') {
+      return Object.freeze({ format: FORMAT, ok: false, error: Object.freeze({ code: primaryError.code, message: primaryError.message }) });
+    }
+    throw primaryError;
+  } finally {
+    const cleanupError = await closeOwnedHandle(handle, capabilities, primaryError, options);
+    if (cleanupError && cleanupError !== primaryError) throw cleanupError;
+  }
+}
+
+async function* readStream(path, options, capabilities, signal, start) {
+  throwIfAborted(signal);
+  const work = createWorkBudget(options, start, capabilities.now, signal);
+  const target = await identifyTarget(path, options, capabilities, work);
+  if (target.kind === 'symlink') {
+    work.spend();
+    yield Object.freeze({ format: FORMAT, kind: 'symlink', path: target.path, offset: options.offset, requestedBytes: options.length ?? 0, actualBytes: 0, eof: false, consistency: 'best-effort' });
+    return;
+  }
+
+  const before = await safeStat(capabilities, target.path, work);
+  let handle = null;
+  let primaryError = null;
+  try {
+    work.spend();
+    handle = await capabilities.open(target.path, 'r');
+    if (!handle || typeof handle !== 'object') fail('CAPABILITY_FAILURE', 'open returned an invalid handle');
+    const requestedBytes = Math.min(options.length ?? options.maxBytes, options.maxBytes);
+    const decoder = options.mode === 'text' ? new TextDecoder('utf-8', { fatal: true }) : null;
+    let actualBytes = 0;
+    let position = options.offset;
+    let chunkIndex = 0;
+    let firstChunk = true;
+
+    while (actualBytes < requestedBytes) {
+      work.spend();
+      const size = Math.min(options.chunkSize, requestedBytes - actualBytes);
+      const buffer = new Uint8Array(size);
+      let readResult;
+      try { readResult = await capabilities.read(handle, buffer, 0, size, position); } catch (error) { throw mapNativeError(error); }
+      work.spend();
+      const bytesRead = Number(readResult?.bytesRead);
+      if (!Number.isSafeInteger(bytesRead) || bytesRead < 0 || bytesRead > size) fail('CAPABILITY_FAILURE', 'read returned invalid bytesRead');
+      if (bytesRead === 0) break;
+      const raw = buffer.subarray(0, bytesRead);
+      work.spend();
+      let payload;
+      if (decoder) {
+        let bytesForDecode = raw;
+        if (firstChunk && bytesForDecode.length >= 3 && bytesForDecode[0] === 0xef && bytesForDecode[1] === 0xbb && bytesForDecode[2] === 0xbf) {
+          if (options.bom === 'reject') fail('DECODE_ERROR', 'UTF-8 BOM rejected');
+          if (options.bom === 'strip') bytesForDecode = bytesForDecode.subarray(3);
+        }
+        payload = decoder.decode(bytesForDecode, { stream: true });
+      } else {
+        payload = new Uint8Array(raw);
+      }
+      work.spend();
+      yield Object.freeze({ format: FORMAT, kind: 'file', path: target.path, offset: position, actualBytes: bytesRead, chunkIndex, eof: bytesRead < size, consistency: 'best-effort', data: payload });
+      actualBytes += bytesRead;
+      position += bytesRead;
+      chunkIndex += 1;
+      if (chunkIndex > options.maxChunks) fail('LIMIT_EXCEEDED', 'maximum chunk count exceeded');
+      firstChunk = false;
+      if (bytesRead < size) break;
+    }
+
+    if (decoder) {
+      work.spend();
+      const tail = decoder.decode();
+      if (tail.length > 0) { work.spend(); yield Object.freeze({ format: FORMAT, kind: 'file', path: target.path, offset: position, actualBytes: 0, chunkIndex, eof: true, consistency: 'best-effort', data: options.newline === 'lf' ? tail.replaceAll('\r\n', '\n').replaceAll('\r', '\n') : tail }); }
+    }
+
+    const after = await safeStat(capabilities, target.path, work);
+    const changed = sameSnapshot(before, after);
+    if (options.consistency === 'strict' && changed === false) fail('CHANGED_DURING_READ', 'file changed during read');
+  } catch (error) {
+    primaryError = error instanceof FileContentReaderError ? error : mapNativeError(error);
+    throw primaryError;
+  } finally {
+    const cleanupError = await closeOwnedHandle(handle, capabilities, primaryError, options);
+    if (cleanupError && cleanupError !== primaryError) throw cleanupError;
+  }
+}
+
+export async function readFileContent(path, options = {}, capabilities = defaultCapabilities) {
+  assertContainer(options, 'options');
+  assertCapabilities(capabilities);
+  const signal = options.signal;
+  if (signal !== undefined && (!signal || typeof signal !== 'object' || typeof signal.aborted !== 'boolean')) fail('INVALID_OPTIONS', 'signal is invalid');
+  const data = {};
+  for (const key of Object.getOwnPropertyNames(options)) if (key !== 'signal') data[key] = options[key];
+  const normalized = normalizeOptions(data);
+  const normalizedPath = normalizePath(path, normalized);
+  const start = capabilities.now();
+  return readCollected(normalizedPath, normalized, capabilities, signal, start);
+}
+
+export function readFileStream(path, options = {}, capabilities = defaultCapabilities) {
+  assertContainer(options, 'options');
+  assertCapabilities(capabilities);
+  const signal = options.signal;
+  if (signal !== undefined && (!signal || typeof signal !== 'object' || typeof signal.aborted !== 'boolean')) fail('INVALID_OPTIONS', 'signal is invalid');
+  const data = {};
+  for (const key of Object.getOwnPropertyNames(options)) if (key !== 'signal') data[key] = options[key];
+  const normalized = normalizeOptions(data);
+  const normalizedPath = normalizePath(path, normalized);
+  return readStream(normalizedPath, normalized, capabilities, signal, capabilities.now());
+}
+
+export const readFileChunks = readFileStream;
 export { defaultCapabilities };
+export const BOUNDED_FILE_CONTENT_READER_FORMAT = FORMAT;
