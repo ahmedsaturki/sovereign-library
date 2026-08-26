@@ -53,10 +53,10 @@ test('participant timeout is isolated and shutdown can continue', async () => {
 
 test('global deadline skips participants that cannot start in time', async () => {
   const c = caps();
-  const lifecycle = createApplicationLifecycle({ defaultTimeoutMs: 5, globalShutdownTimeoutMs: 10 }, c);
+  const lifecycle = createApplicationLifecycle({ globalShutdownTimeoutMs: 10, defaultTimeoutMs: 10 }, c);
   const called = [];
-  lifecycle.register({ id: 'one', timeoutMs: 100 }, { close: async () => { called.push('one'); c.advance(11); } });
-  lifecycle.register({ id: 'two', timeoutMs: 100 }, { close: async () => { called.push('two'); } });
+  lifecycle.register({ id: 'one', timeoutMs: 10 }, { close: async () => { called.push('one'); c.advance(11); } });
+  lifecycle.register({ id: 'two', timeoutMs: 10 }, { close: async () => { called.push('two'); } });
   const result = await lifecycle.shutdown();
   assert.deepEqual(called, ['one']);
   assert.equal(result.skippedCount, 1);
@@ -85,7 +85,8 @@ test('concurrent shutdown callers share the same transaction', async () => {
 });
 
 test('repeated shutdown after stopped is idempotent', async () => {
-  const lifecycle = createApplicationLifecycle();
+  const c = caps();
+  const lifecycle = createApplicationLifecycle({}, c);
   lifecycle.register({ id: 'x' }, { close: () => {} });
   const first = await lifecycle.shutdown();
   const second = await lifecycle.shutdown();
@@ -104,7 +105,7 @@ test('pre-aborted shutdown fails before participant invocation', async () => {
 });
 
 test('active cancellation stops admitting new participants', async () => {
-  const lifecycle = createApplicationLifecycle({ defaultTimeoutMs: 5, globalShutdownTimeoutMs: 100 }, caps());
+  const lifecycle = createApplicationLifecycle({ globalShutdownTimeoutMs: 100 }, caps());
   let release;
   const blocker = new Promise((resolve) => { release = resolve; });
   const calls = [];
