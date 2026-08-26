@@ -72,10 +72,17 @@ Earlier Artifact Release cubes remain pinned in repository history.
 
 ## Active milestone
 
-### NEXT-CUBE-SELECTION
+### PROCESS-SUPERVISOR-SPEC
 
-The Filesystem Recovery Journal / Operation Ledger v0.1 release is complete and frozen.
+**Process Supervisor / Managed Child Lifecycle v0.1** is the single active cube.
 
-The next cube has not yet been selected. The immediate task is to inspect the current standalone-product inventory, parked specs, roadmap, branches and PR history, and select the next non-duplicative standalone product supported by project evidence; then freeze its SPEC before implementation.
+Selection evidence:
+- `cubes/process` currently provides one-shot process execution only.
+- No released cube owns supervisor lifecycle state, bounded graceful-to-forced stop escalation, bounded restart budgets, stale-generation protection, or supervisor-level health observation.
+- Existing scheduler, timeout/deadline, concurrency, and process primitives can be composed without duplicating their scopes.
 
-No implementation of another cube starts concurrently.
+The frozen scope is recorded in `specs/process-supervisor-managed-child-lifecycle-v0.1.md`.
+
+The next gate is implementation, standalone documentation/example, package/test registration, then `TEST -> FIX -> VERIFY` across Ubuntu, Windows, and macOS-15-Intel.
+
+No second cube may start concurrently.
