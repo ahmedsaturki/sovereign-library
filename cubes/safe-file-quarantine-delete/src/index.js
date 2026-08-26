@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { join, basename } from 'node:path';
+import { join } from 'node:path';
 import { lstat as nativeLstat, stat as nativeStat, realpath as nativeRealpath, mkdir as nativeMkdir, rename as nativeRename, readFile as nativeReadFile, writeFile as nativeWriteFile, rm as nativeRm } from 'node:fs/promises';
 import { resolveContained } from '../../safe-path-resolver-containment-boundary/src/index.js';
 
@@ -77,8 +77,13 @@ function nativeError(error) {
   return new SafeFileQuarantineError('FILESYSTEM_FAILURE', 'filesystem operation failed');
 }
 
-function normalizePath(value, label) {
+function isAbsolutePath(value) {
+  return /^(?:[A-Za-z]:[\\/])|^(?:\\\\)|^\//.test(value);
+}
+
+function normalizePath(value, label, requireAbsolute = false) {
   if (typeof value !== 'string' || value.length === 0 || value.includes('\0') || value.length > MAX_PATH) fail('INVALID_INPUT', `${label} is invalid`);
+  if (requireAbsolute && !isAbsolutePath(value)) fail('INVALID_INPUT', `${label} must be absolute`);
   return value;
 }
 
@@ -97,16 +102,16 @@ function boundedMessage(error) {
 }
 
 function immutableReceipt(data) {
-  return freeze({ ...data, sourceObservation: freeze({ ...data.sourceObservation }) });
+  return freeze({ ...data, sourceObservation: data.sourceObservation ? freeze({ ...data.sourceObservation }) : undefined });
 }
 
-async function resolveApprovedPath(path, options, capabilities) {
+async function resolveApprovedPath(path, options) {
   const raw = normalizePath(path, 'path');
   if (options.root !== null) {
     try { return resolveContained(options.root, raw, { separatorNormalization: true, normalizeDotSegments: true }); }
     catch { fail('ROOT_ESCAPE', 'path escapes declared root'); }
   }
-  if (typeof capabilities.realpath !== 'function' && !(/^(?:[A-Za-z]:[\\/])|^(?:\\\\)|^\//.test(raw))) fail('INVALID_INPUT', 'relative path requires root');
+  if (!isAbsolutePath(raw)) fail('INVALID_INPUT', 'relative path requires root');
   return raw;
 }
 
@@ -124,15 +129,18 @@ async function readSourceObservation(path, capabilities) {
   if (!entry || typeof entry !== 'object' || typeof entry.isSymbolicLink !== 'function' || typeof entry.isDirectory !== 'function' || typeof entry.isFile !== 'function') fail('CAPABILITY_FAILURE', 'malformed lstat result');
   if (entry.isSymbolicLink()) fail('SYMLINK_REJECTED', 'symlink/reparse source is rejected');
   if (!entry.isFile() && !entry.isDirectory()) fail('UNSUPPORTED_TYPE', 'only files and directories are supported');
-  const stat = typeof capabilities.stat === 'function' ? await capabilities.stat(path).catch(() => null) : null;
+  let stat = null;
+  if (typeof capabilities.stat === 'function') {
+    try { stat = await capabilities.stat(path); } catch { stat = null; }
+  }
   return { kind: entry.isDirectory() ? 'directory' : 'file', size: Number.isSafeInteger(stat?.size) && stat.size >= 0 ? stat.size : null, mtimeMs: Number.isFinite(stat?.mtimeMs) ? stat.mtimeMs : null };
 }
 
 function validateOptions(options) {
   assertPlain(options, 'options');
   const normalized = Object.freeze({ root: null, quarantineRoot: null, ...options });
-  normalizePath(normalized.quarantineRoot, 'quarantineRoot');
-  if (normalized.root !== null) normalizePath(normalized.root, 'root');
+  normalizePath(normalized.quarantineRoot, 'quarantineRoot', true);
+  if (normalized.root !== null) normalizePath(normalized.root, 'root', true);
   return normalized;
 }
 
@@ -168,7 +176,7 @@ async function validateReceipt(receipt, capabilities) {
   assertPlain(receipt, 'receipt');
   for (const key of ['format', 'token', 'sourcePath', 'quarantineRoot', 'quarantinePath', 'payloadPath', 'kind', 'createdAt', 'status']) if (!(key in receipt)) fail('RECEIPT_INVALID', `receipt.${key} is missing`);
   if (receipt.format !== FORMAT || typeof receipt.token !== 'string' || receipt.token.length > MAX_TOKEN) fail('RECEIPT_INVALID', 'receipt identity is malformed');
-  normalizePath(receipt.sourcePath, 'receipt.sourcePath'); normalizePath(receipt.quarantineRoot, 'receipt.quarantineRoot'); normalizePath(receipt.quarantinePath, 'receipt.quarantinePath'); normalizePath(receipt.payloadPath, 'receipt.payloadPath');
+  normalizePath(receipt.sourcePath, 'receipt.sourcePath'); normalizePath(receipt.quarantineRoot, 'receipt.quarantineRoot', true); normalizePath(receipt.quarantinePath, 'receipt.quarantinePath', true); normalizePath(receipt.payloadPath, 'receipt.payloadPath', true);
   const manifestPath = join(receipt.quarantinePath, 'manifest.json');
   let raw;
   try { raw = await capabilities.readFile(manifestPath, 'utf8'); } catch (error) { throw nativeError(error); }
@@ -185,48 +193,43 @@ async function cleanupPath(path, capabilities) {
 export async function quarantineItem(path, options = {}, capabilities = defaultCapabilities) {
   assertCapabilities(capabilities);
   const o = validateOptions(options);
-  const sourcePath = await resolveApprovedPath(path, o, capabilities);
-  const quarantineRoot = normalizePath(o.quarantineRoot, 'quarantineRoot');
+  const sourcePath = await resolveApprovedPath(path, o);
+  const quarantineRoot = normalizePath(o.quarantineRoot, 'quarantineRoot', true);
   await ensureDisjointRoots(sourcePath, quarantineRoot, capabilities);
   const sourceObservation = await readSourceObservation(sourcePath, capabilities);
   try { await capabilities.mkdir(quarantineRoot, { recursive: true }); } catch (error) { throw nativeError(error); }
-  let recoveryAttempts = 0;
   const token = tokenValue(capabilities);
   const quarantinePath = join(quarantineRoot, `.sfq-${token}`);
   const payloadPath = join(quarantinePath, 'payload');
-  try { await capabilities.mkdir(quarantinePath); }
-  catch (error) { throw nativeError(error); }
+  try { await capabilities.mkdir(quarantinePath); } catch (error) { throw nativeError(error); }
   let moved = false;
   try {
     await capabilities.rename(sourcePath, payloadPath);
     moved = true;
     const receipt = immutableReceipt({ format: FORMAT, token, sourcePath, quarantineRoot, quarantinePath, payloadPath, kind: sourceObservation.kind, createdAt: capabilities.now(), status: 'quarantined', sourceObservation });
-    const manifest = buildManifest(receipt);
-    await capabilities.writeFile(join(quarantinePath, 'manifest.json'), manifest, 'utf8');
+    await capabilities.writeFile(join(quarantinePath, 'manifest.json'), buildManifest(receipt), 'utf8');
     return receipt;
   } catch (error) {
     const primary = error instanceof SafeFileQuarantineError ? error : nativeError(error);
     const recovery = {};
-    if (moved && recoveryAttempts < MAX_RECOVERY) {
-      recoveryAttempts += 1;
+    if (moved) {
       try { await capabilities.rename(payloadPath, sourcePath); recovery.rollback = 'restored'; }
       catch (rollbackError) { recovery.rollback = 'failed'; recovery.rollbackError = boundedMessage(rollbackError); }
     }
     const cleanupError = await cleanupPath(quarantinePath, capabilities);
-    throw new SafeFileQuarantineError(primary.code === 'CROSS_DEVICE_MOVE' ? 'CROSS_DEVICE_MOVE' : primary.code, primary.message, { ...primary.details, recovery, cleanupError: cleanupError ? cleanupError.code : null });
+    throw new SafeFileQuarantineError(primary.code, primary.message, { ...primary.details, recovery, cleanupError: cleanupError ? cleanupError.code : null });
   }
 }
 
 export async function restoreQuarantined(receipt, options = {}, capabilities = defaultCapabilities) {
   assertCapabilities(capabilities);
-  const o = validateOptions({ ...options, quarantineRoot: receipt?.quarantineRoot ?? options.quarantineRoot });
+  assertPlain(receipt, 'receipt');
   const verified = await validateReceipt(receipt, capabilities);
+  validateOptions({ ...options, quarantineRoot: receipt.quarantineRoot });
   if (receipt.status !== 'quarantined') fail('RECEIPT_INVALID', 'receipt is not restorable');
-  let destinationExists = false;
-  try { await capabilities.lstat(receipt.sourcePath); destinationExists = true; } catch (error) { if (error?.code !== 'ENOENT') throw nativeError(error); }
-  if (destinationExists) fail('DESTINATION_COLLISION', 'restore destination already exists');
-  try { await capabilities.rename(receipt.payloadPath, receipt.sourcePath); }
-  catch (error) { throw nativeError(error); }
+  try { await capabilities.lstat(receipt.sourcePath); fail('DESTINATION_COLLISION', 'restore destination already exists'); }
+  catch (error) { if (!(error instanceof SafeFileQuarantineError) && error?.code !== 'ENOENT') throw nativeError(error); if (error instanceof SafeFileQuarantineError) throw error; }
+  try { await capabilities.rename(receipt.payloadPath, receipt.sourcePath); } catch (error) { throw nativeError(error); }
   const cleanupManifest = await cleanupPath(verified.manifestPath, capabilities);
   const cleanupRoot = await cleanupPath(receipt.quarantinePath, capabilities);
   return immutableReceipt({ ...receipt, status: 'restored', cleanupPending: Boolean(cleanupManifest || cleanupRoot) });
@@ -234,8 +237,9 @@ export async function restoreQuarantined(receipt, options = {}, capabilities = d
 
 export async function purgeQuarantined(receipt, options = {}, capabilities = defaultCapabilities) {
   assertCapabilities(capabilities);
-  validateOptions({ ...options, quarantineRoot: receipt?.quarantineRoot ?? options.quarantineRoot });
+  assertPlain(receipt, 'receipt');
   const verified = await validateReceipt(receipt, capabilities);
+  validateOptions({ ...options, quarantineRoot: receipt.quarantineRoot });
   if (receipt.status !== 'quarantined') fail('RECEIPT_INVALID', 'receipt is not purgeable');
   const payloadCleanup = await cleanupPath(receipt.payloadPath, capabilities);
   if (payloadCleanup) throw new SafeFileQuarantineError(payloadCleanup.code, payloadCleanup.message, { stage: 'payload' });
