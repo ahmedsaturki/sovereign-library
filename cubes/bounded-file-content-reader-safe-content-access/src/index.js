@@ -106,8 +106,8 @@ function decodeText(bytes, o) {
   let input = bytes;
   const bom = input.length >= 3 && input[0] === 0xef && input[1] === 0xbb && input[2] === 0xbf;
   if (bom && o.bom === 'reject') fail('DECODE_ERROR', 'UTF-8 BOM rejected');
-  if (bom && o.bom === 'strip') input = input.subarray(3);
-  let text; try { text = new TextDecoder('utf-8', { fatal: true }).decode(input); } catch { fail('DECODE_ERROR', 'invalid UTF-8 sequence'); }
+  if (bom) input = input.subarray(3);
+  let text; try { text = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(input); } catch { fail('DECODE_ERROR', 'invalid UTF-8 sequence'); }
   if (bom && o.bom === 'preserve') text = `\uFEFF${text}`;
   if (o.newline === 'lf') text = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
   return text;
@@ -183,8 +183,8 @@ async function* stream(path, o, c, signal, start) {
   const work = budget(o, start, c.now, signal); check(signal, start, o, c.now); const target = await targetFor(path, o, c, work);
   if (target.kind === 'symlink') { work.spend(); yield freeze({ format: FORMAT, kind: 'symlink', path: target.path, offset: o.offset, requestedBytes: o.length ?? 0, actualBytes: 0, eof: false, consistency: 'best-effort' }); return; }
   const before = await safeStat(c, target.path, work); let handle = null; let primary = null;
-  const decoder = o.mode === 'text' ? new TextDecoder('utf-8', { fatal: true }) : null;
-  const textState = { newline: o.newline, pendingCR: false }; let firstPrefix = new Uint8Array(0); let first = true;
+  const decoder = o.mode === 'text' ? new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }) : null;
+  const textState = { newline: o.newline, pendingCR: false }; let firstPrefix = new Uint8Array(0); let first = true; let pendingBomText = '';
   try {
     work.spend(); handle = await c.open(target.path, 'r'); if (!handle || typeof handle !== 'object') fail('CAPABILITY_FAILURE', 'open returned invalid handle');
     const requestedBytes = Math.min(o.length ?? o.maxBytes, o.maxBytes); let actual = 0; let position = o.offset; let index = 0;
@@ -203,10 +203,11 @@ async function* stream(path, o, c, signal, start) {
           if (combined.length < 3) { firstPrefix = combined; actual += bytesRead; position += bytesRead; first = true; continue; }
           const hasBom = combined[0] === 0xef && combined[1] === 0xbb && combined[2] === 0xbf;
           if (hasBom && o.bom === 'reject') fail('DECODE_ERROR', 'UTF-8 BOM rejected');
-          input = hasBom && o.bom === 'strip' ? combined.subarray(3) : combined;
+          input = hasBom ? combined.subarray(3) : combined;
+          if (hasBom && o.bom === 'preserve') pendingBomText = '\uFEFF';
           firstPrefix = new Uint8Array(0); first = false;
           let decoded = decoder.decode(input, { stream: true });
-          if (hasBom && o.bom === 'preserve') decoded = `\uFEFF${decoded}`;
+          if (pendingBomText) { decoded = pendingBomText + decoded; pendingBomText = ''; }
           payload = normalizeStreamText(decoded, textState);
         } else {
           payload = normalizeStreamText(decoder.decode(raw, { stream: true }), textState);
@@ -218,7 +219,7 @@ async function* stream(path, o, c, signal, start) {
     if (decoder) {
       work.spend(); let tailInput = firstPrefix; let tail = '';
       if (first && tailInput.length > 0) { const hasBom = tailInput.length === 3 && tailInput[0] === 0xef && tailInput[1] === 0xbb && tailInput[2] === 0xbf; if (hasBom && o.bom === 'reject') fail('DECODE_ERROR', 'UTF-8 BOM rejected'); if (hasBom && o.bom !== 'preserve') tailInput = new Uint8Array(0); tail = hasBom && o.bom === 'preserve' ? '\uFEFF' : decoder.decode(tailInput, { stream: true }); }
-      tail += decoder.decode(); tail = normalizeStreamText(tail, textState, true); if (tail.length > 0) { work.spend(); yield freeze({ format: FORMAT, kind: 'file', path: target.path, offset: position, actualBytes: 0, chunkIndex: index, eof: true, consistency: 'best-effort', data: tail }); }
+      tail += decoder.decode(); if (pendingBomText) { tail = pendingBomText + tail; pendingBomText = ''; } tail = normalizeStreamText(tail, textState, true); if (tail.length > 0) { work.spend(); yield freeze({ format: FORMAT, kind: 'file', path: target.path, offset: position, actualBytes: 0, chunkIndex: index, eof: true, consistency: 'best-effort', data: tail }); }
     }
     const after = await safeStat(c, target.path, work); const comparison = compareSnapshots(before, after); if (o.consistency === 'strict' && comparison === false) fail('CHANGED_DURING_READ', 'file changed during read');
   } catch (error) { primary = error instanceof FileContentReaderError ? error : nativeError(error); }
