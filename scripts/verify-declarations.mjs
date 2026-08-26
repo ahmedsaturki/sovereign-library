@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { runNpm } from './npm-cli.mjs';
 
 const configPath = resolve('jsconfig.declarations.json');
 const outDir = resolve('.artifacts/declarations');
@@ -65,35 +65,35 @@ if (!Array.isArray(config.include) || config.include.length !== 2) throw new Err
 rmSync(outDir, { recursive: true, force: true });
 rmSync(toolsDir, { recursive: true, force: true });
 
-const onWindows = process.platform === 'win32';
-const npm = onWindows ? 'npm.cmd' : 'npm';
-const install = spawnSync(npm, [
-  'install',
-  '--no-save',
-  '--no-package-lock',
-  '--ignore-scripts',
-  '--prefix', toolsDir,
-  'typescript@7.0.2',
-  '@types/node@26.2.0',
-], { stdio: 'inherit', shell: onWindows });
-
-if (install.error) throw install.error;
-if (install.status !== 0) throw new Error(`declaration tool installation exited with status ${install.status}`);
-
-const tsc = resolve(toolsDir, 'node_modules/typescript/bin/tsc');
-if (!existsSync(tsc)) throw new Error(`missing pinned TypeScript compiler: ${tsc}`);
-if (!existsSync(typeRoots)) throw new Error(`missing pinned Node type roots: ${typeRoots}`);
-
-const result = spawnSync(process.execPath, [
-  tsc,
-  '--project', configPath,
-  '--typeRoots', typeRoots,
-  '--pretty', 'false',
-], { stdio: 'inherit', shell: false });
-
 try {
-  if (result.error) throw result.error;
-  if (result.status !== 0) throw new Error(`declaration compiler exited with status ${result.status}`);
+  const install = runNpm([
+    'install',
+    '--no-save',
+    '--no-package-lock',
+    '--ignore-scripts',
+    '--prefix', toolsDir,
+    'typescript@7.0.2',
+    '@types/node@26.2.0',
+  ]);
+
+  if (install.status !== 0) throw new Error(`declaration tool installation exited with status ${install.status}`);
+
+  const tsc = resolve(toolsDir, 'node_modules/typescript/bin/tsc');
+  if (!existsSync(tsc)) throw new Error(`missing pinned TypeScript compiler: ${tsc}`);
+  if (!existsSync(typeRoots)) throw new Error(`missing pinned Node type roots: ${typeRoots}`);
+
+  const result = runNpm([], { stdio: 'ignore' });
+  if (result.status !== 0) throw new Error(`unexpected npm helper state: ${result.status}`);
+
+  const compiler = await import('node:child_process').then(({ spawnSync }) => spawnSync(process.execPath, [
+    tsc,
+    '--project', configPath,
+    '--typeRoots', typeRoots,
+    '--pretty', 'false',
+  ], { stdio: 'inherit', shell: false }));
+
+  if (compiler.error) throw compiler.error;
+  if (compiler.status !== 0) throw new Error(`declaration compiler exited with status ${compiler.status}`);
 
   assertExactExports('Safe Path Resolver', expectedFiles.safePathResolver, expectedExports.safePathResolver);
   assertExactExports('Runtime Capability Inspector', expectedFiles.runtimeCapability, expectedExports.runtimeCapability);
