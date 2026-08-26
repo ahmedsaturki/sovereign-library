@@ -22,9 +22,11 @@ Windows, Linux, macOS, and WSL where the capability is supported.
 
 Final pre-merge **Run #768** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green.
 
+Post-merge **Run #772** also passed on Ubuntu, Windows, and macOS-15-Intel.
+
 The cube provides deterministic participant registration and ordering, explicit application lifecycle state, one global shutdown transaction, global deadline with bounded participant timeouts, concurrent/idempotent shutdown semantics, cancellation, stale/late completion isolation, bounded outcomes/diagnostics, immutable snapshots/errors, capability/data separation, native Node.js primitives, and zero runtime third-party dependencies.
 
-**FROZEN** at `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4` pending post-merge mainline verification.
+**FROZEN** at `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`.
 
 ## Previous recent releases
 
@@ -42,20 +44,20 @@ The cube provides deterministic participant registration and ordering, explicit 
 
 Earlier releases remain pinned in `ROADMAP.md`.
 
-## Active milestone
+## Phase 0 — Stabilization & Package Readiness
 
-**NEXT-CUBE-SELECTION**
+**Inventory & Classification** is complete and frozen after PR #105 / Run #773.
 
-Application Lifecycle / Graceful Shutdown Coordinator v0.1 is complete and frozen after PR #104 / Run #768. The next standalone cube is not yet selected.
+The current gate is **Apache License 2.0 adoption and repository distribution policy**. This establishes licensing for future distributable components but does not authorize npm publication by itself.
 
-The next gate is to inspect the current standalone-product inventory, parked specs, roadmap, branches, open PRs/issues, and existing implementations; choose one non-duplicative product supported by repository evidence; and freeze its SPEC before implementation.
+After licensing, Phase 0 proceeds through API boundary freeze, type/declaration strategy, package contract/tooling, reproducible packaging/security verification, and only then a small first public package batch.
+
+## License
+
+This repository is distributed under the **Apache License, Version 2.0**. See `LICENSE` and `NOTICE`.
 
 ## Repository shape
 
 ```text
 cubes/ contracts/ adapters/ examples/ specs/ tests/ docs/
 ```
-
-## License
-
-The project license will be selected before the first distributable public code release. Until then, treat this repository as source-available development material.

@@ -33,29 +33,37 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-STABILIZATION-INVENTORY-CLASSIFICATION**
+**PHASE-0-STABILIZATION-LICENSE-DECISION**
 
 ### Immediate next task
 
-Complete the machine-assisted Cube inventory and classification record, validate the public-package candidate set, and freeze the Phase 0 classification decision. Do not add npm tooling, license files, or public package metadata until this task is complete.
+Merge and verify the dedicated **Apache-2.0 license decision** and repository distribution-policy artifacts. Do not add npm tooling, public package metadata, or publish any package until this gate is complete.
 
-### Phase 0 scope
+### Completed Phase 0 gate: Inventory & Classification
 
-1. Inventory the current `cubes/` surface and existing contracts/docs/tests.
-2. Classify cubes as `RELEASED-FROZEN`, `IMPLEMENTATION-COMPLETE`, `INCUBATING`, `EXPERIMENTAL`, or `PRODUCT-INTERNAL`.
-3. Split the Artifact Release series into reusable foundations, generic governance candidates, and product-internal workflow components.
-4. Produce a candidate first public package batch without committing to publication.
-5. Freeze the candidate set before API/package readiness work begins.
+PR #105 is merged at `b0249a3e4d47665b9da0d76eb6cd1009abef6a8f` after **Run #773** passed on Ubuntu, Windows, and macOS-15-Intel. The inventory/classification decision is frozen in `docs/CUBE_INVENTORY_CLASSIFICATION_V0.1.md`.
 
-### Artifact Release classification
+Artifact Release is classified as a split surface:
 
-The Artifact series is intentionally **split**, not treated as one public package batch.
+- reusable foundation candidates: bundle, catalog, dependency graph, reference resolver;
+- generic governance candidates requiring public API review: admission gate, compliance evaluator, provenance/lineage, reconciliation, audit/drift, retention;
+- product/internal release workflow candidates: release plan, snapshot, approval, closure receipt, publication executor, publication confirmation.
 
-- Reusable foundation candidates: bundle, catalog, dependency graph, reference resolver.
-- Generic governance candidates requiring API review: admission gate, compliance evaluator, provenance/lineage, reconciliation, audit/drift, retention.
-- Product/internal release workflow candidates: release plan, snapshot, approval, closure receipt, publication executor, publication confirmation.
+### Phase 0 order after license
 
-The full decision record is `docs/CUBE_INVENTORY_CLASSIFICATION_V0.1.md`.
+1. Inventory & Classification — **DONE / FROZEN**
+2. License decision and repository licensing artifacts — **ACTIVE**
+3. Public API boundary freeze for selected foundational candidates
+4. Type/declaration strategy without a full rewrite
+5. Package contract/tooling (`package.json`, exports, changesets, API extraction)
+6. Reproducible `npm pack` and security verification
+7. First small public package batch
+
+## Legal decision
+
+The proposed and active licensing decision is **Apache License 2.0**. It is recorded in `docs/LEGAL_AND_DISTRIBUTION_POLICY_V0.1.md` and represented by `LICENSE` + `NOTICE` on the current license branch.
+
+License adoption authorizes licensing terms; it does **not** authorize public registry publication. Publication remains a separate gated task.
 
 ## Release sequence
 
@@ -78,7 +86,7 @@ Phase 0 readiness work is controlled by the same one-current-task discipline; it
 
 ## Definition of done
 
-A Phase 0 task is DONE only when the inventory/classification artifact is reproducible, reviewed in CI, and the candidate package set has an explicit non-public readiness decision.
+A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verified, documented, and merged to `main` with the control plane updated to the next single task.
 
 ## Anti-loop rules
 
