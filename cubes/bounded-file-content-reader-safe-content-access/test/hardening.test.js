@@ -66,10 +66,14 @@ test('strict consistency degrades to best-effort when metadata capability is una
 test('cleanup failure does not replace a primary read failure', async () => {
   const caps = capabilities(new Uint8Array([1]), {
     read: async () => { throw Object.assign(new Error('read failure'), { code: 'EIO' }); },
-    close: async () => { throw Object.assign(new Error('close failure'), { code: 'EIO' }); },
+    close: async () => { caps.state.closed += 1; throw Object.assign(new Error('close failure'), { code: 'EIO' }); },
   });
-  await expectCode(() => readFileContent('/tmp/file', {}, caps), 'READ_FAILURE');
-  assert.equal(caps.state.closed, 0);
+  await assert.rejects(
+    () => readFileContent('/tmp/file', {}, caps),
+    (error) => error.code === 'READ_FAILURE' && error.details?.cleanup?.code === 'CLOSE_FAILURE',
+  );
+  assert.equal(caps.state.opened, 1);
+  assert.equal(caps.state.closed, 1);
 });
 
 test('work budget stops streaming before an additional read', async () => {
