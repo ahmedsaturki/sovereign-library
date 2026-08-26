@@ -60,23 +60,27 @@ The frozen first batch candidates are:
 
 Only symbols explicitly listed in `docs/PUBLIC_API_BOUNDARY_V0.1.md` are public candidates; all other implementation symbols remain internal by default.
 
-### Active: Type / Declaration Strategy
+### Completed: Type / Declaration Strategy
 
-The governing artifact is `docs/DECLARATION_STRATEGY_V0.1.md`.
+Run #809 passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, declaration generation, exact pilot public-surface matching, browser smoke, and complete jobs green.
 
 The repository remains JavaScript-first. The declaration pilot uses JSDoc-driven declaration emission and a repository-level `jsconfig.declarations.json`. The first pilot candidates are Safe Path Resolver and Runtime Capability Inspector.
 
-The pilot is executed as a dedicated job inside `.github/workflows/verify.yml`, sharing the repository's verified CI entry point. No separate declaration workflow is maintained.
+The pilot is executed as a dedicated step inside `.github/workflows/verify.yml`, sharing the repository's verified CI entry point. No separate declaration workflow is maintained.
 
-The pilot must prove declaration emission and public-surface alignment before package tooling begins.
+### Active: Package Contract / Tooling
+
+The governing decision artifact will define scoped package naming, independent versioning, Node 24 compatibility, ESM/CJS policy, `exports` and types entry points, declaration placement, Apache-2.0 metadata, repository metadata, tarball file boundaries, and publication exclusions.
+
+Do not publish, reserve an npm organization, add a changeset baseline, or introduce API Extractor until the package contract gate itself is frozen and CI-verified.
 
 ### Phase 0 order after declaration strategy
 
 1. Inventory & Classification — **DONE / FROZEN**
 2. License decision and repository licensing artifacts — **DONE / FROZEN**
 3. Public API boundary freeze — **DONE / VERIFIED**
-4. Type/declaration strategy without a full rewrite — **ACTIVE**
-5. Package contract/tooling (`package.json`, exports, changesets, API extraction)
+4. Type/declaration strategy without a full rewrite — **DONE / VERIFIED**
+5. Package contract/tooling — **ACTIVE**
 6. Reproducible `npm pack` and security verification
 7. First small public package batch
 
