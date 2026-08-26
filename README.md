@@ -18,15 +18,17 @@ Windows, Linux, macOS, and WSL where the capability is supported.
 
 ## Latest release
 
-**Process Supervisor / Managed Child Lifecycle v0.1** — PR #102, merge commit `881435f121d09099b9b263fa906f0968c42e4539`.
+**Application Lifecycle / Graceful Shutdown Coordinator v0.1** — PR #104, merge commit `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`.
 
-Final pre-merge **Run #760** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green.
+Final pre-merge **Run #768** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green.
 
-The cube provides one-child supervisor ownership, explicit lifecycle state, graceful-to-forced stop escalation, bounded restart policy, stale-generation protection, read-only health inspection, bounded output/diagnostics, cancellation/deadline handling, immutable snapshots/errors, capability/data separation, native Node.js primitives, and zero runtime third-party dependencies.
+The cube provides deterministic participant registration and ordering, explicit application lifecycle state, one global shutdown transaction, global deadline with bounded participant timeouts, concurrent/idempotent shutdown semantics, cancellation, stale/late completion isolation, bounded outcomes/diagnostics, immutable snapshots/errors, capability/data separation, native Node.js primitives, and zero runtime third-party dependencies.
 
-**FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
+**FROZEN** at `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4` pending post-merge mainline verification.
 
 ## Previous recent releases
+
+**Process Supervisor / Managed Child Lifecycle v0.1** — PR #102 — `881435f121d09099b9b263fa906f0968c42e4539`
 
 **Filesystem Recovery Journal / Operation Ledger v0.1** — PR #101 — `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`
 
@@ -44,7 +46,7 @@ Earlier releases remain pinned in `ROADMAP.md`.
 
 **NEXT-CUBE-SELECTION**
 
-Process Supervisor / Managed Child Lifecycle v0.1 is complete and frozen. The next standalone cube is not yet selected.
+Application Lifecycle / Graceful Shutdown Coordinator v0.1 is complete and frozen after PR #104 / Run #768. The next standalone cube is not yet selected.
 
 The next gate is to inspect the current standalone-product inventory, parked specs, roadmap, branches, open PRs/issues, and existing implementations; choose one non-duplicative product supported by repository evidence; and freeze its SPEC before implementation.
 
