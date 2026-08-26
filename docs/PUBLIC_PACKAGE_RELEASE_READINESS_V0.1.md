@@ -24,8 +24,8 @@ This is a release-readiness record. It does **not** authorize npm publication.
 
 - Baseline verification: **Verify Run #835** passed Ubuntu, Windows, and macOS-15-Intel.
 - Publication-guard extension: **Verify Run #837** added and exercised the explicit publication guard.
-- Final cross-platform verification: **Verify Run #840** at commit `b41c224de8538ac3df162c9fb62582373ee95a6e` completed with **SUCCESS** on Ubuntu, Windows, and macOS-15-Intel.
-- Run #840 passed the complete matrix on all three platforms: syntax, bounded contract/integration tests, declaration pilot, package tooling, reproducible packaging, security boundaries, publication guard, and real browser smoke.
+- Final pre-authorization verification: **Verify Run #845** at commit `f14bbd9229fcda23f00602cfc9288881c61e213e` completed with **SUCCESS** on Ubuntu, Windows, and macOS-15-Intel.
+- Run #845 covered the complete matrix on all three platforms: syntax, bounded contract/integration tests, declaration pilot, package tooling, reproducible packaging, security boundaries, publication guard, and real browser smoke.
 
 ## Publication guard invariants
 
