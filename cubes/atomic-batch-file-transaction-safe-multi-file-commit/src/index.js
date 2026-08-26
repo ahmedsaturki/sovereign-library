@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, rename, rm, stat, unlink, writeFile, lstat } from 'node:fs/promises';
-import { join, relative, resolve, sep } from 'node:path';
+import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 const VERSION = 1;
 const MAX_SERIALIZED = 128 * 1024;
@@ -78,19 +78,15 @@ function normalizeOptions(options = {}) {
 }
 
 function normalizeRoot(root) {
-  if (typeof root !== 'string' || root.length === 0 || root.length > MAX_PATH) throw new AtomicBatchError('INVALID_ROOT', 'invalid root');
-  const absolute = resolve(root);
-  if (absolute !== root && !root.endsWith(sep)) {
-    // resolve is authoritative; only reject obviously relative roots.
-  }
-  return absolute;
+  if (typeof root !== 'string' || root.length === 0 || root.length > MAX_PATH || !isAbsolute(root)) throw new AtomicBatchError('INVALID_ROOT', 'root must be an absolute path');
+  return resolve(root);
 }
 
 function safeRelative(root, input) {
   if (typeof input !== 'string' || input.length === 0 || input.length > MAX_PATH) throw new AtomicBatchError('INVALID_PATH', 'invalid destination path');
   const candidate = resolve(root, input);
   const rel = relative(root, candidate);
-  if (rel === '..' || rel.startsWith(`..${sep}`) || rel.includes(`..${sep}..`)) throw new AtomicBatchError('ROOT_ESCAPE', 'destination escapes transaction root');
+  if (rel === '..' || rel.startsWith(`..${sep}`)) throw new AtomicBatchError('ROOT_ESCAPE', 'destination escapes transaction root');
   if (candidate === root) throw new AtomicBatchError('INVALID_PATH', 'destination must be a file path');
   return { absolute: candidate, relative: rel.split(sep).join('/') };
 }
@@ -105,7 +101,7 @@ function operationBytes(operation) {
 }
 
 function buildCapabilitySet(capabilities = {}) {
-  const names = ['lstat', 'stat', 'mkdir', 'readFile', 'writeFile', 'rename', 'unlink', 'rm', 'mkdtemp', 'clock', 'identity'];
+  const names = ['lstat', 'stat', 'mkdir', 'readFile', 'writeFile', 'rename', 'unlink', 'rm', 'mkdtemp', 'clock', 'identity', 'atomicityProof'];
   const out = {};
   for (const name of names) if (capabilities[name] !== undefined && typeof capabilities[name] !== 'function') throw new AtomicBatchError('INVALID_CAPABILITY', `${name} must be a function`);
   out.lstat = capabilities.lstat ?? lstat;
@@ -119,6 +115,7 @@ function buildCapabilitySet(capabilities = {}) {
   out.mkdtemp = capabilities.mkdtemp ?? mkdtemp;
   out.clock = capabilities.clock ?? (() => Date.now());
   out.identity = capabilities.identity ?? (() => cryptoRandomId());
+  out.atomicityProof = capabilities.atomicityProof ?? (() => false);
   return out;
 }
 
@@ -135,6 +132,10 @@ export function planBatch(input, capabilities = {}, options = {}) {
   rejectAccessors(input);
   if (!isPlainObject(input)) throw new AtomicBatchError('INVALID_INPUT', 'transaction input must be plain data');
   const root = normalizeRoot(input.root);
+  const capability = buildCapabilitySet(capabilities);
+  if (opts.atomicity === 'strong-local' && capability.atomicityProof({ root, operations: input.operations ?? [] }) !== true) {
+    throw new AtomicBatchError('ATOMICITY_UNPROVEN', 'strong-local atomicity requires explicit capability proof');
+  }
   if (!Array.isArray(input.operations) || input.operations.length > opts.maxOperations) throw new AtomicBatchError('LIMIT_EXCEEDED', 'too many operations');
   const seen = new Set();
   const operations = [];
@@ -157,7 +158,6 @@ export function planBatch(input, capabilities = {}, options = {}) {
     });
   }
   operations.sort((a, b) => a.destination.localeCompare(b.destination) || a.type.localeCompare(b.type) || a.id.localeCompare(b.id));
-  const capability = buildCapabilitySet(capabilities);
   const guaranteeLevel = opts.atomicity === 'strong-local' ? 'strong-local' : 'best-effort';
   return freezeCopy({
     format: ABT_PREFIX,
@@ -182,7 +182,6 @@ export async function commitBatch(plan, capabilities = {}, options = {}) {
   const workspace = await cap.mkdtemp(join(plan.root, `.abt-${plan.transactionId}-`));
   const backups = [];
   const applied = [];
-  const created = [];
   const startedAt = cap.clock();
   try {
     for (const op of plan.operations) {
@@ -199,12 +198,7 @@ export async function commitBatch(plan, capabilities = {}, options = {}) {
         await cap.rename(op.absolute, backup);
         backups.push({ op, backup });
       }
-      if (op.type === 'delete') {
-        created.push({ op, staged: null });
-      } else {
-        await cap.rename(staged, op.absolute);
-        created.push({ op, staged: null });
-      }
+      if (op.type !== 'delete') await cap.rename(staged, op.absolute);
       applied.push(op.id);
     }
     await cap.rm(workspace, { recursive: true, force: true });
@@ -218,7 +212,7 @@ export async function commitBatch(plan, capabilities = {}, options = {}) {
       startedAt,
       completedAt: cap.clock(),
       applied,
-      rollback: { available: backups.length > 0, backups: backups.map(({ op }) => op.id) },
+      rollback: { available: false, reason: 'cleanup_complete', backups: [] },
       integrity: digest({ transactionId: plan.transactionId, state: 'committed', applied }),
     });
   } catch (error) {
@@ -262,9 +256,8 @@ export function parseReceipt(serialized) {
 
 export async function rollbackBatch(receipt, capabilities = {}) {
   if (!receipt || receipt.state !== 'committed') throw new AtomicBatchError('INVALID_RECEIPT', 'rollback requires a committed receipt');
-  // v0.1 receipts intentionally report rollback availability rather than reconstructing backups after cleanup.
-  if (!receipt.rollback?.available) return freezeCopy({ transactionId: receipt.transactionId, state: 'rolled_back', actions: [] });
-  throw new AtomicBatchError('RECOVERY_REQUIRED', 'rollback after workspace cleanup requires explicit recovery material');
+  if (receipt.rollback?.available !== true) throw new AtomicBatchError('ROLLBACK_UNAVAILABLE', 'rollback material is no longer available');
+  throw new AtomicBatchError('RECOVERY_REQUIRED', 'rollback after cleanup requires explicit recovery material');
 }
 
 export async function recoverBatch(transactionId, capabilities = {}, options = {}) {
