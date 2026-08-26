@@ -35,5 +35,7 @@ jobs:
         run: node scripts/verify-reproducible-package.mjs
       - name: Security boundary verification
         run: node scripts/verify-security-boundaries.mjs
+      - name: Publication guard
+        run: node scripts/verify-publication-guard.mjs
       - name: Real browser smoke test
         run: npm run test:browser
