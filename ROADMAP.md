@@ -60,23 +60,8 @@ Runtime Capability Inspector / Preflight v0.1 — PR #78 — `139a7d6c824b7fe522
 
 The Atomic Batch File Transaction release is complete and frozen.
 
-The next task is to write and freeze the SPEC for **Filesystem Permission / Ownership Descriptor v0.1**.
+The SPEC for **Filesystem Permission / Ownership Descriptor v0.1** is frozen on `main` at `fc5bbf3c8c9125699c3a0e2b5c2fc817592e24d5`.
 
-The SPEC must define:
+The immediate next task is implementation from that SPEC. The contract covers normalized cross-platform permission/ownership metadata, non-mutating inspection by default, explicit capability detection, privacy-safe identifiers, deterministic immutable serialization, bounded metadata collection, explicit unsupported-platform/filesystem behavior, capability/data separation, failure/cancellation/recovery semantics, and zero runtime third-party dependencies.
 
-- normalized cross-platform permission and ownership metadata
-- non-mutating inspection as the default behavior
-- explicit capability detection for supported mutation features, if any
-- privacy-safe treatment of user/group identifiers
-- deterministic serialization and immutable descriptors
-- unsupported-platform and unsupported-filesystem behavior
-- bounded work and metadata collection
-- capability/data separation and accessor safety
-- failure, cancellation, and recovery semantics
-- zero runtime third-party dependencies
-
-No implementation begins until the SPEC is committed and the control plane records the SPEC gate as complete.
-
-## Parked
-
-All other capabilities remain parked until the current cube release and the active SPEC gate are complete. New ideas must not bypass the one-current-task rule.
+No implementation of another cube starts concurrently; the active milestone must complete the full release sequence before NEXT CUBE.
