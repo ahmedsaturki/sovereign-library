@@ -18,15 +18,17 @@ Windows, Linux, macOS, and WSL where the capability is supported.
 
 ## Latest release
 
-**Safe File Quarantine / Delete v0.1** — PR #100, merge commit `699d4181f0775af93b62d78f47fb00de42ec346e`.
+**Filesystem Recovery Journal / Operation Ledger v0.1** — PR #101, merge commit `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
 
-Final pre-merge Run #738 passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green. Post-merge Run #739 and control-plane Run #740 also passed on all three platforms.
+Final pre-merge **Run #743** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green.
 
-The cube provides quarantine-first destructive boundaries, exact receipt-bound restore, explicit permanent purge, SFQ1 integrity-protected manifests, containment and symlink safety, native rename-only movement, bounded rollback/cleanup recovery, immutable receipts, privacy-safe diagnostics, and zero runtime third-party dependencies.
+The cube provides deterministic FRJ1 append-only operation records, explicit lifecycle sequencing, bounded interrupted-operation inspection, explicit caller recovery decisions, integrity validation, immutable snapshots, persistence failure semantics, privacy-safe diagnostics, and zero runtime third-party dependencies. Recovery inspection never performs hidden filesystem mutation.
 
-**FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
+**FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
 
 ## Previous recent releases
+
+**Safe File Quarantine / Delete v0.1** — PR #100 — `699d4181f0775af93b62d78f47fb00de42ec346e`
 
 **Bounded File Content Reader / Safe Content Access v0.1** — PR #99 — `f8db5a309aef655aec86051587bdf12d34f3dd20`
 
@@ -38,11 +40,11 @@ Earlier releases remain pinned in `ROADMAP.md`.
 
 ## Active milestone
 
-**FILESYSTEM-RECOVERY-JOURNAL-IMPLEMENT**
+**NEXT-CUBE-SELECTION**
 
-The next standalone cube is **Filesystem Recovery Journal / Operation Ledger v0.1**. Its SPEC is frozen on the active feature branch before implementation.
+The Filesystem Recovery Journal / Operation Ledger release is complete and frozen. The next standalone cube is not yet selected.
 
-The cube provides explicit bounded operation intents, deterministic lifecycle sequencing, integrity-protected FRJ1 records, interrupted-operation inspection, explicit recovery decisions, immutable snapshots, persistence failure semantics, privacy-safe diagnostics, and zero runtime third-party dependencies. Recovery inspection never performs hidden filesystem mutation.
+The next gate is to inspect the current standalone-product inventory, parked specs, roadmap, branches and PR history; choose the next non-duplicative product supported by project evidence; and freeze its SPEC before implementation.
 
 ## Repository shape
 
