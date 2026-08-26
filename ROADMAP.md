@@ -10,23 +10,25 @@ A cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ## Latest released cube
 
-### Bounded File Content Reader / Safe Content Access v0.1
+### Atomic Batch File Transaction / Safe Multi-File Commit v0.1
 
-PR #94 — `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`
+PR #96 — `1fae6399eb2710b53cc8f53878138ae9a24a241d`
 
-Pre-merge **Run 693** passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, **661/661 tests**, and real-browser smoke. Post-merge **Run 694** passed on the release commit. Mainline Push verification **Run 695** experienced a transient macOS-15-Intel Node.js test-runner hang, resolved by a fresh-run pass (macOS Job `98006586509`, 34s) with syntax, contract/integration tests, browser smoke, and complete job all green. No product-code or workflow changes were required.
+Pre-merge **Run 710** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, full contract/integration tests, browser smoke, and complete jobs all green.
 
-The cube is **FROZEN** at `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`.
+Mainline Push verification **Run 712** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, full tests, browser smoke, and complete jobs all green.
+
+The cube is **FROZEN** at `1fae6399eb2710b53cc8f53878138ae9a24a241d`.
+
+Hardening closed absolute-root enforcement, proof-gated `strong-local` capability claims, truthful post-cleanup rollback availability, immutable ABT1 receipts, bounded planning, and fail-closed recovery.
 
 ### File Lease / Advisory Lock v0.1 — corrective hardening
 
 Corrective PR #95 — `a2eb715a558d9c88f19e9ff83ff512971e548891`
 
-PR verification **Run 700** passed on Ubuntu, Windows, and macOS-15-Intel after a macOS-only rerun. Mainline Push verification **Run 701** initially cancelled the macOS-15-Intel job after a runner hang; the same macOS job was rerun on a fresh runner and passed syntax, full tests, browser smoke, and complete job. Ubuntu and Windows passed on the original mainline attempt.
+Run 700 and Run 701 passed across the supported matrix after targeted macOS reruns.
 
 The corrective release is **FROZEN** at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
-
-Hardening closed three contract gaps: stale-recovered successor ownership invalidates the old lease object; orphan lock directories without an owner record fail closed; and release refuses to report success while unexpected lock-directory entries remain.
 
 ### Earlier released cubes
 
@@ -52,34 +54,29 @@ Filesystem Watcher / Change Stream v0.1 — PR #79 — `239e418e620d06de5d25a9c4
 
 Runtime Capability Inspector / Preflight v0.1 — PR #78 — `139a7d6c824b7fe522712c65e1b9ffcf605e134f4`
 
-Earlier Artifact Release cubes remain pinned to their recorded immutable SHAs.
-
 ## Active milestone
 
-### ATOMIC-BATCH-FILE-TRANSACTION-SPEC
+### FILESYSTEM-PERMISSION-OWNERSHIP-DESCRIPTOR-SPEC
 
-The File Lease / Advisory Lock review is complete and its corrective release is frozen.
+The Atomic Batch File Transaction release is complete and frozen.
 
-The next task is to write and freeze the SPEC for **Atomic Batch File Transaction / Safe Multi-File Commit v0.1**.
+The next task is to write and freeze the SPEC for **Filesystem Permission / Ownership Descriptor v0.1**.
 
 The SPEC must define:
 
-- deterministic operation planning and canonical ordering
-- preflight validation before mutation
-- owned temporary files and cleanup
-- safe replacement semantics for multiple local files
-- rollback and recovery after partial failure
-- interruption/crash recovery boundaries and explicit unsupported guarantees
-- containment and symlink policy
-- bounded entry, byte, and work budgets
-- capability seams for filesystem operations, identity, clock, and failure injection
-- immutable deterministic commit/rollback receipts with integrity protection
-- privacy-safe bounded diagnostics
-- explicit platform/filesystem capability reporting
+- normalized cross-platform permission and ownership metadata
+- non-mutating inspection as the default behavior
+- explicit capability detection for supported mutation features, if any
+- privacy-safe treatment of user/group identifiers
+- deterministic serialization and immutable descriptors
+- unsupported-platform and unsupported-filesystem behavior
+- bounded work and metadata collection
+- capability/data separation and accessor safety
+- failure, cancellation, and recovery semantics
 - zero runtime third-party dependencies
 
 No implementation begins until the SPEC is committed and the control plane records the SPEC gate as complete.
 
 ## Parked
 
-All other capabilities remain parked until the current cube release is complete. New ideas must not bypass the one-current-task rule.
+All other capabilities remain parked until the current cube release and the active SPEC gate are complete. New ideas must not bypass the one-current-task rule.
