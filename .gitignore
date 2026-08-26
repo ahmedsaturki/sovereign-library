@@ -1,0 +1,7 @@
+node_modules/
+.artifacts/
+*.tgz
+packages/*/src/
+packages/*/dist/
+packages/*/LICENSE
+packages/*/NOTICE
