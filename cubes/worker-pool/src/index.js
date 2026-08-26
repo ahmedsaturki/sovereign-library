@@ -102,13 +102,14 @@ export function createWorkerPool(options = {}) {
 
   async function terminateAndReplace(slot) {
     slot.stopped = true;
+    slot.ready = false;
     const index = workers.indexOf(slot);
     if (index !== -1) workers.splice(index, 1);
 
     // Publish the replacement before awaiting termination of the old worker.
-    // Some platforms can take noticeably longer to resolve worker.terminate().
-    // Starting recovery first keeps the pool available within the contract's
-    // bounded recovery window while the old worker finishes shutting down.
+    // The replacement is not considered schedulable until its `online` event fires.
+    // This prevents a recovery task from racing the worker bootstrap path on slower
+    // platforms such as macOS.
     if (!closed && !draining) {
       createWorkerSlot();
       pump();
@@ -119,8 +120,14 @@ export function createWorkerPool(options = {}) {
 
   function createWorkerSlot() {
     const worker = new Worker(RUNNER_URL, { workerData: { moduleUrl } });
-    const slot = { worker, busy: false, task: null, stopped: false };
+    const slot = { worker, busy: false, ready: false, task: null, stopped: false };
     workers.push(slot);
+
+    worker.once('online', () => {
+      if (slot.stopped || closed) return;
+      slot.ready = true;
+      pump();
+    });
 
     worker.on('message', message => {
       if (message?.type === 'boot-error') {
@@ -137,6 +144,7 @@ export function createWorkerPool(options = {}) {
 
     worker.on('error', error => {
       slot.stopped = true;
+      slot.ready = false;
       events.emit('workerError', error);
       if (slot.task) finishTask(slot, 'reject', new WorkerPoolError('WORKER_FAILED', 'Worker thread failed', { cause: error, taskId: slot.task.id }));
       void terminateAndReplace(slot);
@@ -144,6 +152,7 @@ export function createWorkerPool(options = {}) {
 
     worker.on('exit', code => {
       slot.stopped = true;
+      slot.ready = false;
       if (code !== 0 && slot.task) finishTask(slot, 'reject', new WorkerPoolError('WORKER_EXITED', `Worker exited with code ${code}`, { taskId: slot.task.id }));
       if (!closed && !draining && workers.includes(slot)) void terminateAndReplace(slot);
     });
@@ -203,7 +212,7 @@ export function createWorkerPool(options = {}) {
   function pump() {
     if (closed) return;
     for (const slot of workers) {
-      if (slot.stopped || slot.busy) continue;
+      if (slot.stopped || !slot.ready || slot.busy) continue;
       const task = queue.shift();
       if (!task) break;
       if (task.controller.signal.aborted) {
