@@ -1,1 +1,1 @@
-export { createProcessSupervisor, ProcessSupervisorError, defaultCapabilities } from './runtime.js';
+export { createProcessSupervisor, ProcessSupervisorError, defaultCapabilities } from './api.js';
