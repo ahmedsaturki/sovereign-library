@@ -15,6 +15,7 @@ const expectedExports = {
   safePathResolver: new Set([
     'SafePathResolverError', 'normalizePath', 'resolvePath', 'isContained',
     'resolveContained', 'canonicalizePath', 'comparePaths', 'serializeReport', 'parseReport',
+    'SAFE_PATH_RESOLVER_FORMAT', 'SAFE_PATH_RESOLVER_LIMITS',
   ]),
   runtimeCapability: new Set([
     'RuntimeCapabilityError', 'inspectRuntime', 'evaluateRuntimeRequirements',
@@ -97,7 +98,7 @@ try {
   assertExactExports('Safe Path Resolver', expectedFiles.safePathResolver, expectedExports.safePathResolver);
   assertExactExports('Runtime Capability Inspector', expectedFiles.runtimeCapability, expectedExports.runtimeCapability);
 
-  console.log('[declarations] pilot generation and frozen public-surface verification passed');
+  console.log('[declarations] pilot generation and amended frozen public-surface verification passed');
 } finally {
   rmSync(toolsDir, { recursive: true, force: true });
 }
