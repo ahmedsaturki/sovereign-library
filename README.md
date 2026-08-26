@@ -20,11 +20,21 @@ Windows, Linux, macOS, and WSL where the capability is supported.
 
 **Bounded File Content Reader / Safe Content Access v0.1** — PR #94, release commit `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`.
 
-Pre-merge Run #693 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, **661/661 tests**, and real-browser smoke. Post-merge Run #694 passed on the release commit. Mainline Run #695 had a transient macOS-15-Intel Node.js test-runner hang; after three fresh reruns, macOS Job `98006586509` passed in 34s with syntax, contract/integration tests, browser smoke, and complete job all green, while Ubuntu Job `98006587887` and Windows Job `98006587516` also passed.
+Pre-merge Run #693 passed on Ubuntu, Windows, and macOS-15-Intel with syntax checks, **661/661 tests**, and real-browser smoke. Post-merge Run #694 passed on the release commit. Mainline Run #695 had a transient macOS-15-Intel Node.js test-runner hang; after fresh reruns, macOS Job `98006586509` passed in 34s with syntax, contract/integration tests, browser smoke, and complete job all green, while Ubuntu and Windows also passed.
 
 The release provides bounded binary/text file access with explicit UTF-8 semantics, root anchoring through Safe Path Resolver, bounded memory/work/time behavior, streaming and collected modes, explicit offset/length/EOF rules, symlink policies, BOM/newline/decoder policies, capability seams for open/read/stat/close, cancellation and cleanup semantics, changing-file handling, immutable deterministic results, privacy-safe diagnostics, and zero runtime third-party dependencies.
 
 **FROZEN** at `277cb8f4d1e8278fe31c8dc7d3269c5c9bbeee99`.
+
+## Latest corrective hardening
+
+**File Lease / Advisory Lock v0.1** — corrective PR #95, release commit `a2eb715a558d9c88f19e9ff83ff512971e548891`.
+
+Run #700 passed on Ubuntu, Windows, and macOS-15-Intel after a macOS-only rerun. Mainline Run #701 initially cancelled the macOS job after an infrastructure hang; the same macOS job was then rerun on a fresh runner and passed syntax, full tests, browser smoke, and complete job. Ubuntu and Windows passed on the original mainline attempt.
+
+The corrective hardening closes stale-successor ownership, orphan-lock recovery, and unexpected lock-directory release gaps.
+
+**FROZEN** at `a2eb715a558d9c88f19e9ff83ff512971e548891`.
 
 ## Previous released cubes
 
@@ -54,11 +64,13 @@ Earlier Artifact Release cubes remain pinned in `ROADMAP.md`.
 
 ## Active milestone
 
-**FILESYSTEM-LEASE-AND-LOCK-REVIEW**
+**ATOMIC-BATCH-FILE-TRANSACTION-SPEC**
 
-The next task is to review the already-released File Lease / Advisory Lock v0.1 against the current release bar: API clarity, recovery after abnormal termination, acquisition races, timeout/cancellation, cleanup, cross-platform semantics, capability seams, documentation, examples, tests, privacy-safe diagnostics, and zero runtime dependencies.
+The File Lease / Advisory Lock review is complete and the corrective release is frozen.
 
-The review must close before a new cube is implemented. If a concrete gap is found, create a scoped corrective task; otherwise select and SPEC the next standalone cube.
+The next task is to write and freeze the SPEC for **Atomic Batch File Transaction / Safe Multi-File Commit v0.1** before any implementation begins.
+
+The planned contract covers deterministic operation planning, preflight validation, owned temporary files, safe multi-file replacement semantics, rollback and crash/interruption recovery boundaries, containment/symlink policies, bounded resource usage, capability seams, immutable integrity-protected receipts, privacy-safe diagnostics, explicit unsupported platform/filesystem behavior, and zero runtime third-party dependencies.
 
 ## Repository shape
 
