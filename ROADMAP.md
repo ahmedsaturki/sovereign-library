@@ -12,9 +12,7 @@ A Cube is released only after clean syntax checks, unit/contract tests, integrat
 
 ### Application Lifecycle / Graceful Shutdown Coordinator v0.1
 
-PR #104 — release merge `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
-
-Final pre-merge **Run 768** passed on Ubuntu, Windows, and macOS-15-Intel. Post-merge **Run 772** also passed on all three platforms.
+PR #104 — release merge `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`.
 
 The Cube is **FROZEN**.
 
@@ -31,60 +29,48 @@ The Cube is **FROZEN**.
 
 ### Completed: Inventory & Classification
 
-PR #105 — merge `b0249a3e4d47665b9da0d76eb6cd1009abef6a8f`
-
-Run #773 passed on Ubuntu, Windows, and macOS-15-Intel. The classification record is frozen at `docs/CUBE_INVENTORY_CLASSIFICATION_V0.1.md`.
-
-Artifact Release is split into reusable foundation candidates, generic governance candidates, and product/internal release workflow components; it is not treated as a single public package batch.
+PR #105 — merge `b0249a3e4d47665b9da0d76eb6cd1009abef6a8f`.
 
 ### Completed: License Decision
 
-PR #106 — merge `37bdac72bd86c3a190035f3a36a2cfe497fe2812`
+PR #106 — merge `37bdac72bd86c3a190035f3a36a2cfe497fe2812`.
 
-Apache License 2.0 is authoritative on `main`, with `LICENSE`, `NOTICE`, and `docs/LEGAL_AND_DISTRIBUTION_POLICY_V0.1.md`. Registry publication remains separately gated.
+Apache License 2.0 is authoritative on `main`. Registry publication remains separately gated.
 
 ### Completed: Public API Boundary Freeze
 
-Run #782 passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green.
+Run #782 passed on Ubuntu, Windows, and macOS-15-Intel.
 
-The frozen first batch candidates are:
-
-1. Safe Path Resolver / Containment Boundary
-2. Glob / Path Matcher
-3. Filesystem Watcher / Change Stream
-4. File Lease / Advisory Lock
-5. Atomic File Writer / Safe Replace
-6. Ephemeral Workspace / Scratch Directory
-7. Directory Snapshot / Tree Manifest
-8. Runtime Capability Inspector
-
-Only symbols explicitly listed in `docs/PUBLIC_API_BOUNDARY_V0.1.md` are public candidates; all other implementation symbols remain internal by default.
+The frozen first-batch candidates are documented in `docs/PUBLIC_API_BOUNDARY_V0.1.md`.
 
 ### Completed: Type / Declaration Strategy
 
-Run #809 passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, declaration generation, exact pilot public-surface matching, browser smoke, and complete jobs green.
+Run #809 passed on Ubuntu, Windows, and macOS-15-Intel with exact generated public-surface checks for Safe Path Resolver and Runtime Capability Inspector.
 
-The repository remains JavaScript-first. The declaration pilot uses JSDoc-driven declaration emission and a repository-level `jsconfig.declarations.json`. The first pilot candidates are Safe Path Resolver and Runtime Capability Inspector.
+### Completed: Package Contract / Tooling
 
-The pilot is executed as a dedicated step inside `.github/workflows/verify.yml`, sharing the repository's verified CI entry point. No separate declaration workflow is maintained.
+`docs/PACKAGE_CONTRACT_V0.1.md` is frozen. The two pilot packages are implemented with isolated manifests, exact `exports`, generated declarations, tarball boundaries, and npm pack verification.
 
-### Active: Package Contract / Tooling
+### Completed: Reproducible Packaging / Security
 
-The governing decision artifact will define scoped package naming, independent versioning, Node 24 compatibility, ESM/CJS policy, `exports` and types entry points, declaration placement, Apache-2.0 metadata, repository metadata, tarball file boundaries, and publication exclusions.
+**Run #835** passed on Ubuntu, Windows, and macOS-15-Intel with byte-identical package reproduction for both pilot candidates, integrity/shasum/file-manifest agreement, security-boundary verification, and browser smoke.
 
-Do not publish, reserve an npm organization, add a changeset baseline, or introduce API Extractor until the package contract gate itself is frozen and CI-verified.
+### Completed: Publication Guard Implementation
 
-### Phase 0 order after declaration strategy
+`scripts/verify-publication-guard.mjs` is wired into `.github/workflows/verify.yml`. It prevents accidental publication/configuration drift by rejecting publish commands, registry credentials, registry overrides, `publishConfig`, package scripts, and runtime dependency declarations for the first zero-runtime-dependency batch.
 
-1. Inventory & Classification — **DONE / FROZEN**
-2. License decision and repository licensing artifacts — **DONE / FROZEN**
-3. Public API boundary freeze — **DONE / VERIFIED**
-4. Type/declaration strategy without a full rewrite — **DONE / VERIFIED**
-5. Package contract/tooling — **ACTIVE**
-6. Reproducible `npm pack` and security verification
-7. First small public package batch
+**Run #837** is the cross-platform verification for this guard. Ubuntu has already passed the complete matrix; Windows and macOS were still completing the matrix when this roadmap entry was written.
 
-No public publish is authorized merely because a Cube is technically complete.
+### Active: First Small Public Package Batch — Release Preparation
+
+Candidates:
+
+1. `@sovereign/safe-path-resolver` v0.1.0
+2. `@sovereign/runtime-capability-inspector` v0.1.0
+
+Release-preparation record: `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`.
+
+Immediate gate: finish the publication-guard verification matrix, freeze the release-readiness evidence, and prepare a release authorization packet. No npm organization, token, registry automation, or publication is authorized yet.
 
 ## Future product direction
 
