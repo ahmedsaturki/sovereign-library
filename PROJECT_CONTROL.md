@@ -46,7 +46,8 @@ Windows / macOS-15-Intel); a later v6 doc/contract-drift reconciliation commit
 PR head. Subsequent v7/v8/v9/v10 passes advanced the branch: `a3e3d20` (#859
 succeeded), `cb5b6ec` (#860 succeeded, recorder sensitive-data redact hook), and
 `2f4e75c` (#861 succeeded, recorder immutable-snapshot + fail-closed redaction
-hardening; **current PR head**). Browser-stack genuine defects fixed on this branch
+hardening) → `c4272f0` (#862 succeeded, PR #111 current-state doc reconciliation;
+**current PR head**). Browser-stack genuine defects fixed on this branch
 (visual-testing diff multiset fix, interactions `nth`+strict-mode fix, recorder
 immutable-snapshot aliasing + redactor fail-closed) with regression tests added.
 They are **NOT yet released or frozen**; they are

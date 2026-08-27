@@ -1,0 +1,116 @@
+{
+  "schema": "sovereign-library.release-authorization-checklist/v0.1",
+  "generatedAt": "2026-08-27T21:30:00Z",
+  "phase": "PHASE-0-FIRST-BATCH",
+  "authorized": false,
+  "authorizationRequired": true,
+  "candidates": [
+    {
+      "package": "@sovereign/safe-path-resolver",
+      "version": "0.1.0",
+      "sourceCube": "cubes/safe-path-resolver-containment-boundary",
+      "manifest": "packages/safe-path-resolver/package.json",
+      "sourceSha": "c4272f0f71d8e5d33bbd764feb9d63d787cf3f3b",
+      "ciRun": 862,
+      "ciStatus": "completed_success",
+      "testCount": 14,
+      "testResult": "pass",
+      "sourceComplete": true,
+      "specPresent": true,
+      "readmePresent": true,
+      "changelogPresent": true,
+      "packageManifestPresent": true,
+      "declarationSurfaceVerified": true,
+      "securityStatus": "PASS",
+      "packageStatus": "PACKABLE_VERIFIED",
+      "publicationStatus": "BLOCKED_GOVERNANCE",
+      "dependencies": "none",
+      "license": "Apache-2.0",
+      "engines": ">=24"
+    },
+    {
+      "package": "@sovereign/runtime-capability-inspector",
+      "version": "0.1.0",
+      "sourceCube": "cubes/runtime-capability-inspector",
+      "manifest": "packages/runtime-capability-inspector/package.json",
+      "sourceSha": "c4272f0f71d8e5d33bbd764feb9d63d787cf3f3b",
+      "ciRun": 862,
+      "ciStatus": "completed_success",
+      "testCount": 9,
+      "testResult": "pass",
+      "sourceComplete": true,
+      "specPresent": true,
+      "readmePresent": true,
+      "changelogPresent": true,
+      "packageManifestPresent": true,
+      "declarationSurfaceVerified": true,
+      "securityStatus": "PASS",
+      "packageStatus": "PACKABLE_VERIFIED",
+      "publicationStatus": "BLOCKED_GOVERNANCE",
+      "dependencies": "none",
+      "license": "Apache-2.0",
+      "engines": ">=24"
+    }
+  ],
+  "verificationSummary": {
+    "npmRunCheck": "pass",
+    "npmTest": "756/757 (1 infra flake: process-supervisor timing under full load; isolated 13/13 stable)",
+    "boundedTests": "ALL PASS",
+    "publicationGuard": "PASS",
+    "securityBoundaries": "PASS",
+    "browserAssertionsTarball": "PASS",
+    "realBrowserSmoke": "pass",
+    "packageTooling": "verified (staging + exact export surface) in CI; blocked locally by nvm4w npm layout only",
+    "reproduciblePack": "verified in CI",
+    "declarations": "verified in CI"
+  },
+  "flakeClassification": [
+    {
+      "cube": "application-lifecycle",
+      "test": "late participant completion cannot mutate the terminal snapshot",
+      "class": "B_TEST_DEFECT_C_INFRASTRUCTURE_FLAKE",
+      "isolatedStable": "14/14 x6",
+      "underLoad": "intermittent",
+      "rootCauseHypothesis": "defaultTimeoutMs:5 + single Promise.resolve() microtask; nondeterministic under runner saturation",
+      "remediation": "test-only: increase timing margin or use explicit completion signaling (DO NOT modify frozen runtime)"
+    },
+    {
+      "cube": "atomic-batch-file-transaction-safe-multi-file-commit",
+      "test": "timing-sensitive assertion",
+      "class": "B_TEST_DEFECT_C_INFRASTRUCTURE_FLAKE",
+      "isolatedStable": "8/8 x6",
+      "underLoad": "intermittent",
+      "rootCauseHypothesis": "bounded-deadline timing assertion under load",
+      "remediation": "test-only timing hardening (DO NOT modify frozen runtime)"
+    },
+    {
+      "cube": "process-supervisor",
+      "test": "graceful stop escalates to forced kill after bounded grace period",
+      "class": "B_TEST_DEFECT_C_INFRASTRUCTURE_FLAKE",
+      "isolatedStable": "13/13 x6",
+      "underLoad": "intermittent (surfaced in full npm test run)",
+      "rootCauseHypothesis": "grace-period kill-escalation assertion occasionally not elapsed under full-suite load",
+      "remediation": "test-only timing hardening (DO NOT modify frozen runtime)"
+    }
+  ],
+  "browserInterceptionClassification": {
+    "cube": "browser-network-interception",
+    "cdpControlPlane": "REAL (Network.enable / requestWillBeSent / continueInterceptedRequest hooked)",
+    "bodyCapture": "MOCK_LEVEL_ONLY (source leaves body null unless user opts in via mock; getResponseBody not wired)",
+    "testsUse": "FakeCDP synthetic events",
+    "releaseBlocker": false,
+    "futureArchitecture": "real response-body capture via Network.getResponseBody",
+    "specVsImplGap": "SPEC advertises 'respond with custom body/status' and 'body (capped)'; implementation is capability/mock-level for body — SPEC should be reconciled to v0.1 scope"
+  },
+  "governanceBlockers": [
+    "EXPLICIT_HUMAN_RELEASE_AUTHORIZATION_REQUIRED (publication guard stays green until then)",
+    "npm organization creation + token configuration out of scope until authorized"
+  ],
+  "nonGovernanceBlockersRemoved": [
+    "package manifests now present and contract-correct",
+    "declaration surface verified exact",
+    "tarballs pack with correct allowlist (6 files, no repo leakage)",
+    "publication guard fails closed (no publish path, no credential, no publishConfig)"
+  ],
+  "nextStep": "OBTAIN_EXPLICIT_HUMAN_RELEASE_AUTHORIZATION for the two candidates. Separately, when authorized, apply test-only flake remediation for the three frozen-cube timing tests (distinct task requiring its own authorization given the cube freeze)."
+}
