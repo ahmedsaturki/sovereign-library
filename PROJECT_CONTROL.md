@@ -32,6 +32,18 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Release authorization packet is frozen in `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`.
 - No public package publication is authorized yet.
 
+## Recently implemented (working tree, pre-release, CI-pending)
+
+These are new, fully unit-tested cubes/products built on the existing frozen
+foundation. They follow SPEC → IMPLEMENT → TEST and pass the bounded test runner
+(763/763 tests green locally). They are **NOT yet released or frozen**; they are
+staged for the next release wave after the Phase 0 authorization gate.
+
+- `cubes/browser-interactions` v0.1 — locators (`By.css/text/role/label/title/testId`), auto-wait (`waitFor`/`waitForVisible`), input simulation (`click`/`fill`/`press`/`focus`/`clear`), strict mode, deterministic error taxonomy. Unit-tested with a fake session, no browser required.
+- `cubes/browser-assertions` v0.1 — auto-retrying `expect(locator)` assertions (`toBeVisible`/`toBeEnabled`/`toHaveText`/...), `Snapshot.capture`/`diff` structural comparison, deterministic errors.
+- `products/web-test-kit` v0.1 — composable product façade over `browser` + `browser-interactions` + `browser-assertions`; one import runs a full locate→act→assert→snapshot flow. Zero third-party dependencies.
+- `storage` cube hardened with clock capability injection (fixed a global-timer interference bug that broke the full-suite TTL test; now isolated and deterministic).
+
 ## The one-current-task rule
 
 At any moment there is exactly **one active milestone** and **one immediate next task**.
