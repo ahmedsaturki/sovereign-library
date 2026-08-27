@@ -70,6 +70,22 @@ because it is parked, not active, and does not touch main.
 - `products/sovereign-automation` v0.1 — unified SDK + CLI (`bin/cli.js`) composing all browser cubes; 5/5 product tests pass locally. Zero third-party dependencies.
 - `storage` cube hardened with clock capability injection (fixed a global-timer interference bug that broke the full-suite TTL test; now isolated and deterministic).
 
+**Known frozen-cube test flake (governance-locked, not a release-candidate defect):**
+The released/frozen `application-lifecycle` cube (FROZEN at `792f1f3`) embeds a
+live wall-clock-derived field `remainingMs` in its `snapshot()` output (`Math.max(0,
+globalShutdownTimeoutMs - (capabilities.now() - startedAt))`). Its test "late
+participant completion cannot mutate the terminal snapshot" asserts `deepEqual`
+between two snapshots taken ms apart; under CI matrix load the `remainingMs` value
+shifts by 1ms, so the assertion intermittently fails (observed: **Run #865 macOS
+FAILED**, Windows+Ubuntu PASSED). This is a **test-timing defect (B)** in a frozen
+cube, not a runtime correctness bug — the snapshot is immutable; only the timing
+field makes the equality nondeterministic. Same class of intermittent timing flake
+was noted for `atomic-batch-file-transaction` and `process-supervisor` (all pass
+deterministically in isolation ×6). Per governance, frozen-cube runtime AND test
+code are not modified without separate authorization; a remediation (assert only
+immutable fields, or inject a frozen clock) is deferred to a dedicated authorized
+task. It does not affect the two Phase-0 release candidates.
+
 > NOTE: The canonical `scripts.test` on `main` tracks released cubes only. The
 > feature-branch working tree also carries additional browser-cube and product test
 > files that are NOT yet in `main`'s list. As of the v3 correction pass the feature
