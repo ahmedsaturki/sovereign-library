@@ -47,8 +47,12 @@ PR head. Subsequent v7/v8/v9/v10 passes advanced the branch: `a3e3d20` (#859
 succeeded), `cb5b6ec` (#860 succeeded, recorder sensitive-data redact hook), and
 `2f4e75c` (#861 succeeded, recorder immutable-snapshot + fail-closed redaction
 hardening) → `c4272f0` (#862 succeeded, PR #111 current-state doc reconciliation) →
-`a495f1d` (#863 succeeded, v12 release-wave prep + runbook/authorization-package;
-**current PR head**). Browser-stack genuine defects fixed on this branch
+`a495f1d` (#863 succeeded, v12 release-wave prep + runbook/authorization-package) →
+`ecf5be8` (#864, v13 network-interception Fetch-domain contract closure; **current PR
+head**). Browser-stack genuine defects fixed on this branch
+(cubes/browser-network-interception v0.1 corrected from the passive Network domain to
+the real CDP Fetch domain for genuine request interception/mocking; verified against
+real Chromium).
 (visual-testing diff multiset fix, interactions `nth`+strict-mode fix, recorder
 immutable-snapshot aliasing + redactor fail-closed) with regression tests added.
 They are **NOT yet released or frozen**; they are
