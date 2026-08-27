@@ -4,6 +4,8 @@
 
 This file is the anti-drift control for the repository. It keeps development finite, visible, and recoverable.
 
+**Agent entry:** every autonomous agent must read `AGENTS.md` first, then this file. The permanent architecture contract is `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md`, and the project-wide knowledge map is `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md`.
+
 ## Current mission
 
 **Phase 0 — First Public Package Batch / Release Authorization Readiness** after freezing **Application Lifecycle / Graceful Shutdown Coordinator v0.1**.
@@ -30,69 +32,66 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Final pre-authorization verification: **Run #845**, commit `f14bbd9229fcda23f00602cfc9288881c61e213e`, passed completely on Ubuntu, Windows, and macOS-15-Intel.
 - Release-readiness evidence is frozen in `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`.
 - Release authorization packet is frozen in `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`.
-- No public package publication is authorized yet.
+- Human release authorization has been recorded for the two Phase-0 candidates; publication is currently **BLOCKED BY ENVIRONMENT PREREQUISITE** as recorded in `docs/release/AUTHORIZATION_PACKAGE_STATUS-V0.1.json`.
 
-## Recently implemented (feature branch, pre-release, CI-pending — NOT on main)
+## Project-wide architecture law
 
-These are new, fully unit-tested cubes/products built on the existing frozen
-foundation. They live on branch `feat/browser-interactions-assertions-webtestkit`
-under open PR #111 (unmerged). They follow SPEC → IMPLEMENT → TEST and pass the
-bounded test runner; PR #111 CI history (by commit): `f34b724` #853 succeeded,
-`55ca514` #854 failed on Windows (hardcoded `/tmp` in a product test, corrected),
-`3e5a56b` #855 succeeded (Windows fix verified), `017aefb`/`a522746` #856/#857
-cancelled then re-run to **#857 succeeded** on all three platforms (Ubuntu /
-Windows / macOS-15-Intel); a later v6 doc/contract-drift reconciliation commit
-`67204b6` ran as **#858 succeeded** on all three platforms and was the then-current
-PR head. Subsequent v7/v8/v9/v10 passes advanced the branch: `a3e3d20` (#859
-succeeded), `cb5b6ec` (#860 succeeded, recorder sensitive-data redact hook), and
-`2f4e75c` (#861 succeeded, recorder immutable-snapshot + fail-closed redaction
-hardening) → `c4272f0` (#862 succeeded, PR #111 current-state doc reconciliation) →
-`a495f1d` (#863 succeeded, v12 release-wave prep + runbook/authorization-package) →
-`35c14dc` (#866, v14 final release-candidate freeze-audit doc reconciliation; **current PR
-head**). Browser-stack genuine defects fixed on this branch
-(cubes/browser-network-interception v0.1 corrected from the passive Network domain to
-the real CDP Fetch domain for genuine request interception/mocking; verified against
-real Chromium).
-(visual-testing diff multiset fix, interactions `nth`+strict-mode fix, recorder
-immutable-snapshot aliasing + redactor fail-closed) with regression tests added.
-They are **NOT yet released or frozen**; they are
-staged for the next release wave after the Phase 0
-authorization gate. None of this work is in conflict with the one-current-task rule
-because it is parked, not active, and does not touch main.
+The repository-wide independence and ecosystem model is governed by:
 
-- `cubes/browser-interactions` v0.1 — locators (`By.css/text/role/label/title/testId`), auto-wait (`waitFor`/`waitForVisible`), input simulation (`click`/`fill`/`press`/`focus`/`clear`), strict mode, deterministic error taxonomy. Unit-tested with a fake session, no browser required.
-- `cubes/browser-assertions` v0.1 — auto-retrying `expect(locator)` assertions (`toBeVisible`/`toBeEnabled`/`toHaveText`/...) with retry classification (`retryable` respected; non-retryable + unexpected errors surface immediately), `Snapshot.capture`/`diff` exact normalized HTML-string comparison (Contract A). Canonicalization is a **documented subset** of the Sovereign `canonical-json` cube inlined for package independence — it faithfully preserves every guarantee reachable through the `{ html: string }` snapshot input (key-sorted output, finite-number rejection, `-0`, plain-object rule, accessor rejection, circular detection, bounded recursion). It is NOT the full canonical-json cube (no tunable limits/config), and the code/SPEC/tests say so explicitly. Soft-assertion lifecycle (`softErrors`/`clearSoftErrors`), deterministic error taxonomy.
-- `cubes/browser-recorder` v0.1 — record/replay of interaction sequences; `getScript()` returns deeply-frozen immutable snapshots (no internal-state aliasing); opt-in caller-controlled `redact` hook (record-time only, fail-closed `REDACT_ERROR`, no automatic secret detection).
-- `cubes/browser-network-interception` v0.1 — request interception/blocking/mocking via the CDP **Fetch** domain (`Fetch.enable` → `Fetch.requestPaused` → `Fetch.fulfillRequest`/`Fetch.continueRequest`/`Fetch.failRequest`). v0.1 contract is interception *control* at the capability boundary: it blocks, mocks (caller-supplied body), and passes through real requests, and builds a deterministic traffic log. **Real response-body capture is NOT performed in v0.1** (log `body` is always `null`; only `bodyLength` is tracked for mock responses). Real-body capture is deferred to v0.2. v13 corrected a genuine CDP defect: the original code used the passive `Network` domain + `Network.continueInterceptedRequest`, which never actually intercepts in a real browser; the Fetch-domain flow is now verified against real Chromium (gated smoke test).
-- `cubes/browser-tab-manager` v0.1 — multi-tab orchestration via CDP Target domain, immutable `list()`.
-- `cubes/browser-visual-testing` v0.1 — DOM snapshot capture + deterministic diff.
-- `products/web-test-kit` v0.1 — composable product façade over `browser` + interaction/assertion cubes; one import runs a full locate→act→assert→snapshot flow. Zero third-party dependencies.
-- `products/sovereign-automation` v0.1 — unified SDK + CLI (`bin/cli.js`) composing all browser cubes; 5/5 product tests pass locally. Zero third-party dependencies.
-- `storage` cube hardened with clock capability injection (fixed a global-timer interference bug that broke the full-suite TTL test; now isolated and deterministic).
+- `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md`
+- `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md`
+- `docs/SOVEREIGN_ECOSYSTEM_CONTRACT_V1.0.json`
 
-**Known frozen-cube test flake (governance-locked, not a release-candidate defect):**
-The released/frozen `application-lifecycle` cube (FROZEN at `792f1f3`) embeds a
-live wall-clock-derived field `remainingMs` in its `snapshot()` output (`Math.max(0,
-globalShutdownTimeoutMs - (capabilities.now() - startedAt))`). Its test "late
-participant completion cannot mutate the terminal snapshot" asserts `deepEqual`
-between two snapshots taken ms apart; under CI matrix load the `remainingMs` value
-shifts by 1ms, so the assertion intermittently fails (observed: **Run #865 macOS
-FAILED**, Windows+Ubuntu PASSED; **Run #866 (`35c14dc`) all three platforms PASSED** — the flake is nondeterministic, not a constant failure). This is a **test-timing defect (B)** in a frozen
-cube, not a runtime correctness bug — the snapshot is immutable; only the timing
-field makes the equality nondeterministic. Same class of intermittent timing flake
-was noted for `atomic-batch-file-transaction` and `process-supervisor` (all pass
-deterministically in isolation ×6). Per governance, frozen-cube runtime AND test
-code are not modified without separate authorization; a remediation (assert only
-immutable fields, or inject a frozen clock) is deferred to a dedicated authorized
-task. It does not affect the two Phase-0 release candidates.
+The permanent principle is:
 
-> NOTE: The canonical `scripts.test` on `main` tracks released cubes only. The
-> feature-branch working tree also carries additional browser-cube and product test
-> files that are NOT yet in `main`'s list. As of the v3 correction pass the feature
-> branch's own `npm test` explicitly includes `web-test-kit` and `sovereign-automation`
-> product suites so the branch CI covers its own code; mainline suites (74 files)
-> are untouched and remain the authoritative released-set tracker. The 721-vs-92
-> file count reflects branch-only cubes, not a silent omission.
+**INDEPENDENT CUBES -> EXPLICIT COMPOSITION -> REAL PRODUCTS**
+
+A suitable Cube is intended to be independently usable, testable, packageable, distributable, versioned, secure, deterministic within contract, failure/recovery hardened, cross-platform where applicable, and replaceable without requiring the whole repository.
+
+Sovereign is not Node-only. The ecosystem target is:
+
+`ONE AUTHORITATIVE CONTRACT -> NATIVE IMPLEMENTATION PER ECOSYSTEM -> CONFORMANCE -> INDEPENDENT DISTRIBUTION`
+
+Target ecosystems include Node.js/npm, Python/PyPI, Kotlin/Maven, Android, and future iOS/Apple distribution. Not every Cube must support every ecosystem; support is chosen by applicability and value.
+
+An internal dependency is allowed only when it is explicit, versioned, resolvable in the distributed artifact, tested, and consistent with the Cube contract. Monorepo-relative runtime coupling must not leak into released packages.
+
+## Recently implemented (feature branch, pre-release — NOT on main)
+
+These are new, fully tested cubes/products built on the existing frozen foundation. They live on branch `feat/browser-interactions-assertions-webtestkit` under open PR #111. They are pre-release and are not frozen.
+
+The branch's documented verification chain includes:
+
+- `a3e3d20` — browser visual-testing diff correction + interaction `nth`/strict correction; CI #859 succeeded.
+- `cb5b6ec` — recorder redaction hook; CI #860 succeeded.
+- `2f4e75c` — recorder immutable snapshots + fail-closed redaction; CI #861 succeeded.
+- `c4272f0` — control/doc reconciliation; CI #862 succeeded.
+- `a495f1d` — release-wave preparation; CI #863 succeeded.
+- `35c14dc` — release-candidate freeze-audit reconciliation; CI #866 succeeded.
+- `1f61cd0` — human release authorization recorded; publication stopped cleanly at npm authentication/environment prerequisite; no publication occurred.
+
+Browser-stack genuine defects fixed on this branch include:
+
+- `browser-network-interception` corrected from the passive Network-domain approach to the real CDP Fetch-domain request interception/mocking flow, verified against real Chromium.
+- `browser-visual-testing` deterministic multiset diff correction.
+- `browser-interactions` `nth` + strict-mode correction.
+- `browser-recorder` immutable-script hardening and caller-controlled fail-closed redaction.
+
+These browser/Product components remain **NOT RELEASED** and **NOT FROZEN** until a later authorized release wave.
+
+### Browser / Product components
+
+- `cubes/browser-interactions` v0.1 — locators (`By.css/text/role/label/title/testId`), auto-wait, interaction actions, strict mode, deterministic errors.
+- `cubes/browser-assertions` v0.1 — retry-classified assertions, snapshot Contract A exact normalized HTML-string comparison, documented canonicalization subset, soft-assertion lifecycle.
+- `cubes/browser-recorder` v0.1 — record/replay, deeply immutable `getScript()`, caller-controlled record-time redaction, fail-closed `REDACT_ERROR`.
+- `cubes/browser-network-interception` v0.1 — CDP Fetch-domain block/mock/pass-through control and deterministic traffic log; real response-body capture is intentionally out of v0.1 scope.
+- `cubes/browser-tab-manager` v0.1 — multi-tab orchestration through CDP Target domain.
+- `cubes/browser-visual-testing` v0.1 — DOM snapshot and deterministic diff.
+- `products/web-test-kit` v0.1 — composable locate → act → assert → snapshot facade.
+- `products/sovereign-automation` v0.1 — unified browser automation SDK/CLI composition.
+- `storage` — clock capability injection hardening against global timer interference.
+
+**Known frozen-cube test timing issue:** the frozen `application-lifecycle`, `atomic-batch-file-transaction`, and `process-supervisor` tests have documented load-sensitive timing behavior. They are not silently modified as part of browser/release work; remediation requires a dedicated authorized task.
 
 ## The one-current-task rule
 
@@ -106,7 +105,7 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ### Immediate next task
 
-**RELEASE AUTHORIZATION RECEIVED** (PR #111 closure, 2026-08-27) for `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. The release runbook (`docs/release/RELEASE-RUNBOOK-V0.1.md`) was executed up to and including the PUBLISH precondition check. **PUBLISH is blocked by an environmental prerequisite, not governance**: this machine is not authenticated to npm (`npm whoami` → `ENEEDAUTH`), no `NPM_TOKEN`/`NODE_AUTH_TOKEN` is configured, and the `@sovereign` npm org ownership is unverified. The runbook itself scopes "npm org creation + token configuration" as OUT OF SCOPE until authorized; authorization exists but the human-owned npm infrastructure is still required. The publication guard remains correctly fail-closed (no publish command, no credential, no publishConfig). **Do NOT `npm adduser`, mint a token, or add `publishConfig` to bypass the guard.** Resume at PUBLISH once a human provides npm auth (or runs publish in an authorized CI/environment), then continue POST-PUBLISH VERIFY → FREEZE → UPDATE CONTROL PLANE.
+**Resume PUBLISH** for `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0 once the human-owned npm prerequisite is available. The release runbook (`docs/release/RELEASE-RUNBOOK-V0.1.md`) was executed through the PUBLISH precondition and stopped on `npm whoami` / `ENEEDAUTH`. No npm organization ownership was verified, no `NPM_TOKEN`/`NODE_AUTH_TOKEN` is present, and no publication was attempted after the failure. **Do NOT bypass this with `npm adduser`, invented credentials, token commits, or `publishConfig` changes.** Once authorized npm infrastructure exists, resume at PUBLISH, then POST-PUBLISH VERIFY → FREEZE → UPDATE CONTROL PLANE.
 
 ### Completed Phase 0 gates
 
@@ -125,12 +124,14 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 - `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`
 - `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`
+- `docs/release/RELEASE-RUNBOOK-V0.1.md`
+- `docs/release/AUTHORIZATION_PACKAGE_STATUS-V0.1.json`
 
 ## Declaration strategy artifact
 
 `docs/DECLARATION_STRATEGY_V0.1.md` is the governing decision record.
 
-The repository remains JavaScript-first. Public declarations are produced incrementally from JSDoc with no TypeScript runtime dependency and no full source rewrite.
+The repository remains JavaScript-first for its current Node implementation. Public declarations are produced incrementally from JSDoc with no TypeScript runtime dependency and no full source rewrite.
 
 ## Release sequence
 
@@ -148,16 +149,24 @@ The public package release path is:
 
 A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verified, documented, and merged to `main` with the control plane advanced to exactly one next task.
 
+A standalone Cube is not DONE for distribution merely because it exists in `cubes/`; its consumer artifact, dependency boundary, API, verification, and documentation must support independent use.
+
 ## Anti-loop rules
 
-- Do not redesign the whole architecture during readiness work.
+- Do not redesign the whole architecture during readiness or release work.
 - Do not add dependencies merely to solve a local problem without a recorded decision.
-- Do not start a second Cube while a Phase 0 task is active.
-- Do not turn a technically complete cube into a public package without API/package/security/release-authorization gates.
+- Do not start a second official Cube/readiness task while one is active.
+- Do not turn a technically complete Cube into a public package without API/package/security/release gates.
 - Do not call a package production-ready from source inspection alone.
 - Do not treat CI success as publication authorization.
-- Park out-of-scope work and continue.
+- Do not claim multi-language equivalence without conformance evidence.
+- Do not make a Product dependency excuse hidden Cube coupling.
+- Park out-of-scope work and continue the one official task.
 
 ## Recovery rule
 
-If work is interrupted, read this file first, then `ROADMAP.md`, then the latest Git commit. Resume from the listed immediate next task; do not restart from memory.
+If work is interrupted, read:
+
+`AGENTS.md -> PROJECT_CONTROL.md -> ROADMAP.md -> latest Git state -> relevant SPEC`
+
+Then resume from the listed immediate next task; do not restart from memory.
