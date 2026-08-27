@@ -1,0 +1,142 @@
+{
+  "schema": "sovereign-library.ecosystem-contract/v1.0",
+  "status": "permanent-project-policy",
+  "name": "Sovereign Library",
+  "mission": "Build real, independently usable software Cubes and compose them into Products without hidden monorepo coupling.",
+  "sourceOfTruth": {
+    "agentOperatingRules": "AGENTS.md",
+    "currentExecutionAndGovernance": "PROJECT_CONTROL.md",
+    "architecture": "docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md",
+    "projectKnowledge": "docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md",
+    "roadmap": "ROADMAP.md",
+    "behavior": "specs/*.md",
+    "publicApi": "docs/PUBLIC_API_BOUNDARY_V0.1.md",
+    "packageContract": "docs/PACKAGE_CONTRACT_V0.1.md",
+    "releaseReadiness": "docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md",
+    "releaseAuthorization": "docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md",
+    "releaseExecution": "docs/release/"
+  },
+  "principles": {
+    "standaloneByDefault": true,
+    "explicitDependenciesOnly": true,
+    "noHiddenMonorepoCoupling": true,
+    "independentTesting": true,
+    "independentDistribution": true,
+    "replaceableComponents": true,
+    "deterministicWithinContract": true,
+    "failureRecoveryHardened": true,
+    "securityByDesign": true,
+    "crossPlatformWhereApplicable": true,
+    "explicitPublicApi": true,
+    "frozenMeansProtected": true
+  },
+  "componentModel": {
+    "cube": "Independent building block with its own contract, implementation, verification, distribution boundary, and lifecycle.",
+    "product": "Explicit composition of Cubes; composition must not destroy Cube independence.",
+    "architecture": "INDEPENDENT_CUBES -> EXPLICIT_COMPOSITION -> REAL_PRODUCTS"
+  },
+  "lifecycle": [
+    "IDEA",
+    "SPEC",
+    "IMPLEMENTING",
+    "TESTED",
+    "TECHNICALLY_READY",
+    "RELEASE_CANDIDATE",
+    "AUTHORIZED",
+    "RELEASED",
+    "FROZEN"
+  ],
+  "engineeringLoop": [
+    "SPEC",
+    "IMPLEMENT",
+    "TEST",
+    "FIX",
+    "VERIFY",
+    "RELEASE",
+    "FREEZE",
+    "NEXT_CUBE"
+  ],
+  "ecosystems": {
+    "nodejs": {
+      "status": "primary-current",
+      "distribution": "npm"
+    },
+    "python": {
+      "status": "planned-native",
+      "distribution": "PyPI",
+      "rule": "Implement idiomatically; do not mechanically translate JavaScript."
+    },
+    "kotlin": {
+      "status": "planned-native",
+      "distribution": "Maven-compatible",
+      "rule": "Use native Kotlin APIs and explicit platform adapters."
+    },
+    "android": {
+      "status": "first-class-target",
+      "implementation": "Kotlin/Android",
+      "distribution": "Maven-compatible"
+    },
+    "ios": {
+      "status": "first-class-future-target",
+      "implementation": "Swift-facing native APIs and/or Kotlin Multiplatform where justified"
+    }
+  },
+  "multiLanguageRule": "ONE_AUTHORITATIVE_CONTRACT -> NATIVE_IMPLEMENTATION_PER_ECOSYSTEM -> CONFORMANCE -> INDEPENDENT_DISTRIBUTION",
+  "conformance": {
+    "requiredWhenMultipleImplementations": true,
+    "preferredVectors": [
+      "inputs-outputs",
+      "serialization",
+      "error-codes",
+      "retryability",
+      "boundary-cases",
+      "security",
+      "determinism",
+      "recovery"
+    ]
+  },
+  "distributionRequirements": {
+    "outsideMonorepoConsumption": true,
+    "explicitExports": true,
+    "versionedDependencies": true,
+    "reproducibleArtifacts": true,
+    "securityVerification": true,
+    "crossPlatformEvidenceWhereApplicable": true
+  },
+  "forbiddenPatterns": [
+    "hidden_global_state",
+    "monorepo_relative_runtime_imports_in_distributed_packages",
+    "undeclared_runtime_dependencies",
+    "mechanical_cross_language_translations_with_semantic_drift",
+    "unbounded_retries",
+    "unbounded_resource_usage",
+    "publication_without_authorization",
+    "claiming_release_without_registry_or_artifact_evidence",
+    "modifying_frozen_components_without_an_explicit_authorized_task"
+  ],
+  "agentRules": {
+    "mustRead": [
+      "AGENTS.md",
+      "PROJECT_CONTROL.md",
+      "docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md",
+      "docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md",
+      "ROADMAP.md"
+    ],
+    "mustVerifyActualGitHubState": true,
+    "mustNotTrustConversationMemoryAsProjectState": true,
+    "mustPreserveHistoricalEvidence": true,
+    "mustKeepOneOfficialActiveTask": true
+  },
+  "statePolicy": {
+    "currentStateAuthority": "PROJECT_CONTROL.md",
+    "behaviorAuthority": "relevant SPEC",
+    "architectureAuthority": "docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md",
+    "packagingAuthority": "docs/PACKAGE_CONTRACT_V0.1.md",
+    "publicationAuthority": "release authorization record + current governance state"
+  },
+  "currentStatePolicy": {
+    "doNotDuplicateDynamicShaOrCiFacts": true,
+    "dynamicStateSource": "PROJECT_CONTROL.md",
+    "dynamicReleaseSource": "docs/release/AUTHORIZATION_PACKAGE_STATUS-V0.1.json"
+  }
+}
