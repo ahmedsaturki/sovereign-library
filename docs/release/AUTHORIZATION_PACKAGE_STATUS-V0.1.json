@@ -2,8 +2,8 @@
   "schema": "sovereign-library.release-authorization-checklist/v0.1",
   "generatedAt": "2026-08-27T21:30:00Z",
   "phase": "PHASE-0-FIRST-BATCH",
-  "authorized": false,
-  "authorizationRequired": true,
+  "authorized": true,
+  "authorizationRequired": false,
   "candidates": [
     {
       "package": "@sovereign/safe-path-resolver",
@@ -23,10 +23,12 @@
       "declarationSurfaceVerified": true,
       "securityStatus": "PASS",
       "packageStatus": "PACKABLE_VERIFIED",
-      "publicationStatus": "BLOCKED_GOVERNANCE",
+      "publicationStatus": "BLOCKED_ENV_PREREQUISITE",
       "dependencies": "none",
       "license": "Apache-2.0",
-      "engines": ">=24"
+      "engines": ">=24",
+      "releaseHead": "013478a0f9bc6a1c70b14ef93155727007a7f946",
+      "ciRunAtRelease": 867
     },
     {
       "package": "@sovereign/runtime-capability-inspector",
@@ -46,23 +48,25 @@
       "declarationSurfaceVerified": true,
       "securityStatus": "PASS",
       "packageStatus": "PACKABLE_VERIFIED",
-      "publicationStatus": "BLOCKED_GOVERNANCE",
+      "publicationStatus": "BLOCKED_ENV_PREREQUISITE",
       "dependencies": "none",
       "license": "Apache-2.0",
-      "engines": ">=24"
+      "engines": ">=24",
+      "releaseHead": "013478a0f9bc6a1c70b14ef93155727007a7f946",
+      "ciRunAtRelease": 867
     }
   ],
   "verificationSummary": {
     "npmRunCheck": "pass",
-    "npmTest": "756/757 (1 infra flake: process-supervisor timing under full load; isolated 13/13 stable)",
+    "npmTest": "761/761",
     "boundedTests": "ALL PASS",
-    "publicationGuard": "PASS",
+    "publicationGuard": "PASS (fail-closed; no credential present)",
     "securityBoundaries": "PASS",
     "browserAssertionsTarball": "PASS",
     "realBrowserSmoke": "pass",
-    "packageTooling": "verified (staging + exact export surface) in CI; blocked locally by nvm4w npm layout only",
-    "reproduciblePack": "verified in CI",
-    "declarations": "verified in CI"
+    "packageTooling": "verified (exact export surface: safe=11, rt=8)",
+    "reproduciblePack": "verified (byte-identical, integrity+shasum+file manifest)",
+    "declarations": "verified"
   },
   "flakeClassification": [
     {
@@ -100,17 +104,30 @@
     "testsUse": "FakeCDP synthetic events",
     "releaseBlocker": false,
     "futureArchitecture": "real response-body capture via Network.getResponseBody",
-    "specVsImplGap": "SPEC advertises 'respond with custom body/status' and 'body (capped)'; implementation is capability/mock-level for body — SPEC should be reconciled to v0.1 scope"
+    "specVsImplGap": "SPEC advertises 'respond with custom body/status' and 'body (capped)'; implementation is capability/mock-level for body \u2014 SPEC should be reconciled to v0.1 scope"
   },
   "governanceBlockers": [
-    "EXPLICIT_HUMAN_RELEASE_AUTHORIZATION_REQUIRED (publication guard stays green until then)",
-    "npm organization creation + token configuration out of scope until authorized"
+    "PUBLICATION_ENV_PREREQUISITE: npm organization '@sovereign' not verified-created AND no NPM_TOKEN/NODE_AUTH_TOKEN configured on this machine (npm whoami -> ENEEDAUTH). Runbook explicitly scopes org creation + token as OUT OF SCOPE until authorized; this is now authorized but still requires human-owned npm infra. NOT bypassed by agent."
   ],
   "nonGovernanceBlockersRemoved": [
     "package manifests now present and contract-correct",
     "declaration surface verified exact",
     "tarballs pack with correct allowlist (6 files, no repo leakage)",
-    "publication guard fails closed (no publish path, no credential, no publishConfig)"
+    "publication guard fails closed (no publish path, no credential, no publishConfig)",
+    "human release authorization received (PR #111 closure)"
   ],
-  "nextStep": "OBTAIN_EXPLICIT_HUMAN_RELEASE_AUTHORIZATION for the two candidates. Separately, when authorized, apply test-only flake remediation for the three frozen-cube timing tests (distinct task requiring its own authorization given the cube freeze)."
+  "nextStep": "Human provides npm auth (npm adduser / NODE_AUTH_TOKEN for org @sovereign) OR runs publish in a CI/authorized environment; then resume PUBLISH -> POST-PUBLISH VERIFY -> FREEZE -> UPDATE CONTROL PLANE. Do not improvise credentials.",
+  "authorizedAt": "2026-08-27T21:12:00Z",
+  "authorizationRecordedBy": "explicit human release authorization (PR #111 audit closure)",
+  "releaseHead": "013478a0f9bc6a1c70b14ef93155727007a7f946",
+  "ciRunAtRelease": 867,
+  "publicationStatusActual": "BLOCKED_ENV_PREREQUISITE",
+  "releaseFailure": {
+    "step": "PUBLISH",
+    "command": "npm publish packages/safe-path-resolver --ignore-scripts --provenance --access public",
+    "exactError": "npm error code ENEEDAUTH; need auth to https://registry.npmjs.org/",
+    "cause": "machine not authenticated to npm; no token in env; @sovereign org ownership unverified",
+    "guardBypassed": false,
+    "action": "STOPPED per runbook rule (any release step fails => STOP, do not bypass guard or improvise)"
+  }
 }

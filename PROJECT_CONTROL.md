@@ -102,11 +102,11 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-RELEASE-AUTHORIZATION-READY**
+**PHASE-0-FIRST-BATCH — AUTHORIZED, PUBLISH BLOCKED ON ENV PREREQUISITE**
 
 ### Immediate next task
 
-Obtain the explicit release-authorization decision for the two verified candidates: `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. Until that decision exists, do not publish, create/reserve an npm organization, configure npm tokens, add registry automation, or announce a public release.
+**RELEASE AUTHORIZATION RECEIVED** (PR #111 closure, 2026-08-27) for `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. The release runbook (`docs/release/RELEASE-RUNBOOK-V0.1.md`) was executed up to and including the PUBLISH precondition check. **PUBLISH is blocked by an environmental prerequisite, not governance**: this machine is not authenticated to npm (`npm whoami` → `ENEEDAUTH`), no `NPM_TOKEN`/`NODE_AUTH_TOKEN` is configured, and the `@sovereign` npm org ownership is unverified. The runbook itself scopes "npm org creation + token configuration" as OUT OF SCOPE until authorized; authorization exists but the human-owned npm infrastructure is still required. The publication guard remains correctly fail-closed (no publish command, no credential, no publishConfig). **Do NOT `npm adduser`, mint a token, or add `publishConfig` to bypass the guard.** Resume at PUBLISH once a human provides npm auth (or runs publish in an authorized CI/environment), then continue POST-PUBLISH VERIFY → FREEZE → UPDATE CONTROL PLANE.
 
 ### Completed Phase 0 gates
 
