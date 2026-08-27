@@ -91,9 +91,11 @@ const srcEntry = join(pkgRoot, 'src/index.js');
 
 // 3. no monorepo-relative imports may survive in the artifact
 if (!existsSync(srcEntry)) { fail('package entry src/index.js missing in tarball'); cleanup(); process.exit(1); }
-const srcLines = readFileSync(srcEntry, 'utf8').split('\n');
-const parentImports = srcLines.filter(l => /^\s*import\b.*from\s*['"]\.\.\//.test(l));
-const canonicalRef = srcLines.filter(l => /canonical-json/.test(l) && /import\b/.test(l));
+const srcText = readFileSync(srcEntry, 'utf8');
+const srcLines = srcText.split('\n');
+// Only flag REAL import/export-from statements, never mention-in-comments.
+const parentImports = srcLines.filter(l => /^\s*(import|export)\b.*\bfrom\s*['"]\.\.\//.test(l));
+const canonicalRef = srcLines.filter(l => /^\s*import\b.*\bfrom\s*['"][^'"]*canonical-json/.test(l));
 if (parentImports.length) {
   fail('tarball src still contains relative parent imports: ' + parentImports.join(' | '));
 } else {
@@ -103,6 +105,15 @@ if (canonicalRef.length) {
   fail('tarball still imports canonical-json by monorepo path: ' + canonicalRef.join(' | '));
 } else {
   ok('no canonical-json monorepo-path import in packaged src');
+}
+// No runtime dependency on monorepo directories outside its own artifact.
+// Only consider import/require statements, not prose/comments.
+const depImports = srcLines.filter(l => /^\s*(import|export)\b.*\bfrom\s*['"]|^\s*(import|require)\s*\(?\s*['"]/.test(l));
+const badDeps = depImports.filter(l => /(^|[^.\w])(\.\.\/){2,}|[\\/](cubes|packages)[\\/]/.test(l));
+if (badDeps.length) {
+  fail('tarball src references cubes/ or packages/ or deep parent paths: ' + badDeps.join(' | '));
+} else {
+  ok('no cubes/ or packages/ or deep-parent path dependency in artifact');
 }
 
 // 4. execute the public API out-of-tree (no access to repo cubes/)
@@ -114,6 +125,15 @@ try {
     const s = new Snapshot();
     const a = s.capture('<div>x</div>');
     if (a.stable !== '{"html":"<div>x</div>"}') throw new Error('canonicalization wrong: ' + a.stable);
+    // Snapshot.diff works out-of-tree
+    const d = s.diff('<div>x</div>', '<div>y</div>');
+    if (d.equal !== false) throw new Error('diff should detect difference');
+    const same = s.diff('<div>x</div>', '<div>x</div>');
+    if (same.equal !== true) throw new Error('diff should equal identical');
+    // representative error case: non-string input -> INVALID_SNAPSHOT (non-retryable)
+    let threw = false;
+    try { s.capture(123); } catch (e) { threw = e instanceof AssertionsError && e.code === 'INVALID_SNAPSHOT' && e.retryable === false; }
+    if (!threw) throw new Error('non-string snapshot must throw INVALID_SNAPSHOT');
     // assertions API + error types load
     if (typeof expect !== 'function') throw new Error('expect missing');
     if (typeof AssertionsError !== 'function') throw new Error('AssertionsError missing');
@@ -126,7 +146,7 @@ try {
   `);
   const res = execFileSync(process.execPath, [consumer], { encoding: 'utf8' });
   if (!res.includes('CONSUMER_OK')) { fail('consumer run did not report success: ' + res); }
-  else ok('packaged API executes out-of-tree (canonicalization, assertions, errors, immutability)');
+  else ok('packaged API executes out-of-tree (canonicalization, diff, error contract, assertions, immutability)');
 } catch (e) {
   fail('out-of-tree consumer execution failed: ' + e.message + (e.stderr ? '\n' + e.stderr : ''));
 }

@@ -37,13 +37,13 @@ This file is the anti-drift control for the repository. It keeps development fin
 These are new, fully unit-tested cubes/products built on the existing frozen
 foundation. They live on branch `feat/browser-interactions-assertions-webtestkit`
 under open PR #111 (unmerged). They follow SPEC → IMPLEMENT → TEST and pass the
-bounded test runner; PR #111 CI runs 850/851/852 all succeeded. They are **NOT yet
+bounded test runner; PR #111 CI runs 850/851/852 then 853/854/855 all succeeded. They are **NOT yet
 released or frozen**; they are staged for the next release wave after the Phase 0
 authorization gate. None of this work is in conflict with the one-current-task rule
 because it is parked, not active, and does not touch main.
 
 - `cubes/browser-interactions` v0.1 — locators (`By.css/text/role/label/title/testId`), auto-wait (`waitFor`/`waitForVisible`), input simulation (`click`/`fill`/`press`/`focus`/`clear`), strict mode, deterministic error taxonomy. Unit-tested with a fake session, no browser required.
-- `cubes/browser-assertions` v0.1 — auto-retrying `expect(locator)` assertions (`toBeVisible`/`toBeEnabled`/`toHaveText`/...) with retry classification (`retryable` respected; non-retryable + unexpected errors surface immediately), `Snapshot.capture`/`diff` exact normalized HTML-string comparison (Contract A, self-contained key-stable canonicalization), soft-assertion lifecycle (`softErrors`/`clearSoftErrors`), deterministic error taxonomy.
+- `cubes/browser-assertions` v0.1 — auto-retrying `expect(locator)` assertions (`toBeVisible`/`toBeEnabled`/`toHaveText`/...) with retry classification (`retryable` respected; non-retryable + unexpected errors surface immediately), `Snapshot.capture`/`diff` exact normalized HTML-string comparison (Contract A). Canonicalization is a **documented subset** of the Sovereign `canonical-json` cube inlined for package independence — it faithfully preserves every guarantee reachable through the `{ html: string }` snapshot input (key-sorted output, finite-number rejection, `-0`, plain-object rule, accessor rejection, circular detection, bounded recursion). It is NOT the full canonical-json cube (no tunable limits/config), and the code/SPEC/tests say so explicitly. Soft-assertion lifecycle (`softErrors`/`clearSoftErrors`), deterministic error taxonomy.
 - `cubes/browser-recorder` v0.1 — record/replay of interaction sequences.
 - `cubes/browser-network-interception` v0.1 — request/response interception, mocking, request log.
 - `cubes/browser-tab-manager` v0.1 — multi-tab orchestration via CDP Target domain, immutable `list()`.
@@ -52,10 +52,13 @@ because it is parked, not active, and does not touch main.
 - `products/sovereign-automation` v0.1 — unified SDK + CLI (`bin/cli.js`) composing all browser cubes; 5/5 product tests pass locally. Zero third-party dependencies.
 - `storage` cube hardened with clock capability injection (fixed a global-timer interference bug that broke the full-suite TTL test; now isolated and deterministic).
 
-> NOTE: The canonical `scripts.test` on `main` intentionally tracks released cubes
-> only. New feature-branch test files (browser cubes, `web-test-kit`,
-> `sovereign-automation`) are excluded from that list until released, so the
-> 679-vs-92 test-file count difference is expected, not a silent omission.
+> NOTE: The canonical `scripts.test` on `main` tracks released cubes only. The
+> feature-branch working tree also carries additional browser-cube and product test
+> files that are NOT yet in `main`'s list. As of the v3 correction pass the feature
+> branch's own `npm test` explicitly includes `web-test-kit` and `sovereign-automation`
+> product suites so the branch CI covers its own code; mainline suites (74 files)
+> are untouched and remain the authoritative released-set tracker. The 721-vs-92
+> file count reflects branch-only cubes, not a silent omission.
 
 ## The one-current-task rule
 

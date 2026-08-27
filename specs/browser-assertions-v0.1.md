@@ -5,9 +5,15 @@
 Assertion + snapshot layer for browser interactions. **Zero runtime
 dependencies** — including zero internal monorepo-source dependencies. The
 package is self-contained: it carries its own key-stable canonicalization
-primitive that matches the Sovereign `canonical-json` cube contract, so a
-published/installed `browser-assertions` package works without access to the
-monorepo filesystem layout. This satisfies the package contract's tarball
+primitive — a documented **subset** of the Sovereign `canonical-json` cube —
+so a published/installed `browser-assertions` package works without access to the
+monorepo filesystem layout. The subset faithfully preserves every canonical-json
+guarantee reachable through the `{ html: string }` snapshot input: deterministic
+key-sorted output, finite-number handling (NaN/Infinity rejected), `-0`
+preservation, the plain-object rule (Date/Map/Set/class rejected), accessor
+rejection, circular-reference detection, and bounded recursion (depth / node /
+string / value limits). It intentionally does NOT expose tunable limits or
+custom config; those are out of scope for the snapshot path. This satisfies the package contract's tarball
 boundary (no undeclared dependency or monorepo path may enter the artifact).
 
 ## Scope (v0.1)
@@ -17,7 +23,7 @@ boundary (no undeclared dependency or monorepo path may enter the artifact).
 - Auto-retrying assertions (bounded deadline) **that respect the `retryable`
   classification** of each assertion error.
 - Soft assertions (v0.1 minimal contract — see below).
-- Snapshot capture + stable comparison using the `canonical-json` primitive.
+- Snapshot capture + stable comparison using the package's self-contained canonicalizer (a documented subset of the `canonical-json` cube).
 
 ## Retry semantics (authoritative)
 
@@ -71,8 +77,9 @@ v0.1 snapshot is **Contract A: exact normalized HTML-string**, NOT structural DO
 normalisation.
 
 - Source HTML is **trimmed**; leading/trailing whitespace is insignificant.
-- The canonical form is the `canonical-json` string of `{ html }` (deterministic,
-  object key-stable). This normalises **object key order**, NOT the HTML attribute
+- The canonical form is the key-stable string (a documented subset of the
+  `canonical-json` cube contract) of `{ html }` (deterministic, object
+  key-stable). This normalises **object key order**, NOT the HTML attribute
   order inside the string.
 - Attribute order in the source HTML is **meaningful** (exact HTML-text contract):
   `<a href="y" id="x">` and `<a id="x" href="y">` are NOT equal.

@@ -13,28 +13,108 @@
  * flag. Snapshot is an exact normalized HTML-string contract (Contract A).
  */
 
+// Self-contained canonicalizer for snapshot stability.
+//
+// This is a DELIBERATE SUBSET of the Sovereign `canonical-json` cube, inlined
+// so the published package has zero monorepo-runtime dependencies (no
+// `../../canonical-json` import may survive in the artifact). The subset is
+// exactly the surface reachable through Snapshot.capture() ({ html: string }),
+// but it faithfully preserves every canonical-json guarantee that such input
+// can trigger:
+//   - deterministic, key-sorted serialization (object keys sorted via compareKeys)
+//   - finite-number handling (NaN/Infinity rejected, not coerced to null)
+//   - -0 preservation
+//   - plain-object rule (Date/Map/Set/class instances rejected)
+//   - accessor-property rejection (NOT invoked — no getter side effects)
+//   - circular-reference detection
+//   - bounded recursion: DEPTH_LIMIT / NODE_LIMIT / STRING_LIMIT / VALUE_LIMIT
+//   - deterministic classified failures via CanonicalizeError (code + cause)
+//
+// Anything outside this reachable surface (custom config, INVALID_OPTIONS,
+// MAX_* tunables) is intentionally NOT exposed; the snapshot API always uses
+// the default bounds and a single { html } payload.
 function canonicalStringify(value) {
-  // Self-contained key-stable canonical serialization (matches the canonical-json
-  // cube contract). Required for package independence: this package must not reach
-  // into the monorepo (../../canonical-json) after it is published/installed.
-  if (value === null) return 'null';
-  const t = typeof value;
-  if (t === 'number') return (Object.is(value, -0) ? '-0' : JSON.stringify(value));
-  if (t === 'boolean') return value ? 'true' : 'false';
-  if (t === 'string') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonicalStringify).join(',')}]`;
-  if (t === 'object') {
-    const entries = Object.keys(value).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
-      .map((k) => `${JSON.stringify(k)}:${canonicalStringify(value[k])}`);
-    return `{${entries.join(',')}}`;
+  const MAX_DEPTH = 32;
+  const MAX_NODES = 10000;
+  const MAX_STRING_BYTES = 1_048_576;
+  const MAX_VALUE_BYTES = 4 * 1_048_576;
+
+  const compareKeys = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+  const utf8Bytes = (s) => Buffer.byteLength(s, 'utf8');
+
+  function serialize(val, state, depth, path) {
+    if (depth > MAX_DEPTH) throw new CanonicalizeError('DEPTH_LIMIT', `Value depth exceeds limit at ${path || 'root'}`);
+    if (val === null) return 'null';
+    const t = typeof val;
+    if (t === 'boolean') return val ? 'true' : 'false';
+    if (t === 'string') {
+      const out = JSON.stringify(val);
+      if (utf8Bytes(out) > MAX_STRING_BYTES) throw new CanonicalizeError('STRING_LIMIT', `String exceeds size limit at ${path || 'root'}`);
+      return out;
+    }
+    if (t === 'number') {
+      if (!Number.isFinite(val)) throw new CanonicalizeError('UNSUPPORTED_VALUE', `Only finite numbers are supported at ${path || 'root'}`);
+      return Object.is(val, -0) ? '-0' : JSON.stringify(val);
+    }
+    if (t !== 'object') throw new CanonicalizeError('UNSUPPORTED_VALUE', `Unsupported value type "${t}" at ${path || 'root'}`);
+
+    // Plain-object rule: reject Date / Map / Set / class instances / etc.
+    let proto = Object.getPrototypeOf(val);
+    if (proto !== Object.prototype && proto !== null) {
+      throw new CanonicalizeError('UNSUPPORTED_OBJECT', `Only plain objects and arrays are supported at ${path || 'root'}`);
+    }
+    if (state.seen.has(val)) throw new CanonicalizeError('CIRCULAR_REFERENCE', `Circular reference detected at ${path || 'root'}`);
+    state.seen.add(val);
+
+    let out;
+    try {
+      if (Array.isArray(val)) {
+        state.nodes += 1;
+        if (state.nodes > MAX_NODES) throw new CanonicalizeError('NODE_LIMIT', `Node count exceeds limit at ${path || 'root'}`);
+        out = `[${val.map((item, i) => serialize(item, state, depth + 1, `${path}/${i}`)).join(',')}]`;
+      } else {
+        state.nodes += 1;
+        if (state.nodes > MAX_NODES) throw new CanonicalizeError('NODE_LIMIT', `Node count exceeds limit at ${path || 'root'}`);
+        const keys = Object.keys(val).sort(compareKeys);
+        const entries = keys.map((k) => {
+          const desc = Object.getOwnPropertyDescriptor(val, k);
+          if (!desc || !('value' in desc)) throw new CanonicalizeError('UNSUPPORTED_OBJECT', `Accessor properties are not supported at ${path}/${k}`);
+          const v = desc.value;
+          // Reject inherited (non-own) keys defensively; Object.keys already
+          // returns own enumerable only, but we double-check for safety.
+          if (!Object.prototype.hasOwnProperty.call(val, k)) {
+            throw new CanonicalizeError('UNSUPPORTED_OBJECT', `Inherited property not supported at ${path}/${k}`);
+          }
+          return `${JSON.stringify(k)}:${serialize(v, state, depth + 1, `${path}/${k}`)}`;
+        });
+        out = `{${entries.join(',')}}`;
+      }
+    } finally {
+      state.seen.delete(val);
+    }
+
+    if (utf8Bytes(out) > MAX_VALUE_BYTES) throw new CanonicalizeError('VALUE_LIMIT', `Canonical output exceeds size limit at ${path || 'root'}`);
+    return out;
   }
-  throw new AssertionsError('INVALID_SNAPSHOT', `cannot canonicalize value of type ${t}`, { retryable: false });
+
+  const state = { nodes: 0, seen: new WeakSet() };
+  try {
+    return serialize(value, state, 0, '');
+  } catch (err) {
+    // Map canonicalization failures into the public assertion contract
+    // (INVALID_SNAPSHOT) WITHOUT leaking the offending payload into the message.
+    if (err instanceof CanonicalizeError) {
+      throw new AssertionsError('INVALID_SNAPSHOT', `snapshot is not canonicalizable (${err.code})`, { retryable: false, cause: err });
+    }
+    throw err;
+  }
 }
 
-class CanonicalJsonError extends Error {
-  constructor(message) {
+class CanonicalizeError extends Error {
+  constructor(code, message) {
     super(message);
-    this.name = 'CanonicalJsonError';
+    this.name = 'CanonicalizeError';
+    this.code = code;
     Object.freeze(this);
   }
 }
@@ -78,9 +158,9 @@ function validateTimeoutMs(ms) {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function stableString(value) {
-  // Delegate to the Sovereign canonical-json primitive for deterministic,
-  // key-stable serialisation. This is an internal module dependency, not a
-  // third-party runtime dependency.
+  // Key-stable canonical serialization via the package's self-contained
+  // canonicalizer (a documented subset of the Sovereign canonical-json cube).
+  // No monorepo import; the artifact is independently installable.
   return canonicalStringify(value);
 }
 
