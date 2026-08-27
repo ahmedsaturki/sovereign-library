@@ -1,63 +1,140 @@
 # Sovereign Library
 
-A collection of standalone, dependency-free software cubes for applications, tools, automations, agents, and products.
+A collection of standalone, dependency-independent software Cubes for applications, tools, automations, agents, and Products.
 
-## Release rule
+## Start here
 
-Each cube is independently usable, documented, tested, cross-platform, failure/recovery hardened, and replaceable.
+This repository is designed to be understandable and safely operable by humans and autonomous agents.
+
+**For any agent:** read `AGENTS.md` first.
+
+Then read:
+
+1. `PROJECT_CONTROL.md` — authoritative current mission, governance, blockers, and recovery point.
+2. `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md` — permanent architecture and independence principles.
+3. `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md` — project-wide knowledge map and document hierarchy.
+4. `ROADMAP.md` — sequencing and future direction.
+5. The relevant Cube SPEC, API boundary, package contract, tests, and release records.
+
+Do not use chat history as a substitute for repository evidence.
+
+## Core principle
+
+Every suitable Cube is intended to be a **real standalone library**, not merely an internal monorepo module.
+
+A suitable distributable Cube should be:
+
+- independently usable;
+- independently testable;
+- independently packageable;
+- independently distributable;
+- explicitly dependency-bound;
+- free of hidden monorepo coupling;
+- deterministic within its contract;
+- failure/recovery hardened;
+- secure;
+- cross-platform where applicable;
+- independently versioned;
+- independently documented;
+- replaceable without requiring the entire Sovereign system.
+
+The permanent architectural model is:
+
+`INDEPENDENT CUBES -> EXPLICIT COMPOSITION -> REAL PRODUCTS`
+
+Products may compose many Cubes, but composition does not erase Cube independence.
+
+## Multi-language and mobile direction
+
+Sovereign is designed as a multi-ecosystem library platform.
+
+The target model is:
+
+`ONE AUTHORITATIVE CONTRACT -> NATIVE IMPLEMENTATION PER ECOSYSTEM -> CONFORMANCE -> INDEPENDENT DISTRIBUTION`
+
+Supported/planned ecosystems include:
+
+- **Node.js / JavaScript** → npm
+- **Python** → PyPI for suitable general-purpose Cubes
+- **Kotlin / JVM** → Maven-compatible distribution
+- **Android** → first-class Kotlin/Android library target
+- **iOS / Apple platforms** → native Swift-facing distribution and/or Kotlin Multiplatform where justified
+
+Not every Cube must support every ecosystem. Support is decided by applicability and actual value.
+
+Node.js, Python, Kotlin, and mobile implementations are **native implementations of one contract**, not mechanical source translations.
+
+## Engineering / release discipline
+
+Each Cube follows:
 
 `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE -> NEXT CUBE`
 
+A release-ready Cube requires real implementation, meaningful tests, failure/recovery verification, security evidence, relevant platform evidence, a real consumer artifact, and documentation.
+
 ## Dependency policy
 
-Target: zero runtime third-party dependencies per cube. Standard libraries and native OS primitives are allowed foundations.
+Target: zero runtime third-party dependencies per Cube unless an explicit versioned exception is approved.
+
+Dependencies are allowed when they are explicit, versioned, resolvable in the distributed artifact, tested, and consistent with the Cube's contract.
+
+Build/test/declaration tooling is not automatically a runtime dependency.
 
 ## Cross-platform target
 
-Windows, Linux, macOS, and WSL where the capability is supported.
+Windows, Linux, macOS, and WSL where the capability is supported. Android is a first-class future distribution target; iOS is a first-class future platform target.
 
-## Latest release
+Platform-specific behavior must be explicit and must not rely on accidental machine paths or shell assumptions.
+
+## Current release state
+
+The latest released Cube is:
 
 **Application Lifecycle / Graceful Shutdown Coordinator v0.1** — PR #104, merge commit `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`.
 
-Final pre-merge **Run #768** passed on Ubuntu, Windows, and macOS-15-Intel with syntax, bounded contract/integration tests, browser smoke, and complete jobs green.
+It is **FROZEN**. Earlier released/frozen Cubes remain recorded in `ROADMAP.md` and `PROJECT_CONTROL.md`.
 
-Post-merge **Run #772** also passed on Ubuntu, Windows, and macOS-15-Intel.
+The current First Public Package Batch has explicit human release authorization, but publication is currently blocked by the environment prerequisite recorded in `PROJECT_CONTROL.md` and `docs/release/AUTHORIZATION_PACKAGE_STATUS-V0.1.json`.
 
-The cube provides deterministic participant registration and ordering, explicit application lifecycle state, one global shutdown transaction, global deadline with bounded participant timeouts, concurrent/idempotent shutdown semantics, cancellation, stale/late completion isolation, bounded outcomes/diagnostics, immutable snapshots/errors, capability/data separation, native Node.js primitives, and zero runtime third-party dependencies.
+## Current architecture documents
 
-**FROZEN** at `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`.
+- `AGENTS.md` — mandatory autonomous-agent operating contract.
+- `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md` — permanent architecture constitution.
+- `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md` — project-wide knowledge base.
+- `docs/SOVEREIGN_ECOSYSTEM_CONTRACT_V1.0.json` — machine-readable project architecture/distribution contract.
+- `PROJECT_CONTROL.md` — current state and governance control plane.
+- `ROADMAP.md` — roadmap and sequencing.
 
-## Previous recent releases
+## Phase 0 — First Public Package Batch
 
-**Process Supervisor / Managed Child Lifecycle v0.1** — PR #102 — `881435f121d09099b9b263fa906f0968c42e4539`
+Completed gates include inventory/classification, Apache-2.0 licensing, public API boundary, declaration strategy, package contract/tooling, reproducible packaging/security verification, and publication-guard preparation.
 
-**Filesystem Recovery Journal / Operation Ledger v0.1** — PR #101 — `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`
+The two current release candidates are:
 
-**Safe File Quarantine / Delete v0.1** — PR #100 — `699d4181f0775af93b62d78f47fb00de42ec346e`
+1. `@sovereign/safe-path-resolver` v0.1.0
+2. `@sovereign/runtime-capability-inspector` v0.1.0
 
-**Bounded File Content Reader / Safe Content Access v0.1** — PR #99 — `f8db5a309aef655aec86051587bdf12d34f3dd20`
+They are technically verified and explicitly authorized. Publication remains blocked only by the human-owned npm environment prerequisite; the repository must never bypass that prerequisite by inventing credentials or altering the guard.
 
-**Filesystem Permission / Ownership Descriptor v0.1** — PR #98 — `69028a66b3827ecfee4a70f2460998dd333f02e0`
+The controlled path is:
 
-**Atomic Batch File Transaction / Safe Multi-File Commit v0.1** — PR #96 — `1fae6399eb2710b53cc8f53878138ae9a24a241d`
-
-Earlier releases remain pinned in `ROADMAP.md`.
-
-## Phase 0 — Stabilization & Package Readiness
-
-**Inventory & Classification** is complete and frozen after PR #105 / Run #773.
-
-The current gate is **Apache License 2.0 adoption and repository distribution policy**. This establishes licensing for future distributable components but does not authorize npm publication by itself.
-
-After licensing, Phase 0 proceeds through API boundary freeze, type/declaration strategy, package contract/tooling, reproducible packaging/security verification, and only then a small first public package batch.
-
-## License
-
-This repository is distributed under the **Apache License, Version 2.0**. See `LICENSE` and `NOTICE`.
+`AUTHORIZED -> FINAL CLEAN VERIFY -> TAG/RELEASE -> PUBLISH -> POST-PUBLISH VERIFY -> FREEZE`
 
 ## Repository shape
 
 ```text
-cubes/ contracts/ adapters/ examples/ specs/ tests/ docs/
+cubes/        reusable building blocks
+products/     higher-level compositions
+packages/     package manifests and distribution staging targets
+specs/        behavioral contracts
+contracts/    shared contracts
+adapters/     platform/environment adapters
+examples/     usage examples
+scripts/      verification/build/release tooling
+docs/         architecture, governance, research, release evidence
+.github/      CI/workflow automation
 ```
+
+## License
+
+Apache License, Version 2.0. See `LICENSE` and `NOTICE`.
