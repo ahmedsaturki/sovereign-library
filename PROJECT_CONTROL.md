@@ -42,9 +42,13 @@ bounded test runner; PR #111 CI history (by commit): `f34b724` #853 succeeded,
 `3e5a56b` #855 succeeded (Windows fix verified), `017aefb`/`a522746` #856/#857
 cancelled then re-run to **#857 succeeded** on all three platforms (Ubuntu /
 Windows / macOS-15-Intel); a later v6 doc/contract-drift reconciliation commit
-`67204b6` ran as **#858 succeeded** on all three platforms and is the current PR
-head. Browser-stack genuine defects fixed on this branch (visual-testing diff
-multiset fix, interactions `nth`+strict-mode fix) with regression tests added.
+`67204b6` ran as **#858 succeeded** on all three platforms and was the then-current
+PR head. Subsequent v7/v8/v9/v10 passes advanced the branch: `a3e3d20` (#859
+succeeded), `cb5b6ec` (#860 succeeded, recorder sensitive-data redact hook), and
+`2f4e75c` (#861 succeeded, recorder immutable-snapshot + fail-closed redaction
+hardening; **current PR head**). Browser-stack genuine defects fixed on this branch
+(visual-testing diff multiset fix, interactions `nth`+strict-mode fix, recorder
+immutable-snapshot aliasing + redactor fail-closed) with regression tests added.
 They are **NOT yet released or frozen**; they are
 staged for the next release wave after the Phase 0
 authorization gate. None of this work is in conflict with the one-current-task rule
@@ -52,7 +56,7 @@ because it is parked, not active, and does not touch main.
 
 - `cubes/browser-interactions` v0.1 — locators (`By.css/text/role/label/title/testId`), auto-wait (`waitFor`/`waitForVisible`), input simulation (`click`/`fill`/`press`/`focus`/`clear`), strict mode, deterministic error taxonomy. Unit-tested with a fake session, no browser required.
 - `cubes/browser-assertions` v0.1 — auto-retrying `expect(locator)` assertions (`toBeVisible`/`toBeEnabled`/`toHaveText`/...) with retry classification (`retryable` respected; non-retryable + unexpected errors surface immediately), `Snapshot.capture`/`diff` exact normalized HTML-string comparison (Contract A). Canonicalization is a **documented subset** of the Sovereign `canonical-json` cube inlined for package independence — it faithfully preserves every guarantee reachable through the `{ html: string }` snapshot input (key-sorted output, finite-number rejection, `-0`, plain-object rule, accessor rejection, circular detection, bounded recursion). It is NOT the full canonical-json cube (no tunable limits/config), and the code/SPEC/tests say so explicitly. Soft-assertion lifecycle (`softErrors`/`clearSoftErrors`), deterministic error taxonomy.
-- `cubes/browser-recorder` v0.1 — record/replay of interaction sequences.
+- `cubes/browser-recorder` v0.1 — record/replay of interaction sequences; `getScript()` returns deeply-frozen immutable snapshots (no internal-state aliasing); opt-in caller-controlled `redact` hook (record-time only, fail-closed `REDACT_ERROR`, no automatic secret detection).
 - `cubes/browser-network-interception` v0.1 — request/response interception, mocking, request log.
 - `cubes/browser-tab-manager` v0.1 — multi-tab orchestration via CDP Target domain, immutable `list()`.
 - `cubes/browser-visual-testing` v0.1 — DOM snapshot capture + deterministic diff.
