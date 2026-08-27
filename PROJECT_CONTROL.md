@@ -32,17 +32,30 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Release authorization packet is frozen in `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`.
 - No public package publication is authorized yet.
 
-## Recently implemented (working tree, pre-release, CI-pending)
+## Recently implemented (feature branch, pre-release, CI-pending — NOT on main)
 
 These are new, fully unit-tested cubes/products built on the existing frozen
-foundation. They follow SPEC → IMPLEMENT → TEST and pass the bounded test runner
-(763/763 tests green locally). They are **NOT yet released or frozen**; they are
-staged for the next release wave after the Phase 0 authorization gate.
+foundation. They live on branch `feat/browser-interactions-assertions-webtestkit`
+under open PR #111 (unmerged). They follow SPEC → IMPLEMENT → TEST and pass the
+bounded test runner; PR #111 CI runs 850/851/852 all succeeded. They are **NOT yet
+released or frozen**; they are staged for the next release wave after the Phase 0
+authorization gate. None of this work is in conflict with the one-current-task rule
+because it is parked, not active, and does not touch main.
 
 - `cubes/browser-interactions` v0.1 — locators (`By.css/text/role/label/title/testId`), auto-wait (`waitFor`/`waitForVisible`), input simulation (`click`/`fill`/`press`/`focus`/`clear`), strict mode, deterministic error taxonomy. Unit-tested with a fake session, no browser required.
-- `cubes/browser-assertions` v0.1 — auto-retrying `expect(locator)` assertions (`toBeVisible`/`toBeEnabled`/`toHaveText`/...), `Snapshot.capture`/`diff` structural comparison, deterministic errors.
-- `products/web-test-kit` v0.1 — composable product façade over `browser` + `browser-interactions` + `browser-assertions`; one import runs a full locate→act→assert→snapshot flow. Zero third-party dependencies.
+- `cubes/browser-assertions` v0.1 — auto-retrying `expect(locator)` assertions (`toBeVisible`/`toBeEnabled`/`toHaveText`/...), `Snapshot.capture`/`diff` structural comparison (key-stable equality), deterministic errors.
+- `cubes/browser-recorder` v0.1 — record/replay of interaction sequences.
+- `cubes/browser-network-interception` v0.1 — request/response interception, mocking, request log.
+- `cubes/browser-tab-manager` v0.1 — multi-tab orchestration via CDP Target domain, immutable `list()`.
+- `cubes/browser-visual-testing` v0.1 — DOM snapshot capture + deterministic diff.
+- `products/web-test-kit` v0.1 — composable product façade over `browser` + interaction/assertion cubes; one import runs a full locate→act→assert→snapshot flow. Zero third-party dependencies.
+- `products/sovereign-automation` v0.1 — unified SDK + CLI (`bin/cli.js`) composing all browser cubes; 5/5 product tests pass locally. Zero third-party dependencies.
 - `storage` cube hardened with clock capability injection (fixed a global-timer interference bug that broke the full-suite TTL test; now isolated and deterministic).
+
+> NOTE: The canonical `scripts.test` on `main` intentionally tracks released cubes
+> only. New feature-branch test files (browser cubes, `web-test-kit`,
+> `sovereign-automation`) are excluded from that list until released, so the
+> 679-vs-92 test-file count difference is expected, not a silent omission.
 
 ## The one-current-task rule
 
