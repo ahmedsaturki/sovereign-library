@@ -23,7 +23,7 @@
       "declarationSurfaceVerified": true,
       "securityStatus": "PASS",
       "packageStatus": "PACKABLE_VERIFIED",
-      "publicationStatus": "BLOCKED_NPM_2FA",
+      "publicationStatus": "BLOCKED_NPM_SCOPE_2FA_POLICY",
       "dependencies": "none",
       "license": "Apache-2.0",
       "engines": ">=24",
@@ -48,7 +48,7 @@
       "declarationSurfaceVerified": true,
       "securityStatus": "PASS",
       "packageStatus": "PACKABLE_VERIFIED",
-      "publicationStatus": "BLOCKED_NPM_2FA",
+      "publicationStatus": "BLOCKED_NPM_SCOPE_2FA_POLICY",
       "dependencies": "none",
       "license": "Apache-2.0",
       "engines": ">=24",
@@ -107,7 +107,7 @@
     "specVsImplGap": "SPEC advertises 'respond with custom body/status' and 'body (capped)'; implementation is capability/mock-level for body \u2014 SPEC should be reconciled to v0.1 scope"
   },
   "governanceBlockers": [
-    "NPM_PUBLISH_2FA: publish to @sovereign requires human two-factor authentication (OTP) or a granular access token with bypass-2fa enabled. Agent cannot satisfy human-owned 2FA. Not bypassed."
+    "NPM_SCOPE_2FA_POLICY: publishing @sovereign requires 2FA/bypass enforced by npm scope policy. Account 2FA is disabled; requires a granular token with bypass-2fa enabled for @sovereign, or org setting change. Human-owned. Not bypassed by agent."
   ],
   "nonGovernanceBlockersRemoved": [
     "package manifests now present and contract-correct",
@@ -116,25 +116,30 @@
     "publication guard fails closed (no publish path, no credential, no publishConfig)",
     "human release authorization received (PR #111 closure)"
   ],
-  "nextStep": "Human runs `npm publish` with 2FA OTP (npm will prompt) OR provides a granular access token (bypass 2fa) for @sovereign; resume PUBLISH -> POST-PUBLISH VERIFY -> TAG -> FREEZE -> UPDATE CONTROL PLANE. Package content (tarballs, sha256, export surface) is fully verified and ready.",
+  "nextStep": "Human creates a granular npm access token for @sovereign with 'bypass 2FA for publishing' (Read+Write to scope) OR disables the scope's 2FA requirement in npm org settings; then resume PUBLISH -> POST-PUBLISH VERIFY -> TAG -> FREEZE -> UPDATE CONTROL PLANE. All gates green; tarballs staged + metadata-corrected (repository.url -> git+https).",
   "authorizedAt": "2026-08-27T21:12:00Z",
   "authorizationRecordedBy": "explicit human release authorization (PR #111 audit closure)",
   "releaseHead": "013478a0f9bc6a1c70b14ef93155727007a7f946",
   "ciRunAtRelease": 867,
-  "publicationStatusActual": "BLOCKED_NPM_2FA",
+  "publicationStatusActual": "BLOCKED_NPM_SCOPE_2FA_POLICY",
   "releaseFailure": {
     "step": "PUBLISH",
-    "command": "npm publish .artifacts_local/pk/sovereign-safe-path-resolver-0.1.0.tgz --access public --ignore-scripts",
-    "exactError": "npm error code E403; 403 Forbidden - PUT https://registry.npmjs.org/@sovereign%2fsafe-path-resolver - Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages.",
-    "cause": "npm account 'ahmedsturki' owns @sovereign but publish requires 2FA OTP or a bypass-2fa granular token; agent cannot satisfy 2FA (human-owned).",
+    "exactError": "npm error code E403; 403 Forbidden - PUT https://registry.npmjs.org/@sovereign%2f<name> - Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages.",
+    "reproducedOn": [
+      "agent machine (NODE_AUTH_TOKEN + .npmrc)",
+      "human machine (PowerShell npm publish)"
+    ],
+    "cause": "npm enforces 2FA/bypass on the @sovereign scope. Account-level 2FA is disabled, so the only override is a granular token with 'bypass 2FA for publishing' explicitly enabled for @sovereign, OR disabling the scope's 2FA requirement in npm org settings.",
     "guardBypassed": false,
-    "provenanceNote": "--provenance rejected locally (provider: null; only CI/OIDC can generate provenance). Dropped for local publish; provenance is an enhancement, not a content requirement.",
-    "action": "STOPPED per runbook (any release step fails => STOP, do not bypass guard or improvise). Human must supply 2FA (OTP) or create a granular access token with bypass-2fa for @sovereign, then re-run PUBLISH."
+    "agentCannot": "create npm token (human-owned credential), toggle org 2FA policy, or inject bypass.",
+    "action": "STOPPED per runbook. Human must supply a granular access token with bypass-2fa for @sovereign (with Read+Write to the scope), or disable the scope 2FA requirement in npm settings. Package tarballs are staged, metadata-corrected, and ready to publish."
   },
   "npmEnvironment": {
-    "whoami": "ahmedsturki",
-    "orgOwnership": "@sovereign -> owner (verified via `npm org ls @sovereign`)",
-    "packageExistsOnRegistry": false,
-    "blocker": "E403 Two-factor authentication (or granular access token with bypass-2fa) required to publish @sovereign scope"
+    "whoami_existing_token": "ahmedsturki",
+    "orgOwnership": "@sovereign -> owner",
+    "accountTwoFactor": "disabled (per npm profile get)",
+    "blocker": "E403 Two-factor authentication OR granular access token with bypass-2fa REQUIRED to publish @sovereign scope. Enforced by npm scope policy regardless of account-level 2FA setting.",
+    "providedToken_npm_fchd": "rejected: 404 'do not have permission' when used directly (no publish permission for @sovereign); also not read from NODE_AUTH_TOKEN in this shell (ENEEDAUTH when global npmrc emptied).",
+    "existingGlobalToken": "authenticates (whoami=ahmedsturki) but publish returns E403 2FA-policy."
   }
 }

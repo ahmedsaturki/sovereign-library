@@ -101,13 +101,13 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-FIRST-BATCH — AUTHORIZED, PUBLISH BLOCKED ON npm 2FA**
+**PHASE-0-FIRST-BATCH — AUTHORIZED, PUBLISH BLOCKED ON npm SCOPE 2FA POLICY**
 
 ### Immediate next task
 
-**RELEASE AUTHORIZATION RECEIVED** (PR #111 closure) for `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. Final release gates all PASS at HEAD `cc1ba084532d82bb2cbe7d73c64b57fa9538fecb` (check 0; `npm test` 761/0; bounded ALL PASS; browser smoke pass; publication guard PASS; security PASS; package-tooling exact export surface safe=11/rt=8; reproducible byte-identical). npm auth is now valid (`npm whoami` → `ahmedsturki`; `npm org ls @sovereign` → owner; package 404 = unpublished, no collision).
+**RELEASE AUTHORIZATION RECEIVED** (PR #111 closure) for `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. All release gates PASS at HEAD `cc1ba084532d82bb2cbe7d73c64b57fa9538fecb` (check 0; `npm test` 761/0; bounded ALL PASS; browser smoke pass; publication guard PASS; security PASS; package-tooling exact export surface safe=11/rt=8; reproducible byte-identical). The two tarballs are staged, `repository.url` metadata-corrected, and ready to publish (sha256 `44978522…ce0047e` / `bf53c237…ebefa4`).
 
-**PUBLISH is blocked by npm two-factor authentication** (genuine human/external prerequisite, not governance): `npm publish` returns `E403 — Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages` to the `@sovereign` scope. The publication guard remains correctly fail-closed. **Do NOT invent credentials, mint a token, commit secrets, or weaken the guard.** The one human action required: run `npm publish` with a 2FA OTP (npm prompts), OR create a granular npm access token for `@sovereign` with "bypass 2FA" enabled, then resume PUBLISH → POST-PUBLISH VERIFY → TAG → FREEZE → UPDATE CONTROL PLANE. Package content (tarballs, sha256, export surface) is fully verified and ready; nothing else blocks publication.
+**PUBLISH is blocked by npm scope 2FA policy** (genuine human/external prerequisite, not governance). Root cause confirmed by reproduction on BOTH the agent machine and the human's own PowerShell: `npm publish` returns `E403 — Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages` to the `@sovereign` scope. The account-level 2FA is **disabled** (`npm profile get`), so the block is enforced by the **scope/registry policy**, not the account. The provided granular token (`npm_fchd…`) was rejected (404 "do not have permission" — no publish grant for `@sovereign`); the existing global token authenticates but still hits the 2FA-policy 403. The publication guard remains correctly fail-closed. **Do NOT invent credentials, mint a token, commit secrets, or weaken the guard.** The one human action required: **create a granular npm access token for `@sovereign` with "bypass 2FA for publishing" enabled (Read+Write to the scope)**, OR disable the scope's 2FA requirement in npm org settings. Then resume PUBLISH → POST-PUBLISH VERIFY → TAG → FREEZE → UPDATE CONTROL PLANE.
 
 ### Completed Phase 0 gates
 
