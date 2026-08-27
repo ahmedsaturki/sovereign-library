@@ -4,6 +4,8 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { SovereignAutomation, AutomationError, cli, VERSION } from '../src/index.js';
 import { BrowserInteractions, By } from '../../../cubes/browser-interactions/src/index.js';
 import { expect, Snapshot } from '../../../cubes/browser-assertions/src/index.js';
@@ -55,7 +57,7 @@ test('saveScript writes the recorded script to JSON', async () => {
   const sa = new SovereignAutomation(session);
   sa.page = new FakeInteractions();
   sa.recorder = { getScript: () => [{ kind: 'click', target: { kind: 'css', value: 'button' } }] };
-  const file = await sa.saveScript('/tmp/sov-rec-test.json');
+  const file = await sa.saveScript(join(tmpdir(), 'sov-rec-test.json'));
   const { readFileSync } = await import('node:fs');
   const data = JSON.parse(readFileSync(file, 'utf8'));
   assert.equal(data.version, VERSION);
