@@ -101,11 +101,13 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-FIRST-BATCH — AUTHORIZED, PUBLISH BLOCKED ON ENV PREREQUISITE**
+**PHASE-0-FIRST-BATCH — AUTHORIZED, PUBLISH BLOCKED ON npm 2FA**
 
 ### Immediate next task
 
-**Resume PUBLISH** for `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0 once the human-owned npm prerequisite is available. The release runbook (`docs/release/RELEASE-RUNBOOK-V0.1.md`) was executed through the PUBLISH precondition and stopped on `npm whoami` / `ENEEDAUTH`. No npm organization ownership was verified, no `NPM_TOKEN`/`NODE_AUTH_TOKEN` is present, and no publication was attempted after the failure. **Do NOT bypass this with `npm adduser`, invented credentials, token commits, or `publishConfig` changes.** Once authorized npm infrastructure exists, resume at PUBLISH, then POST-PUBLISH VERIFY → FREEZE → UPDATE CONTROL PLANE.
+**RELEASE AUTHORIZATION RECEIVED** (PR #111 closure) for `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. Final release gates all PASS at HEAD `cc1ba084532d82bb2cbe7d73c64b57fa9538fecb` (check 0; `npm test` 761/0; bounded ALL PASS; browser smoke pass; publication guard PASS; security PASS; package-tooling exact export surface safe=11/rt=8; reproducible byte-identical). npm auth is now valid (`npm whoami` → `ahmedsturki`; `npm org ls @sovereign` → owner; package 404 = unpublished, no collision).
+
+**PUBLISH is blocked by npm two-factor authentication** (genuine human/external prerequisite, not governance): `npm publish` returns `E403 — Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages` to the `@sovereign` scope. The publication guard remains correctly fail-closed. **Do NOT invent credentials, mint a token, commit secrets, or weaken the guard.** The one human action required: run `npm publish` with a 2FA OTP (npm prompts), OR create a granular npm access token for `@sovereign` with "bypass 2FA" enabled, then resume PUBLISH → POST-PUBLISH VERIFY → TAG → FREEZE → UPDATE CONTROL PLANE. Package content (tarballs, sha256, export surface) is fully verified and ready; nothing else blocks publication.
 
 ### Completed Phase 0 gates
 
