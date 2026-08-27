@@ -67,3 +67,28 @@ test('errors carry stable code', () => {
   const e = new RecorderError('X', 'msg');
   assert.equal(e.code, 'X');
 });
+
+test('redact option can mask sensitive fill values', async () => {
+  const page = new FakeInteractions();
+  const rec = new BrowserRecorder(page, {
+    redact: (params, step) => {
+      if (step.kind === 'fill' && params.value !== undefined) {
+        return { ...params, value: '<redacted>' };
+      }
+      return params;
+    }
+  });
+  await rec.fill({ kind: 'css', value: '#password' }, 's3cr3t');
+  const script = rec.getScript();
+  const fillStep = script.find(s => s.kind === 'fill');
+  assert.equal(fillStep.params.value, '<redacted>', 'sensitive value must be redacted');
+});
+
+test('replay redacts are not stored in the recorded script by default', async () => {
+  const page = new FakeInteractions();
+  const rec = new BrowserRecorder(page); // no redact
+  await rec.fill({ kind: 'css', value: '#email' }, 'user@example.com');
+  const script = rec.getScript();
+  const fillStep = script.find(s => s.kind === 'fill');
+  assert.equal(fillStep.params.value, 'user@example.com', 'default: value preserved when no redactor');
+});

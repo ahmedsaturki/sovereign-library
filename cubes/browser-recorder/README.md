@@ -10,6 +10,10 @@ fully unit-testable.
 - Records `click` / `fill` / `press` as plain, JSON-safe step objects.
 - Optional DOM snapshot per step (via injected `snapshot` function).
 - `getScript()` returns the recorded steps; `replay(interactions)` reproduces them.
+- Optional `redact` option: a `(params, step) => params` transform applied to
+  each recorded step's params, so sensitive data (e.g. `fill` values on
+  password/token fields) can be masked before persistence. Default: identity
+  (no redaction).
 - Deterministic error taxonomy with stable `code`.
 
 ## Example

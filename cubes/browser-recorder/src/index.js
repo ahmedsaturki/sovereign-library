@@ -39,13 +39,18 @@ export class BrowserRecorder {
     this.steps = [];
     this._captureSnapshot = options.captureSnapshot !== false;
     this._snapshotFn = typeof options.snapshot === 'function' ? options.snapshot : null;
+    // Optional redactor: (params, step) => params applied to every recorded step's
+    // params. Use to mask sensitive data (e.g. fill values on password fields)
+    // before it is persisted by getScript(). Default: identity (no redaction).
+    this._redact = typeof options.redact === 'function' ? options.redact : null;
   }
 
   async _record(kind, target, params = {}) {
+    const redacted = this._redact ? this._redact({ ...params }, { kind, target }) : params;
     const step = Object.freeze({
       kind,
       target: target ? { ...target } : null,
-      params: { ...params },
+      params: { ...(redacted || params) },
       at: 0
     });
     if (this._captureSnapshot && this._snapshotFn) {
