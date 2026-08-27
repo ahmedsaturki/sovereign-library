@@ -15,8 +15,9 @@
 import { BrowserSession, launch } from '../../../cubes/browser/src/index.js';
 import { BrowserInteractions, By } from '../../../cubes/browser-interactions/src/index.js';
 import { expect, Snapshot, AssertionsError } from '../../../cubes/browser-assertions/src/index.js';
+import { BrowserRecorder } from '../../../cubes/browser-recorder/src/index.js';
 
-export { By, expect, Snapshot, AssertionsError, BrowserInteractions, BrowserSession, launch };
+export { By, expect, Snapshot, AssertionsError, BrowserInteractions, BrowserSession, launch, BrowserRecorder };
 
 /**
  * One object that owns the browser session and exposes the full testing API.
@@ -42,6 +43,7 @@ export class WebTestKit {
   expect(locator, options) { return expect(locator, options); }
   snapshotOf(html) { return this.snapshot.capture(html); }
   diffSnapshots(before, after) { return this.snapshot.diff(before, after); }
+  recorder() { return new BrowserRecorder(this.page); }
 
   async title() { return this.page.title(); }
   async url() { return this.page.url(); }

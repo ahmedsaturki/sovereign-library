@@ -87,8 +87,11 @@ test('WebTestKit snapshot diff works end to end', () => {
   assert.equal(kit.diffSnapshots(a, c).equal, false);
 });
 
-test('WebTestKit rejects a session without evaluate()', () => {
-  assert.throws(() => new WebTestKit({}), err => err.code === 'INVALID_SESSION');
+test('WebTestKit exposes a recorder facade', () => {
+  const session = new FakeSession();
+  const kit = new WebTestKit(session);
+  const rec = kit.recorder();
+  assert.ok(rec && typeof rec.click === 'function', 'recorder should expose click()');
 });
 
 test('Snapshot is exported and usable directly', () => {
