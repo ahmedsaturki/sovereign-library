@@ -33,7 +33,7 @@ no registry credential, no publishConfig, root private). If it fails, STOP.
 Commands (from repo root):
 ```
 npm run check                                  # exit 0
-npm test                                       # 757/757 (note: known infra flake in process-supervisor under full load; bounded runner is authoritative)
+npm test                                       # 761/761 (note: known governance-locked frozen-cube test-timing flake in application-lifecycle under full CI load; bounded runner + run #866 all-green are authoritative)
 node scripts/run-tests-bounded.mjs             # ALL PASS
 node scripts/verify-publication-guard.mjs      # ALL PUBLICATION GUARD CHECKS PASSED
 node scripts/verify-security-boundaries.mjs    # ALL SECURITY BOUNDARY CHECKS PASSED

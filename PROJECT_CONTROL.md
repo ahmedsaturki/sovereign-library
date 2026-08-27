@@ -48,7 +48,7 @@ succeeded), `cb5b6ec` (#860 succeeded, recorder sensitive-data redact hook), and
 `2f4e75c` (#861 succeeded, recorder immutable-snapshot + fail-closed redaction
 hardening) → `c4272f0` (#862 succeeded, PR #111 current-state doc reconciliation) →
 `a495f1d` (#863 succeeded, v12 release-wave prep + runbook/authorization-package) →
-`ecf5be8` (#864, v13 network-interception Fetch-domain contract closure; **current PR
+`35c14dc` (#866, v14 final release-candidate freeze-audit doc reconciliation; **current PR
 head**). Browser-stack genuine defects fixed on this branch
 (cubes/browser-network-interception v0.1 corrected from the passive Network domain to
 the real CDP Fetch domain for genuine request interception/mocking; verified against
@@ -77,7 +77,7 @@ globalShutdownTimeoutMs - (capabilities.now() - startedAt))`). Its test "late
 participant completion cannot mutate the terminal snapshot" asserts `deepEqual`
 between two snapshots taken ms apart; under CI matrix load the `remainingMs` value
 shifts by 1ms, so the assertion intermittently fails (observed: **Run #865 macOS
-FAILED**, Windows+Ubuntu PASSED). This is a **test-timing defect (B)** in a frozen
+FAILED**, Windows+Ubuntu PASSED; **Run #866 (`35c14dc`) all three platforms PASSED** — the flake is nondeterministic, not a constant failure). This is a **test-timing defect (B)** in a frozen
 cube, not a runtime correctness bug — the snapshot is immutable; only the timing
 field makes the equality nondeterministic. Same class of intermittent timing flake
 was noted for `atomic-batch-file-transaction` and `process-supervisor` (all pass
