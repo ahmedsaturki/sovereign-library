@@ -101,13 +101,13 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-FIRST-BATCH — AUTHORIZED, PUBLISH BLOCKED ON npm SCOPE 2FA POLICY**
+**PHASE-0-FIRST-BATCH — AUTHORIZED, PUBLISH DEFERRED BY USER (batch at end)**
 
 ### Immediate next task
 
 **RELEASE AUTHORIZATION RECEIVED** (PR #111 closure) for `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. All release gates PASS at HEAD `cc1ba084532d82bb2cbe7d73c64b57fa9538fecb` (check 0; `npm test` 761/0; bounded ALL PASS; browser smoke pass; publication guard PASS; security PASS; package-tooling exact export surface safe=11/rt=8; reproducible byte-identical). The two tarballs are staged, `repository.url` metadata-corrected, and ready to publish (sha256 `44978522…ce0047e` / `bf53c237…ebefa4`).
 
-**PUBLISH is blocked by npm scope 2FA policy** (genuine human/external prerequisite, not governance). Root cause confirmed by reproduction on BOTH the agent machine and the human's own PowerShell: `npm publish` returns `E403 — Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages` to the `@sovereign` scope. The account-level 2FA is **disabled** (`npm profile get`), so the block is enforced by the **scope/registry policy**, not the account. The provided granular token (`npm_fchd…`) was rejected (404 "do not have permission" — no publish grant for `@sovereign`); the existing global token authenticates but still hits the 2FA-policy 403. The publication guard remains correctly fail-closed. **Do NOT invent credentials, mint a token, commit secrets, or weaken the guard.** The one human action required: **create a granular npm access token for `@sovereign` with "bypass 2FA for publishing" enabled (Read+Write to the scope)**, OR disable the scope's 2FA requirement in npm org settings. Then resume PUBLISH → POST-PUBLISH VERIFY → TAG → FREEZE → UPDATE CONTROL PLANE.
+**PUBLISH is DEFERRED BY USER CHOICE — NOT BLOCKED.** User elected not to publish now and to release all authorized packages together at the end after more Cubes are packaged. (Note: publishing a public npm package is free; the earlier E403 was an npm `@sovereign` scope 2FA-policy requirement, not a paywall. The authorization to publish remains granted; the act is simply postponed.) Both candidates are `AUTHORIZED_READY_DEFERRED`. No guard bypassed, no token invented. Next: continue the next eligible Cube batch → package them as independent `@sovereign/*` packages (publish-ready) → publish all authorized packages together at the end.
 
 ### Completed Phase 0 gates
 

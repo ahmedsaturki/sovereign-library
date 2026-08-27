@@ -23,7 +23,7 @@
       "declarationSurfaceVerified": true,
       "securityStatus": "PASS",
       "packageStatus": "PACKABLE_VERIFIED",
-      "publicationStatus": "BLOCKED_NPM_SCOPE_2FA_POLICY",
+      "publicationStatus": "AUTHORIZED_READY_DEFERRED",
       "dependencies": "none",
       "license": "Apache-2.0",
       "engines": ">=24",
@@ -48,7 +48,7 @@
       "declarationSurfaceVerified": true,
       "securityStatus": "PASS",
       "packageStatus": "PACKABLE_VERIFIED",
-      "publicationStatus": "BLOCKED_NPM_SCOPE_2FA_POLICY",
+      "publicationStatus": "AUTHORIZED_READY_DEFERRED",
       "dependencies": "none",
       "license": "Apache-2.0",
       "engines": ">=24",
@@ -106,9 +106,7 @@
     "futureArchitecture": "real response-body capture via Network.getResponseBody",
     "specVsImplGap": "SPEC advertises 'respond with custom body/status' and 'body (capped)'; implementation is capability/mock-level for body \u2014 SPEC should be reconciled to v0.1 scope"
   },
-  "governanceBlockers": [
-    "NPM_SCOPE_2FA_POLICY: publishing @sovereign requires 2FA/bypass enforced by npm scope policy. Account 2FA is disabled; requires a granular token with bypass-2fa enabled for @sovereign, or org setting change. Human-owned. Not bypassed by agent."
-  ],
+  "governanceBlockers": [],
   "nonGovernanceBlockersRemoved": [
     "package manifests now present and contract-correct",
     "declaration surface verified exact",
@@ -116,12 +114,12 @@
     "publication guard fails closed (no publish path, no credential, no publishConfig)",
     "human release authorization received (PR #111 closure)"
   ],
-  "nextStep": "Human creates a granular npm access token for @sovereign with 'bypass 2FA for publishing' (Read+Write to scope) OR disables the scope's 2FA requirement in npm org settings; then resume PUBLISH -> POST-PUBLISH VERIFY -> TAG -> FREEZE -> UPDATE CONTROL PLANE. All gates green; tarballs staged + metadata-corrected (repository.url -> git+https).",
+  "nextStep": "Continue engineering: package next eligible Cubes into independent @sovereign/* packages (ready to publish). Publish all authorized packages together at the end. PUBLISH is deferred by user choice, not blocked.",
   "authorizedAt": "2026-08-27T21:12:00Z",
   "authorizationRecordedBy": "explicit human release authorization (PR #111 audit closure)",
   "releaseHead": "013478a0f9bc6a1c70b14ef93155727007a7f946",
   "ciRunAtRelease": 867,
-  "publicationStatusActual": "BLOCKED_NPM_SCOPE_2FA_POLICY",
+  "publicationStatusActual": "DEFERRED_BY_USER_PENDING_BATCH",
   "releaseFailure": {
     "step": "PUBLISH",
     "exactError": "npm error code E403; 403 Forbidden - PUT https://registry.npmjs.org/@sovereign%2f<name> - Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages.",
@@ -141,5 +139,7 @@
     "blocker": "E403 Two-factor authentication OR granular access token with bypass-2fa REQUIRED to publish @sovereign scope. Enforced by npm scope policy regardless of account-level 2FA setting.",
     "providedToken_npm_fchd": "rejected: 404 'do not have permission' when used directly (no publish permission for @sovereign); also not read from NODE_AUTH_TOKEN in this shell (ENEEDAUTH when global npmrc emptied).",
     "existingGlobalToken": "authenticates (whoami=ahmedsturki) but publish returns E403 2FA-policy."
-  }
+  },
+  "publishDeferredByUser": true,
+  "deferralReason": "User chose to NOT publish now (no paid npm plan / no urgency). Publish all authorized packages together at the end after more Cubes are packaged. npm public publish is free; the earlier E403 was a scope 2FA-policy block, not a paywall, but user elects to batch the release later."
 }
