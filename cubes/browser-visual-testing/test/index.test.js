@@ -19,7 +19,10 @@ test('diff detects added nodes', () => {
   const after = vt.capture('<div><span>a</span><span>b</span></div>');
   const d = vt.diff(before, after);
   assert.equal(d.equal, false);
-  assert.equal(d.addedCount, 1);
+  // Token-level diff: the added <span>b</span> contributes open-span,
+  // #text:b, close-span lines (the cube is line/token based, not tree based).
+  assert.equal(d.addedCount, 3);
+  assert.ok(d.added.includes('#text:b'));
 });
 
 test('diff detects removed nodes', () => {
@@ -27,7 +30,8 @@ test('diff detects removed nodes', () => {
   const before = vt.capture('<ul><li>1</li><li>2</li></ul>');
   const after = vt.capture('<ul><li>1</li></ul>');
   const d = vt.diff(before, after);
-  assert.equal(d.removedCount, 1);
+  assert.equal(d.removedCount, 3);
+  assert.ok(d.removed.includes('#text:2'));
 });
 
 test('identical html yields equal snapshots', () => {
@@ -60,4 +64,24 @@ test('compare on missing baseline throws', () => {
 test('errors carry stable code', () => {
   const e = new VisualError('X', 'msg');
   assert.equal(e.code, 'X');
+});
+
+test('diff counts multiplicity, not substring presence (regression)', () => {
+  const vt = new VisualTester();
+  // Text grows: shorter line is a substring of the longer one — must still be
+  // reported as removed, because diff is a multiset line difference.
+  const a = vt.capture('<p>hello</p>');
+  const b = vt.capture('<p>hello world</p>');
+  const d1 = vt.diff(a, b);
+  assert.equal(d1.removedCount, 1, 'shorter line must be reported removed');
+  assert.equal(d1.addedCount, 1, 'longer line must be reported added');
+  assert.equal(d1.equal, false);
+
+  // Duplicate lines: one <li>x</li> -> two <li>x</li>. The token-level diff
+  // must report the added open-li / #text:x / close-li lines by frequency.
+  const a2 = vt.capture('<ul><li>x</li></ul>');
+  const b2 = vt.capture('<ul><li>x</li><li>x</li></ul>');
+  const d2 = vt.diff(a2, b2);
+  assert.equal(d2.removedCount, 0);
+  assert.equal(d2.addedCount, 3, 'extra duplicate lines must be reported added');
 });

@@ -68,12 +68,19 @@ export class VisualTester {
     return Object.freeze({ html: html.trim(), canonical, tokens: tokens.length });
   }
 
-  /** Diff two HTML snapshots, returning a bounded structural report. */
+  /** Diff two HTML snapshots, returning a bounded structural report.
+   *
+   * Uses a bounded MULTISET line difference (not substring containment) so that:
+   *  - a line that is a substring of another line is still counted correctly;
+   *  - lines appearing multiple times are counted by frequency, not presence.
+   */
   diff(before, after) {
     const a = typeof before === 'string' ? this.capture(before) : before;
     const b = typeof after === 'string' ? this.capture(after) : after;
-    const added = b.canonical.split('\n').filter(l => !a.canonical.includes(l));
-    const removed = a.canonical.split('\n').filter(l => !b.canonical.includes(l));
+    const aLines = a.canonical.split('\n');
+    const bLines = b.canonical.split('\n');
+    const added = this.#lineDiff(bLines, aLines);
+    const removed = this.#lineDiff(aLines, bLines);
     return Object.freeze({
       equal: a.canonical === b.canonical,
       added: added.slice(0, 100),
@@ -81,6 +88,20 @@ export class VisualTester {
       addedCount: added.length,
       removedCount: removed.length
     });
+  }
+
+  /** Lines present in `from` but not fully accounted for in `against`, counted
+   *  by frequency (multiset difference). */
+  #lineDiff(from, against) {
+    const seen = new Map();
+    for (const l of against) seen.set(l, (seen.get(l) || 0) + 1);
+    const out = [];
+    for (const l of from) {
+      const n = seen.get(l) || 0;
+      if (n > 0) seen.set(l, n - 1);
+      else out.push(l);
+    }
+    return out;
   }
 
   baseline(name, html) {

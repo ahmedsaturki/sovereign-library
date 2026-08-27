@@ -264,7 +264,10 @@ export class Locator {
     while (true) {
       const count = await this._probeCount();
       if (count > 0) {
-        if (this.strict) await this._assertSingle();
+        // An explicit index (nth) already disambiguates the locator, so strict
+        // mode's "exactly one match" check is bypassed — it only guards
+        // ambiguous (non-indexed) locators.
+        if (this.strict && !this.hasIndex) await this._assertSingle();
         return this;
       }
       if (Date.now() >= deadline) fail('WAIT_TIMEOUT', `Element not found within ${timeoutMs}ms`, { retryable: true });
@@ -281,7 +284,8 @@ export class Locator {
     while (true) {
       const res = await this._probeNode();
       if (res && res.found && res.visible) {
-        if (this.strict) await this._assertSingle();
+        // Bypass strict-mode count check when an explicit index (nth) was set.
+        if (this.strict && !this.hasIndex) await this._assertSingle();
         return this;
       }
       if (Date.now() >= deadline) fail('WAIT_TIMEOUT', `Element not visible within ${timeoutMs}ms`, { retryable: true });

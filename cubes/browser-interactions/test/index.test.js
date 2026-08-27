@@ -228,6 +228,19 @@ test('nth selects indexed element', async () => {
   assert.ok(second instanceof Locator);
 });
 
+test('nth(index) bypasses strict-mode count check (regression)', async () => {
+  const dom = new MiniDom();
+  dom.add('<li>one</li>');
+  dom.add('<li>two</li>');
+  dom.add('<li>three</li>');
+  const page = new BrowserInteractions(new FakeSession(dom));
+  // An explicit index disambiguates the locator, so strict mode must NOT throw
+  // STRICT_VIOLATION even though 3 <li> elements exist.
+  const third = page.locator(By.css('li')).nth(2);
+  await third.waitForVisible({ timeoutMs: 500 });
+  assert.ok(true);
+});
+
 test('errors carry stable codes and retryable flag', () => {
   const e = new InteractionsError('X', 'msg', { retryable: true });
   assert.equal(e.code, 'X');
