@@ -6,9 +6,12 @@
  * Browser Assertions Cube v0.1
  *
  * Assertion + snapshot layer for `browser-interactions`. Zero third-party
- * dependencies. Built for determinism: every assertion is retryable within a
- * bounded deadline and returns a stable, classified error on failure.
+ * dependencies. Uses the Sovereign `canonical-json` cube for deterministic
+ * key-stable serialization. Bounded retry respects each error's `retryable`
+ * flag. Snapshot is an exact normalized HTML-string contract (Contract A).
  */
+
+import { canonicalStringify, CanonicalJsonError } from '../../canonical-json/src/index.js';
 
 export class AssertionsError extends Error {
   constructor(code, message, options = {}) {
@@ -34,30 +37,31 @@ function clampPoll(ms) {
   return Math.min(ms, MAX_POLL_MS);
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function deepStableEqual(a, b) {
-  // Stable equality: strings compared directly; objects compared via
-  // canonical-json-style key-sorted serialization to avoid key-order flakiness.
-  if (a === b) return true;
-  if (typeof a !== typeof b) return false;
-  if (typeof a === 'string') return a === b;
-  const sa = stableString(a);
-  const sb = stableString(b);
-  return sa === sb;
+function validateTimeoutMs(ms) {
+  if (
+    !Number.isFinite(ms) ||
+    !Number.isSafeInteger(ms) ||
+    ms < 0 ||
+    ms > 86_400_000 // hard cap: 24h
+  ) {
+    throw new AssertionsError('INVALID_TIMEOUT', `timeoutMs must be a finite integer in [0, 86400000], got ${String(ms)}`, { retryable: false });
+  }
+  return ms;
 }
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 function stableString(value) {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return '[' + value.map(stableString).join(',') + ']';
-  const keys = Object.keys(value).sort();
-  return '{' + keys.map(k => JSON.stringify(k) + ':' + stableString(value[k])).join(',') + '}';
+  // Delegate to the Sovereign canonical-json primitive for deterministic,
+  // key-stable serialisation. This is an internal module dependency, not a
+  // third-party runtime dependency.
+  return canonicalStringify(value);
 }
 
 export class LocatorAssertions {
   constructor(locator, { timeoutMs = DEFAULT_TIMEOUT_MS, soft = false } = {}) {
     this.locator = locator;
-    this.timeoutMs = timeoutMs;
+    this.timeoutMs = validateTimeoutMs(timeoutMs);
     this.soft = soft;
   }
 
@@ -71,11 +75,25 @@ export class LocatorAssertions {
         return;
       } catch (error) {
         last = error;
+        // Unexpected (non-AssertionsError) errors from the locator/session are
+        // NEITHER retryable NOR classification-guarded: a crashed session will
+        // not heal by polling. Surface immediately (propagate the original error).
+        if (!(error instanceof AssertionsError)) {
+          if (this.soft) { this._softPush(error); return; }
+          throw error;
+        }
+        // Non-retryable assertion/validation errors surface immediately
+        // (e.g. INVALID_OPTION, NOT_HIDDEN, NOT_DISABLED, INVALID_TIMEOUT).
+        if (!error.retryable) {
+          if (this.soft) { this._softPush(error); return; }
+          throw error;
+        }
         if (Date.now() >= deadline) {
           if (this.soft) { this._softPush(error); return; }
           throw error;
         }
-        await sleep(poll);
+        const remaining = deadline - Date.now();
+        await sleep(Math.min(poll, Math.max(0, remaining)));
         poll = clampPoll(poll * 1.5);
       }
     }
@@ -84,6 +102,23 @@ export class LocatorAssertions {
   _softPush(error) {
     if (!this._softErrors) this._softErrors = [];
     this._softErrors.push(error);
+  }
+
+  /** v0.1 soft-assertion contract (Option B — minimal coherent API).
+   *  Returns a frozen snapshot of collected soft failures, in deterministic
+   *  insertion order. Empty array when none collected. No hidden global state. */
+  softErrors() {
+    return Object.freeze((this._softErrors || []).slice());
+  }
+
+  /** Clear collected soft failures (explicit lifecycle). */
+  clearSoftErrors() {
+    this._softErrors = [];
+  }
+
+  /** Whether any soft assertion failure was collected. */
+  hasSoftErrors() {
+    return (this._softErrors || []).length > 0;
   }
 
   _reject(code, message, retryable = false) {
@@ -133,7 +168,7 @@ export class LocatorAssertions {
   }
 
   async toHaveAttribute(name, expected) {
-    if (typeof name !== 'string' || !name) fail('INVALID_OPTION', 'attribute name must be a non-empty string');
+    if (typeof name !== 'string' || !name) fail('INVALID_OPTION', 'attribute name must be a non-empty string', { retryable: false });
     await this._retry(async () => {
       const actual = await this.locator.getAttribute(name);
       if (actual !== expected) this._reject('ATTRIBUTE_MISMATCH', `Expected attribute ${name}="${expected}" but got "${actual}"`, true);
@@ -141,7 +176,7 @@ export class LocatorAssertions {
   }
 
   async toHaveCount(expected) {
-    if (!Number.isSafeInteger(expected) || expected < 0) fail('INVALID_OPTION', 'count must be a non-negative integer');
+    if (!Number.isSafeInteger(expected) || expected < 0) fail('INVALID_OPTION', 'count must be a non-negative integer', { retryable: false });
     await this._retry(async () => {
       const count = await this.locator.count();
       if (count !== expected) this._reject('COUNT_MISMATCH', `Expected ${expected} elements but found ${count}`, true);
@@ -149,23 +184,38 @@ export class LocatorAssertions {
   }
 }
 
+// Snapshot Contract A: exact normalized HTML-string snapshot.
+// - Source HTML is trimmed (leading/trailing whitespace is insignificant).
+// - The canonical form is produced by the Sovereign canonical-json primitive
+//   (deterministic key-stable serialisation of { html }).
+// - This is NOT structural DOM normalisation; it is exact HTML-text comparison
+//   under whitespace-trim. The contract is documented in the SPEC.
 export class Snapshot {
   constructor(domStringifier) {
     this._stringify = domStringifier || (html => html);
   }
 
-  /** Produce a canonical, key-stable snapshot of a DOM subtree string. */
+  /** Produce a canonical, deterministic snapshot of an HTML string (Contract A). */
   capture(html) {
-    if (typeof html !== 'string') fail('INVALID_SNAPSHOT', 'snapshot source must be a string');
-    const stable = stableString({ html: html.trim() });
-    return Object.freeze({ html: html.trim(), stable, takenAt: 0 });
+    if (typeof html !== 'string') fail('INVALID_SNAPSHOT', 'snapshot source must be a string', { retryable: false });
+    const normalized = html.trim();
+    let stable;
+    try {
+      stable = canonicalStringify({ html: normalized });
+    } catch (error) {
+      if (error instanceof CanonicalJsonError) {
+        throw new AssertionsError('INVALID_SNAPSHOT', `snapshot could not be canonicalised: ${error.message}`, { retryable: false, cause: error });
+      }
+      throw error;
+    }
+    return Object.freeze({ html: normalized, stable, takenAt: 0 });
   }
 
-  /** Compare two HTML snapshots with structural (key-stable) equality. */
+  /** Compare two HTML snapshots for exact normalized equality (Contract A). */
   diff(before, after) {
     const a = typeof before === 'string' ? this.capture(before) : before;
     const b = typeof after === 'string' ? this.capture(after) : after;
-    return { equal: a.stable === b.stable, before: a, after: b };
+    return Object.freeze({ equal: a.stable === b.stable, before: a, after: b });
   }
 }
 
@@ -173,4 +223,4 @@ export function expect(locator, options = {}) {
   return new LocatorAssertions(locator, options);
 }
 
-export { DEFAULT_TIMEOUT_MS, deepStableEqual, stableString };
+export { DEFAULT_TIMEOUT_MS, canonicalStringify, CanonicalJsonError };
