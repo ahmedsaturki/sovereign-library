@@ -265,3 +265,23 @@ The architecture MUST always prefer:
 never:
 
 `HIDDEN COUPLING -> MONOLITH -> ARTIFICIAL MODULES`
+
+## 18. Durable decision rule
+
+A project decision is not official merely because it was discussed in chat.
+
+Any durable decision affecting architecture, behavior, dependencies, package/distribution design, security, platforms, compatibility, product scope, release policy, or governance MUST be recorded in the repository.
+
+Use the appropriate authoritative record:
+
+- permanent architecture principle → `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md`
+- project-wide map or terminology → `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md`
+- current state/governance/task → `PROJECT_CONTROL.md`
+- future sequencing → `ROADMAP.md`
+- behavior → relevant SPEC
+- public API → API boundary record
+- packaging → package contract
+- release authorization/execution → release records under `docs/release/`
+- external research/decisions → research/decision ledger
+
+Agents MUST convert important conversation decisions into the appropriate repository record before treating them as durable project knowledge.
