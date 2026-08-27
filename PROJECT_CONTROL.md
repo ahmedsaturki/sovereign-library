@@ -37,8 +37,11 @@ This file is the anti-drift control for the repository. It keeps development fin
 These are new, fully unit-tested cubes/products built on the existing frozen
 foundation. They live on branch `feat/browser-interactions-assertions-webtestkit`
 under open PR #111 (unmerged). They follow SPEC → IMPLEMENT → TEST and pass the
-bounded test runner; PR #111 CI runs 850/851/852 then 853/854/855 all succeeded. They are **NOT yet
-released or frozen**; they are staged for the next release wave after the Phase 0
+bounded test runner; PR #111 CI history (by commit): `f34b724` #853 succeeded,
+`55ca514` #854 failed on Windows (hardcoded `/tmp` in a product test, corrected),
+`3e5a56b` #855 succeeded (Windows fix verified), `017aefb` #856 in progress (v4
+contract-drift corrections). They are **NOT yet released or frozen**; they are
+staged for the next release wave after the Phase 0
 authorization gate. None of this work is in conflict with the one-current-task rule
 because it is parked, not active, and does not touch main.
 

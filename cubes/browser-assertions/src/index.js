@@ -6,11 +6,12 @@
  * Browser Assertions Cube v0.1
  *
  * Assertion + snapshot layer for `browser-interactions`. Zero third-party
- * dependencies. Self-contained deterministic canonicalization (key-stable
- * serialization matching the Sovereign `canonical-json` contract) so the
- * package artifact is independently installable without access to the
- * monorepo source layout. Bounded retry respects each error's `retryable`
- * flag. Snapshot is an exact normalized HTML-string contract (Contract A).
+ * dependencies. Self-contained deterministic canonicalization (a documented
+ * subset of the Sovereign `canonical-json` cube, tailored to the `{ html:
+ * string }` snapshot payload) so the package artifact is independently
+ * installable without access to the monorepo source layout. Bounded retry
+ * respects each error's `retryable` flag. Snapshot is an exact normalized
+ * HTML-string contract (Contract A).
  */
 
 // Self-contained canonicalizer for snapshot stability.
@@ -292,9 +293,11 @@ export class LocatorAssertions {
 
 // Snapshot Contract A: exact normalized HTML-string snapshot.
 // - Source HTML is trimmed (leading/trailing whitespace is insignificant).
-// - The canonical form is produced by the package's self-contained key-stable
-//   canonicalizer (matching the canonical-json cube contract) so the package is
-//   independently installable.
+// - The canonical form is produced by the package's self-contained subset
+//   canonicalizer (derived from the canonical-json cube semantics) so the
+//   package is independently installable. This is a documented SUBSET, not
+//   full canonical-json: it preserves every guarantee reachable through the
+//   { html: string } snapshot input but exposes no tunable limits/config.
 // - This is NOT structural DOM normalisation; it is exact HTML-text comparison
 //   under whitespace-trim. The contract is documented in the SPEC.
 export class Snapshot {
