@@ -8,7 +8,7 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-**Phase 0 — First Public Package Batch / Release Authorization Readiness** after freezing **Application Lifecycle / Graceful Shutdown Coordinator v0.1**.
+**Phase 0 — First Public Package Batch / Authorized Publication Recovery** after freezing **Application Lifecycle / Graceful Shutdown Coordinator v0.1**.
 
 ## Current repository state
 
