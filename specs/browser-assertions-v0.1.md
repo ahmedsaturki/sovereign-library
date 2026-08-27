@@ -2,11 +2,13 @@
 
 ## Purpose
 
-Assertion + snapshot layer for browser interactions, built on top of
-`browser-interactions` and the Sovereign `canonical-json` cube. Provides
-Playwright/Cypress-style expectations that are deterministic, serializable, and
-retryable. **Zero third-party runtime dependencies** — `canonical-json` is an
-internal Sovereign cube, not an external package.
+Assertion + snapshot layer for browser interactions. **Zero runtime
+dependencies** — including zero internal monorepo-source dependencies. The
+package is self-contained: it carries its own key-stable canonicalization
+primitive that matches the Sovereign `canonical-json` cube contract, so a
+published/installed `browser-assertions` package works without access to the
+monorepo filesystem layout. This satisfies the package contract's tarball
+boundary (no undeclared dependency or monorepo path may enter the artifact).
 
 ## Scope (v0.1)
 

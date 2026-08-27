@@ -6,12 +6,38 @@
  * Browser Assertions Cube v0.1
  *
  * Assertion + snapshot layer for `browser-interactions`. Zero third-party
- * dependencies. Uses the Sovereign `canonical-json` cube for deterministic
- * key-stable serialization. Bounded retry respects each error's `retryable`
+ * dependencies. Self-contained deterministic canonicalization (key-stable
+ * serialization matching the Sovereign `canonical-json` contract) so the
+ * package artifact is independently installable without access to the
+ * monorepo source layout. Bounded retry respects each error's `retryable`
  * flag. Snapshot is an exact normalized HTML-string contract (Contract A).
  */
 
-import { canonicalStringify, CanonicalJsonError } from '../../canonical-json/src/index.js';
+function canonicalStringify(value) {
+  // Self-contained key-stable canonical serialization (matches the canonical-json
+  // cube contract). Required for package independence: this package must not reach
+  // into the monorepo (../../canonical-json) after it is published/installed.
+  if (value === null) return 'null';
+  const t = typeof value;
+  if (t === 'number') return (Object.is(value, -0) ? '-0' : JSON.stringify(value));
+  if (t === 'boolean') return value ? 'true' : 'false';
+  if (t === 'string') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalStringify).join(',')}]`;
+  if (t === 'object') {
+    const entries = Object.keys(value).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      .map((k) => `${JSON.stringify(k)}:${canonicalStringify(value[k])}`);
+    return `{${entries.join(',')}}`;
+  }
+  throw new AssertionsError('INVALID_SNAPSHOT', `cannot canonicalize value of type ${t}`, { retryable: false });
+}
+
+class CanonicalJsonError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'CanonicalJsonError';
+    Object.freeze(this);
+  }
+}
 
 export class AssertionsError extends Error {
   constructor(code, message, options = {}) {
@@ -186,8 +212,9 @@ export class LocatorAssertions {
 
 // Snapshot Contract A: exact normalized HTML-string snapshot.
 // - Source HTML is trimmed (leading/trailing whitespace is insignificant).
-// - The canonical form is produced by the Sovereign canonical-json primitive
-//   (deterministic key-stable serialisation of { html }).
+// - The canonical form is produced by the package's self-contained key-stable
+//   canonicalizer (matching the canonical-json cube contract) so the package is
+//   independently installable.
 // - This is NOT structural DOM normalisation; it is exact HTML-text comparison
 //   under whitespace-trim. The contract is documented in the SPEC.
 export class Snapshot {
@@ -199,15 +226,7 @@ export class Snapshot {
   capture(html) {
     if (typeof html !== 'string') fail('INVALID_SNAPSHOT', 'snapshot source must be a string', { retryable: false });
     const normalized = html.trim();
-    let stable;
-    try {
-      stable = canonicalStringify({ html: normalized });
-    } catch (error) {
-      if (error instanceof CanonicalJsonError) {
-        throw new AssertionsError('INVALID_SNAPSHOT', `snapshot could not be canonicalised: ${error.message}`, { retryable: false, cause: error });
-      }
-      throw error;
-    }
+    const stable = canonicalStringify({ html: normalized });
     return Object.freeze({ html: normalized, stable, takenAt: 0 });
   }
 
@@ -223,4 +242,4 @@ export function expect(locator, options = {}) {
   return new LocatorAssertions(locator, options);
 }
 
-export { DEFAULT_TIMEOUT_MS, canonicalStringify, CanonicalJsonError };
+export { DEFAULT_TIMEOUT_MS };

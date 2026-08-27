@@ -43,7 +43,7 @@ authorization gate. None of this work is in conflict with the one-current-task r
 because it is parked, not active, and does not touch main.
 
 - `cubes/browser-interactions` v0.1 — locators (`By.css/text/role/label/title/testId`), auto-wait (`waitFor`/`waitForVisible`), input simulation (`click`/`fill`/`press`/`focus`/`clear`), strict mode, deterministic error taxonomy. Unit-tested with a fake session, no browser required.
-- `cubes/browser-assertions` v0.1 — auto-retrying `expect(locator)` assertions (`toBeVisible`/`toBeEnabled`/`toHaveText`/...), `Snapshot.capture`/`diff` structural comparison (key-stable equality), deterministic errors.
+- `cubes/browser-assertions` v0.1 — auto-retrying `expect(locator)` assertions (`toBeVisible`/`toBeEnabled`/`toHaveText`/...) with retry classification (`retryable` respected; non-retryable + unexpected errors surface immediately), `Snapshot.capture`/`diff` exact normalized HTML-string comparison (Contract A, self-contained key-stable canonicalization), soft-assertion lifecycle (`softErrors`/`clearSoftErrors`), deterministic error taxonomy.
 - `cubes/browser-recorder` v0.1 — record/replay of interaction sequences.
 - `cubes/browser-network-interception` v0.1 — request/response interception, mocking, request log.
 - `cubes/browser-tab-manager` v0.1 — multi-tab orchestration via CDP Target domain, immutable `list()`.

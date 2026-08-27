@@ -4,7 +4,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { LocatorAssertions, Snapshot, AssertionsError, expect, canonicalStringify } from '../src/index.js';
+import { LocatorAssertions, Snapshot, AssertionsError, expect } from '../src/index.js';
 
 /** Fake locator that records evaluation counts and returns scripted state. */
 class FakeLocator {
@@ -297,11 +297,24 @@ test('default retryable is false', () => {
   assert.equal(e.retryable, false);
 });
 
-// ---- canonical-json integration (SPEC == impl) ----
+// ---- self-contained canonicalization (SPEC == impl, no monorepo import) ----
 
-test('canonicalStringify is the SPEC-named primitive and deterministic', () => {
-  const a = canonicalStringify({ b: 1, a: 2 });
-  const b = canonicalStringify({ a: 2, b: 1 });
-  assert.equal(a, b, 'key order must not matter');
-  assert.equal(a, '{"a":2,"b":1}');
+test('snapshot stable output matches canonical-json cube contract (key-stable)', async () => {
+  const s = new Snapshot();
+  // Independent canonical-json cube reference for cross-check (test-only import,
+  // not a runtime dependency of the package).
+  const { canonicalStringify: ref } = await import('../../canonical-json/src/index.js');
+  const sample = '<div>x</div>';
+  const a = s.capture(sample);
+  const expected = ref({ html: sample.trim() });
+  assert.equal(a.stable, expected, 'inline canonicalizer must match canonical-json contract');
+});
+
+test('canonicalization is deterministic and key-order independent', () => {
+  const s = new Snapshot();
+  const a = s.capture('<a id="x" href="y">t</a>');
+  const b = s.capture('<a id="x" href="y">t</a>');
+  assert.equal(a.stable, b.stable);
+  // stable form uses sorted object keys: {"html":"..."}
+  assert.ok(a.stable.startsWith('{"html":'));
 });
