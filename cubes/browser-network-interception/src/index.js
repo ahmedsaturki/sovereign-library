@@ -5,10 +5,23 @@
 /**
  * Browser Network Interception Cube v0.1
  *
- * Deterministic network interception at the CDP layer. Zero third-party deps.
+ * Deterministic network interception *control* at the CDP layer. Zero third-party deps.
  * Built on capability injection: works against any object exposing
  * `on(method, handler)` + `send(method, params)` — exactly what the frozen
  * browser cube's CdpConnection provides, and trivially faked for unit tests.
+ *
+ * v0.1 contract (truthful):
+ *  - Real-browser interception uses the CDP **Fetch** domain:
+ *      Fetch.enable -> Fetch.requestPaused -> (fulfill | continue | fail)
+ *    This is the mechanism that actually intercepts and can mock/block requests.
+ *  - This cube wires that flow correctly: it will PAUSE, BLOCK (fail), or PASS-THROUGH
+ *    real requests, and it builds a deterministic traffic log (method, url, status,
+ *    mimeType, headers, timestamp, bodyLength).
+ *  - RESPONSE-BODY CAPTURE is NOT performed by v0.1. The `body` field is left `null`
+ *    unless the caller supplies a mock body via a `respond` route. Real response-body
+ *    capture would require Fetch.getResponseBody + decoding and is future architecture.
+ *  - Custom-body mocking (`respond` route) is fully supported via Fetch.fulfillRequest
+ *    at the capability boundary; the body is whatever the route provides.
  */
 
 export class NetworkError extends Error {
@@ -27,6 +40,17 @@ function fail(code, message, options) {
 
 const DEFAULT_BODY_CAP_BYTES = 64 * 1024;
 
+/** Encode a UTF-8 string as base64 (CDP Fetch.fulfillRequest body must be base64). */
+function toBase64(value) {
+  if (typeof Buffer !== 'undefined') return Buffer.from(value, 'utf8').toString('base64');
+  // Browser fallback (defensive; cube targets Node.js runtime).
+  const bytes = new TextEncoder().encode(value);
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  // eslint-disable-next-line no-undef
+  return btoa(binary);
+}
+
 export class NetworkInterceptor {
   constructor(cdp, options = {}) {
     if (!cdp || typeof cdp.on !== 'function' || typeof cdp.send !== 'function') {
@@ -43,58 +67,64 @@ export class NetworkInterceptor {
 
   async enable() {
     if (this._enabled) return;
-    await this.cdp.send('Network.enable');
-    this._unsub.push(this.cdp.on('Network.requestWillBeSent', e => this.#onRequest(e)));
-    this._unsub.push(this.cdp.on('Network.responseReceived', e => this.#onResponse(e)));
-    this._unsub.push(this.cdp.on('Network.loadingFinished', e => this.#onBody(e)));
+    // Fetch domain is the correct CDP mechanism for request interception/mocking.
+    await this.cdp.send('Fetch.enable', { patterns: [{ urlPattern: '*', requestStage: 'Request' }] });
+    this._unsub.push(this.cdp.on('Fetch.requestPaused', e => this.#onRequestPaused(e)));
+    this._unsub.push(this.cdp.on('Fetch.authRequired', () => {})); // ignore auth challenges
     this._enabled = true;
   }
 
-  #onRequest(e) {
+  #onRequestPaused(e) {
+    const requestId = e.requestId;
+    const interceptionId = e.requestId; // Fetch uses requestId as the interception handle
+    const url = e.request?.url;
+    const method = e.request?.method ?? 'GET';
+
     const req = {
-      requestId: e.requestId,
-      url: e.request?.url,
-      method: e.request?.method ?? 'GET',
+      requestId,
+      url,
+      method,
       headers: { ...(e.request?.headers ?? {}) },
       timestamp: e.timestamp ?? 0,
-      body: null
+      body: null,
+      bodyLength: 0,
     };
-    this._requestBuffer.set(e.requestId, req);
-    if (this._matchesBlock(e.request?.url)) {
-      this.cdp.send('Network.continueInterceptedRequest', {
-        interceptionId: e.requestId,
-        errorReason: 'Failed'
-      }).catch(() => {});
+    this._requestBuffer.set(requestId, req);
+
+    if (this._matchesBlock(url)) {
+      // Block: fail the request at the network layer.
+      this.cdp.send('Fetch.failRequest', { requestId: interceptionId, errorReason: 'Failed' }).catch(() => {});
+      // Record blocked requests in the traffic log (body null; bodyLength 0).
+      this.log.push(Object.freeze({ ...req }));
+      this._requestBuffer.delete(requestId);
       return;
     }
-    const match = this._matchMock(e.request?.url, e.request?.method);
+
+    const match = this._matchMock(url, method);
     if (match) {
-      this.cdp.send('Network.continueInterceptedRequest', {
-        interceptionId: e.requestId,
-        responseCode: match.status,
-        responseHeaders: {},
-        body: match.body instanceof Buffer ? match.body.toString('latin1') : String(match.body ?? '')
+      const body = match.body != null ? String(match.body) : '';
+      const bodyLength = Buffer.byteLength(body, 'utf8');
+      if (bodyLength > this.bodyCapBytes) {
+        fail('BODY_CAP_EXCEEDED', `mock body exceeds bodyCapBytes (${this.bodyCapBytes})`);
+      }
+      this.cdp.send('Fetch.fulfillRequest', {
+        requestId: interceptionId,
+        responseCode: match.status ?? 200,
+        responseHeaders: match.responseHeaders ?? [{ name: 'Content-Type', value: 'application/json' }],
+        body: toBase64(body),
       }).catch(() => {});
+      // A fulfilled request produces no further Fetch events; record it now.
+      req.bodyLength = bodyLength;
+      this.log.push(Object.freeze({ ...req }));
+      this._requestBuffer.delete(requestId);
+      return;
     }
-  }
 
-  #onResponse(e) {
-    const req = this._requestBuffer.get(e.requestId);
-    if (req) {
-      req.status = e.response?.status;
-      req.mimeType = e.response?.mimeType;
-      req.responseHeaders = { ...(e.response?.headers ?? {}) };
-    }
-  }
-
-  #onBody(e) {
-    const req = this._requestBuffer.get(e.requestId);
-    if (!req || req.body != null) return;
-    // In a real implementation we would fetch via Network.getResponseBody.
-    // For determinism we leave body null unless the user opts in via a mock.
-    req.bodyCapBytes = this.bodyCapBytes;
-    this.log.push(Object.freeze({ ...req, bodyLength: req.body ? req.body.length : 0 }));
-    this._requestBuffer.delete(e.requestId);
+    // No route matched: continue the request unchanged (pass-through).
+    this.cdp.send('Fetch.continueRequest', { requestId: interceptionId }).catch(() => {});
+    // Record pass-through requests in the traffic log (body null; bodyLength 0).
+    this.log.push(Object.freeze({ ...req }));
+    this._requestBuffer.delete(requestId);
   }
 
   /** Register a route: { pattern, action: 'block'|'respond', ... } */
@@ -124,21 +154,35 @@ export class NetworkInterceptor {
     return url.startsWith(pattern) || url === pattern;
   }
 
-  /** Stable, serializable traffic log (frozen). */
+  /**
+   * Record a response-side observation. Optional: only used when the caller has
+   * the Network domain enabled and forwards response events. v0.1 never requires it.
+   */
+  observeResponse(requestId, status, mimeType, headers) {
+    const req = this._requestBuffer.get(requestId);
+    if (!req) return;
+    req.status = status;
+    req.mimeType = mimeType;
+    req.responseHeaders = { ...(headers ?? {}) };
+  }
+
+  /** Stable, serializable traffic log (frozen). body is null unless a mock body was supplied. */
   snapshot() {
     return Object.freeze(this.log.map(e => ({
       url: e.url, method: e.method, status: e.status ?? null, mimeType: e.mimeType ?? null,
-      headers: { ...(e.headers || {}) }, timestamp: e.timestamp, bodyLength: e.bodyLength ?? 0
+      headers: { ...(e.headers || {}) }, timestamp: e.timestamp, bodyLength: e.bodyLength ?? 0,
+      body: e.body ?? null,
     })));
   }
 
   async destroy() {
     if (this._enabled) {
-      try { await this.cdp.send('Network.disable'); } catch {}
+      try { await this.cdp.send('Fetch.disable'); } catch { /* already closed */ }
     }
-    for (const unsub of this._unsub) { try { unsub(); } catch {} }
+    for (const unsub of this._unsub) { try { unsub(); } catch { /* noop */ } }
     this._unsub = [];
     this._enabled = false;
+    this._requestBuffer.clear();
   }
 }
 

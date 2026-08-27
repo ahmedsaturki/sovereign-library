@@ -46,7 +46,8 @@ Windows / macOS-15-Intel); a later v6 doc/contract-drift reconciliation commit
 PR head. Subsequent v7/v8/v9/v10 passes advanced the branch: `a3e3d20` (#859
 succeeded), `cb5b6ec` (#860 succeeded, recorder sensitive-data redact hook), and
 `2f4e75c` (#861 succeeded, recorder immutable-snapshot + fail-closed redaction
-hardening) → `c4272f0` (#862 succeeded, PR #111 current-state doc reconciliation;
+hardening) → `c4272f0` (#862 succeeded, PR #111 current-state doc reconciliation) →
+`a495f1d` (#863 succeeded, v12 release-wave prep + runbook/authorization-package;
 **current PR head**). Browser-stack genuine defects fixed on this branch
 (visual-testing diff multiset fix, interactions `nth`+strict-mode fix, recorder
 immutable-snapshot aliasing + redactor fail-closed) with regression tests added.
@@ -58,7 +59,7 @@ because it is parked, not active, and does not touch main.
 - `cubes/browser-interactions` v0.1 — locators (`By.css/text/role/label/title/testId`), auto-wait (`waitFor`/`waitForVisible`), input simulation (`click`/`fill`/`press`/`focus`/`clear`), strict mode, deterministic error taxonomy. Unit-tested with a fake session, no browser required.
 - `cubes/browser-assertions` v0.1 — auto-retrying `expect(locator)` assertions (`toBeVisible`/`toBeEnabled`/`toHaveText`/...) with retry classification (`retryable` respected; non-retryable + unexpected errors surface immediately), `Snapshot.capture`/`diff` exact normalized HTML-string comparison (Contract A). Canonicalization is a **documented subset** of the Sovereign `canonical-json` cube inlined for package independence — it faithfully preserves every guarantee reachable through the `{ html: string }` snapshot input (key-sorted output, finite-number rejection, `-0`, plain-object rule, accessor rejection, circular detection, bounded recursion). It is NOT the full canonical-json cube (no tunable limits/config), and the code/SPEC/tests say so explicitly. Soft-assertion lifecycle (`softErrors`/`clearSoftErrors`), deterministic error taxonomy.
 - `cubes/browser-recorder` v0.1 — record/replay of interaction sequences; `getScript()` returns deeply-frozen immutable snapshots (no internal-state aliasing); opt-in caller-controlled `redact` hook (record-time only, fail-closed `REDACT_ERROR`, no automatic secret detection).
-- `cubes/browser-network-interception` v0.1 — request/response interception, mocking, request log.
+- `cubes/browser-network-interception` v0.1 — request interception/blocking/mocking via the CDP **Fetch** domain (`Fetch.enable` → `Fetch.requestPaused` → `Fetch.fulfillRequest`/`Fetch.continueRequest`/`Fetch.failRequest`). v0.1 contract is interception *control* at the capability boundary: it blocks, mocks (caller-supplied body), and passes through real requests, and builds a deterministic traffic log. **Real response-body capture is NOT performed in v0.1** (log `body` is always `null`; only `bodyLength` is tracked for mock responses). Real-body capture is deferred to v0.2. v13 corrected a genuine CDP defect: the original code used the passive `Network` domain + `Network.continueInterceptedRequest`, which never actually intercepts in a real browser; the Fetch-domain flow is now verified against real Chromium (gated smoke test).
 - `cubes/browser-tab-manager` v0.1 — multi-tab orchestration via CDP Target domain, immutable `list()`.
 - `cubes/browser-visual-testing` v0.1 — DOM snapshot capture + deterministic diff.
 - `products/web-test-kit` v0.1 — composable product façade over `browser` + interaction/assertion cubes; one import runs a full locate→act→assert→snapshot flow. Zero third-party dependencies.
