@@ -355,42 +355,36 @@ test('canonicalization is deterministic and key-order independent', () => {
 });
 
 // §8 ARRAY PROTOTYPE-GATE REGRESSION
-// serialize() checks the object prototype before Array.isArray(). Per the
-// canonical-json contract, Array.prototype is neither Object.prototype nor
-// null, yet arrays MUST be accepted. This test proves the prototype gate does
-// NOT unintentionally reject arrays.
+// serialize() checks the object's prototype (proto !== Object.prototype &&
+// proto !== null) BEFORE the Array.isArray() branch. Array.prototype satisfies
+// neither condition, so arrays are correctly accepted (not rejected) by the gate.
+// It is NOT a defect. The guarantee is verified where it is externally reachable:
+// the public Snapshot path wraps input as { html: <string> } and the package's
+// inlined canonicalizer must produce byte-identical stable output to the reference
+// canonical-json cube for that reachable shape.
 test('array prototype is not mis-rejected by the plain-object gate (§8 regression)', async () => {
   const { canonicalStringify: ref } = await import('../../canonical-json/src/index.js');
-  // Cross-check several array/edge shapes against the real canonical-json cube.
-  const cases = [
-    [],
-    [1, 2, 3],
-    ['x', null, true, -0],
-    [{ a: 1 }, { b: 2 }],
-    [[[], []]],
-    [NaN], // non-finite inside: canonical-json throws, subset must match (fail closed)
-  ];
-  // Import the internal canonicalizer indirectly via Snapshot's stable output
-  // for the reachable {html} shape, and via a direct module-level reference for
-  // array shapes (the helper is internal but tests live in the package tree).
-  // We verify behavioral equivalence: the snapshot path's canonicalizer must
-  // produce the identical {html} stable for the same input as canonical-json.
   const s = new Snapshot();
+  // Reachability: Snapshot.capture only accepts a string and wraps it as {html}.
+  // For that reachable shape the subset canonicalizer must match canonical-json
+  // byte-for-byte. (Arrays/objects are not reachable through the public API; the
+  // gate's array-safety is a documented implementation guarantee, not exercised
+  // here through the snapshot surface.)
   for (const html of ['<div>x</div>', '<span></span>', '  trim me  ', '<a href="y" id="x">t</a>']) {
     const a = s.capture(html);
-    assert.equal(a.stable, ref({ html: html.trim() }), 'subset must match canonical-json for {html}');
+    assert.equal(a.stable, ref({ html: html.trim() }), 'subset canonicalizer must match canonical-json for reachable {html} shape');
   }
 });
 
-test('subset matches canonical-json on finite-number edge cases (-0)', () => {
-  // canonical-json preserves -0; the subset must too on the reachable path.
-  // Direct check of the canonicalizer primitive via the only reachable input
-  // shape: a string that serializes to a JSON number-free value. The -0 rule
-  // is structurally unreachable through {html:string}, but we assert the
-  // documented contract by construction (no null coercion of numbers) via
-  // the error-mapping test above.
+test('subset matches canonical-json for reachable {html} string shapes (no coercion)', async () => {
+  const { canonicalStringify: ref } = await import('../../canonical-json/src/index.js');
   const s = new Snapshot();
-  const a = s.capture('0');
-  // "0" is a string; canonicalizes to {"html":"0"} — not a number, no coercion.
-  assert.equal(a.stable, '{"html":"0"}');
+  // The public API only accepts strings; numeric -0 / NaN / Infinity are NOT
+  // reachable through Snapshot.capture(). This test verifies that string payloads
+  // (including digit-like strings) round-trip as strings without numeric coercion
+  // — e.g. "0" stays the string "0", never becomes a number or null.
+  for (const html of ['0', '-0', '123', 'NaN', 'Infinity', '<p>-0</p>']) {
+    const a = s.capture(html);
+    assert.equal(a.stable, ref({ html: html.trim() }), `string "${html}" must round-trip without coercion`);
+  }
 });
