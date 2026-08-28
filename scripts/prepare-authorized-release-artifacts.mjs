@@ -58,8 +58,11 @@ async function sha256(file) {
   });
 }
 
-function npmExecutable() {
-  return process.platform === 'win32' ? 'npm.cmd' : 'npm';
+function stage(candidateId) {
+  return run(process.execPath, [resolve(ROOT, 'scripts/package-stage.mjs'), candidateId], ROOT)
+    .then((res) => {
+      if (res.stderr && res.stderr.trim()) process.stderr.write(res.stderr);
+    });
 }
 
 async function main() {
@@ -69,7 +72,10 @@ async function main() {
   const records = [];
   for (const pkg of PACKAGES) {
     const packageDir = resolve(ROOT, pkg.path);
-    const result = await run(npmExecutable(), ['pack', packageDir, '--pack-destination', OUT, '--json'], ROOT);
+    // Stage source + declaration surface into the package dir before packing
+    // (mirrors verify-reproducible-package.mjs; bare package dirs are not committed to git).
+    await stage(pkg.id);
+    const result = await run(process.execPath, [resolve(ROOT, 'scripts/npm-pack-helper.mjs'), packageDir, OUT], ROOT);
     let packed;
     try {
       packed = JSON.parse(result.stdout);
