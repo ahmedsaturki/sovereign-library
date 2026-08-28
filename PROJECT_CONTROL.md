@@ -107,7 +107,16 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 **RELEASE AUTHORIZATION RECEIVED** (PR #111 closure) for `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. All release gates PASS at HEAD `cc1ba084532d82bb2cbe7d73c64b57fa9538fecb` (check 0; `npm test` 761/0; bounded ALL PASS; browser smoke pass; publication guard PASS; security PASS; package-tooling exact export surface safe=11/rt=8; reproducible byte-identical). The two tarballs are staged, `repository.url` metadata-corrected, and ready to publish (sha256 `44978522…ce0047e` / `bf53c237…ebefa4`).
 
-**PUBLISH is DEFERRED BY USER CHOICE — NOT BLOCKED.** User elected not to publish now and to release all authorized packages together at the end after more Cubes are packaged. (Note: publishing a public npm package is free; the earlier E403 was an npm `@sovereign` scope 2FA-policy requirement, not a paywall. The authorization to publish remains granted; the act is simply postponed.) Both candidates are `AUTHORIZED_READY_DEFERRED`. No guard bypassed, no token invented. Next: continue the next eligible Cube batch → package them as independent `@sovereign/*` packages (publish-ready) → publish all authorized packages together at the end.
+**PUBLISH is DEFERRED BY USER CHOICE — NOT BLOCKED.** User elected not to publish now and to release all authorized packages together at the end after more Cubes are packaged. (Note: publishing a public npm package is free; the earlier E403 was an npm `@sovereign` scope 2FA-policy requirement, not a paywall. The authorization to publish remains granted; the act is simply postponed.) Both candidates are `AUTHORIZED_READY_DEFERRED`. No guard bypassed, no token invented.
+
+**Next-wave packaging in progress (publish-ready, added this session):**
+- `@sovereign/canonical-json` v0.1.0 — 8 exports (staged, declaration-exact, import-verified)
+- `@sovereign/digest` v0.1.0 — 14 exports
+- `@sovereign/validation` v0.1.0 — 5 exports
+- `@sovereign/result` v0.1.0 — 5 exports
+- `@sovereign/url` v0.1.0 — 17 exports
+
+All five staged via `scripts/package-stage.mjs` (exact declaration surface) and `npm pack` verified. They follow the same publish-ready pattern as the two authorized candidates. Continue packaging eligible Cubes, then publish the full batch together at the end.
 
 ### Completed Phase 0 gates
 

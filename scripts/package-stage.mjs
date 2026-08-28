@@ -24,6 +24,48 @@ const STAGE = {
       'RUNTIME_OS_FAMILIES', 'RUNTIME_ARCHITECTURES',
     ]),
   },
+  'canonical-json': {
+    packageDir: resolve('packages/canonical-json'),
+    source: resolve('cubes/canonical-json/src/index.js'),
+    expected: new Set([
+      'CanonicalJsonError', 'createCanonicalizer', 'normalize', 'canonicalStringify',
+      'DEFAULT_MAX_DEPTH', 'DEFAULT_MAX_NODES', 'DEFAULT_MAX_STRING_BYTES', 'DEFAULT_MAX_VALUE_BYTES',
+    ]),
+  },
+  'digest': {
+    packageDir: resolve('packages/digest'),
+    source: resolve('cubes/digest/src/index.js'),
+    expected: new Set([
+      'DigestError', 'createDigestConfig', 'sha256', 'sha512', 'hmacSha256', 'hmacSha512',
+      'digestHex', 'hmacHex', 'constantTimeEqual',
+      'DEFAULT_MAX_INPUT_BYTES', 'DEFAULT_MAX_CHUNK_BYTES', 'DEFAULT_MAX_TOTAL_BYTES',
+      'digestAsync', 'hmacAsync',
+    ]),
+  },
+  'validation': {
+    packageDir: resolve('packages/validation'),
+    source: resolve('cubes/validation/src/index.js'),
+    expected: new Set([
+      'ValidationError', 'Schema', 'schema', 'validators', 'TYPES',
+    ]),
+  },
+  'result': {
+    packageDir: resolve('packages/result'),
+    source: resolve('cubes/result/src/index.js'),
+    expected: new Set([
+      'ResultError', 'Result', 'errors', 'serializeError', 'normalizeError',
+    ]),
+  },
+  'url': {
+    packageDir: resolve('packages/url'),
+    source: resolve('cubes/url/src/index.js'),
+    expected: new Set([
+      'UrlError', 'parseUrl', 'encodeURIComponentSafe', 'decodeURIComponentStrict',
+      'decodeURIComponentTolerant', 'parseQuery', 'buildQuery', 'formEncode', 'formDecode',
+      'utf8Encode', 'utf8Decode', 'base64Encode', 'base64Decode', 'base64UrlEncode',
+      'base64UrlDecode', 'encodePathSegment', 'decodePathSegment',
+    ]),
+  },
 };
 
 function fail(message) {
