@@ -28,12 +28,14 @@
     "securityByDesign": true,
     "crossPlatformWhereApplicable": true,
     "explicitPublicApi": true,
-    "frozenMeansProtected": true
+    "frozenMeansProtected": true,
+    "additiveEvolutionByDefault": true,
+    "githubIsDurableProjectMemory": true
   },
   "componentModel": {
     "cube": "Independent building block with its own contract, implementation, verification, distribution boundary, and lifecycle.",
     "product": "Explicit composition of Cubes; composition must not destroy Cube independence.",
-    "architecture": "INDEPENDENT_CUBES -> EXPLICIT_COMPOSITION -> REAL_PRODUCTS"
+    "architecture": "INDEPENDENT CUBES -> EXPLICIT COMPOSITION -> REAL PRODUCTS"
   },
   "lifecycle": [
     "IDEA",
@@ -59,29 +61,37 @@
   "ecosystems": {
     "nodejs": {
       "status": "primary-current",
-      "distribution": "npm"
+      "packageFormat": "npm-compatible",
+      "externalRegistry": "deferred",
+      "distribution": "GitHub repository/releases; optional GitHub Packages where justified"
     },
     "python": {
       "status": "planned-native",
-      "distribution": "PyPI",
-      "rule": "Implement idiomatically; do not mechanically translate JavaScript."
+      "packageFormat": "PyPI-compatible",
+      "externalRegistry": "deferred",
+      "distribution": "GitHub repository/releases"
     },
     "kotlin": {
       "status": "planned-native",
-      "distribution": "Maven-compatible",
+      "packageFormat": "Maven-compatible",
+      "externalRegistry": "deferred",
+      "distribution": "GitHub repository/releases; GitHub-hosted package mechanism where justified",
       "rule": "Use native Kotlin APIs and explicit platform adapters."
     },
     "android": {
       "status": "first-class-target",
       "implementation": "Kotlin/Android",
-      "distribution": "Maven-compatible"
+      "externalRegistry": "deferred",
+      "distribution": "GitHub repository/releases and appropriate GitHub-hosted artifacts"
     },
     "ios": {
       "status": "first-class-future-target",
-      "implementation": "Swift-facing native APIs and/or Kotlin Multiplatform where justified"
+      "implementation": "Swift-facing native APIs and/or Kotlin Multiplatform where justified",
+      "externalRegistry": "deferred",
+      "distribution": "GitHub repository/releases until a later explicit policy decision"
     }
   },
-  "multiLanguageRule": "ONE_AUTHORITATIVE_CONTRACT -> NATIVE_IMPLEMENTATION_PER_ECOSYSTEM -> CONFORMANCE -> INDEPENDENT_DISTRIBUTION",
+  "multiLanguageRule": "ONE AUTHORITATIVE CONTRACT -> NATIVE IMPLEMENTATION PER ECOSYSTEM -> CONFORMANCE -> INDEPENDENT DISTRIBUTION",
   "conformance": {
     "requiredWhenMultipleImplementations": true,
     "preferredVectors": [
@@ -95,13 +105,28 @@
       "recovery"
     ]
   },
+  "distributionPolicy": {
+    "currentPrimary": "github",
+    "githubOnlyForCurrentPhase": true,
+    "externalRegistriesDeferred": true,
+    "npm": "deferred",
+    "pypi": "deferred",
+    "mavenCentral": "deferred",
+    "otherThirdPartyRegistries": "deferred",
+    "githubReleases": "canonical-artifact-distribution",
+    "githubPackages": "optional-github-hosted-mechanism-for-suitable-public-packages",
+    "zeroCostPreference": true,
+    "policyChangeRequiresExplicitRepositoryDecision": true
+  },
   "distributionRequirements": {
     "outsideMonorepoConsumption": true,
     "explicitExports": true,
     "versionedDependencies": true,
     "reproducibleArtifacts": true,
     "securityVerification": true,
-    "crossPlatformEvidenceWhereApplicable": true
+    "crossPlatformEvidenceWhereApplicable": true,
+    "releaseChecksums": true,
+    "releaseSourceSha": true
   },
   "forbiddenPatterns": [
     "hidden_global_state",
@@ -111,8 +136,10 @@
     "unbounded_retries",
     "unbounded_resource_usage",
     "publication_without_authorization",
-    "claiming_release_without_registry_or_artifact_evidence",
-    "modifying_frozen_components_without_an_explicit_authorized_task"
+    "claiming_release_without_artifact_evidence",
+    "external_registry_publication_during_github_only_phase",
+    "modifying_frozen_components_without_an_explicit_authorized_task",
+    "deleting_existing_work_without_recorded_justification"
   ],
   "agentRules": {
     "mustRead": [
@@ -125,18 +152,42 @@
     "mustVerifyActualGitHubState": true,
     "mustNotTrustConversationMemoryAsProjectState": true,
     "mustPreserveHistoricalEvidence": true,
-    "mustKeepOneOfficialActiveTask": true
+    "mustKeepOneOfficialActiveTask": true,
+    "mustPersistMeaningfulMilestonesToGitHub": true
   },
   "statePolicy": {
     "currentStateAuthority": "PROJECT_CONTROL.md",
     "behaviorAuthority": "relevant SPEC",
     "architectureAuthority": "docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md",
     "packagingAuthority": "docs/PACKAGE_CONTRACT_V0.1.md",
-    "publicationAuthority": "release authorization record + current governance state"
-  },
-  "currentStatePolicy": {
-    "doNotDuplicateDynamicShaOrCiFacts": true,
-    "dynamicStateSource": "PROJECT_CONTROL.md",
+    "publicationAuthority": "current governance state + release records",
+    "dynamicShaAndCiFacts": "PROJECT_CONTROL.md",
     "dynamicReleaseSource": "docs/release/AUTHORIZATION_PACKAGE_STATUS-V0.1.json"
+  },
+  "evolutionPolicy": {
+    "defaultOrder": [
+      "ADD",
+      "EXTEND",
+      "HARDEN",
+      "IMPROVE",
+      "SUPERSEDE",
+      "DEPRECATE",
+      "ARCHIVE",
+      "DEFER"
+    ],
+    "deletionRequiresDocumentedJustification": true,
+    "historicalEvidenceMustRemain": true
+  },
+  "continuityPolicy": {
+    "repositoryIsPersistentMemory": true,
+    "chatIsSupplementalOnly": true,
+    "milestoneDurabilityRequires": [
+      "CHANGE",
+      "TEST",
+      "DOCUMENT",
+      "COMMIT",
+      "PUSH",
+      "VERIFY_REMOTE"
+    ]
   }
 }
