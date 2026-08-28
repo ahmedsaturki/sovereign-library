@@ -138,16 +138,18 @@ The historical record remains preserved and must not be interpreted as a current
 
 ## Future product direction
 
-After the current library-distribution expansion, the next architectural expansion is **Sovereign Multi-Language & Mobile Distribution**:
+## Current reconciliation — post-Python native wave
 
-1. preserve one authoritative SPEC per Cube;
-2. add native Python implementations for suitable portable Cubes;
-3. add native Kotlin implementations for suitable portable Cubes;
-4. make Android a first-class consumer/distribution target;
-5. add iOS/Apple support where real value exists, using native Swift-facing APIs and/or Kotlin Multiplatform where justified;
-6. introduce language-neutral conformance vectors;
-7. distribute each suitable implementation independently through GitHub and, when explicitly selected, free ecosystem-native package mechanisms.
+The first native Python wave is now complete for the SPR1 and RCI1 contract families. The shared language-neutral conformance vectors and runners are implemented and CI-enforced; native Python implementations pass the same contract vectors and their native test suites across the supported CI matrix.
 
-The next product wave remains Browser Automation and its Products, including Web Test Kit and Sovereign Automation. Browser work is a product composition strategy, not permission to collapse Cube boundaries.
+The **Browser/Product wave is the current active technical layer**. It is **not completed yet**. The authoritative qualification matrix currently records the seven Browser integration Cubes as `PRE_RELEASE`, with no package contracts independently satisfied yet. Therefore this roadmap must not claim Browser/Product release or completion prematurely.
 
-No second Cube may start concurrently with the current official distribution-expansion task.
+The next eligible sequence is:
+
+`BROWSER CORE -> ASSERTIONS -> INTERACTIONS -> NETWORK -> RECORDER -> TAB MANAGER -> VISUAL TESTING -> PRODUCTS`
+
+with per-Cube package contracts, out-of-tree verification, reproducibility, security, cross-platform evidence, and real-browser evidence where applicable.
+
+Kotlin/JVM, Android, and Apple-native waves remain future layers after the Browser/Product wave and after applicability/conformance criteria are satisfied. No fake ports are to be created.
+
+This reconciliation is additive and preserves the historical roadmap above; it only anchors the current execution sequence to repository evidence.
