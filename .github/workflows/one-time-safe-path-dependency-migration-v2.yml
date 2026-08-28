@@ -1,0 +1,67 @@
+name: one-time-safe-path-dependency-migration-v2
+
+on:
+  push:
+    branches: [feat/continuity-hardening]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gate on migration marker
+        run: |
+          if [ ! -f .automation/safe-path-dependency-migration-v2 ]; then
+            echo "Migration marker is absent; nothing to do."
+            exit 0
+          fi
+
+      - name: Apply safe-path dependency migration
+        run: node scripts/migrate-safe-path-dependency-wave.mjs
+
+      - name: Prepare local package dependency seam
+        run: node scripts/prepare-local-package-dependencies.mjs
+
+      - name: Package qualification verification
+        run: |
+          node scripts/verify-package-tooling.mjs
+          node scripts/verify-reproducible-package.mjs
+          node scripts/verify-security-boundaries.mjs
+
+      - name: Targeted migrated Cube tests
+        run: |
+          npm run test:bounded-file-content-reader-safe-content-access
+          npm run test:directory-walker-bounded-tree-traversal
+          npm run test:filesystem-metadata-stat-normalizer
+          npm run test:safe-file-quarantine-delete
+
+      - name: Full regression suite
+        run: npm test
+
+      - name: Syntax and diff validation
+        run: |
+          node --check scripts/migrate-safe-path-dependency-wave.mjs
+          node --check scripts/prepare-local-package-dependencies.mjs
+          git diff --check
+
+      - name: Persist migration and remove one-time artifacts
+        run: |
+          rm -rf .artifacts
+          rm -f scripts/migrate-safe-path-dependency-wave.mjs
+          rm -f .automation/safe-path-dependency-migration-v2
+          rmdir .automation 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git diff --cached --stat
+          git commit -m "feat: replace safe-path monorepo coupling with explicit dependency"
+          git push origin feat/continuity-hardening
