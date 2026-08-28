@@ -37,5 +37,9 @@ jobs:
         run: node scripts/verify-security-boundaries.mjs
       - name: Publication guard
         run: node scripts/verify-publication-guard.mjs
+      - name: Language-neutral conformance (canonical Node candidates)
+        run: |
+          node scripts/run-conformance.mjs --self contracts/conformance/vectors.safe-path-resolver.json
+          node scripts/run-conformance.mjs --self contracts/conformance/vectors.runtime-capability-inspector.json
       - name: Real browser smoke test
         run: npm run test:browser

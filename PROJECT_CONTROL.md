@@ -125,7 +125,7 @@ Current milestone:
 
 Immediate next task:
 
-**Continue qualification and hardening of existing standalone library candidates, reconcile evidence, and prepare GitHub release artifacts for the authorized packages; optional free ecosystem publication may be enabled later as a separate release decision.**
+**Maintain and verify qualified libraries; keep release-artifact infra ready (verified 2026-08-28); establish language-neutral conformance harness for port candidates (DONE 2026-08-28: SPR1 + RCI1 vectors + scripts/run-conformance.mjs, gated in CI). Next eligible non-gated layer: native Python/Kotlin-JVM ports of @sovereign/safe-path-resolver and @sovereign/runtime-capability-inspector — build only after a release-decision authorizes a port wave. Optional free ecosystem publication of the two authorized packages remains a separate, human-authorized release decision.**
 
 Everything else is parked in `ROADMAP.md`, issue/task records, or explicit future status.
 
