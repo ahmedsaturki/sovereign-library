@@ -1,0 +1,40 @@
+name: prepare-authorized-release-artifacts
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare authorized v0.1 packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Verify source contracts before packing
+        run: |
+          node scripts/verify-package-tooling.mjs
+          node scripts/verify-reproducible-package.mjs
+          node scripts/verify-security-boundaries.mjs
+
+      - name: Build authorized release artifacts
+        run: node scripts/prepare-authorized-release-artifacts.mjs
+
+      - name: Upload prepared artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sovereign-authorized-release-v0.1
+          path: .artifacts/authorized-release-v0.1/*
+          if-no-files-found: error
+          retention-days: 14
