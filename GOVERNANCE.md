@@ -1,6 +1,6 @@
 # Sovereign Library — Governance & Standing Decisions
 
-> Authoritative home for standing governance decisions, non-negotiable engineering constraints, distribution policy, and supersession history. This file is part of the permanent project memory.
+> Authoritative home for standing governance decisions, non-negotiable engineering constraints, distribution policy, and supersession history. Part of the permanent project memory.
 
 ## Permanent constraints
 
@@ -42,7 +42,7 @@ Do not publish merely because a package is technically ready. Release timing and
 
 ## Historical supersession
 
-Earlier wording that prohibited external registries absolutely is **SUPERSEDED** by the current policy above. The historical wording remains preserved in prior records and is not deleted.
+Earlier repository wording that prohibited external registries absolutely is **SUPERSEDED** by the current policy above. The historical wording remains preserved in prior records and is not deleted.
 
 Current decision:
 
