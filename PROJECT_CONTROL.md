@@ -116,7 +116,7 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 - `@sovereign/runtime-capability-inspector` v0.1.0 — 8 exports
 
 **Packaging wave results so far (Node.js, publish-ready, GitHub distribution):**
-- 7 packages staged in prior waves (incl. the 2 authorized) + 10 new this wave = **17 standalone packages, all TECHNICALLY_READY / PUBLICATION_DEFERRED**.
+- 7 packages staged in prior waves (incl. the 2 authorized) + 10 new this wave = **37 standalone packages (17 prior + 20 this wave), all TECHNICALLY_READY / PUBLICATION_DEFERRED**.
 - New this wave (verified: declaration-exact, out-of-tree import, reproducible byte-identical tarballs):
   `@sovereign/canonical-json`(8), `digest`(14), `validation`(5), `result`(5), `url`(17),
   `cache`(4), `circuit-breaker`(3), `concurrency`(3), `diff-patch`(9), `event`(3),

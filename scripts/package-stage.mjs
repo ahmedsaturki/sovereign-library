@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, readdirSync, statSync, cpSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { runNpm } from './npm-cli.mjs';
@@ -84,7 +84,18 @@ function main() {
   mkdirSync(src, { recursive: true });
   mkdirSync(dist, { recursive: true });
   if (!existsSync(source)) fail(`source cube is missing: ${source}`);
-  copyFileSync(source, resolve(src, 'index.js'));
+  // Copy the ENTIRE src/ directory (handles internal modular cubes with ./api.js, ./clock.js, etc.)
+  const srcRoot = dirname(source);
+  rmSync(src, { recursive: true, force: true });
+  mkdirSync(src, { recursive: true });
+  for (const entry of readdirSync(srcRoot)) {
+    const full = resolve(srcRoot, entry);
+    if (statSync(full).isDirectory()) {
+      cpSync(full, resolve(src, entry), { recursive: true });
+    } else if (entry.endsWith('.js') || entry.endsWith('.mjs') || entry.endsWith('.d.ts')) {
+      copyFileSync(full, resolve(src, entry));
+    }
+  }
   copyFileSync(resolve(ROOT, 'LICENSE'), resolve(packageDir, 'LICENSE'));
   copyFileSync(resolve(ROOT, 'NOTICE'), resolve(packageDir, 'NOTICE'));
   // copy the cube-level README into the package (falls back to a minimal generated one)

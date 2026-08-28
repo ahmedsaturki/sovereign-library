@@ -156,7 +156,7 @@
       "DEFAULT_MAX_ENTRIES",
       "DEFAULT_MAX_KEY_LENGTH"
     ],
-    "status": "PACKAGE_CANDIDATE",
+    "status": "TECHNICALLY_READY",
     "reason": "standalone-capable, no monorepo/bare imports"
   },
   "circuit-breaker": {
@@ -170,7 +170,7 @@
       "CircuitBreakerError",
       "FakeClock"
     ],
-    "status": "PACKAGE_CANDIDATE",
+    "status": "TECHNICALLY_READY",
     "reason": "standalone-capable, no monorepo/bare imports"
   },
   "concurrency": {
@@ -184,7 +184,7 @@
       "BulkheadError",
       "Lease"
     ],
-    "status": "PACKAGE_CANDIDATE",
+    "status": "TECHNICALLY_READY",
     "reason": "standalone-capable, no monorepo/bare imports"
   },
   "diff-patch": {
@@ -204,7 +204,7 @@
       "createDiffEngine",
       "diff"
     ],
-    "status": "PACKAGE_CANDIDATE",
+    "status": "TECHNICALLY_READY",
     "reason": "standalone-capable, no monorepo/bare imports"
   },
   "event": {
@@ -218,7 +218,7 @@
       "EventBus",
       "EventCubeError"
     ],
-    "status": "PACKAGE_CANDIDATE",
+    "status": "TECHNICALLY_READY",
     "reason": "standalone-capable, no monorepo/bare imports"
   },
   "logger": {
@@ -236,7 +236,7 @@
       "LoggerCubeError",
       "normalizeError"
     ],
-    "status": "PACKAGE_CANDIDATE",
+    "status": "TECHNICALLY_READY",
     "reason": "standalone-capable, no monorepo/bare imports"
   },
   "serialization": {
@@ -257,7 +257,7 @@
       "decode",
       "encode"
     ],
-    "status": "PACKAGE_CANDIDATE",
+    "status": "TECHNICALLY_READY",
     "reason": "standalone-capable, no monorepo/bare imports"
   },
   "timeout-deadline": {
@@ -276,7 +276,7 @@
       "sleepUntil",
       "withDeadline"
     ],
-    "status": "PACKAGE_CANDIDATE",
+    "status": "TECHNICALLY_READY",
     "reason": "standalone-capable, no monorepo/bare imports"
   },
   "config": {
@@ -297,7 +297,7 @@
       "redactKey",
       "redactValue"
     ],
-    "status": "PACKAGE_CANDIDATE",
+    "status": "TECHNICALLY_READY",
     "reason": "standalone-capable, no monorepo/bare imports"
   },
   "data": {
@@ -319,7 +319,343 @@
       "pick",
       "set"
     ],
-    "status": "PACKAGE_CANDIDATE",
+    "status": "TECHNICALLY_READY",
     "reason": "standalone-capable, no monorepo/bare imports"
+  },
+  "glob-path-matcher": {
+    "name": "@sovereign/glob-path-matcher",
+    "version": "0.1.0",
+    "description": "Sovereign glob-path-matcher Cube (standalone).",
+    "packageDir": "packages/glob-path-matcher",
+    "source": "cubes/glob-path-matcher/src/index.js",
+    "expected": [
+      "GLOB_PATH_MATCHER_FORMAT",
+      "GLOB_PATH_MATCHER_LIMITS",
+      "GlobPathMatcherError",
+      "compileGlob",
+      "evaluateRules",
+      "matchGlob",
+      "normalizeCandidatePath",
+      "parsePattern",
+      "serializePattern"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "mime": {
+    "name": "@sovereign/mime",
+    "version": "0.1.0",
+    "description": "Sovereign mime Cube (standalone).",
+    "packageDir": "packages/mime",
+    "source": "cubes/mime/src/index.js",
+    "expected": [
+      "MimeError",
+      "buildMultipart",
+      "parseMimeType",
+      "parseMultipart"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "retry": {
+    "name": "@sovereign/retry",
+    "version": "0.1.0",
+    "description": "Sovereign retry Cube (standalone).",
+    "packageDir": "packages/retry",
+    "source": "cubes/retry/src/index.js",
+    "expected": [
+      "RetryError",
+      "RetryRunner",
+      "createRetryPolicy"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "rate-limiter": {
+    "name": "@sovereign/rate-limiter",
+    "version": "0.1.0",
+    "description": "Sovereign rate-limiter Cube (standalone).",
+    "packageDir": "packages/rate-limiter",
+    "source": "cubes/rate-limiter/src/index.js",
+    "expected": [
+      "RateLimiter"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "scheduler": {
+    "name": "@sovereign/scheduler",
+    "version": "0.1.0",
+    "description": "Sovereign scheduler Cube (standalone).",
+    "packageDir": "packages/scheduler",
+    "source": "cubes/scheduler/src/index.js",
+    "expected": [
+      "FakeClock",
+      "PriorityHeap",
+      "RealClock",
+      "SchedulerCubeError",
+      "TaskScheduler"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "compression": {
+    "name": "@sovereign/compression",
+    "version": "0.1.0",
+    "description": "Sovereign compression Cube (standalone).",
+    "packageDir": "packages/compression",
+    "source": "cubes/compression/src/index.js",
+    "expected": [
+      "CompressionError",
+      "DEFAULT_MAX_INPUT_BYTES",
+      "DEFAULT_MAX_OUTPUT_BYTES",
+      "compress",
+      "createCompressionConfig",
+      "decompress",
+      "deflate",
+      "deflateSync",
+      "gunzip",
+      "gunzipSync",
+      "gzip",
+      "gzipSync",
+      "inflate",
+      "inflateSync"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "stream": {
+    "name": "@sovereign/stream",
+    "version": "0.1.0",
+    "description": "Sovereign stream Cube (standalone).",
+    "packageDir": "packages/stream",
+    "source": "cubes/stream/src/index.js",
+    "expected": [
+      "DEFAULT_MAX_CHUNK_BYTES",
+      "StreamError",
+      "createPipeline",
+      "runPipeline",
+      "collect"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "storage": {
+    "name": "@sovereign/storage",
+    "version": "0.1.0",
+    "description": "Sovereign storage Cube (standalone).",
+    "packageDir": "packages/storage",
+    "source": "cubes/storage/src/index.js",
+    "expected": [
+      "Storage",
+      "StorageCubeError"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "http-metadata": {
+    "name": "@sovereign/http-metadata",
+    "version": "0.1.0",
+    "description": "Sovereign http-metadata Cube (standalone).",
+    "packageDir": "packages/http-metadata",
+    "source": "cubes/http-metadata/src/index.js",
+    "expected": [
+      "HeaderMap",
+      "HttpMetadataError",
+      "buildSetCookie",
+      "createETag",
+      "ifMatch",
+      "ifNoneMatch",
+      "matchesETag",
+      "negotiateAccept",
+      "negotiateAcceptEncoding",
+      "negotiateAcceptLanguage",
+      "parseContentLength",
+      "parseContentType",
+      "parseCookieHeader"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "metrics": {
+    "name": "@sovereign/metrics",
+    "version": "0.1.0",
+    "description": "Sovereign metrics Cube (standalone).",
+    "packageDir": "packages/metrics",
+    "source": "cubes/metrics/src/index.js",
+    "expected": [
+      "DEFAULT_HISTOGRAM_BUCKETS",
+      "DEFAULT_MAX_LABELS",
+      "DEFAULT_MAX_LABEL_VALUE_BYTES",
+      "DEFAULT_MAX_METRICS",
+      "DEFAULT_MAX_NAME_BYTES",
+      "DEFAULT_MAX_SERIES_PER_METRIC",
+      "MetricsError",
+      "createMetricsRegistry"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "redaction": {
+    "name": "@sovereign/redaction",
+    "version": "0.1.0",
+    "description": "Sovereign redaction Cube (standalone).",
+    "packageDir": "packages/redaction",
+    "source": "cubes/redaction/src/index.js",
+    "expected": [
+      "DEFAULT_MAX_DEPTH",
+      "DEFAULT_MAX_NODES",
+      "DEFAULT_MAX_OUTPUT_BYTES",
+      "DEFAULT_MAX_STRING_BYTES",
+      "DEFAULT_REPLACEMENT",
+      "RedactionError",
+      "SENSITIVE_EXACT_KEYS",
+      "createRedactor"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "search-index": {
+    "name": "@sovereign/search-index",
+    "version": "0.1.0",
+    "description": "Sovereign search-index Cube (standalone).",
+    "packageDir": "packages/search-index",
+    "source": "cubes/search-index/src/index.js",
+    "expected": [
+      "SearchError",
+      "createSearchIndex"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "filesystem-permission-ownership-descriptor-v0-1": {
+    "name": "@sovereign/filesystem-permission-ownership-descriptor-v0-1",
+    "version": "0.1.0",
+    "description": "Sovereign filesystem-permission-ownership-descriptor-v0-1 Cube (standalone).",
+    "packageDir": "packages/filesystem-permission-ownership-descriptor-v0-1",
+    "source": "cubes/filesystem-permission-ownership-descriptor-v0-1/src/index.js",
+    "expected": [
+      "FORMAT",
+      "MAX_SERIALIZED_BYTES",
+      "PermissionOwnershipError",
+      "VERSION",
+      "createNodeCapabilities",
+      "normalizeDescriptor",
+      "parseDescriptor",
+      "serializeDescriptor",
+      "inspectPath"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "process-supervisor": {
+    "name": "@sovereign/process-supervisor",
+    "version": "0.1.0",
+    "description": "Sovereign process-supervisor Cube (standalone).",
+    "packageDir": "packages/process-supervisor",
+    "source": "cubes/process-supervisor/src/index.js",
+    "expected": [
+      "ProcessSupervisorError",
+      "createProcessSupervisor",
+      "defaultCapabilities"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "cli": {
+    "name": "@sovereign/cli",
+    "version": "0.1.0",
+    "description": "Sovereign cli Cube (standalone).",
+    "packageDir": "packages/cli",
+    "source": "cubes/cli/src/index.js",
+    "expected": [
+      "CliError",
+      "createCli"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "content-addressed-storage": {
+    "name": "@sovereign/content-addressed-storage",
+    "version": "0.1.0",
+    "description": "Sovereign content-addressed-storage Cube (standalone).",
+    "packageDir": "packages/content-addressed-storage",
+    "source": "cubes/content-addressed-storage/src/index.js",
+    "expected": [
+      "CasError",
+      "CasStore",
+      "DEFAULT_LIMITS",
+      "digest",
+      "normalizeAddress"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "atomic-file-writer-safe-replace": {
+    "name": "@sovereign/atomic-file-writer-safe-replace",
+    "version": "0.1.0",
+    "description": "Sovereign atomic-file-writer-safe-replace Cube (standalone).",
+    "packageDir": "packages/atomic-file-writer-safe-replace",
+    "source": "cubes/atomic-file-writer-safe-replace/src/index.js",
+    "expected": [
+      "ATOMIC_FILE_WRITER_DURABILITY",
+      "ATOMIC_FILE_WRITER_FORMAT",
+      "AtomicFileWriterError",
+      "writeFileAtomic"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "directory-snapshot-tree-manifest": {
+    "name": "@sovereign/directory-snapshot-tree-manifest",
+    "version": "0.1.0",
+    "description": "Sovereign directory-snapshot-tree-manifest Cube (standalone).",
+    "packageDir": "packages/directory-snapshot-tree-manifest",
+    "source": "cubes/directory-snapshot-tree-manifest/src/index.js",
+    "expected": [
+      "DIRECTORY_SNAPSHOT_FORMAT",
+      "DIRECTORY_SNAPSHOT_MUTATION_POLICIES",
+      "DIRECTORY_SNAPSHOT_SYMLINK_POLICIES",
+      "DirectorySnapshotError",
+      "serializeDirectorySnapshot",
+      "snapshotDirectory"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "ephemeral-workspace-scratch-directory": {
+    "name": "@sovereign/ephemeral-workspace-scratch-directory",
+    "version": "0.1.0",
+    "description": "Sovereign ephemeral-workspace-scratch-directory Cube (standalone).",
+    "packageDir": "packages/ephemeral-workspace-scratch-directory",
+    "source": "cubes/ephemeral-workspace-scratch-directory/src/index.js",
+    "expected": [
+      "EPHEMERAL_WORKSPACE_FORMAT",
+      "EPHEMERAL_WORKSPACE_STATES",
+      "WorkspaceError",
+      "parseWorkspaceRecord",
+      "serializeWorkspaceRecord",
+      "createWorkspace",
+      "recoverWorkspace"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
+  },
+  "file-lease-advisory-lock": {
+    "name": "@sovereign/file-lease-advisory-lock",
+    "version": "0.1.0",
+    "description": "Sovereign file-lease-advisory-lock Cube (standalone).",
+    "packageDir": "packages/file-lease-advisory-lock",
+    "source": "cubes/file-lease-advisory-lock/src/index.js",
+    "expected": [
+      "FILE_LEASE_FORMAT",
+      "FILE_LEASE_STATES",
+      "FileLeaseError",
+      "parseLeaseRecord",
+      "serializeLeaseRecord",
+      "acquireLease"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable (incl. internal modular src)"
   }
 }
