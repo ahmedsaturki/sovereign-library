@@ -78,7 +78,7 @@ Optional free ecosystem mechanisms may include npm, PyPI, Maven-compatible regis
 
 No external publication should be attempted merely because a package is technically ready. Release timing and channel selection remain explicit controls.
 
-Any older wording that prohibited external registries absolutely is historical and superseded; see `GOVERNANCE.md` for the standing decision and supersession record.
+Historical wording that prohibited external registries absolutely is superseded by this policy and remains preserved as history in governance/release records.
 
 ## Current packaging wave
 
