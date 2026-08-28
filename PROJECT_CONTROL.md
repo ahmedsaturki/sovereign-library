@@ -101,22 +101,31 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ## Current milestone
 
-**PHASE-0-FIRST-BATCH — AUTHORIZED, PUBLISH DEFERRED BY USER (batch at end)**
+**LIBRARY DISTRIBUTION EXPANSION — ACTIVE (GitHub-only distribution)**
+
+### Distribution policy
+
+**GITHUB ONLY.** External registry publication (npm/PyPI/Maven Central) is deferred by explicit project decision. The first authorized batch (`@sovereign/safe-path-resolver`, `@sovereign/runtime-capability-inspector`) remains AUTHORIZED but GitHub-released is **not yet done**; npm publication is CLOSED permanently for this phase. Distribution channel = GitHub repo + Releases + artifacts + checksums. Every package remains a REAL standalone npm-compatible library (package.json/exports/types/files/license), consumable from GitHub without an external registry.
 
 ### Immediate next task
 
-**RELEASE AUTHORIZATION RECEIVED** (PR #111 closure) for `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. All release gates PASS at HEAD `cc1ba084532d82bb2cbe7d73c64b57fa9538fecb` (check 0; `npm test` 761/0; bounded ALL PASS; browser smoke pass; publication guard PASS; security PASS; package-tooling exact export surface safe=11/rt=8; reproducible byte-identical). The two tarballs are staged, `repository.url` metadata-corrected, and ready to publish (sha256 `44978522…ce0047e` / `bf53c237…ebefa4`).
+**INDEPENDENT LIBRARY PACKAGING WAVE (v15)** in progress. Turn every technically suitable Cube into a REAL standalone library; do NOT publish externally; accumulate release-ready packages; release through GitHub later.
 
-**PUBLISH is DEFERRED BY USER CHOICE — NOT BLOCKED.** User elected not to publish now and to release all authorized packages together at the end after more Cubes are packaged. (Note: publishing a public npm package is free; the earlier E403 was an npm `@sovereign` scope 2FA-policy requirement, not a paywall. The authorization to publish remains granted; the act is simply postponed.) Both candidates are `AUTHORIZED_READY_DEFERRED`. No guard bypassed, no token invented.
+**Phase-0 first batch (2 authorized candidates):** TECHNICALLY_READY / AUTHORIZED / NOT YET GITHUB-RELEASED.
+- `@sovereign/safe-path-resolver` v0.1.0 — 11 exports
+- `@sovereign/runtime-capability-inspector` v0.1.0 — 8 exports
 
-**Next-wave packaging in progress (publish-ready, added this session):**
-- `@sovereign/canonical-json` v0.1.0 — 8 exports (staged, declaration-exact, import-verified)
-- `@sovereign/digest` v0.1.0 — 14 exports
-- `@sovereign/validation` v0.1.0 — 5 exports
-- `@sovereign/result` v0.1.0 — 5 exports
-- `@sovereign/url` v0.1.0 — 17 exports
+**Packaging wave results so far (Node.js, publish-ready, GitHub distribution):**
+- 7 packages staged in prior waves (incl. the 2 authorized) + 10 new this wave = **17 standalone packages, all TECHNICALLY_READY / PUBLICATION_DEFERRED**.
+- New this wave (verified: declaration-exact, out-of-tree import, reproducible byte-identical tarballs):
+  `@sovereign/canonical-json`(8), `digest`(14), `validation`(5), `result`(5), `url`(17),
+  `cache`(4), `circuit-breaker`(3), `concurrency`(3), `diff-patch`(9), `event`(3),
+  `logger`(7), `serialization`(10), `timeout-deadline`(8), `config`(10), `data`(11).
+- Pipeline is now **data-driven**: `scripts/package-catalog.json` (single source of truth) + `scripts/package-stage.mjs` reads it; no per-Cube hardcoded switch.
 
-All five staged via `scripts/package-stage.mjs` (exact declaration surface) and `npm pack` verified. They follow the same publish-ready pattern as the two authorized candidates. Continue packaging eligible Cubes, then publish the full batch together at the end.
+**Remaining inventory (84 Cubes total):** 17 packaged; 21 classified PACKAGE-WORTHY-standalone (incl. the 10 new + others); 59 CONDITIONAL (browser/integration facades, or with relative monorepo imports requiring dependency-graph resolution before standalone packaging). NOT_PACKAGE_WORTHY = 0. Continue evaluating CONDITIONAL batch next.
+
+No external publish. No guard bypassed. No token invented.
 
 ### Completed Phase 0 gates
 

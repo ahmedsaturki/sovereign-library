@@ -2,74 +2,20 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSyn
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { runNpm } from './npm-cli.mjs';
+import { readFileSync as readJson } from 'node:fs';
 
 const ROOT = resolve('.');
 const TOOLS_DIR = resolve('.artifacts/package-tools');
-const STAGE = {
-  'safe-path-resolver': {
-    packageDir: resolve('packages/safe-path-resolver'),
-    source: resolve('cubes/safe-path-resolver-containment-boundary/src/index.js'),
-    expected: new Set([
-      'SafePathResolverError', 'normalizePath', 'resolvePath', 'isContained',
-      'resolveContained', 'canonicalizePath', 'comparePaths', 'serializeReport',
-      'parseReport', 'SAFE_PATH_RESOLVER_FORMAT', 'SAFE_PATH_RESOLVER_LIMITS',
-    ]),
-  },
-  'runtime-capability-inspector': {
-    packageDir: resolve('packages/runtime-capability-inspector'),
-    source: resolve('cubes/runtime-capability-inspector/src/index.js'),
-    expected: new Set([
-      'RuntimeCapabilityError', 'inspectRuntime', 'evaluateRuntimeRequirements',
-      'serializeRuntimeReport', 'parseRuntimeReport', 'RUNTIME_CAPABILITY_FORMAT',
-      'RUNTIME_OS_FAMILIES', 'RUNTIME_ARCHITECTURES',
-    ]),
-  },
-  'canonical-json': {
-    packageDir: resolve('packages/canonical-json'),
-    source: resolve('cubes/canonical-json/src/index.js'),
-    expected: new Set([
-      'CanonicalJsonError', 'createCanonicalizer', 'normalize', 'canonicalStringify',
-      'DEFAULT_MAX_DEPTH', 'DEFAULT_MAX_NODES', 'DEFAULT_MAX_STRING_BYTES', 'DEFAULT_MAX_VALUE_BYTES',
-    ]),
-  },
-  'digest': {
-    packageDir: resolve('packages/digest'),
-    source: resolve('cubes/digest/src/index.js'),
-    expected: new Set([
-      'DigestError', 'createDigestConfig', 'sha256', 'sha512', 'hmacSha256', 'hmacSha512',
-      'digestHex', 'hmacHex', 'constantTimeEqual',
-      'DEFAULT_MAX_INPUT_BYTES', 'DEFAULT_MAX_CHUNK_BYTES', 'DEFAULT_MAX_TOTAL_BYTES',
-      'digestAsync', 'hmacAsync',
-    ]),
-  },
-  'validation': {
-    packageDir: resolve('packages/validation'),
-    source: resolve('cubes/validation/src/index.js'),
-    expected: new Set([
-      'ValidationError', 'Schema', 'schema', 'validators', 'TYPES',
-    ]),
-  },
-  'result': {
-    packageDir: resolve('packages/result'),
-    source: resolve('cubes/result/src/index.js'),
-    expected: new Set([
-      'ResultError', 'Result', 'errors', 'serializeError', 'normalizeError',
-    ]),
-  },
-  'url': {
-    packageDir: resolve('packages/url'),
-    source: resolve('cubes/url/src/index.js'),
-    expected: new Set([
-      'UrlError', 'parseUrl', 'encodeURIComponentSafe', 'decodeURIComponentStrict',
-      'decodeURIComponentTolerant', 'parseQuery', 'buildQuery', 'formEncode', 'formDecode',
-      'utf8Encode', 'utf8Decode', 'base64Encode', 'base64Decode', 'base64UrlEncode',
-      'base64UrlDecode', 'encodePathSegment', 'decodePathSegment',
-    ]),
-  },
-};
+const CATALOG_PATH = resolve('scripts/package-catalog.json');
 
 function fail(message) {
   throw new Error(`[package-stage] ${message}`);
+}
+
+function loadCatalog() {
+  if (!existsSync(CATALOG_PATH)) fail(`missing package catalog: ${CATALOG_PATH}`);
+  const data = JSON.parse(readFileSync(CATALOG_PATH, 'utf8'));
+  return data;
 }
 
 function extractDeclarationExports(text) {
@@ -81,7 +27,7 @@ function extractDeclarationExports(text) {
   while ((match = named.exec(text)) !== null) {
     for (const item of match[1].split(',')) {
       const name = item.trim().split(/\s+as\s+/)[0];
-      if (name) found.add(name);
+      if (name && name !== 'default') found.add(name.trim().split(/\s+/)[0]);
     }
   }
   return found;
@@ -122,20 +68,33 @@ function writeDeclarationConfig(target, source, outDir) {
 
 function main() {
   const candidate = process.argv[2];
-  if (!candidate || !Object.hasOwn(STAGE, candidate)) {
-    fail(`usage: node scripts/package-stage.mjs <${Object.keys(STAGE).join('|')}>`);
+  const catalog = loadCatalog();
+  if (!candidate) {
+    fail(`usage: node scripts/package-stage.mjs <${Object.keys(catalog).join('|')}>`);
   }
-  const spec = STAGE[candidate];
-  const dist = resolve(spec.packageDir, 'dist');
-  const src = resolve(spec.packageDir, 'src');
+  const spec = catalog[candidate];
+  if (!spec) fail(`unknown candidate: ${candidate}`);
+  const packageDir = resolve(spec.packageDir);
+  const source = resolve(spec.source);
+  const expected = new Set(spec.expected || []);
+  const dist = resolve(packageDir, 'dist');
+  const src = resolve(packageDir, 'src');
   rmSync(src, { recursive: true, force: true });
   rmSync(dist, { recursive: true, force: true });
   mkdirSync(src, { recursive: true });
   mkdirSync(dist, { recursive: true });
-  if (!existsSync(spec.source)) fail(`source cube is missing: ${spec.source}`);
-  copyFileSync(spec.source, resolve(src, 'index.js'));
-  copyFileSync(resolve(ROOT, 'LICENSE'), resolve(spec.packageDir, 'LICENSE'));
-  copyFileSync(resolve(ROOT, 'NOTICE'), resolve(spec.packageDir, 'NOTICE'));
+  if (!existsSync(source)) fail(`source cube is missing: ${source}`);
+  copyFileSync(source, resolve(src, 'index.js'));
+  copyFileSync(resolve(ROOT, 'LICENSE'), resolve(packageDir, 'LICENSE'));
+  copyFileSync(resolve(ROOT, 'NOTICE'), resolve(packageDir, 'NOTICE'));
+  // copy the cube-level README into the package (falls back to a minimal generated one)
+  const cubeReadme = resolve(ROOT, spec.source).replace(/src[/\\]index\.js$/, 'README.md');
+  const pkgReadme = resolve(packageDir, 'README.md');
+  if (existsSync(cubeReadme)) {
+    copyFileSync(cubeReadme, pkgReadme);
+  } else if (!existsSync(pkgReadme)) {
+    writeFileSync(pkgReadme, `# ${spec.name}\n\n${spec.description}\n\n## Status\n\nTECHNICALLY_READY — publication deferred (GitHub-only distribution). See repository docs.\n`, 'utf8');
+  }
 
   rmSync(TOOLS_DIR, { recursive: true, force: true });
   mkdirSync(TOOLS_DIR, { recursive: true });
@@ -154,7 +113,7 @@ function main() {
   if (result.status !== 0) fail(`declaration compiler exited with status ${result.status}`);
   const declaration = resolve(dist, 'index.d.ts');
   if (!existsSync(declaration)) fail(`missing declaration output: ${declaration}`);
-  assertExactExports(declaration, spec.expected);
+  assertExactExports(declaration, expected);
   console.log(`[package-stage] staged ${candidate} with exact declaration surface`);
 }
 

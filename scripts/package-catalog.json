@@ -1,0 +1,325 @@
+{
+  "safe-path-resolver": {
+    "name": "@sovereign/safe-path-resolver",
+    "version": "0.1.0",
+    "description": "Sovereign safe-path-resolver Cube (standalone).",
+    "packageDir": "packages/safe-path-resolver",
+    "source": "cubes/safe-path-resolver-containment-boundary/src/index.js",
+    "expected": [
+      "SafePathResolverError",
+      "normalizePath",
+      "resolvePath",
+      "isContained",
+      "resolveContained",
+      "canonicalizePath",
+      "comparePaths",
+      "serializeReport",
+      "parseReport",
+      "SAFE_PATH_RESOLVER_FORMAT",
+      "SAFE_PATH_RESOLVER_LIMITS"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (prior wave)"
+  },
+  "runtime-capability-inspector": {
+    "name": "@sovereign/runtime-capability-inspector",
+    "version": "0.1.0",
+    "description": "Sovereign runtime-capability-inspector Cube (standalone).",
+    "packageDir": "packages/runtime-capability-inspector",
+    "source": "cubes/runtime-capability-inspector/src/index.js",
+    "expected": [
+      "RuntimeCapabilityError",
+      "inspectRuntime",
+      "evaluateRuntimeRequirements",
+      "serializeRuntimeReport",
+      "parseRuntimeReport",
+      "RUNTIME_CAPABILITY_FORMAT",
+      "RUNTIME_OS_FAMILIES",
+      "RUNTIME_ARCHITECTURES"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (prior wave)"
+  },
+  "canonical-json": {
+    "name": "@sovereign/canonical-json",
+    "version": "0.1.0",
+    "description": "Sovereign canonical-json Cube (standalone).",
+    "packageDir": "packages/canonical-json",
+    "source": "cubes/canonical-json/src/index.js",
+    "expected": [
+      "CanonicalJsonError",
+      "createCanonicalizer",
+      "normalize",
+      "canonicalStringify",
+      "DEFAULT_MAX_DEPTH",
+      "DEFAULT_MAX_NODES",
+      "DEFAULT_MAX_STRING_BYTES",
+      "DEFAULT_MAX_VALUE_BYTES"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (prior wave)"
+  },
+  "digest": {
+    "name": "@sovereign/digest",
+    "version": "0.1.0",
+    "description": "Sovereign digest Cube (standalone).",
+    "packageDir": "packages/digest",
+    "source": "cubes/digest/src/index.js",
+    "expected": [
+      "DigestError",
+      "createDigestConfig",
+      "sha256",
+      "sha512",
+      "hmacSha256",
+      "hmacSha512",
+      "digestHex",
+      "hmacHex",
+      "constantTimeEqual",
+      "DEFAULT_MAX_INPUT_BYTES",
+      "DEFAULT_MAX_CHUNK_BYTES",
+      "DEFAULT_MAX_TOTAL_BYTES",
+      "digestAsync",
+      "hmacAsync"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (prior wave)"
+  },
+  "validation": {
+    "name": "@sovereign/validation",
+    "version": "0.1.0",
+    "description": "Sovereign validation Cube (standalone).",
+    "packageDir": "packages/validation",
+    "source": "cubes/validation/src/index.js",
+    "expected": [
+      "ValidationError",
+      "Schema",
+      "schema",
+      "validators",
+      "TYPES"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (prior wave)"
+  },
+  "result": {
+    "name": "@sovereign/result",
+    "version": "0.1.0",
+    "description": "Sovereign result Cube (standalone).",
+    "packageDir": "packages/result",
+    "source": "cubes/result/src/index.js",
+    "expected": [
+      "ResultError",
+      "Result",
+      "errors",
+      "serializeError",
+      "normalizeError"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (prior wave)"
+  },
+  "url": {
+    "name": "@sovereign/url",
+    "version": "0.1.0",
+    "description": "Sovereign url Cube (standalone).",
+    "packageDir": "packages/url",
+    "source": "cubes/url/src/index.js",
+    "expected": [
+      "UrlError",
+      "parseUrl",
+      "encodeURIComponentSafe",
+      "decodeURIComponentStrict",
+      "decodeURIComponentTolerant",
+      "parseQuery",
+      "buildQuery",
+      "formEncode",
+      "formDecode",
+      "utf8Encode",
+      "utf8Decode",
+      "base64Encode",
+      "base64Decode",
+      "base64UrlEncode",
+      "base64UrlDecode",
+      "encodePathSegment",
+      "decodePathSegment"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (prior wave)"
+  },
+  "cache": {
+    "name": "@sovereign/cache",
+    "version": "0.1.0",
+    "description": "Sovereign cache Cube (standalone).",
+    "packageDir": "packages/cache",
+    "source": "cubes/cache/src/index.js",
+    "expected": [
+      "Cache",
+      "CacheCubeError",
+      "DEFAULT_MAX_ENTRIES",
+      "DEFAULT_MAX_KEY_LENGTH"
+    ],
+    "status": "PACKAGE_CANDIDATE",
+    "reason": "standalone-capable, no monorepo/bare imports"
+  },
+  "circuit-breaker": {
+    "name": "@sovereign/circuit-breaker",
+    "version": "0.1.0",
+    "description": "Sovereign circuit-breaker Cube (standalone).",
+    "packageDir": "packages/circuit-breaker",
+    "source": "cubes/circuit-breaker/src/index.js",
+    "expected": [
+      "CircuitBreaker",
+      "CircuitBreakerError",
+      "FakeClock"
+    ],
+    "status": "PACKAGE_CANDIDATE",
+    "reason": "standalone-capable, no monorepo/bare imports"
+  },
+  "concurrency": {
+    "name": "@sovereign/concurrency",
+    "version": "0.1.0",
+    "description": "Sovereign concurrency Cube (standalone).",
+    "packageDir": "packages/concurrency",
+    "source": "cubes/concurrency/src/index.js",
+    "expected": [
+      "Bulkhead",
+      "BulkheadError",
+      "Lease"
+    ],
+    "status": "PACKAGE_CANDIDATE",
+    "reason": "standalone-capable, no monorepo/bare imports"
+  },
+  "diff-patch": {
+    "name": "@sovereign/diff-patch",
+    "version": "0.1.0",
+    "description": "Sovereign diff-patch Cube (standalone).",
+    "packageDir": "packages/diff-patch",
+    "source": "cubes/diff-patch/src/index.js",
+    "expected": [
+      "DEFAULT_MAX_DEPTH",
+      "DEFAULT_MAX_NODES",
+      "DEFAULT_MAX_OPERATIONS",
+      "DEFAULT_MAX_STRING_BYTES",
+      "DEFAULT_MAX_VALUE_BYTES",
+      "DiffPatchError",
+      "applyPatch",
+      "createDiffEngine",
+      "diff"
+    ],
+    "status": "PACKAGE_CANDIDATE",
+    "reason": "standalone-capable, no monorepo/bare imports"
+  },
+  "event": {
+    "name": "@sovereign/event",
+    "version": "0.1.0",
+    "description": "Sovereign event Cube (standalone).",
+    "packageDir": "packages/event",
+    "source": "cubes/event/src/index.js",
+    "expected": [
+      "EVENT_TERMINAL",
+      "EventBus",
+      "EventCubeError"
+    ],
+    "status": "PACKAGE_CANDIDATE",
+    "reason": "standalone-capable, no monorepo/bare imports"
+  },
+  "logger": {
+    "name": "@sovereign/logger",
+    "version": "0.1.0",
+    "description": "Sovereign logger Cube (standalone).",
+    "packageDir": "packages/logger",
+    "source": "cubes/logger/src/index.js",
+    "expected": [
+      "ConsoleSink",
+      "InMemorySink",
+      "LEVELS",
+      "LEVEL_NAMES",
+      "Logger",
+      "LoggerCubeError",
+      "normalizeError"
+    ],
+    "status": "PACKAGE_CANDIDATE",
+    "reason": "standalone-capable, no monorepo/bare imports"
+  },
+  "serialization": {
+    "name": "@sovereign/serialization",
+    "version": "0.1.0",
+    "description": "Sovereign serialization Cube (standalone).",
+    "packageDir": "packages/serialization",
+    "source": "cubes/serialization/src/index.js",
+    "expected": [
+      "DEFAULT_MAX_BYTES",
+      "DEFAULT_MAX_COLLECTION_ITEMS",
+      "DEFAULT_MAX_DEPTH",
+      "DEFAULT_MAX_STRING_BYTES",
+      "MAGIC",
+      "SerializationError",
+      "VERSION",
+      "createSerializationConfig",
+      "decode",
+      "encode"
+    ],
+    "status": "PACKAGE_CANDIDATE",
+    "reason": "standalone-capable, no monorepo/bare imports"
+  },
+  "timeout-deadline": {
+    "name": "@sovereign/timeout-deadline",
+    "version": "0.1.0",
+    "description": "Sovereign timeout-deadline Cube (standalone).",
+    "packageDir": "packages/timeout-deadline",
+    "source": "cubes/timeout-deadline/src/index.js",
+    "expected": [
+      "Deadline",
+      "FakeClock",
+      "RealClock",
+      "TimeoutError",
+      "createDeadline",
+      "deadlineFromAbsolute",
+      "sleepUntil",
+      "withDeadline"
+    ],
+    "status": "PACKAGE_CANDIDATE",
+    "reason": "standalone-capable, no monorepo/bare imports"
+  },
+  "config": {
+    "name": "@sovereign/config",
+    "version": "0.1.0",
+    "description": "Sovereign config Cube (standalone).",
+    "packageDir": "packages/config",
+    "source": "cubes/config/src/index.js",
+    "expected": [
+      "ConfigBuilder",
+      "ConfigCubeError",
+      "DEFAULT_MAX_VALUE_LENGTH",
+      "EnvironmentSource",
+      "MemorySource",
+      "TYPES",
+      "createConfig",
+      "redactConfig",
+      "redactKey",
+      "redactValue"
+    ],
+    "status": "PACKAGE_CANDIDATE",
+    "reason": "standalone-capable, no monorepo/bare imports"
+  },
+  "data": {
+    "name": "@sovereign/data",
+    "version": "0.1.0",
+    "description": "Sovereign data Cube (standalone).",
+    "packageDir": "packages/data",
+    "source": "cubes/data/src/index.js",
+    "expected": [
+      "DataCubeError",
+      "canonicalJson",
+      "compact",
+      "dedupe",
+      "get",
+      "mapKeys",
+      "merge",
+      "normalizeStrings",
+      "omit",
+      "pick",
+      "set"
+    ],
+    "status": "PACKAGE_CANDIDATE",
+    "reason": "standalone-capable, no monorepo/bare imports"
+  }
+}

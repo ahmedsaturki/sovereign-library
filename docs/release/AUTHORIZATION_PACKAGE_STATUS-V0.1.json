@@ -6,54 +6,157 @@
   "authorizationRequired": false,
   "candidates": [
     {
-      "package": "@sovereign/safe-path-resolver",
+      "name": "@sovereign/cache",
       "version": "0.1.0",
-      "sourceCube": "cubes/safe-path-resolver-containment-boundary",
-      "manifest": "packages/safe-path-resolver/package.json",
-      "sourceSha": "c4272f0f71d8e5d33bbd764feb9d63d787cf3f3b",
-      "ciRun": 862,
-      "ciStatus": "completed_success",
-      "testCount": 14,
-      "testResult": "pass",
-      "sourceComplete": true,
-      "specPresent": true,
-      "readmePresent": true,
-      "changelogPresent": true,
-      "packageManifestPresent": true,
-      "declarationSurfaceVerified": true,
-      "securityStatus": "PASS",
-      "packageStatus": "PACKABLE_VERIFIED",
-      "publicationStatus": "AUTHORIZED_READY_DEFERRED",
-      "dependencies": "none",
-      "license": "Apache-2.0",
-      "engines": ">=24",
       "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
-      "ciRunAtRelease": null
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 4
     },
     {
-      "package": "@sovereign/runtime-capability-inspector",
+      "name": "@sovereign/canonical-json",
       "version": "0.1.0",
-      "sourceCube": "cubes/runtime-capability-inspector",
-      "manifest": "packages/runtime-capability-inspector/package.json",
-      "sourceSha": "c4272f0f71d8e5d33bbd764feb9d63d787cf3f3b",
-      "ciRun": 862,
-      "ciStatus": "completed_success",
-      "testCount": 9,
-      "testResult": "pass",
-      "sourceComplete": true,
-      "specPresent": true,
-      "readmePresent": true,
-      "changelogPresent": true,
-      "packageManifestPresent": true,
-      "declarationSurfaceVerified": true,
-      "securityStatus": "PASS",
-      "packageStatus": "PACKABLE_VERIFIED",
-      "publicationStatus": "AUTHORIZED_READY_DEFERRED",
-      "dependencies": "none",
-      "license": "Apache-2.0",
-      "engines": ">=24",
       "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
-      "ciRunAtRelease": null
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 8
+    },
+    {
+      "name": "@sovereign/circuit-breaker",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/concurrency",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/config",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 10
+    },
+    {
+      "name": "@sovereign/data",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 11
+    },
+    {
+      "name": "@sovereign/diff-patch",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 9
+    },
+    {
+      "name": "@sovereign/digest",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 14
+    },
+    {
+      "name": "@sovereign/event",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/logger",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 7
+    },
+    {
+      "name": "@sovereign/result",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
+    },
+    {
+      "name": "@sovereign/runtime-capability-inspector",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": true,
+      "exportsCount": 8
+    },
+    {
+      "name": "@sovereign/safe-path-resolver",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": true,
+      "exportsCount": 11
+    },
+    {
+      "name": "@sovereign/serialization",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 10
+    },
+    {
+      "name": "@sovereign/timeout-deadline",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 8
+    },
+    {
+      "name": "@sovereign/url",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 17
+    },
+    {
+      "name": "@sovereign/validation",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
     }
   ],
   "verificationSummary": {
@@ -114,12 +217,12 @@
     "publication guard fails closed (no publish path, no credential, no publishConfig)",
     "human release authorization received (PR #111 closure)"
   ],
-  "nextStep": "Continue engineering: package next eligible Cubes into independent @sovereign/* packages (ready to publish). Publish all authorized packages together at the end. PUBLISH is deferred by user choice, not blocked.",
+  "nextStep": "Continue packaging CONDITIONAL Cubes (dependency-graph resolution for those with relative imports; keep browser/integration cubes pre-release). Prepare GitHub Release artifacts for the 2 authorized packages. No external publish.",
   "authorizedAt": "2026-08-27T21:12:00Z",
   "authorizationRecordedBy": "explicit human release authorization (PR #111 audit closure)",
   "releaseHead": "013478a0f9bc6a1c70b14ef93155727007a7f946",
   "ciRunAtRelease": 867,
-  "publicationStatusActual": "DEFERRED_BY_USER_PENDING_BATCH",
+  "publicationStatusActual": "GITHUB_DISTRIBUTION_DEFERRED",
   "releaseFailure": {
     "step": "PUBLISH",
     "exactError": "npm error code E403; 403 Forbidden - PUT https://registry.npmjs.org/@sovereign%2f<name> - Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages.",
@@ -141,5 +244,15 @@
     "existingGlobalToken": "authenticates (whoami=ahmedsturki) but publish returns E403 2FA-policy."
   },
   "publishDeferredByUser": true,
-  "deferralReason": "User chose to NOT publish now (no paid npm plan / no urgency). Publish all authorized packages together at the end after more Cubes are packaged. npm public publish is free; the earlier E403 was a scope 2FA-policy block, not a paywall, but user elects to batch the release later."
+  "deferralReason": "User chose to NOT publish now (no paid npm plan / no urgency). Publish all authorized packages together at the end after more Cubes are packaged. npm public publish is free; the earlier E403 was a scope 2FA-policy block, not a paywall, but user elects to batch the release later.",
+  "distributionPolicy": "GITHUB_ONLY",
+  "externalRegistryPublication": "DEFERRED_BY_PROJECT_POLICY",
+  "npmPublication": "CLOSED_FOR_THIS_PHASE",
+  "summary": {
+    "totalPackages": 17,
+    "authorized": 2,
+    "technicallyReady": 17,
+    "githubReleased": 0,
+    "deferred": 17
+  }
 }
