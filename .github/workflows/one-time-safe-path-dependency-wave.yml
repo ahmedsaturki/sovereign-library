@@ -9,9 +9,8 @@ permissions:
 
 jobs:
   migrate:
-    if: hashFiles('.automation/safe-path-dependency-wave') != ''
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,10 +22,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Gate on migration marker
+        run: test -f .automation/safe-path-dependency-wave
+
       - name: Apply dependency boundary migration
         run: |
           python3 <<'PY'
           import json
+          import re
           import shutil
           from pathlib import Path
 
@@ -40,15 +43,18 @@ jobs:
               ("safe-file-quarantine-delete", "cubes/safe-file-quarantine-delete/src/index.js"),
           ]
 
-          def replace_import(path: Path):
-              text = path.read_text(encoding="utf-8")
-              old = "../../safe-path-resolver-containment-boundary/src/index.js"
+          def replace_once(text, old, new, label):
               count = text.count(old)
               if count != 1:
-                  raise SystemExit(f"expected exactly one legacy resolver import in {path}, found {count}")
-              path.write_text(text.replace(old, resolver), encoding="utf-8")
+                  raise SystemExit(f"{label}: expected 1 match, found {count}")
+              return text.replace(old, new, 1)
 
-          def package_manifest(slug: str):
+          def replace_import(path):
+              text = path.read_text(encoding="utf-8")
+              old = "../../safe-path-resolver-containment-boundary/src/index.js"
+              path.write_text(replace_once(text, old, resolver, str(path)), encoding="utf-8")
+
+          def package_manifest(slug):
               return {
                   "name": f"@sovereign/{slug}",
                   "version": version,
@@ -67,7 +73,8 @@ jobs:
               }
 
           for slug, source in candidates:
-              replace_import(ROOT / source)
+              source_path = ROOT / source
+              replace_import(source_path)
               package_dir = ROOT / "packages" / slug
               package_dir.mkdir(parents=True, exist_ok=True)
               (package_dir / "package.json").write_text(json.dumps(package_manifest(slug), indent=2) + "\n", encoding="utf-8")
@@ -76,11 +83,9 @@ jobs:
               if cube_readme.exists():
                   shutil.copyfile(cube_readme, package_readme)
               else:
-                  package_readme.write_text(
-                      f"# @sovereign/{slug}\n\nStandalone Sovereign Cube.\n\n## Distribution\n\nDepends explicitly on `@sovereign/safe-path-resolver@0.1.0`.\n",
-                      encoding="utf-8",
-                  )
+                  package_readme.write_text(f"# @sovereign/{slug}\n\nStandalone Sovereign Cube.\n\nRequires `@sovereign/safe-path-resolver@0.1.0`.\n", encoding="utf-8")
 
+          # Local monorepo test resolution for the explicit package boundary.
           root_package = ROOT / "package.json"
           root_data = json.loads(root_package.read_text(encoding="utf-8"))
           dev = dict(root_data.get("devDependencies", {}))
@@ -103,7 +108,43 @@ jobs:
               verify_text = verify_text.replace(anchor, insert + anchor, 1)
               verify.write_text(verify_text, encoding="utf-8")
 
-          # Catalog: promote only the four dependency-boundary cubes after their package contracts are defined.
+          # Expand package-tooling verification from the original first two pilots to all four dependency-boundary candidates.
+          tooling = ROOT / "scripts/verify-package-tooling.mjs"
+          t = tooling.read_text(encoding="utf-8")
+          start = t.index("const CANDIDATES = [")
+          end = t.index("];", start) + 2
+          candidate_block = """const CANDIDATES = [\n  { id: 'safe-path-resolver', packageDir: resolve('packages/safe-path-resolver'), dependencies: {} },\n  { id: 'runtime-capability-inspector', packageDir: resolve('packages/runtime-capability-inspector'), dependencies: {} },\n  { id: 'bounded-file-content-reader-safe-content-access', packageDir: resolve('packages/bounded-file-content-reader-safe-content-access'), dependencies: { '@sovereign/safe-path-resolver': '0.1.0' } },\n  { id: 'directory-walker-bounded-tree-traversal', packageDir: resolve('packages/directory-walker-bounded-tree-traversal'), dependencies: { '@sovereign/safe-path-resolver': '0.1.0' } },\n  { id: 'filesystem-metadata-stat-normalizer', packageDir: resolve('packages/filesystem-metadata-stat-normalizer'), dependencies: { '@sovereign/safe-path-resolver': '0.1.0' } },\n  { id: 'safe-file-quarantine-delete', packageDir: resolve('packages/safe-file-quarantine-delete'), dependencies: { '@sovereign/safe-path-resolver': '0.1.0' }, script: resolve('scripts/package-stage.mjs') },\n];"""
+          # Ensure every candidate gets the staging script without relying on a second object property.
+          candidate_block = candidate_block.replace(" dependencies: {} },", " dependencies: {}, script: resolve('scripts/package-stage.mjs') },")
+          t = t[:start] + candidate_block + t[end:]
+          old_dep_guard = "  if (pkg.dependencies || pkg.peerDependencies || pkg.optionalDependencies) fail(`${candidate.id} must have no runtime dependency declarations`);"
+          new_dep_guard = """  const actualDependencies = pkg.dependencies ?? {};\n  const expectedDependencies = candidate.dependencies ?? {};\n  if (JSON.stringify(actualDependencies) !== JSON.stringify(expectedDependencies)) fail(`${candidate.id} has incorrect runtime dependencies`);\n  if (pkg.peerDependencies || pkg.optionalDependencies) fail(`${candidate.id} must not declare peer or optional dependencies`);"""
+          t = replace_once(t, old_dep_guard, new_dep_guard, "verify-package-tooling dependency guard")
+          # The original candidate list hard-coded its script field on each entry; preserve a single shared default if absent.
+          t = t.replace("const expectedFiles = new Set([", "for (const candidate of CANDIDATES) candidate.script ??= resolve('scripts/package-stage.mjs');\n\nconst expectedFiles = new Set([", 1)
+          tooling.write_text(t, encoding="utf-8")
+
+          # Expand reproducibility verification to the same six package candidates.
+          repro = ROOT / "scripts/verify-reproducible-package.mjs"
+          r = repro.read_text(encoding="utf-8")
+          start = r.index("const CANDIDATES = [")
+          end = r.index("];", start) + 2
+          repro_block = """const CANDIDATES = [\n  { id: 'safe-path-resolver', packageDir: resolve('packages/safe-path-resolver') },\n  { id: 'runtime-capability-inspector', packageDir: resolve('packages/runtime-capability-inspector') },\n  { id: 'bounded-file-content-reader-safe-content-access', packageDir: resolve('packages/bounded-file-content-reader-safe-content-access') },\n  { id: 'directory-walker-bounded-tree-traversal', packageDir: resolve('packages/directory-walker-bounded-tree-traversal') },\n  { id: 'filesystem-metadata-stat-normalizer', packageDir: resolve('packages/filesystem-metadata-stat-normalizer') },\n  { id: 'safe-file-quarantine-delete', packageDir: resolve('packages/safe-file-quarantine-delete') },\n];"""
+          r = r[:start] + repro_block + r[end:]
+          repro.write_text(r, encoding="utf-8")
+
+          # Security verifier: exact allowed runtime dependency for the four migrated packages, none for the two existing pilots.
+          sec = ROOT / "scripts/verify-security-boundaries.mjs"
+          s = sec.read_text(encoding="utf-8")
+          old_loop = "for (const packageName of ['safe-path-resolver', 'runtime-capability-inspector']) {"
+          new_loop = """const PACKAGE_DEPENDENCIES = {\n  'safe-path-resolver': {},\n  'runtime-capability-inspector': {},\n  'bounded-file-content-reader-safe-content-access': { '@sovereign/safe-path-resolver': '0.1.0' },\n  'directory-walker-bounded-tree-traversal': { '@sovereign/safe-path-resolver': '0.1.0' },\n  'filesystem-metadata-stat-normalizer': { '@sovereign/safe-path-resolver': '0.1.0' },\n  'safe-file-quarantine-delete': { '@sovereign/safe-path-resolver': '0.1.0' },\n};\n\nfor (const [packageName, expectedDependencies] of Object.entries(PACKAGE_DEPENDENCIES)) {"""
+          s = replace_once(s, old_loop, new_loop, "security package dependency loop")
+          old_fields = """  for (const field of ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']) {\n    if (pkg[field] && Object.keys(pkg[field]).length > 0) {\n      violations.push({ file: relative(ROOT, packageJsonPath), line: 1, rule: 'package-dependency-free', message: `${field} must be absent for a dependency-free public cube`, source: JSON.stringify(pkg[field]) });\n    }\n  }"""
+          new_fields = """  const actualDependencies = pkg.dependencies ?? {};\n  if (JSON.stringify(actualDependencies) !== JSON.stringify(expectedDependencies)) {\n    violations.push({ file: relative(ROOT, packageJsonPath), line: 1, rule: 'package-runtime-dependencies', message: 'runtime dependencies do not match the explicit package contract', source: JSON.stringify(actualDependencies) });\n  }\n  for (const field of ['devDependencies', 'peerDependencies', 'optionalDependencies']) {\n    if (pkg[field] && Object.keys(pkg[field]).length > 0) {\n      violations.push({ file: relative(ROOT, packageJsonPath), line: 1, rule: 'package-development-dependencies', message: `${field} must be absent from public cube packages`, source: JSON.stringify(pkg[field]) });\n    }\n  }"""
+          s = replace_once(s, old_fields, new_fields, "security dependency fields")
+          sec.write_text(s, encoding="utf-8")
+
+          # Promote the four catalog entries only after their contracts have been made explicit.
           catalog_path = ROOT / "scripts/package-catalog.json"
           catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
           for slug, _ in candidates:
@@ -117,47 +158,55 @@ jobs:
               spec["reason"] = "packaged, explicit safe-path-resolver dependency, declaration-exact, out-of-tree verified"
           catalog_path.write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")
 
-          # Qualification matrix: preserve historical structure while updating the live counts and four records.
           matrix_path = ROOT / "docs/release/PACKAGE_QUALIFICATION_MATRIX-V0.1.md"
           matrix = matrix_path.read_text(encoding="utf-8")
-          matrix = matrix.replace("| TECHNICALLY_READY | 73 |", "| TECHNICALLY_READY | 77 |", 1)
-          matrix = matrix.replace("| CONDITIONAL | 4 |", "| CONDITIONAL | 0 |", 1)
+          matrix = replace_once(matrix, "| TECHNICALLY_READY | 73 |", "| TECHNICALLY_READY | 77 |", "matrix ready count")
+          matrix = replace_once(matrix, "| CONDITIONAL | 4 |", "| CONDITIONAL | 0 |", "matrix conditional count")
           for slug, _ in candidates:
-              package = f"@sovereign/{slug}"
-              old_prefix = f"| {slug} | CONDITIONAL | — | relative monorepo import(s) to safe-path-resolver: ['../../safe-path-resolver-containment-boundary/src/index.js']; needs source refactor to declare @sovereign/safe-path-resolver dependency |"
-              new_row = f"| {slug} | TECHNICALLY_READY | {package} | packaged, explicit @sovereign/safe-path-resolver@0.1.0 dependency, declaration-exact, out-of-tree verified |"
-              if old_prefix not in matrix:
-                  raise SystemExit(f"matrix row not found for {slug}")
-              matrix = matrix.replace(old_prefix, new_row, 1)
+              old_row = f"| {slug} | CONDITIONAL | — | relative monorepo import(s) to safe-path-resolver: ['../../safe-path-resolver-containment-boundary/src/index.js']; needs source refactor to declare @sovereign/safe-path-resolver dependency |"
+              new_row = f"| {slug} | TECHNICALLY_READY | @sovereign/{slug} | packaged, explicit @sovereign/safe-path-resolver@0.1.0 dependency, declaration-exact, out-of-tree verified |"
+              matrix = replace_once(matrix, old_row, new_row, f"matrix row {slug}")
           matrix_path.write_text(matrix, encoding="utf-8")
 
-          # Current control state: convert the four remaining conditionals into verified package candidates.
+          # Keep the current control document accurate for recovery and the one-current-task rule.
           control_path = ROOT / "PROJECT_CONTROL.md"
           control = control_path.read_text(encoding="utf-8")
-          control = control.replace("**4 Conditional safe-path-resolver dependency boundaries**", "**0 unresolved safe-path-resolver dependency boundaries**")
-          control = control.replace("with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube.", "with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube, and four formerly conditional Cubes now declare that package explicitly.")
-          control = control.replace("### Immediate next task\n\n**Continue qualification and hardening of existing standalone library candidates, reconcile evidence, and prepare GitHub release artifacts for the authorized packages; optional free ecosystem publication may be enabled later as a separate release decision.**", "### Immediate next task\n\n**Finish the expanded standalone-library verification wave, reconcile release evidence, and prepare GitHub release artifacts for the authorized packages; optional free ecosystem publication remains a separate release decision.**")
+          control = control.replace("The current reported Node packaging wave contains **74 package entries representing 73 unique Cube sources**,", "The current reported Node packaging wave contains **78 package entries representing 77 unique Cube sources**,", 1)
+          control = control.replace("**0 unresolved safe-path-resolver dependency boundaries**", "**0 unresolved safe-path-resolver dependency boundaries**", 1)
+          control = control.replace("**Continue qualification and hardening of existing standalone library candidates, reconcile evidence, and prepare GitHub release artifacts for the authorized packages; optional free ecosystem publication may be enabled later as a separate release decision.**", "**Finish the expanded standalone-library verification wave, reconcile release evidence, and prepare GitHub release artifacts for the authorized packages; optional free ecosystem publication remains a separate release decision.**", 1)
           control_path.write_text(control, encoding="utf-8")
-          
-          # Remove the one-shot trigger and marker in the same final commit.
-          workflow = ROOT / ".github/workflows/one-time-safe-path-dependency-wave.yml"
-          marker = ROOT / ".automation/safe-path-dependency-wave"
-          if workflow.exists(): workflow.unlink()
-          if marker.exists(): marker.unlink()
-          marker_dir = marker.parent
-          if marker_dir.exists() and not any(marker_dir.iterdir()): marker_dir.rmdir()
           PY
 
-      - name: Run targeted verification on migrated sources
+      - name: Stage dependency package and install local boundary
         run: |
-          node --check cubes/bounded-file-content-reader-safe-content-access/src/index.js
-          node --check cubes/directory-walker-bounded-tree-traversal/src/index.js
-          node --check cubes/filesystem-metadata-stat-normalizer/src/index.js
-          node --check cubes/safe-file-quarantine-delete/src/index.js
-          npm test -- --test-name-pattern='bounded|directory|metadata|quarantine' || true
+          node scripts/package-stage.mjs safe-path-resolver
+          npm install --no-save --no-package-lock --ignore-scripts ./packages/safe-path-resolver
 
-      - name: Commit migration
+      - name: Verify migrated package contracts
         run: |
+          node scripts/verify-package-tooling.mjs
+          node scripts/verify-reproducible-package.mjs
+          node scripts/verify-security-boundaries.mjs
+
+      - name: Run migrated Cube tests
+        run: |
+          node --test --test-timeout=30000 cubes/bounded-file-content-reader-safe-content-access/test/index.test.js
+          node --test --test-timeout=30000 cubes/directory-walker-bounded-tree-traversal/test/index.test.js
+          node --test --test-timeout=30000 cubes/filesystem-metadata-stat-normalizer/test/index.test.js
+          node --test --test-timeout=30000 cubes/safe-file-quarantine-delete/test/index.test.js
+
+      - name: Validate and commit migration
+        run: |
+          rm -rf .artifacts
+          for pkg in \
+            packages/safe-path-resolver \
+            packages/bounded-file-content-reader-safe-content-access \
+            packages/directory-walker-bounded-tree-traversal \
+            packages/filesystem-metadata-stat-normalizer \
+            packages/safe-file-quarantine-delete; do
+            rm -rf "$pkg/src" "$pkg/dist" "$pkg/LICENSE" "$pkg/NOTICE"
+          done
+          rm -rf .automation/one-time-safe-path-dependency-wave
           git add -A
           git diff --cached --check
           git diff --cached --stat
