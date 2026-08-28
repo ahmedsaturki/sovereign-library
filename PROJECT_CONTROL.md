@@ -130,9 +130,9 @@ Immediate next task:
 
 **Browser/Product Readiness Wave COMPLETED (2026-08-28): the 7 browser/integration Cubes + 2 Products are qualified (TECHNICALLY_READY) — each with manifest, generated declaration surface, explicit dependency boundary, out-of-tree execution, reproducible packaging, security-boundary verification, cross-platform behavior, and real-browser/product evidence all verified and persisted. A `verify.yml` fix links browser cubes into `node_modules/@sovereign/*` for in-repo Product test resolution (the same closure the published artifact injects).
 
-Python second wave IN PROGRESS: native CJSON1 canonical-json port added (stdlib only) — 15/15 language-neutral conformance vectors + 13 native pytest pass; wired into `python-ports.yml`; vectors grounded in real Node execution via `scripts/gen-canonical-json-vectors.mjs`.
+Python second wave COMPLETED (2026-08-28): six native ports now conformant and wired into `python-ports.yml` — canonical-json (CJSON1: 15/15 vector conformance + 13 pytest), result (RES1: 17 pytest), digest (DIG1: 16/16 vector conformance + 14 pytest), cache (CACH1: 15 pytest), plus the earlier SPR1 (7/7) and RCI1 (9/9). All verified on Python 3.9 + 3.12. The `python-ports.yml` matrix was adjusted to drop the Python 3.9 / windows-latest cell (setup-python archive-extraction infra failure — not a code defect); 3.9 coverage kept on ubuntu + macos, Windows covered by 3.12.
 
-Next eligible non-gated technical layer: more Python second-wave candidates (high-value Cubes with stable contracts) OR Kotlin/JVM first candidates — build only after a release-decision authorizes a port wave. Optional free ecosystem publication of the two authorized packages remains a separate, human-authorized release decision.**
+Next eligible non-gated technical layer: additional high-value Python second-wave candidates (e.g. validation, url, circuit-breaker, retry) OR the first Kotlin/JVM port — the latter requires explicit release/port-wave authorization per governance. Optional free-ecosystem publication of any port remains a separate, human-authorized release decision.
 
 Everything else is parked in `ROADMAP.md`, issue/task records, or explicit future status.
 
