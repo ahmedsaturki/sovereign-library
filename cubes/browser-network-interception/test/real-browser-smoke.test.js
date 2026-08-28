@@ -22,6 +22,10 @@ function shouldRun() {
   return process.env.SOVEREIGN_BROWSER_SMOKE !== '0';
 }
 
+function extraArgs() {
+  return process.env.SOVEREIGN_BROWSER_NO_SANDBOX === '1' ? ['--no-sandbox'] : [];
+}
+
 function startFixtureServer() {
   const server = createServer((request, response) => {
     if (request.url === '/api/real') {
@@ -63,7 +67,7 @@ test('real browser: NetworkInterceptor blocks a route and passes through the res
   let browser;
   let net;
   try {
-    browser = await launch({ executablePath, headless: true, timeoutMs: 20000 });
+    browser = await launch({ executablePath, headless: true, timeoutMs: 20000, extraArgs: extraArgs() });
     net = new NetworkInterceptor(adaptCdp(browser.cdp));
     await net.enable();
     await net.addRoute({ pattern: '**/api/blocked', action: 'block' });

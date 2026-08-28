@@ -7,6 +7,14 @@ function shouldRun() {
   return process.env.SOVEREIGN_BROWSER_SMOKE !== '0';
 }
 
+function extraArgs() {
+  // Sandboxed/containerized/admin environments (some Windows sessions, CI
+  // mintty, root containers) require --no-sandbox for Chromium to launch.
+  // This is opt-in via env so the cube's default cross-platform launch surface
+  // is unchanged for normal hosts.
+  return process.env.SOVEREIGN_BROWSER_NO_SANDBOX === '1' ? ['--no-sandbox'] : [];
+}
+
 function startFixtureServer() {
   const server = createServer((request, response) => {
     if (request.url !== '/') {
@@ -56,7 +64,7 @@ test('browser smoke: launch, navigate, evaluate, metadata, screenshot, cleanup',
   let browser = null;
 
   try {
-    browser = await launch({ executablePath, headless: true, timeoutMs: 20000 });
+    browser = await launch({ executablePath, headless: true, timeoutMs: 20000, extraArgs: extraArgs() });
     await browser.navigate(fixture.url);
     await waitForPageReady(browser);
 

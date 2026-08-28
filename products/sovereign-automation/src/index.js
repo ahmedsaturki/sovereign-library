@@ -10,13 +10,13 @@
  * level while keeping zero runtime third-party dependencies.
  */
 
-import { BrowserSession, BrowserCubeError, launch } from '../../../cubes/browser/src/index.js';
-import { BrowserInteractions, By, InteractionsError } from '../../../cubes/browser-interactions/src/index.js';
-import { expect, Snapshot, AssertionsError } from '../../../cubes/browser-assertions/src/index.js';
-import { NetworkInterceptor, NetworkError } from '../../../cubes/browser-network-interception/src/index.js';
-import { TabManager, TabManagerError } from '../../../cubes/browser-tab-manager/src/index.js';
-import { VisualTester, VisualError } from '../../../cubes/browser-visual-testing/src/index.js';
-import { BrowserRecorder, RecorderError } from '../../../cubes/browser-recorder/src/index.js';
+import { BrowserSession, BrowserCubeError, launch } from '#browser';
+import { BrowserInteractions, By, InteractionsError } from '#browser-interactions';
+import { expect, Snapshot, AssertionsError } from '#browser-assertions';
+import { NetworkInterceptor, NetworkError } from '#browser-network-interception';
+import { TabManager, TabManagerError } from '#browser-tab-manager';
+import { VisualTester, VisualError } from '#browser-visual-testing';
+import { BrowserRecorder, RecorderError } from '#browser-recorder';
 
 const VERSION = '0.1.0';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -124,4 +124,4 @@ Commands:
 }
 
 export default { SovereignAutomation, cli, launch, By, expect, VERSION };
-export { VERSION };
+export { VERSION, launch, By, expect };

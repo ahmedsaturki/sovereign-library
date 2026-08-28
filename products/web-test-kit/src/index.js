@@ -12,10 +12,10 @@
  * this file only wires them together so a single import runs a full test.
  */
 
-import { BrowserSession, launch } from '../../../cubes/browser/src/index.js';
-import { BrowserInteractions, By } from '../../../cubes/browser-interactions/src/index.js';
-import { expect, Snapshot, AssertionsError } from '../../../cubes/browser-assertions/src/index.js';
-import { BrowserRecorder } from '../../../cubes/browser-recorder/src/index.js';
+import { BrowserSession, launch } from '#browser';
+import { BrowserInteractions, By } from '#browser-interactions';
+import { expect, Snapshot, AssertionsError } from '#browser-assertions';
+import { BrowserRecorder } from '#browser-recorder';
 
 export { By, expect, Snapshot, AssertionsError, BrowserInteractions, BrowserSession, launch, BrowserRecorder };
 

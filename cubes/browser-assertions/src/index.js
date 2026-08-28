@@ -301,7 +301,11 @@ export class LocatorAssertions {
 // - This is NOT structural DOM normalisation; it is exact HTML-text comparison
 //   under whitespace-trim. The contract is documented in the SPEC.
 export class Snapshot {
-  constructor(domStringifier) {
+  /**
+   * @param {(html: string) => string} [domStringifier] Optional HTML stringifier.
+   *   Defaults to the identity function when omitted.
+   */
+  constructor(domStringifier = null) {
     this._stringify = domStringifier || (html => html);
   }
 

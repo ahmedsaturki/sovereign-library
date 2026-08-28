@@ -54,6 +54,7 @@ function writeDeclarationConfig(target, source, outDir) {
       target: 'ES2022',
       module: 'NodeNext',
       moduleResolution: 'NodeNext',
+      types: ['node'],
       strict: false,
       skipLibCheck: true,
       outDir,
@@ -81,15 +82,21 @@ function stageRuntimeDependencies(spec, catalog, packageDir) {
     const dependencyRoot = parts[0].startsWith('@')
       ? resolve(nodeModules, parts[0], parts[1])
       : resolve(nodeModules, dependencyName);
-    const dependencySrc = resolve(dependencyRoot, 'src');
-    mkdirSync(dependencySrc, { recursive: true });
+    mkdirSync(dependencyRoot, { recursive: true });
     const dependencySourceRoot = dirname(dependencySource);
+    // Stage the dependency's runtime source at the package ROOT (index.js at
+    // root) plus its generated declaration surface (index.d.ts at root). A plain
+    // `main`/`types` package.json is resolved unambiguously by both tsc
+    // (NodeNext/allowJs) and Node's runtime, unlike a nested exports map that
+    // some resolution contexts skip for .js entrypoints.
     for (const entry of readdirSync(dependencySourceRoot)) {
       const full = resolve(dependencySourceRoot, entry);
-      if (statSync(full).isDirectory()) cpSync(full, resolve(dependencySrc, entry), { recursive: true });
-      else if (entry.endsWith('.js') || entry.endsWith('.mjs') || entry.endsWith('.d.ts')) copyFileSync(full, resolve(dependencySrc, entry));
+      if (statSync(full).isDirectory()) cpSync(full, resolve(dependencyRoot, entry), { recursive: true });
+      else if (entry.endsWith('.js') || entry.endsWith('.mjs') || entry.endsWith('.d.ts')) copyFileSync(full, resolve(dependencyRoot, entry));
     }
-    writeFileSync(resolve(dependencyRoot, 'package.json'), `${JSON.stringify({ name: dependencyName, version: dependencyVersion, type: 'module', exports: { '.': './src/index.js' } }, null, 2)}\n`, 'utf8');
+    const depDistSource = resolve(ROOT, dependencySpec.packageDir, 'dist', 'index.d.ts');
+    if (existsSync(depDistSource)) copyFileSync(depDistSource, resolve(dependencyRoot, 'index.d.ts'));
+    writeFileSync(resolve(dependencyRoot, 'package.json'), `${JSON.stringify({ name: dependencyName, version: dependencyVersion, type: 'module', main: 'index.js', types: 'index.d.ts' }, null, 2)}\n`, 'utf8');
   }
 }
 

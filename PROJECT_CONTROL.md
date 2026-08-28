@@ -89,13 +89,16 @@ Current package catalog: `scripts/package-catalog.json`.
 
 Current qualification matrix: `docs/release/PACKAGE_QUALIFICATION_MATRIX-V0.1.md`.
 
-The current reported Node packaging wave contains **78 package entries representing 77 unique Cube sources**, with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube.
+The current reported Node packaging wave contains **86 package entries representing 84 unique Cube sources + 2 Products**, with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube.
 
 The qualification rules remain stricter than merely creating `package.json`: exact public API, declaration surface, package boundary, out-of-tree use, reproducibility, security, documentation, and applicable CI evidence are required.
 
+The 7 browser/integration Cubes and 2 Products completed the Browser/Product Readiness Wave (2026-08-28): each now has a `packages/<name>/` staging dir with `files` allowlist + generated `dist/index.d.ts`, a `scripts/package-catalog.json` entry with exact `expected` exports, and out-of-tree import verification. The Products use explicit `@sovereign/*` runtime dependency boundaries (no `../../../cubes/...` monorepo coupling in the published artifact). Real-browser smoke tests against Chromium pass locally and in CI.
+
+Status summary (matrix v17): 84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL. The 2 Products are also TECHNICALLY_READY via the same pipeline.
+
 Remaining categories include:
 
-- browser/integration Cubes kept PRE-RELEASE until their own release wave;
 - The four previously Conditional safe-path-resolver consumers now use explicit @sovereign/safe-path-resolver dependency boundaries and qualify as TECHNICALLY_READY;
 - future native Python/Kotlin/Android implementations only where justified by the authoritative contract and practical value.
 
@@ -125,7 +128,9 @@ Current milestone:
 
 Immediate next task:
 
-**Continue the Browser/Product package-readiness wave. The language-neutral conformance layer for SPR1 + RCI1 and the first native Python ports for `@sovereign/safe-path-resolver` and `@sovereign/runtime-capability-inspector` are COMPLETE and CI-verified on the earlier `aa8d0eb` source state. The Browser/Product wave remains PRE-RELEASE until its package contracts are independently satisfied. Do not claim Browser/Product completion unless manifests, declarations, dependency boundaries, out-of-tree execution, reproducibility, security, cross-platform behavior, and applicable real-browser/product evidence are all verified and persisted. Optional free ecosystem publication remains a separate release decision.**
+**Maintain and verify qualified libraries; keep release-artifact infra ready (verified 2026-08-28); language-neutral conformance harness for port candidates (DONE 2026-08-28: SPR1 + RCI1 vectors + scripts/run-conformance.mjs, gated in CI). Browser/Product Readiness Wave COMPLETED (2026-08-28): the 7 browser/integration Cubes + 2 Products are qualified (TECHNICALLY_READY) — each with manifest, generated declaration surface, explicit dependency boundary, out-of-tree execution, reproducible packaging, security-boundary verification, cross-platform behavior, and real-browser/product evidence all verified and persisted.
+
+Next eligible non-gated technical layer: Python second wave (inspect remaining Node Cubes for Python applicability per the conformance framework) OR Kotlin/JVM first candidates — build only after a release-decision authorizes a port wave. Optional free ecosystem publication of the two authorized packages remains a separate, human-authorized release decision.**
 
 Everything else is parked in `ROADMAP.md`, issue/task records, or explicit future status.
 

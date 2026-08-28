@@ -68,7 +68,9 @@ export const By = Object.freeze({
     if (typeof text !== 'string' || !text) fail('INVALID_SELECTOR', 'text must be a non-empty string');
     return { kind: 'text', value: text, exact: Boolean(exact) };
   },
-  role(role, { name, level } = {}) {
+  /** @param {{name?: string|null, level?: number|null}} [options] */
+  role(role, options = {}) {
+    const { name = null, level = null } = options;
     if (typeof role !== 'string' || !role) fail('INVALID_SELECTOR', 'role must be a non-empty string');
     return { kind: 'role', value: role, name: name ?? null, level: level ?? null };
   },

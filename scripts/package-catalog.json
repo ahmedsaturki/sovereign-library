@@ -1395,5 +1395,179 @@
     },
     "status": "TECHNICALLY_READY",
     "reason": "standalone-capable with explicit @sovereign/safe-path-resolver dependency boundary"
+  },
+  "browser": {
+    "name": "@sovereign/browser",
+    "version": "0.1.0",
+    "description": "Sovereign browser Cube (standalone native Chromium/CDP browser session).",
+    "packageDir": "packages/browser",
+    "source": "cubes/browser/src/index.js",
+    "expected": [
+      "BrowserCubeError",
+      "validateUrl",
+      "createSessionState",
+      "transition",
+      "BrowserSession",
+      "launch"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (browser wave)"
+  },
+  "browser-assertions": {
+    "name": "@sovereign/browser-assertions",
+    "version": "0.1.0",
+    "description": "Sovereign browser-assertions Cube (standalone assertion + snapshot layer).",
+    "packageDir": "packages/browser-assertions",
+    "source": "cubes/browser-assertions/src/index.js",
+    "expected": [
+      "AssertionsError",
+      "DEFAULT_TIMEOUT_MS",
+      "LocatorAssertions",
+      "Snapshot",
+      "expect"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (browser wave); self-contained canonicalizer, no monorepo dependency"
+  },
+  "browser-interactions": {
+    "name": "@sovereign/browser-interactions",
+    "version": "0.1.0",
+    "description": "Sovereign browser-interactions Cube (standalone locator/action layer).",
+    "packageDir": "packages/browser-interactions",
+    "source": "cubes/browser-interactions/src/index.js",
+    "expected": [
+      "InteractionsError",
+      "By",
+      "BrowserInteractions",
+      "Locator",
+      "DEFAULT_TIMEOUT_MS",
+      "DEFAULT_POLL_MS"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (browser wave)"
+  },
+  "browser-network-interception": {
+    "name": "@sovereign/browser-network-interception",
+    "version": "0.1.0",
+    "description": "Sovereign browser-network-interception Cube (standalone CDP Fetch interception).",
+    "packageDir": "packages/browser-network-interception",
+    "source": "cubes/browser-network-interception/src/index.js",
+    "expected": [
+      "NetworkError",
+      "NetworkInterceptor",
+      "DEFAULT_BODY_CAP_BYTES"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (browser wave); Fetch-based, body=null honestly documented"
+  },
+  "browser-recorder": {
+    "name": "@sovereign/browser-recorder",
+    "version": "0.1.0",
+    "description": "Sovereign browser-recorder Cube (standalone interaction recorder and replay).",
+    "packageDir": "packages/browser-recorder",
+    "source": "cubes/browser-recorder/src/index.js",
+    "expected": [
+      "RecorderError",
+      "BrowserRecorder"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (browser wave); fail-closed REDACT_ERROR, deep immutable snapshots"
+  },
+  "browser-tab-manager": {
+    "name": "@sovereign/browser-tab-manager",
+    "version": "0.1.0",
+    "description": "Sovereign browser-tab-manager Cube (standalone multi-tab orchestration).",
+    "packageDir": "packages/browser-tab-manager",
+    "source": "cubes/browser-tab-manager/src/index.js",
+    "expected": [
+      "TabManagerError",
+      "TabManager"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (browser wave)"
+  },
+  "browser-visual-testing": {
+    "name": "@sovereign/browser-visual-testing",
+    "version": "0.1.0",
+    "description": "Sovereign browser-visual-testing Cube (standalone structural DOM diffing).",
+    "packageDir": "packages/browser-visual-testing",
+    "source": "cubes/browser-visual-testing/src/index.js",
+    "expected": [
+      "VisualError",
+      "VisualTester",
+      "tokenize"
+    ],
+    "status": "TECHNICALLY_READY",
+    "reason": "packaged (browser wave); multiset diff, no substring false positives"
+  },
+  "web-test-kit": {
+    "name": "@sovereign/web-test-kit",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Sovereign web-test-kit Product (explicit composition of browser cubes).",
+    "packageDir": "packages/web-test-kit",
+    "source": "products/web-test-kit/src/index.js",
+    "expected": [
+      "By",
+      "expect",
+      "Snapshot",
+      "AssertionsError",
+      "BrowserInteractions",
+      "BrowserSession",
+      "launch",
+      "BrowserRecorder",
+      "WebTestKit"
+    ],
+    "dependencies": {
+      "@sovereign/browser": "0.1.0",
+      "@sovereign/browser-interactions": "0.1.0",
+      "@sovereign/browser-assertions": "0.1.0",
+      "@sovereign/browser-recorder": "0.1.0"
+    },
+    "imports": {
+      "#browser": "@sovereign/browser",
+      "#browser-interactions": "@sovereign/browser-interactions",
+      "#browser-assertions": "@sovereign/browser-assertions",
+      "#browser-recorder": "@sovereign/browser-recorder"
+    },
+    "status": "TECHNICALLY_READY",
+    "reason": "explicit-cube-dependency product; no hidden monorepo coupling"
+  },
+  "sovereign-automation": {
+    "name": "@sovereign/automation",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Sovereign automation Product (unified composition of browser cubes).",
+    "packageDir": "packages/sovereign-automation",
+    "source": "products/sovereign-automation/src/index.js",
+    "expected": [
+      "AutomationError",
+      "SovereignAutomation",
+      "cli",
+      "launch",
+      "By",
+      "expect",
+      "VERSION"
+    ],
+    "dependencies": {
+      "@sovereign/browser": "0.1.0",
+      "@sovereign/browser-interactions": "0.1.0",
+      "@sovereign/browser-assertions": "0.1.0",
+      "@sovereign/browser-network-interception": "0.1.0",
+      "@sovereign/browser-tab-manager": "0.1.0",
+      "@sovereign/browser-visual-testing": "0.1.0",
+      "@sovereign/browser-recorder": "0.1.0"
+    },
+    "imports": {
+      "#browser": "@sovereign/browser",
+      "#browser-interactions": "@sovereign/browser-interactions",
+      "#browser-assertions": "@sovereign/browser-assertions",
+      "#browser-network-interception": "@sovereign/browser-network-interception",
+      "#browser-tab-manager": "@sovereign/browser-tab-manager",
+      "#browser-visual-testing": "@sovereign/browser-visual-testing",
+      "#browser-recorder": "@sovereign/browser-recorder"
+    },
+    "status": "TECHNICALLY_READY",
+    "reason": "explicit-cube-dependency product; no hidden monorepo coupling"
   }
 }

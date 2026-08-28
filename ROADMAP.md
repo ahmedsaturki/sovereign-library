@@ -102,6 +102,19 @@ Candidates:
 1. `@sovereign/safe-path-resolver` v0.1.0
 2. `@sovereign/runtime-capability-inspector` v0.1.0
 
+### Completed: Browser / Product Package Readiness Wave (2026-08-28)
+
+The 7 browser/integration Cubes (`browser`, `browser-assertions`, `browser-interactions`, `browser-network-interception`, `browser-recorder`, `browser-tab-manager`, `browser-visual-testing`) and 2 Products (`web-test-kit`, `sovereign-automation`) completed the qualification pipeline:
+
+- each gained a `packages/<name>/` staging dir with `files` allowlist + generated `dist/index.d.ts` declaration surface;
+- each gained a `scripts/package-catalog.json` entry with exact `expected` exports;
+- Products use explicit `@sovereign/*` runtime dependency boundaries (no `../../../cubes/...` monorepo coupling in the published artifact), with repo-root `node_modules/@sovereign/<cube>` symlinks (gitignored) for in-repo dev/test resolution;
+- out-of-tree import + declaration-surface + `files`-allowlist verification passes for all 9 (`scripts/verify-browser-packages-outoftree.mjs`);
+- real-browser smoke (Chromium launch/navigate/evaluate/screenshot/cleanup + Fetch-domain block/passthrough/traffic-log interception) verified against local Chromium and gated in CI;
+- `package-stage.mjs` hardened so consumer-cube dependency declarations resolve for `.js` sources (staged dep entry placed at package root with `main`/`types`, not `src/`).
+
+Result: 84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL (matrix v17); 2 Products TECHNICALLY_READY via same pipeline.
+
 ### Current: Library Distribution Expansion
 
 **Technical readiness and the initial human authorization decision are complete; publication is intentionally deferred while the library-packaging and ecosystem work continues.**
