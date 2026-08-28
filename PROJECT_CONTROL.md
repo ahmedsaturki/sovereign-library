@@ -99,3 +99,13 @@ A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verif
 ## Recovery rule
 
 If work is interrupted, read this file first, then `ROADMAP.md`, then the latest Git commit. Resume from the listed immediate next task; do not restart from memory.
+
+## Governance & agent entry (added 2026-08-28)
+
+- **Agent entry / permanent memory home:** `AGENTS.md` (was previously missing from the repo).
+- **Governance & standing DO-NOT list:** `GOVERNANCE.md` (never merge PR #111, never publish to
+  external registries, never push to `main` without review, never force-push, never rewrite
+  history, never modify frozen code, never delete history, CI ≠ authorization).
+- **Reconciliation note:** `ROADMAP.md` top-of-file release log is historical (last showed
+  PR #87); `PROJECT_CONTROL.md` is authoritative. See the reconciliation block in `ROADMAP.md`.
+- The standing distribution policy is **GitHub-only** (no npm/PyPI/Maven publication).

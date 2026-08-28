@@ -95,3 +95,42 @@ Once explicitly authorized, the controlled path becomes:
 After package-readiness is proven, Browser Automation remains the strongest product wedge because it composes a large set of stabilized primitives. This is a future product milestone, not an active implementation task during Phase 0.
 
 No second Cube may start concurrently with the current Phase 0 task.
+
+---
+
+## Reconciliation block (added 2026-08-28)
+
+> The release log above (top of file) is **historical evidence** and is preserved, not
+> erased. It was last showing **Glob / Path Matcher v0.1 (PR #87)** as the "latest released
+> cube." That log lagged the control plane. The **authoritative current state** lives in
+> `PROJECT_CONTROL.md`; this block anchors the two together so neither conflicts nor is lost.
+
+### Authority note
+
+- **`PROJECT_CONTROL.md` is the single source of truth for current state / what changed /
+  next task.** The top-of-file release log in this ROADMAP is historical and must not be read
+  as "current."
+- For the full operating model, governance DO-NOT list, and recovery order, see
+  `AGENTS.md` and `GOVERNANCE.md` (added 2026-08-28 to make the repo self-recovering).
+
+### Current state (authoritative, from PROJECT_CONTROL.md at HEAD `04fe95b`)
+
+- Latest **released + FROZEN** cube: Application Lifecycle / Graceful Shutdown Coordinator
+  v0.1 — PR #104 — `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`.
+- Phase 0 milestone: **`PHASE-0-RELEASE-AUTHORIZATION-READY`**.
+- Immediate next task (HUMAN decision): explicit release-authorization for the two verified
+  candidates `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector`
+  v0.1.0 — tracked in **issue #110** (decision: PENDING).
+- Distribution policy: **GitHub-only** (no external registry publication). See `GOVERNANCE.md`.
+
+### Governance flags (do not act without explicit re-authorization)
+
+- **PR #111** (`feat/browser-interactions-assertions-webtestkit`) is **PARKED — do not merge.**
+  See `GOVERNANCE.md`.
+- Safe Path Resolver cube source is merged into `main` (commit `0216f3a`); its **public
+  package** remains pending authorization (issue #110). The cube exists in-tree; it is not
+  authorized for external distribution.
+- An orphaned hardening branch `safe-path-resolver-containment-boundary-v0-1-final-verify`
+  (HEAD `b52473ee8f4148932ec3d8526bbfe3ef5abac14c`, 13 commits ahead of `main`) holds further
+  SPR1 integrity/symlink/namespace hardening not yet in `main`. Preserved on `origin`; merging
+  needs its own explicit review.
