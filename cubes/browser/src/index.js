@@ -170,7 +170,7 @@ export class BrowserSession {
     this.profile = this.options.userDataDir || await mkdtemp(join(tmpdir(), 'sovereign-browser-'));
     const executable = this.options.executablePath || BrowserSession.findExecutable();
     if (!executable) throw new BrowserCubeError('BROWSER_NOT_FOUND', 'No Chromium-family browser found. Pass executablePath explicitly.');
-    const args = [`--remote-debugging-port=${this.port}`, `--user-data-dir=${this.profile}`, '--no-first-run', '--no-default-browser-check', '--disable-background-networking', '--disable-sync', '--disable-dev-shm-usage', ...(process.platform === 'linux' ? ['--no-sandbox'] : []), ...(process.platform === 'win32' ? ['--disable-gpu'] : []), ...(this.options.headless ? ['--headless=new'] : []), ...this.options.extraArgs, 'about:blank'];
+    const args = [`--remote-debugging-port=${this.port}`, `--user-data-dir=${this.profile}`, '--remote-debugging-address=127.0.0.1', '--no-first-run', '--no-default-browser-check', '--disable-background-networking', '--disable-sync', '--disable-dev-shm-usage', ...(process.platform === 'linux' ? ['--no-sandbox'] : []), ...(process.platform === 'win32' ? ['--disable-gpu'] : []), ...(this.options.headless ? ['--headless=new'] : []), ...this.options.extraArgs, 'about:blank'];
     this.process = spawn(executable, args, { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true });
     const started = Date.now();
     while (Date.now() - started < this.options.timeoutMs) {
@@ -196,10 +196,11 @@ export class BrowserSession {
   static findExecutable() {
     const candidates = process.platform === 'win32'
       ? [
+          process.env.PROGRAMFILES && join(process.env.PROGRAMFILES, 'Microsoft/Edge/Application/msedge.exe'),
+          process.env['PROGRAMFILES(X86)'] && join(process.env['PROGRAMFILES(X86)'], 'Microsoft/Edge/Application/msedge.exe'),
           process.env.PROGRAMFILES && join(process.env.PROGRAMFILES, 'Google/Chrome/Application/chrome.exe'),
           process.env['PROGRAMFILES(X86)'] && join(process.env['PROGRAMFILES(X86)'], 'Google/Chrome/Application/chrome.exe'),
-          process.env.LOCALAPPDATA && join(process.env.LOCALAPPDATA, 'Google/Chrome/Application/chrome.exe'),
-          process.env.PROGRAMFILES && join(process.env.PROGRAMFILES, 'Microsoft/Edge/Application/msedge.exe')
+          process.env.LOCALAPPDATA && join(process.env.LOCALAPPDATA, 'Google/Chrome/Application/chrome.exe')
         ]
       : isWsl()
         ? [
@@ -264,4 +265,3 @@ export async function launch(options = {}) {
   const session = new BrowserSession(options);
   try { return await session.start(); }
   catch (error) { await session.close(); throw error; }
-}
