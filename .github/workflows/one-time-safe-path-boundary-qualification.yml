@@ -1,0 +1,40 @@
+name: one-time-safe-path-boundary-qualification
+
+on:
+  push:
+    branches: [feat/continuity-hardening]
+
+permissions:
+  contents: write
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Guard marker
+        run: test -f .automation/safe-path-boundary-qualification
+      - name: Run deterministic qualification
+        run: python3 scripts/qualify_safe_path_boundaries.py
+      - name: Finalize and clean temporary automation
+        run: |
+          rm -f .automation/safe-path-boundary-qualification
+          rm -f scripts/qualify_safe_path_boundaries.py
+          rm -f scripts/migrate-safe-path-boundaries.mjs
+          rm -f .github/workflows/one-time-safe-path-boundary-qualification.yml
+          rm -f .github/workflows/one-time-safe-path-boundary-finalize.yml
+          rm -f .github/workflows/one-time-safe-path-dependency-migration-v2.yml
+          rm -f .github/workflows/one-time-windows-browser-diagnostic.yml
+          rm -f .github/workflows/one-time-windows-browser-hardening.yml
+          rm -f .github/workflows/fix-one-time-safe-path-runner.yml
+          rm -f .automation/windows-browser-hardening
+          rmdir .automation 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: qualify safe-path-resolver dependency boundaries"
+          git push origin feat/continuity-hardening
