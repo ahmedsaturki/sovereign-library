@@ -8,9 +8,9 @@ This file is the anti-drift control for the repository. It keeps development fin
 
 ## Current mission
 
-**LIBRARY DISTRIBUTION EXPANSION — ACTIVE (GitHub-first / GitHub-only current distribution)**
+**LIBRARY DISTRIBUTION EXPANSION — ACTIVE (GitHub-first / free multi-channel optional)**
 
-The immediate objective is to qualify existing Sovereign Cubes as real standalone libraries without deleting, replacing, or destabilizing completed work.
+The immediate objective is to qualify existing Sovereign Cubes as real standalone libraries without deleting, replacing, or destabilizing completed work, while preparing free, reproducible distribution channels for later release waves.
 
 ## Current repository state
 
@@ -58,11 +58,13 @@ An internal dependency is allowed only when it is explicit, versioned, resolvabl
 
 ## Current distribution policy
 
-**GITHUB-FIRST / GITHUB-ONLY for the current phase.**
+**GITHUB-FIRST / FREE-MULTI-CHANNEL-OPTIONAL.**
 
-The current project decision is to avoid paid or externally hosted registries for now and distribute through GitHub. This is a policy choice, not an authentication blocker.
+GitHub remains the canonical source, persistent project memory, release-evidence home, and default distribution channel.
 
-Canonical current distribution mechanisms:
+Distribution is intentionally free-by-default. Additional ecosystem registries are **optional and deferred by release wave**, not permanently prohibited. A registry may be enabled for a release only when it is genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly selected for that release wave.
+
+Canonical GitHub mechanisms:
 
 - Git repository/source;
 - Git tags;
@@ -71,16 +73,11 @@ Canonical current distribution mechanisms:
 - checksums/integrity records;
 - documentation and examples.
 
-Optional GitHub-hosted mechanisms may be evaluated when they add clear value without introducing unnecessary cost or coupling. In particular, GitHub Packages supports public packages and can be used selectively for suitable package formats, subject to GitHub's current limits and authentication model. It is NOT the default requirement for every package.
+Optional free ecosystem mechanisms may include npm, PyPI, Maven-compatible registries/Maven Central, GitHub Packages, JSR, or other appropriate services, subject to current terms/limits and a deliberate release decision. No paid registry or mandatory third-party service is required.
 
-Deferred external registries:
+No external publication should be attempted merely because a package is technically ready. Release timing and channel selection remain explicit controls.
 
-- npmjs.org;
-- PyPI;
-- Maven Central;
-- other third-party registries.
-
-No external publication should be attempted unless the project policy is explicitly changed in the repository.
+Historical wording that prohibited external registries absolutely is superseded by this policy and remains preserved as history in governance/release records.
 
 ## Current packaging wave
 
@@ -90,7 +87,7 @@ Current package catalog: `scripts/package-catalog.json`.
 
 Current qualification matrix: `docs/release/PACKAGE_QUALIFICATION_MATRIX-V0.1.md`.
 
-The current reported Node packaging wave contains 74 package entries representing 73 unique Cube sources, with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube.
+The current reported Node packaging wave contains **74 package entries representing 73 unique Cube sources**, with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube.
 
 The qualification rules remain stricter than merely creating `package.json`: exact public API, declaration surface, package boundary, out-of-tree use, reproducibility, security, documentation, and applicable CI evidence are required.
 
@@ -126,20 +123,20 @@ Current milestone:
 
 Immediate next task:
 
-**Continue qualification and hardening of existing standalone library candidates, reconcile evidence, then prepare GitHub release artifacts for authorized packages.**
+**Continue qualification and hardening of existing standalone library candidates, reconcile evidence, and prepare GitHub release artifacts for the authorized packages; optional free ecosystem publication may be enabled later as a separate release decision.**
 
 Everything else is parked in `ROADMAP.md`, issue/task records, or explicit future status.
 
 ## Release state
 
-The first two Phase-0 candidates remain authorized:
+The first two Phase-0 candidates remain authorized in principle:
 
 - `@sovereign/safe-path-resolver` v0.1.0
 - `@sovereign/runtime-capability-inspector` v0.1.0
 
 They are **TECHNICALLY_READY / AUTHORIZED / NOT YET GITHUB-RELEASED**.
 
-External npm publication is intentionally deferred by current project policy. Previous npm authentication/2FA failures are historical evidence only.
+External publication is intentionally deferred by current project timing/policy, not because the technical artifacts are invalid.
 
 A package is not `RELEASED` until an actual GitHub release/artifact distribution event is evidenced.
 
@@ -151,6 +148,6 @@ The released/frozen `application-lifecycle`, `atomic-batch-file-transaction`, an
 
 A new agent must recover by reading:
 
-`AGENTS.md -> PROJECT_CONTROL.md -> ROADMAP.md -> Architecture Constitution -> Project Knowledge Base -> live GitHub state -> relevant SPEC -> package/release records`
+`AGENTS.md -> GOVERNANCE.md -> PROJECT_CONTROL.md -> ROADMAP.md -> Architecture Constitution -> Project Knowledge Base -> live GitHub state -> relevant SPEC -> package/release records`
 
 Never rely on chat history as authoritative state.
