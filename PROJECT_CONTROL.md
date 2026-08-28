@@ -99,3 +99,12 @@ A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verif
 ## Recovery rule
 
 If work is interrupted, read this file first, then `ROADMAP.md`, then the latest Git commit. Resume from the listed immediate next task; do not restart from memory.
+
+## Governance & agent entry (updated 2026-08-28)
+
+- **Governance & standing DO-NOT list:** `GOVERNANCE.md` (never merge PR #111, never push to `main` without review, never force-push, never rewrite history, never modify frozen code, never delete history, CI ≠ authorization; distribution policy = GitHub canonical + optional free registries per wave).
+- **Agent entry / permanent memory home:** `AGENTS.md`. NOTE: `AGENTS.md` could not be written in this session — the runtime blocked the write as a protected agent-instruction file without user consent. The intended content is mirrored in `GOVERNANCE.md`; re-attempt writing `AGENTS.md` on explicit user approval.
+- **Declarative package catalog:** `PACKAGE_CATALOG.json` (schema `sovereign-package-catalog/v1`), generated from `origin/main`. 78 cubes: 74 STANDALONE, 4 CONDITIONAL, 77 eligible, 2 first-batch staged.
+- **Catalog-driven packaging pipeline (additive):** `scripts/package-catalog-stage.mjs`, `scripts/verify-package-catalog.mjs`, `scripts/verify-package-catalog-reproducible.mjs`. Original first-batch scripts (`scripts/package-stage.mjs`, etc.) remain canonical for the two first-batch candidates.
+- **Verified (real execution, 2026-08-28):** 13 staged packages pass manifest/export-map AND reproducible byte-identical tarball verification via the catalog pipeline. Out-of-tree import confirmed for `safe-path-resolver` and `canonical-json`.
+- **CONDITIONAL cubes (4):** import first-batch via monorepo-relative path; remediation recorded in `PACKAGE_CATALOG.json` (`conditionalDependency.remediation`). Not yet applied — requires its own authorized task.

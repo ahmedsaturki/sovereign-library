@@ -1,0 +1,2200 @@
+{
+  "schema": "sovereign-package-catalog/v1",
+  "generatedFrom": "origin/main @ 04fe95b15f95f407aa4fc709254381599678a83b",
+  "policy": "GitHub canonical; optional free registries per-wave; first batch authorized-in-principle, publication deferred",
+  "idConvention": "cube directory id (cubes/<id>) may differ from package directory id (packages/<packageId>); first batch: safe-path-resolver-containment-boundary -> safe-path-resolver",
+  "summary": {
+    "totalCubes": 78,
+    "standalone": 74,
+    "conditional": 4,
+    "eligible": 77,
+    "firstBatchStaged": [
+      "safe-path-resolver",
+      "runtime-capability-inspector"
+    ],
+    "conditionalCubes": [
+      "bounded-file-content-reader-safe-content-access",
+      "directory-walker-bounded-tree-traversal",
+      "filesystem-metadata-stat-normalizer",
+      "safe-file-quarantine-delete"
+    ]
+  },
+  "cubes": [
+    {
+      "id": "agent-runtime",
+      "packageId": "agent-runtime",
+      "name": "@sovereign/agent-runtime",
+      "version": "0.1.0",
+      "source": "cubes/agent-runtime/src/index.js",
+      "exportedNames": [
+        "AgentError",
+        "DEFAULT_LIMITS",
+        "createAgentRuntime"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "ai-inference-runtime",
+      "packageId": "ai-inference-runtime",
+      "name": "@sovereign/ai-inference-runtime",
+      "version": "0.1.0",
+      "source": "cubes/ai-inference-runtime/src/index.js",
+      "exportedNames": [
+        "DEFAULT_LIMITS",
+        "InferenceError",
+        "createNdjsonProcessAdapter",
+        "createRuntime"
+      ],
+      "exportCount": 4,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "application-lifecycle",
+      "packageId": "application-lifecycle",
+      "name": "@sovereign/application-lifecycle",
+      "version": "0.1.0",
+      "source": "cubes/application-lifecycle/src/index.js",
+      "exportedNames": [
+        "ApplicationLifecycleError",
+        "createApplicationLifecycle",
+        "defaultCapabilities"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-admission-gate",
+      "packageId": "artifact-admission-gate",
+      "name": "@sovereign/artifact-admission-gate",
+      "version": "0.1.0",
+      "source": "cubes/artifact-admission-gate/src/index.js",
+      "exportedNames": [
+        "AdmissionError",
+        "MAX_CLAUSES",
+        "MAX_DEPTH",
+        "MAX_EVIDENCE",
+        "MAX_NODES",
+        "MAX_STRING",
+        "evaluateAdmission",
+        "parseAdmission",
+        "serializeAdmission"
+      ],
+      "exportCount": 9,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-audit-drift-reporter",
+      "packageId": "artifact-audit-drift-reporter",
+      "name": "@sovereign/artifact-audit-drift-reporter",
+      "version": "0.1.0",
+      "source": "cubes/artifact-audit-drift-reporter/src/index.js",
+      "exportedNames": [
+        "AuditError",
+        "DEFAULT_MAX_FINDINGS",
+        "DEFAULT_MAX_RECORDS",
+        "auditSnapshots",
+        "parseAudit",
+        "serializeAudit"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-bundle",
+      "packageId": "artifact-bundle",
+      "name": "@sovereign/artifact-bundle",
+      "version": "0.1.0",
+      "source": "cubes/artifact-bundle/src/index.js",
+      "exportedNames": [
+        "ArtifactBundleError",
+        "DEFAULT_LIMITS",
+        "MAGIC",
+        "createBundle",
+        "extractBundle",
+        "parseBundle",
+        "verifyBundle"
+      ],
+      "exportCount": 7,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-catalog",
+      "packageId": "artifact-catalog",
+      "name": "@sovereign/artifact-catalog",
+      "version": "0.1.0",
+      "source": "cubes/artifact-catalog/src/index.js",
+      "exportedNames": [
+        "ArtifactCatalog",
+        "ArtifactCatalogError",
+        "DEFAULT_LIMITS",
+        "MAGIC",
+        "parseState",
+        "serializeState"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-compliance-policy-evaluator",
+      "packageId": "artifact-compliance-policy-evaluator",
+      "name": "@sovereign/artifact-compliance-policy-evaluator",
+      "version": "0.1.0",
+      "source": "cubes/artifact-compliance-policy-evaluator/src/index.js",
+      "exportedNames": [
+        "ComplianceError",
+        "MAX_ARTIFACTS",
+        "MAX_FINDINGS",
+        "MAX_METADATA_DEPTH",
+        "MAX_METADATA_NODES",
+        "MAX_REGEX_LENGTH",
+        "MAX_RULES",
+        "MAX_STRING",
+        "evaluateCompliance",
+        "normalizePolicies",
+        "parseCompliance",
+        "serializeCompliance"
+      ],
+      "exportCount": 12,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-dependency-graph",
+      "packageId": "artifact-dependency-graph",
+      "name": "@sovereign/artifact-dependency-graph",
+      "version": "0.1.0",
+      "source": "cubes/artifact-dependency-graph/src/index.js",
+      "exportedNames": [
+        "DEFAULT_LIMITS",
+        "DependencyGraph",
+        "DependencyGraphError",
+        "MAGIC",
+        "parseGraph",
+        "serializeGraph"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-lifecycle-retention",
+      "packageId": "artifact-lifecycle-retention",
+      "name": "@sovereign/artifact-lifecycle-retention",
+      "version": "0.1.0",
+      "source": "cubes/artifact-lifecycle-retention/src/index.js",
+      "exportedNames": [
+        "ALLOWED",
+        "ArtifactLifecycleError",
+        "ArtifactLifecycleIndex",
+        "DEFAULT_LIMITS",
+        "MAGIC",
+        "STATES",
+        "evaluateRetention",
+        "parseState",
+        "serializeState",
+        "transition"
+      ],
+      "exportCount": 10,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-provenance-lineage-ledger",
+      "packageId": "artifact-provenance-lineage-ledger",
+      "name": "@sovereign/artifact-provenance-lineage-ledger",
+      "version": "0.1.0",
+      "source": "cubes/artifact-provenance-lineage-ledger/src/index.js",
+      "exportedNames": [
+        "DEFAULT_MAX_EVENTS",
+        "DEFAULT_MAX_METADATA_KEYS",
+        "DEFAULT_MAX_METADATA_STRING",
+        "DEFAULT_MAX_RESULTS",
+        "DEFAULT_MAX_TRAVERSAL_DEPTH",
+        "ProvenanceError",
+        "createProvenanceLedger",
+        "parseProvenanceSnapshot"
+      ],
+      "exportCount": 8,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-reconciliation-consistency-checker",
+      "packageId": "artifact-reconciliation-consistency-checker",
+      "name": "@sovereign/artifact-reconciliation-consistency-checker",
+      "version": "0.1.0",
+      "source": "cubes/artifact-reconciliation-consistency-checker/src/index.js",
+      "exportedNames": [
+        "DEFAULT_MAX_MISMATCHES",
+        "DEFAULT_MAX_RECORDS",
+        "ReconciliationError",
+        "parseReport",
+        "reconcileSnapshots",
+        "serializeReport"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-reference-resolver",
+      "packageId": "artifact-reference-resolver",
+      "name": "@sovereign/artifact-reference-resolver",
+      "version": "0.1.0",
+      "source": "cubes/artifact-reference-resolver/src/index.js",
+      "exportedNames": [
+        "ArtifactReferenceError",
+        "DEFAULT_LIMITS",
+        "createArtifactReferenceResolver",
+        "digestReference",
+        "parseArtifactReference"
+      ],
+      "exportCount": 5,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-release-approval",
+      "packageId": "artifact-release-approval",
+      "name": "@sovereign/artifact-release-approval",
+      "version": "0.1.0",
+      "source": "cubes/artifact-release-approval/src/index.js",
+      "exportedNames": [
+        "MAX_DECISIONS",
+        "MAX_DEPTH",
+        "MAX_EVIDENCE",
+        "MAX_NODES",
+        "MAX_SCOPES",
+        "MAX_STRING",
+        "ReleaseApprovalError",
+        "buildReleaseApproval",
+        "parseReleaseApproval",
+        "serializeReleaseApproval"
+      ],
+      "exportCount": 10,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-release-closure-receipt",
+      "packageId": "artifact-release-closure-receipt",
+      "name": "@sovereign/artifact-release-closure-receipt",
+      "version": "0.1.0",
+      "source": "cubes/artifact-release-closure-receipt/src/index.js",
+      "exportedNames": [
+        "MAX_DEPTH",
+        "MAX_EVIDENCE",
+        "MAX_METADATA",
+        "MAX_NODES",
+        "MAX_STRING",
+        "ReleaseClosureError",
+        "buildReleaseClosure",
+        "parseReleaseClosure",
+        "serializeReleaseClosure"
+      ],
+      "exportCount": 9,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-release-plan",
+      "packageId": "artifact-release-plan",
+      "name": "@sovereign/artifact-release-plan",
+      "version": "0.1.0",
+      "source": "cubes/artifact-release-plan/src/index.js",
+      "exportedNames": [
+        "MAX_ARTIFACTS",
+        "MAX_DEPENDENCIES",
+        "MAX_DEPTH",
+        "MAX_EVIDENCE",
+        "MAX_NODES",
+        "MAX_STEPS",
+        "MAX_STRING",
+        "ReleasePlanError",
+        "buildReleasePlan",
+        "parseReleasePlan",
+        "serializeReleasePlan"
+      ],
+      "exportCount": 11,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-release-publication-confirmation",
+      "packageId": "artifact-release-publication-confirmation",
+      "name": "@sovereign/artifact-release-publication-confirmation",
+      "version": "0.1.0",
+      "source": "cubes/artifact-release-publication-confirmation/src/index.js",
+      "exportedNames": [
+        "PUBLICATION_CONFIRMATION_FORMAT",
+        "PUBLICATION_CONFIRMATION_STATES",
+        "PublicationConfirmationError",
+        "buildPublicationConfirmation",
+        "parsePublicationConfirmation",
+        "serializePublicationConfirmation"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-release-publication-executor",
+      "packageId": "artifact-release-publication-executor",
+      "name": "@sovereign/artifact-release-publication-executor",
+      "version": "0.1.0",
+      "source": "cubes/artifact-release-publication-executor/src/index.js",
+      "exportedNames": [
+        "PUBLICATION_FORMAT",
+        "PUBLICATION_RESULT_STATES",
+        "PublicationExecutorError",
+        "buildPublicationPlan",
+        "executePublicationPlan",
+        "parsePublicationSnapshot",
+        "serializePublicationSnapshot"
+      ],
+      "exportCount": 7,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "artifact-release-snapshot",
+      "packageId": "artifact-release-snapshot",
+      "name": "@sovereign/artifact-release-snapshot",
+      "version": "0.1.0",
+      "source": "cubes/artifact-release-snapshot/src/index.js",
+      "exportedNames": [
+        "MAX_CANDIDATES",
+        "MAX_DEPTH",
+        "MAX_EVIDENCE",
+        "MAX_NODES",
+        "MAX_STRING",
+        "ReleaseSnapshotError",
+        "buildReleaseSnapshot",
+        "parseReleaseSnapshot",
+        "serializeReleaseSnapshot"
+      ],
+      "exportCount": 9,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "atomic-batch-file-transaction-safe-multi-file-commit",
+      "packageId": "atomic-batch-file-transaction-safe-multi-file-commit",
+      "name": "@sovereign/atomic-batch-file-transaction-safe-multi-file-commit",
+      "version": "0.1.0",
+      "source": "cubes/atomic-batch-file-transaction-safe-multi-file-commit/src/index.js",
+      "exportedNames": [
+        "AtomicBatchError",
+        "commitBatch",
+        "parseReceipt",
+        "planBatch",
+        "recoverBatch",
+        "rollbackBatch",
+        "serializeReceipt"
+      ],
+      "exportCount": 7,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "atomic-file-writer-safe-replace",
+      "packageId": "atomic-file-writer-safe-replace",
+      "name": "@sovereign/atomic-file-writer-safe-replace",
+      "version": "0.1.0",
+      "source": "cubes/atomic-file-writer-safe-replace/src/index.js",
+      "exportedNames": [
+        "ATOMIC_FILE_WRITER_DURABILITY",
+        "ATOMIC_FILE_WRITER_FORMAT",
+        "AtomicFileWriterError",
+        "writeFileAtomic"
+      ],
+      "exportCount": 4,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "bounded-file-content-reader-safe-content-access",
+      "packageId": "bounded-file-content-reader-safe-content-access",
+      "name": "@sovereign/bounded-file-content-reader-safe-content-access",
+      "version": "0.1.0",
+      "source": "cubes/bounded-file-content-reader-safe-content-access/src/index.js",
+      "exportedNames": [
+        "BOUNDED_FILE_CONTENT_READER_FORMAT",
+        "FileContentReaderError",
+        "defaultCapabilities",
+        "readFileChunks",
+        "readFileContent",
+        "readFileStream"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "CONDITIONAL",
+      "conditionalDependency": {
+        "type": "monorepo-path-import",
+        "imports": [
+          "../../safe-path-resolver-containment-boundary/src/index.js"
+        ],
+        "remediation": "replace monorepo-relative import of safe-path-resolver with a declared dependency on '@sovereign/safe-path-resolver' (first authorized batch) resolved via the package manager; never ship monorepo path as distributed runtime coupling"
+      }
+    },
+    {
+      "id": "browser",
+      "packageId": "browser",
+      "name": "@sovereign/browser",
+      "version": "0.1.0",
+      "source": "cubes/browser/src/index.js",
+      "exportedNames": [
+        "BrowserCubeError",
+        "BrowserSession",
+        "createSessionState",
+        "launch",
+        "transition",
+        "validateUrl"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "cache",
+      "packageId": "cache",
+      "name": "@sovereign/cache",
+      "version": "0.1.0",
+      "source": "cubes/cache/src/index.js",
+      "exportedNames": [
+        "Cache",
+        "CacheCubeError",
+        "DEFAULT_MAX_ENTRIES",
+        "DEFAULT_MAX_KEY_LENGTH"
+      ],
+      "exportCount": 4,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "canonical-json",
+      "packageId": "canonical-json",
+      "name": "@sovereign/canonical-json",
+      "version": "0.1.0",
+      "source": "cubes/canonical-json/src/index.js",
+      "exportedNames": [
+        "CanonicalJsonError",
+        "DEFAULT_MAX_DEPTH",
+        "DEFAULT_MAX_NODES",
+        "DEFAULT_MAX_STRING_BYTES",
+        "DEFAULT_MAX_VALUE_BYTES",
+        "canonicalStringify",
+        "createCanonicalizer",
+        "normalize"
+      ],
+      "exportCount": 8,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "circuit-breaker",
+      "packageId": "circuit-breaker",
+      "name": "@sovereign/circuit-breaker",
+      "version": "0.1.0",
+      "source": "cubes/circuit-breaker/src/index.js",
+      "exportedNames": [
+        "CircuitBreaker",
+        "CircuitBreakerError",
+        "FakeClock"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "cli",
+      "packageId": "cli",
+      "name": "@sovereign/cli",
+      "version": "0.1.0",
+      "source": "cubes/cli/src/index.js",
+      "exportedNames": [
+        "CliError",
+        "createCli"
+      ],
+      "exportCount": 2,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "compression",
+      "packageId": "compression",
+      "name": "@sovereign/compression",
+      "version": "0.1.0",
+      "source": "cubes/compression/src/index.js",
+      "exportedNames": [
+        "CompressionError",
+        "DEFAULT_MAX_INPUT_BYTES",
+        "DEFAULT_MAX_OUTPUT_BYTES",
+        "compress",
+        "createCompressionConfig",
+        "decompress",
+        "deflate",
+        "deflateSync",
+        "gunzip",
+        "gunzipSync",
+        "gzip",
+        "gzipSync",
+        "inflate",
+        "inflateSync"
+      ],
+      "exportCount": 14,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "concurrency",
+      "packageId": "concurrency",
+      "name": "@sovereign/concurrency",
+      "version": "0.1.0",
+      "source": "cubes/concurrency/src/index.js",
+      "exportedNames": [
+        "Bulkhead",
+        "BulkheadError",
+        "Lease"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "config",
+      "packageId": "config",
+      "name": "@sovereign/config",
+      "version": "0.1.0",
+      "source": "cubes/config/src/index.js",
+      "exportedNames": [
+        "ConfigBuilder",
+        "ConfigCubeError",
+        "DEFAULT_MAX_VALUE_LENGTH",
+        "EnvironmentSource",
+        "MemorySource",
+        "TYPES",
+        "createConfig",
+        "redactConfig",
+        "redactKey",
+        "redactValue"
+      ],
+      "exportCount": 10,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "content-addressed-storage",
+      "packageId": "content-addressed-storage",
+      "name": "@sovereign/content-addressed-storage",
+      "version": "0.1.0",
+      "source": "cubes/content-addressed-storage/src/index.js",
+      "exportedNames": [
+        "CasError",
+        "CasStore",
+        "DEFAULT_LIMITS",
+        "digest",
+        "normalizeAddress"
+      ],
+      "exportCount": 5,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "data",
+      "packageId": "data",
+      "name": "@sovereign/data",
+      "version": "0.1.0",
+      "source": "cubes/data/src/index.js",
+      "exportedNames": [
+        "DataCubeError",
+        "canonicalJson",
+        "compact",
+        "dedupe",
+        "get",
+        "mapKeys",
+        "merge",
+        "normalizeStrings",
+        "omit",
+        "pick",
+        "set"
+      ],
+      "exportCount": 11,
+      "hasTest": true,
+      "hasReadme": false,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "diff-patch",
+      "packageId": "diff-patch",
+      "name": "@sovereign/diff-patch",
+      "version": "0.1.0",
+      "source": "cubes/diff-patch/src/index.js",
+      "exportedNames": [
+        "DEFAULT_MAX_DEPTH",
+        "DEFAULT_MAX_NODES",
+        "DEFAULT_MAX_OPERATIONS",
+        "DEFAULT_MAX_STRING_BYTES",
+        "DEFAULT_MAX_VALUE_BYTES",
+        "DiffPatchError",
+        "applyPatch",
+        "createDiffEngine",
+        "diff"
+      ],
+      "exportCount": 9,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "digest",
+      "packageId": "digest",
+      "name": "@sovereign/digest",
+      "version": "0.1.0",
+      "source": "cubes/digest/src/index.js",
+      "exportedNames": [
+        "DEFAULT_MAX_CHUNK_BYTES",
+        "DEFAULT_MAX_INPUT_BYTES",
+        "DEFAULT_MAX_TOTAL_BYTES",
+        "DigestError",
+        "constantTimeEqual",
+        "createDigestConfig",
+        "digestAsync",
+        "digestHex",
+        "hmacAsync",
+        "hmacHex",
+        "hmacSha256",
+        "hmacSha512",
+        "sha256",
+        "sha512"
+      ],
+      "exportCount": 14,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "directory-snapshot-tree-manifest",
+      "packageId": "directory-snapshot-tree-manifest",
+      "name": "@sovereign/directory-snapshot-tree-manifest",
+      "version": "0.1.0",
+      "source": "cubes/directory-snapshot-tree-manifest/src/index.js",
+      "exportedNames": [
+        "DIRECTORY_SNAPSHOT_FORMAT",
+        "DIRECTORY_SNAPSHOT_MUTATION_POLICIES",
+        "DIRECTORY_SNAPSHOT_SYMLINK_POLICIES",
+        "DirectorySnapshotError",
+        "serializeDirectorySnapshot",
+        "snapshotDirectory"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "directory-walker-bounded-tree-traversal",
+      "packageId": "directory-walker-bounded-tree-traversal",
+      "name": "@sovereign/directory-walker-bounded-tree-traversal",
+      "version": "0.1.0",
+      "source": "cubes/directory-walker-bounded-tree-traversal/src/index.js",
+      "exportedNames": [
+        "DirectoryWalkerError",
+        "defaultCapabilities",
+        "walk"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "CONDITIONAL",
+      "conditionalDependency": {
+        "type": "monorepo-path-import",
+        "imports": [
+          "../../safe-path-resolver-containment-boundary/src/index.js"
+        ],
+        "remediation": "replace monorepo-relative import of safe-path-resolver with a declared dependency on '@sovereign/safe-path-resolver' (first authorized batch) resolved via the package manager; never ship monorepo path as distributed runtime coupling"
+      }
+    },
+    {
+      "id": "ephemeral-workspace-scratch-directory",
+      "packageId": "ephemeral-workspace-scratch-directory",
+      "name": "@sovereign/ephemeral-workspace-scratch-directory",
+      "version": "0.1.0",
+      "source": "cubes/ephemeral-workspace-scratch-directory/src/index.js",
+      "exportedNames": [
+        "EPHEMERAL_WORKSPACE_FORMAT",
+        "EPHEMERAL_WORKSPACE_STATES",
+        "WorkspaceError",
+        "createWorkspace",
+        "parseWorkspaceRecord",
+        "recoverWorkspace",
+        "serializeWorkspaceRecord"
+      ],
+      "exportCount": 7,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "event",
+      "packageId": "event",
+      "name": "@sovereign/event",
+      "version": "0.1.0",
+      "source": "cubes/event/src/index.js",
+      "exportedNames": [
+        "EVENT_TERMINAL",
+        "EventBus",
+        "EventCubeError"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "execution-engine",
+      "packageId": "execution-engine",
+      "name": "@sovereign/execution-engine",
+      "version": "0.1.0",
+      "source": "cubes/execution-engine/src/index.js",
+      "exportedNames": [
+        "DEFAULT_LIMITS",
+        "ExecutionError",
+        "createExecutionEngine"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "file-lease-advisory-lock",
+      "packageId": "file-lease-advisory-lock",
+      "name": "@sovereign/file-lease-advisory-lock",
+      "version": "0.1.0",
+      "source": "cubes/file-lease-advisory-lock/src/index.js",
+      "exportedNames": [
+        "FILE_LEASE_FORMAT",
+        "FILE_LEASE_STATES",
+        "FileLeaseError",
+        "acquireLease",
+        "parseLeaseRecord",
+        "serializeLeaseRecord"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "filesystem",
+      "packageId": "filesystem",
+      "name": "@sovereign/filesystem",
+      "version": "0.1.0",
+      "source": "cubes/filesystem/src/index.js",
+      "exportedNames": [
+        "FilesystemCubeError",
+        "appendBytes",
+        "appendText",
+        "atomicWriteBytes",
+        "atomicWriteText",
+        "copy",
+        "exists",
+        "list",
+        "mkdir",
+        "move",
+        "readBytes",
+        "readText",
+        "remove",
+        "resolve",
+        "stat",
+        "writeBytes",
+        "writeText"
+      ],
+      "exportCount": 17,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "filesystem-metadata-stat-normalizer",
+      "packageId": "filesystem-metadata-stat-normalizer",
+      "name": "@sovereign/filesystem-metadata-stat-normalizer",
+      "version": "0.1.0",
+      "source": "cubes/filesystem-metadata-stat-normalizer/src/index.js",
+      "exportedNames": [
+        "MetadataNormalizerError",
+        "getDefaultCapabilities",
+        "normalizeEntryMetadata",
+        "normalizeStat",
+        "parseMetadata",
+        "serializeMetadata"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "CONDITIONAL",
+      "conditionalDependency": {
+        "type": "monorepo-path-import",
+        "imports": [
+          "../../safe-path-resolver-containment-boundary/src/index.js"
+        ],
+        "remediation": "replace monorepo-relative import of safe-path-resolver with a declared dependency on '@sovereign/safe-path-resolver' (first authorized batch) resolved via the package manager; never ship monorepo path as distributed runtime coupling"
+      }
+    },
+    {
+      "id": "filesystem-permission-ownership-descriptor-v0-1",
+      "packageId": "filesystem-permission-ownership-descriptor-v0-1",
+      "name": "@sovereign/filesystem-permission-ownership-descriptor-v0-1",
+      "version": "0.1.0",
+      "source": "cubes/filesystem-permission-ownership-descriptor-v0-1/src/index.js",
+      "exportedNames": [
+        "FORMAT",
+        "MAX_SERIALIZED_BYTES",
+        "PermissionOwnershipError",
+        "VERSION",
+        "createNodeCapabilities",
+        "inspectPath",
+        "normalizeDescriptor",
+        "parseDescriptor",
+        "serializeDescriptor"
+      ],
+      "exportCount": 9,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "filesystem-recovery-journal",
+      "packageId": "filesystem-recovery-journal",
+      "name": "@sovereign/filesystem-recovery-journal",
+      "version": "0.1.0",
+      "source": "cubes/filesystem-recovery-journal/src/index.js",
+      "exportedNames": [
+        "FILESYSTEM_RECOVERY_JOURNAL_FORMAT",
+        "RecoveryJournalError",
+        "createRecoveryJournal",
+        "nativeCapabilities"
+      ],
+      "exportCount": 4,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "filesystem-watcher-change-stream",
+      "packageId": "filesystem-watcher-change-stream",
+      "name": "@sovereign/filesystem-watcher-change-stream",
+      "version": "0.1.0",
+      "source": "cubes/filesystem-watcher-change-stream/src/index.js",
+      "exportedNames": [
+        "FILESYSTEM_WATCHER_EVENT_TYPES",
+        "FILESYSTEM_WATCHER_FORMAT",
+        "FILESYSTEM_WATCHER_STATES",
+        "FilesystemWatcherError",
+        "createWatcher"
+      ],
+      "exportCount": 5,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "glob-path-matcher",
+      "packageId": "glob-path-matcher",
+      "name": "@sovereign/glob-path-matcher",
+      "version": "0.1.0",
+      "source": "cubes/glob-path-matcher/src/index.js",
+      "exportedNames": [
+        "GLOB_PATH_MATCHER_FORMAT",
+        "GLOB_PATH_MATCHER_LIMITS",
+        "GlobPathMatcherError",
+        "compileGlob",
+        "evaluateRules",
+        "matchGlob",
+        "normalizeCandidatePath",
+        "parsePattern",
+        "serializePattern"
+      ],
+      "exportCount": 9,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "host-identity-environment-fingerprint",
+      "packageId": "host-identity-environment-fingerprint",
+      "name": "@sovereign/host-identity-environment-fingerprint",
+      "version": "0.1.0",
+      "source": "cubes/host-identity-environment-fingerprint/src/index.js",
+      "exportedNames": [
+        "HOST_IDENTITY_FORMAT",
+        "HOST_IDENTITY_STATUSES",
+        "HostIdentityError",
+        "compareHostFingerprints",
+        "fingerprintHost",
+        "serializeHostFingerprint"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "http",
+      "packageId": "http",
+      "name": "@sovereign/http",
+      "version": "0.1.0",
+      "source": "cubes/http/src/index.js",
+      "exportedNames": [
+        "HttpCubeError",
+        "del",
+        "get",
+        "json",
+        "patch",
+        "post",
+        "put",
+        "request",
+        "text"
+      ],
+      "exportCount": 9,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "http-metadata",
+      "packageId": "http-metadata",
+      "name": "@sovereign/http-metadata",
+      "version": "0.1.0",
+      "source": "cubes/http-metadata/src/index.js",
+      "exportedNames": [
+        "HeaderMap",
+        "HttpMetadataError",
+        "buildSetCookie",
+        "createETag",
+        "ifMatch",
+        "ifNoneMatch",
+        "matchesETag",
+        "negotiateAccept",
+        "negotiateAcceptEncoding",
+        "negotiateAcceptLanguage",
+        "parseContentLength",
+        "parseContentType",
+        "parseCookieHeader"
+      ],
+      "exportCount": 13,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "http-server",
+      "packageId": "http-server",
+      "name": "@sovereign/http-server",
+      "version": "0.1.0",
+      "source": "cubes/http-server/src/index.js",
+      "exportedNames": [
+        "HttpApp",
+        "HttpServerError",
+        "Router",
+        "createApp",
+        "createServer"
+      ],
+      "exportCount": 5,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "logger",
+      "packageId": "logger",
+      "name": "@sovereign/logger",
+      "version": "0.1.0",
+      "source": "cubes/logger/src/index.js",
+      "exportedNames": [
+        "ConsoleSink",
+        "InMemorySink",
+        "LEVELS",
+        "LEVEL_NAMES",
+        "Logger",
+        "LoggerCubeError",
+        "normalizeError"
+      ],
+      "exportCount": 7,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "metrics",
+      "packageId": "metrics",
+      "name": "@sovereign/metrics",
+      "version": "0.1.0",
+      "source": "cubes/metrics/src/index.js",
+      "exportedNames": [
+        "DEFAULT_HISTOGRAM_BUCKETS",
+        "DEFAULT_MAX_LABELS",
+        "DEFAULT_MAX_LABEL_VALUE_BYTES",
+        "DEFAULT_MAX_METRICS",
+        "DEFAULT_MAX_NAME_BYTES",
+        "DEFAULT_MAX_SERIES_PER_METRIC",
+        "MetricsError",
+        "createMetricsRegistry"
+      ],
+      "exportCount": 8,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "mime",
+      "packageId": "mime",
+      "name": "@sovereign/mime",
+      "version": "0.1.0",
+      "source": "cubes/mime/src/index.js",
+      "exportedNames": [
+        "MimeError",
+        "buildMultipart",
+        "parseMimeType",
+        "parseMultipart"
+      ],
+      "exportCount": 4,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "policy-capability-security",
+      "packageId": "policy-capability-security",
+      "name": "@sovereign/policy-capability-security",
+      "version": "0.1.0",
+      "source": "cubes/policy-capability-security/src/index.js",
+      "exportedNames": [
+        "DEFAULT_LIMITS",
+        "PolicyError",
+        "createPolicyEngine"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "process",
+      "packageId": "process",
+      "name": "@sovereign/process",
+      "version": "0.1.0",
+      "source": "cubes/process/src/index.js",
+      "exportedNames": [
+        "ProcessCubeError",
+        "run",
+        "text"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "process-supervisor",
+      "packageId": "process-supervisor",
+      "name": "@sovereign/process-supervisor",
+      "version": "0.1.0",
+      "source": "cubes/process-supervisor/src/index.js",
+      "exportedNames": [
+        "ProcessSupervisorError",
+        "createProcessSupervisor",
+        "defaultCapabilities"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "rate-limiter",
+      "packageId": "rate-limiter",
+      "name": "@sovereign/rate-limiter",
+      "version": "0.1.0",
+      "source": "cubes/rate-limiter/src/index.js",
+      "exportedNames": [
+        "RateLimiter"
+      ],
+      "exportCount": 1,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "redaction",
+      "packageId": "redaction",
+      "name": "@sovereign/redaction",
+      "version": "0.1.0",
+      "source": "cubes/redaction/src/index.js",
+      "exportedNames": [
+        "DEFAULT_MAX_DEPTH",
+        "DEFAULT_MAX_NODES",
+        "DEFAULT_MAX_OUTPUT_BYTES",
+        "DEFAULT_MAX_STRING_BYTES",
+        "DEFAULT_REPLACEMENT",
+        "RedactionError",
+        "SENSITIVE_EXACT_KEYS",
+        "createRedactor"
+      ],
+      "exportCount": 8,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "release-manifest-integrity",
+      "packageId": "release-manifest-integrity",
+      "name": "@sovereign/release-manifest-integrity",
+      "version": "0.1.0",
+      "source": "cubes/release-manifest-integrity/src/index.js",
+      "exportedNames": [
+        "DEFAULT_LIMITS",
+        "ManifestIntegrityError",
+        "createManifest",
+        "parseManifest",
+        "serializeManifest",
+        "verifyManifest"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "release-verification-harness",
+      "packageId": "release-verification-harness",
+      "name": "@sovereign/release-verification-harness",
+      "version": "0.1.0",
+      "source": "cubes/release-verification-harness/src/index.js",
+      "exportedNames": [
+        "DEFAULT_LIMITS",
+        "VerificationError",
+        "createVerificationHarness"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "reporting-export",
+      "packageId": "reporting-export",
+      "name": "@sovereign/reporting-export",
+      "version": "0.1.0",
+      "source": "cubes/reporting-export/src/index.js",
+      "exportedNames": [
+        "DEFAULT_LIMITS",
+        "ReportError",
+        "createReportEngine"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "result",
+      "packageId": "result",
+      "name": "@sovereign/result",
+      "version": "0.1.0",
+      "source": "cubes/result/src/index.js",
+      "exportedNames": [
+        "Result",
+        "ResultError",
+        "errors",
+        "normalizeError",
+        "serializeError"
+      ],
+      "exportCount": 5,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "retry",
+      "packageId": "retry",
+      "name": "@sovereign/retry",
+      "version": "0.1.0",
+      "source": "cubes/retry/src/index.js",
+      "exportedNames": [
+        "RetryError",
+        "RetryRunner",
+        "createRetryPolicy"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "runtime-capability-inspector",
+      "packageId": "runtime-capability-inspector",
+      "name": "@sovereign/runtime-capability-inspector",
+      "version": "0.1.0",
+      "source": "cubes/runtime-capability-inspector/src/index.js",
+      "exportedNames": [
+        "RUNTIME_ARCHITECTURES",
+        "RUNTIME_CAPABILITY_FORMAT",
+        "RUNTIME_OS_FAMILIES",
+        "RuntimeCapabilityError",
+        "evaluateRuntimeRequirements",
+        "inspectRuntime",
+        "parseRuntimeReport",
+        "serializeRuntimeReport"
+      ],
+      "exportCount": 8,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "safe-file-quarantine-delete",
+      "packageId": "safe-file-quarantine-delete",
+      "name": "@sovereign/safe-file-quarantine-delete",
+      "version": "0.1.0",
+      "source": "cubes/safe-file-quarantine-delete/src/index.js",
+      "exportedNames": [
+        "SAFE_FILE_QUARANTINE_FORMAT",
+        "SafeFileQuarantineError",
+        "defaultCapabilities",
+        "purgeQuarantined",
+        "quarantineItem",
+        "restoreQuarantined"
+      ],
+      "exportCount": 6,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "CONDITIONAL",
+      "conditionalDependency": {
+        "type": "monorepo-path-import",
+        "imports": [
+          "../../safe-path-resolver-containment-boundary/src/index.js"
+        ],
+        "remediation": "replace monorepo-relative import of safe-path-resolver with a declared dependency on '@sovereign/safe-path-resolver' (first authorized batch) resolved via the package manager; never ship monorepo path as distributed runtime coupling"
+      }
+    },
+    {
+      "id": "safe-path-resolver-containment-boundary",
+      "packageId": "safe-path-resolver",
+      "name": "@sovereign/safe-path-resolver-containment-boundary",
+      "version": "0.1.0",
+      "source": "cubes/safe-path-resolver-containment-boundary/src/index.js",
+      "exportedNames": [
+        "SAFE_PATH_RESOLVER_FORMAT",
+        "SAFE_PATH_RESOLVER_LIMITS",
+        "SafePathResolverError",
+        "canonicalizePath",
+        "comparePaths",
+        "isContained",
+        "normalizePath",
+        "parseReport",
+        "resolveContained",
+        "resolvePath",
+        "serializeReport"
+      ],
+      "exportCount": 11,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "scheduler",
+      "packageId": "scheduler",
+      "name": "@sovereign/scheduler",
+      "version": "0.1.0",
+      "source": "cubes/scheduler/src/index.js",
+      "exportedNames": [
+        "FakeClock",
+        "PriorityHeap",
+        "RealClock",
+        "SchedulerCubeError",
+        "TaskScheduler"
+      ],
+      "exportCount": 5,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "search-index",
+      "packageId": "search-index",
+      "name": "@sovereign/search-index",
+      "version": "0.1.0",
+      "source": "cubes/search-index/src/index.js",
+      "exportedNames": [
+        "SearchError",
+        "createSearchIndex"
+      ],
+      "exportCount": 2,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "serialization",
+      "packageId": "serialization",
+      "name": "@sovereign/serialization",
+      "version": "0.1.0",
+      "source": "cubes/serialization/src/index.js",
+      "exportedNames": [
+        "DEFAULT_MAX_BYTES",
+        "DEFAULT_MAX_COLLECTION_ITEMS",
+        "DEFAULT_MAX_DEPTH",
+        "DEFAULT_MAX_STRING_BYTES",
+        "MAGIC",
+        "SerializationError",
+        "VERSION",
+        "createSerializationConfig",
+        "decode",
+        "encode"
+      ],
+      "exportCount": 10,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "storage",
+      "packageId": "storage",
+      "name": "@sovereign/storage",
+      "version": "0.1.0",
+      "source": "cubes/storage/src/index.js",
+      "exportedNames": [
+        "Storage",
+        "StorageCubeError"
+      ],
+      "exportCount": 2,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "storage-persistence",
+      "packageId": "storage-persistence",
+      "name": "@sovereign/storage-persistence",
+      "version": "0.1.0",
+      "source": "cubes/storage-persistence/src/index.js",
+      "exportedNames": [
+        "DEFAULT_LIMITS",
+        "SnapshotError",
+        "createSnapshotStore"
+      ],
+      "exportCount": 3,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "stream",
+      "packageId": "stream",
+      "name": "@sovereign/stream",
+      "version": "0.1.0",
+      "source": "cubes/stream/src/index.js",
+      "exportedNames": [
+        "DEFAULT_MAX_CHUNK_BYTES",
+        "StreamError",
+        "collect",
+        "createPipeline",
+        "runPipeline"
+      ],
+      "exportCount": 5,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "timeout-deadline",
+      "packageId": "timeout-deadline",
+      "name": "@sovereign/timeout-deadline",
+      "version": "0.1.0",
+      "source": "cubes/timeout-deadline/src/index.js",
+      "exportedNames": [
+        "Deadline",
+        "FakeClock",
+        "RealClock",
+        "TimeoutError",
+        "createDeadline",
+        "deadlineFromAbsolute",
+        "sleepUntil",
+        "withDeadline"
+      ],
+      "exportCount": 8,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "url",
+      "packageId": "url",
+      "name": "@sovereign/url",
+      "version": "0.1.0",
+      "source": "cubes/url/src/index.js",
+      "exportedNames": [
+        "UrlError",
+        "base64Decode",
+        "base64Encode",
+        "base64UrlDecode",
+        "base64UrlEncode",
+        "buildQuery",
+        "decodePathSegment",
+        "decodeURIComponentStrict",
+        "decodeURIComponentTolerant",
+        "encodePathSegment",
+        "encodeURIComponentSafe",
+        "formDecode",
+        "formEncode",
+        "parseQuery",
+        "parseUrl",
+        "utf8Decode",
+        "utf8Encode"
+      ],
+      "exportCount": 17,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "validation",
+      "packageId": "validation",
+      "name": "@sovereign/validation",
+      "version": "0.1.0",
+      "source": "cubes/validation/src/index.js",
+      "exportedNames": [
+        "Schema",
+        "TYPES",
+        "ValidationError",
+        "schema",
+        "validators"
+      ],
+      "exportCount": 5,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "websocket",
+      "packageId": "websocket",
+      "name": "@sovereign/websocket",
+      "version": "0.1.0",
+      "source": "cubes/websocket/src/index.js",
+      "exportedNames": [
+        "WebSocketCubeError",
+        "createAcceptKey",
+        "createClientKey",
+        "decodeFrames",
+        "encodeFrame",
+        "frameBinary",
+        "frameClose",
+        "framePing",
+        "framePong",
+        "frameText"
+      ],
+      "exportCount": 10,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "worker-pool",
+      "packageId": "worker-pool",
+      "name": "@sovereign/worker-pool",
+      "version": "0.1.0",
+      "source": "cubes/worker-pool/src/index.js",
+      "exportedNames": [
+        "DEFAULT_MAX_QUEUE",
+        "DEFAULT_SIZE",
+        "DEFAULT_TASK_TIMEOUT_MS",
+        "WorkerPoolError",
+        "createWorkerPool"
+      ],
+      "exportCount": 5,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    },
+    {
+      "id": "workflow-durable",
+      "packageId": "workflow-durable",
+      "name": "@sovereign/workflow-durable",
+      "version": "0.1.0",
+      "source": "cubes/workflow-durable/src/index.js",
+      "exportedNames": [
+        "WorkflowError",
+        "createWorkflowEngine"
+      ],
+      "exportCount": 2,
+      "hasTest": true,
+      "hasReadme": true,
+      "runtime": "node>=24",
+      "platforms": [
+        "windows",
+        "linux",
+        "macos",
+        "wsl"
+      ],
+      "thirdPartyDeps": [],
+      "classification": "STANDALONE"
+    }
+  ]
+}
