@@ -42,7 +42,7 @@ Do not publish merely because a package is technically ready. Release timing and
 
 ## Historical supersession
 
-Earlier repository wording that prohibited external registries absolutely is **SUPERSEDED** by the current policy above. The historical wording remains preserved in prior records and is not deleted.
+Earlier repository wording that prohibited external registries absolutely is **SUPERSEDED** by the current policy. Historical wording remains preserved in prior records and is not deleted.
 
 Current decision:
 
