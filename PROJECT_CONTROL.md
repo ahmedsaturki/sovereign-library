@@ -126,3 +126,7 @@ If work is interrupted, read this file first, then `ROADMAP.md`, then the latest
   (if any) of the flake requires its own explicitly authorized maintenance task. CI cannot be
   forced green here without violating the frozen-test rule; PR #124 is left for human review
   with this flake disclosed.
+- **Rerun confirmation (2026-08-28):** Run #33137185382 on the same branch/commit (`ee86847`)
+  passed on **all three platforms** (ubuntu + windows + macOS-15-intel) with the full matrix
+  green. This confirms the prior Run #33136941627 Windows failure was a non-deterministic
+  CI-runner timing flake on the frozen test, not a code defect. The branch is CI-green.
