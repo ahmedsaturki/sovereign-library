@@ -24,6 +24,56 @@ jobs:
             exit 0
           fi
 
+      - name: Repair migration script literal
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          p = Path('scripts/migrate-safe-path-dependency-wave.mjs')
+          text = p.read_text(encoding='utf-8')
+          start = text.index('function writeEvidence() {')
+          end = text.index('\nfor (const [slug, source] of CANDIDATES)', start)
+          replacement = '''function writeEvidence() {
+  const path = resolve(ROOT, 'docs/release/SAFE_PATH_DEPENDENCY_BOUNDARY_MIGRATION_V0.1.md');
+  const lines = [
+    '# Safe Path Resolver Dependency Boundary Migration v0.1',
+    '',
+    '## Scope',
+    '',
+    'The four previously CONDITIONAL filesystem Cubes that consumed the safe-path-resolver through a monorepo-relative runtime import now declare an explicit package dependency.',
+    '',
+    '- @sovereign/safe-path-resolver@0.1.0',
+    '',
+    '## Migrated Cubes',
+    '',
+    '| Cube | Package | Dependency |',
+    '|---|---|---|',
+    '| bounded-file-content-reader-safe-content-access | @sovereign/bounded-file-content-reader-safe-content-access@0.1.0 | @sovereign/safe-path-resolver@0.1.0 |',
+    '| directory-walker-bounded-tree-traversal | @sovereign/directory-walker-bounded-tree-traversal@0.1.0 | @sovereign/safe-path-resolver@0.1.0 |',
+    '| filesystem-metadata-stat-normalizer | @sovereign/filesystem-metadata-stat-normalizer@0.1.0 | @sovereign/safe-path-resolver@0.1.0 |',
+    '| safe-file-quarantine-delete | @sovereign/safe-file-quarantine-delete@0.1.0 | @sovereign/safe-path-resolver@0.1.0 |',
+    '',
+    '## Boundary rule',
+    '',
+    'Distributed package runtime code must not import a sibling Cube by escaping the package boundary. The migrated source imports the published package identity instead. The monorepo test environment supplies the package through an explicit local node_modules preparation seam; the package manifest remains the runtime dependency contract.',
+    '',
+    '## Verification',
+    '',
+    'The migration is accepted only when the affected Cube tests, exact declaration surface, npm pack file allowlist, reproducible tarball checks, dependency contract checks, security boundary scan, and out-of-tree staging all pass.',
+    '',
+    '## Release state',
+    '',
+    'These packages are technically ready; they are not automatically released or published. GitHub remains canonical and release authorization remains separate from technical qualification.',
+    '',
+  ].join('\\n') + '\\n';
+  writeFileSync(path, lines, 'utf8');
+}
+'''
+          p.write_text(text[:start] + replacement + text[end:], encoding='utf-8')
+          PY
+
+      - name: Syntax check migration script
+        run: node --check scripts/migrate-safe-path-dependency-wave.mjs
+
       - name: Apply safe-path dependency migration
         run: node scripts/migrate-safe-path-dependency-wave.mjs
 
