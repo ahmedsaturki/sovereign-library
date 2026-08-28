@@ -79,31 +79,28 @@ These are native implementations of one contract, not mechanical source translat
 
 ## Distribution policy — CURRENT
 
-**CANONICAL DISTRIBUTION: GITHUB.**
+**GITHUB IS THE CANONICAL SOURCE AND DEFAULT RELEASE CHANNEL.**
 
-The project currently uses GitHub as the free, canonical distribution channel:
+The current project policy is **GitHub-first, free-by-default, multi-channel-optional**:
 
-- repository source;
-- Git tags;
-- GitHub Releases;
-- GitHub Release assets;
-- checksums/integrity records;
-- documentation.
+- GitHub source remains authoritative;
+- Git tags remain the version anchors;
+- GitHub Releases remain the canonical release-artifact mechanism;
+- GitHub Release assets, checksums, integrity records, documentation, and reproducible artifacts are required for a proper release;
+- free native ecosystem registries may be used later when they provide real value for the relevant ecosystem.
 
-External registries are intentionally NOT part of the current release operation:
+External registries are **OPTIONAL and DEFERRED BY WAVE**, not permanently forbidden:
 
-- npmjs.org — deferred;
-- PyPI — deferred;
-- Maven Central — deferred;
-- other external registries — deferred.
+- npmjs.org — optional / deferred until explicitly enabled for a release wave;
+- PyPI — optional / deferred until explicitly enabled for a release wave;
+- Maven Central or another Maven-compatible registry — optional / deferred until explicitly enabled for a release wave;
+- other appropriate free registries — optional / evaluated case-by-case.
 
-This is a distribution-policy decision, not a missing-credential blocker.
+A registry must be genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly enabled for the relevant release wave. No paid registry or mandatory third-party service is required by the architecture.
 
-GitHub Packages may be used as an OPTIONAL GitHub-hosted distribution mechanism when it is technically and economically appropriate and explicitly enabled for the relevant package. Public GitHub Packages are currently free; verify current GitHub limits before relying on sustained high-volume usage. citehttps://docs.github.com/en/billing/concepts/product-billing/github-packages
+GitHub Packages may be used as an optional GitHub-hosted distribution mechanism when it provides clear value. Do NOT publish automatically merely because a package has a manifest.
 
-GitHub Releases remain the canonical artifact distribution mechanism for release binaries/tarballs; GitHub documents release assets and no bandwidth limit for releases, with a 2 GiB per-file limit. citehttps://docs.github.com/en/repositories/releasing-projects-on-github/about-releases
-
-Do NOT automatically publish to GitHub Packages merely because a package has a `package.json`. Evaluate whether Release assets alone are sufficient.
+Historical GitHub-only wording is preserved as history and is superseded by the current policy above. See `GOVERNANCE.md`.
 
 ## Cube versus Product
 
@@ -124,6 +121,19 @@ Use explicit states:
 "Authorized" is not "released".
 
 Released/frozen components require a dedicated authorized task before modification.
+
+## Governance
+
+Standing governance decisions and the hard DO-NOT list are authoritative in `GOVERNANCE.md`.
+
+Read it before any action that can affect:
+
+- release/publication state;
+- frozen/released components;
+- shared Git history;
+- PR merge state;
+- distribution policy;
+- compatibility or destructive changes.
 
 ## Security
 
@@ -198,13 +208,14 @@ and verify CI against the exact claimed commit.
 
 Material project decisions MUST be persisted in the appropriate repository authority:
 
-- permanent architecture → Architecture Constitution;
-- project map/terminology → Knowledge Base;
-- current state/task/governance → `PROJECT_CONTROL.md`;
-- future sequencing → `ROADMAP.md`;
-- behavioral semantics → SPEC;
-- package boundary → package contract/catalog;
-- release state → `docs/release/`.
+- permanent architecture -> Architecture Constitution;
+- project map/terminology -> Knowledge Base;
+- current state/task/governance -> `PROJECT_CONTROL.md`;
+- future sequencing -> `ROADMAP.md`;
+- behavioral semantics -> SPEC;
+- package boundary -> package contract/catalog;
+- release state -> `docs/release/`;
+- standing governance decisions -> `GOVERNANCE.md`.
 
 Do not create competing sources of truth for dynamic state.
 
@@ -212,7 +223,7 @@ Do not create competing sources of truth for dynamic state.
 
 If interrupted, never restart from memory. Read:
 
-`AGENTS.md -> PROJECT_CONTROL.md -> ROADMAP.md -> live GitHub state -> relevant SPEC`
+`AGENTS.md -> GOVERNANCE.md -> PROJECT_CONTROL.md -> ROADMAP.md -> live GitHub state -> relevant SPEC`
 
 then resume from the authoritative current task.
 
