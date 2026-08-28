@@ -1,0 +1,469 @@
+name: one-time-safe-path-boundary-qualification
+
+on:
+  push:
+    branches: [feat/continuity-hardening]
+
+permissions:
+  contents: write
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gate on marker
+        run: test -f .automation/safe-path-boundary-qualification
+
+      - name: Apply safe-path boundary qualification migration
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import json, re
+
+          ROOT = Path('.')
+          alias = '#safe-path-resolver'
+          resolver_import = "import { resolveContained } from '../../safe-path-resolver-containment-boundary/src/index.js';"
+          alias_import = "import { resolveContained } from '#safe-path-resolver';"
+
+          root_pkg_path = ROOT / 'package.json'
+          root_pkg = root_pkg_path.read_text(encoding='utf-8')
+          marker = '  "imports": {\n    "#safe-path-resolver": "./cubes/safe-path-resolver-containment-boundary/src/index.js"\n  },\n'
+          if '"#safe-path-resolver"' not in root_pkg:
+              root_pkg = root_pkg.replace('  "type": "module",\n', '  "type": "module",\n' + marker, 1)
+          root_pkg_path.write_text(root_pkg, encoding='utf-8')
+
+          candidates = [
+              {
+                  'id': 'bounded-file-content-reader-safe-content-access',
+                  'name': '@sovereign/bounded-file-content-reader-safe-content-access',
+                  'description': 'Sovereign bounded-file-content-reader-safe-content-access Cube (standalone).',
+                  'source': 'cubes/bounded-file-content-reader-safe-content-access/src/index.js',
+                  'package_dir': 'packages/bounded-file-content-reader-safe-content-access',
+                  'expected': [
+                      'FileContentReaderError', 'readFileContent', 'readFileStream',
+                      'readFileChunks', 'defaultCapabilities', 'BOUNDED_FILE_CONTENT_READER_FORMAT'
+                  ],
+              },
+              {
+                  'id': 'directory-walker-bounded-tree-traversal',
+                  'name': '@sovereign/directory-walker-bounded-tree-traversal',
+                  'description': 'Sovereign directory-walker-bounded-tree-traversal Cube (standalone).',
+                  'source': 'cubes/directory-walker-bounded-tree-traversal/src/index.js',
+                  'package_dir': 'packages/directory-walker-bounded-tree-traversal',
+                  'expected': ['DirectoryWalkerError', 'walk', 'defaultCapabilities'],
+              },
+              {
+                  'id': 'filesystem-metadata-stat-normalizer',
+                  'name': '@sovereign/filesystem-metadata-stat-normalizer',
+                  'description': 'Sovereign filesystem-metadata-stat-normalizer Cube (standalone).',
+                  'source': 'cubes/filesystem-metadata-stat-normalizer/src/index.js',
+                  'package_dir': 'packages/filesystem-metadata-stat-normalizer',
+                  'expected': [
+                      'MetadataNormalizerError', 'normalizeEntryMetadata', 'normalizeStat',
+                      'serializeMetadata', 'parseMetadata', 'getDefaultCapabilities'
+                  ],
+              },
+              {
+                  'id': 'safe-file-quarantine-delete',
+                  'name': '@sovereign/safe-file-quarantine-delete',
+                  'description': 'Sovereign safe-file-quarantine-delete Cube (standalone).',
+                  'source': 'cubes/safe-file-quarantine-delete/src/index.js',
+                  'package_dir': 'packages/safe-file-quarantine-delete',
+                  'expected': [
+                      'SafeFileQuarantineError', 'quarantineItem', 'restoreQuarantined',
+                      'purgeQuarantined', 'defaultCapabilities', 'SAFE_FILE_QUARANTINE_FORMAT'
+                  ],
+              },
+          ]
+
+          for item in candidates:
+              src = ROOT / item['source']
+              text = src.read_text(encoding='utf-8')
+              if resolver_import not in text and alias_import not in text:
+                  raise SystemExit(f"missing safe-path import anchor in {src}")
+              src.write_text(text.replace(resolver_import, alias_import), encoding='utf-8')
+
+              pkg_dir = ROOT / item['package_dir']
+              pkg_dir.mkdir(parents=True, exist_ok=True)
+              package_json = {
+                  'name': item['name'],
+                  'version': '0.1.0',
+                  'description': item['description'],
+                  'type': 'module',
+                  'license': 'Apache-2.0',
+                  'engines': {'node': '>=24'},
+                  'sideEffects': False,
+                  'imports': {alias: '@sovereign/safe-path-resolver'},
+                  'dependencies': {'@sovereign/safe-path-resolver': '0.1.0'},
+                  'exports': {'.': {
+                      'types': './dist/index.d.ts',
+                      'import': './src/index.js',
+                      'default': './src/index.js',
+                  }},
+                  'types': './dist/index.d.ts',
+                  'files': ['src/index.js', 'dist/index.d.ts', 'README.md', 'LICENSE', 'NOTICE', 'package.json'],
+                  'repository': {'type': 'git', 'url': 'git+https://github.com/ahmedsaturki/sovereign-library.git', 'directory': item['package_dir']},
+                  'homepage': 'https://github.com/ahmedsaturki/sovereign-library',
+                  'bugs': {'url': 'https://github.com/ahmedsaturki/sovereign-library/issues'},
+              }
+              (pkg_dir / 'package.json').write_text(json.dumps(package_json, indent=2) + '\n', encoding='utf-8')
+
+          catalog_path = ROOT / 'scripts/package-catalog.json'
+          catalog = json.loads(catalog_path.read_text(encoding='utf-8'))
+          for item in candidates:
+              catalog[item['id']] = {
+                  'name': item['name'],
+                  'version': '0.1.0',
+                  'description': item['description'],
+                  'packageDir': item['package_dir'],
+                  'source': item['source'],
+                  'expected': item['expected'],
+                  'dependencies': {'@sovereign/safe-path-resolver': '0.1.0'},
+                  'imports': {alias: '@sovereign/safe-path-resolver'},
+                  'status': 'TECHNICALLY_READY',
+                  'reason': 'standalone-capable with explicit @sovereign/safe-path-resolver dependency boundary',
+              }
+          catalog_path.write_text(json.dumps(catalog, indent=2) + '\n', encoding='utf-8')
+
+          stage_path = ROOT / 'scripts/package-stage.mjs'
+          stage = stage_path.read_text(encoding='utf-8')
+          anchor = "  const pkgReadme = resolve(packageDir, 'README.md');\n"
+          inject = """
+  const dependencyNodeModules = resolve(packageDir, 'node_modules');
+  const stagedDependencyDirs = [];
+  function stageRuntimeDependencies(dependencies = {}) {
+    for (const [dependencyName, dependencyVersion] of Object.entries(dependencies)) {
+      const depSpec = Object.values(catalog).find((candidateSpec) => candidateSpec.name === dependencyName && candidateSpec.version === dependencyVersion);
+      if (!depSpec) fail(`runtime dependency ${dependencyName}@${dependencyVersion} is not present in package catalog`);
+      const depSource = resolve(depSpec.source);
+      if (!existsSync(depSource)) fail(`runtime dependency source is missing: ${depSource}`);
+      const depParts = dependencyName.split('/');
+      const depRoot = depParts[0].startsWith('@')
+        ? resolve(dependencyNodeModules, depParts[0], depParts[1])
+        : resolve(dependencyNodeModules, dependencyName);
+      const depSrc = resolve(depRoot, 'src');
+      const depDist = resolve(depRoot, 'dist');
+      mkdirSync(depSrc, { recursive: true });
+      mkdirSync(depDist, { recursive: true });
+      const depSourceRoot = dirname(depSource);
+      for (const entry of readdirSync(depSourceRoot)) {
+        const full = resolve(depSourceRoot, entry);
+        if (statSync(full).isDirectory()) cpSync(full, resolve(depSrc, entry), { recursive: true });
+        else if (entry.endsWith('.js') || entry.endsWith('.mjs') || entry.endsWith('.d.ts')) copyFileSync(full, resolve(depSrc, entry));
+      }
+      const depExpected = new Set(depSpec.expected || []);
+      const stub = [...depExpected].map((name) => `export declare const ${name}: any;`).join('\\n') + '\\n';
+      writeFileSync(resolve(depDist, 'index.d.ts'), stub, 'utf8');
+      writeFileSync(resolve(depRoot, 'package.json'), `${JSON.stringify({
+        name: dependencyName,
+        version: dependencyVersion,
+        type: 'module',
+        exports: { '.': { types: './dist/index.d.ts', import: './src/index.js', default: './src/index.js' } },
+      }, null, 2)}\\n`, 'utf8');
+      stagedDependencyDirs.push(depRoot);
+    }
+  }
+"""
+          if 'function stageRuntimeDependencies' not in stage:
+              stage = stage.replace(anchor, inject + '\n' + anchor, 1)
+          stage_anchor = "  const expected = new Set(spec.expected || []);\n"
+          if 'stageRuntimeDependencies(spec.dependencies);' not in stage:
+              stage = stage.replace(stage_anchor, stage_anchor + "  stageRuntimeDependencies(spec.dependencies);\n", 1)
+          cleanup_anchor = "  rmSync(TOOLS_DIR, { recursive: true, force: true });\n"
+          if 'rmSync(dependencyNodeModules' not in stage:
+              stage = stage.replace(cleanup_anchor, "  rmSync(dependencyNodeModules, { recursive: true, force: true });\n" + cleanup_anchor, 1)
+          final_anchor = "  rmSync(TOOLS_DIR, { recursive: true, force: true });\n}\n"
+          if final_anchor not in stage:
+              raise SystemExit('package-stage cleanup anchor not found')
+          stage = stage.replace(final_anchor, "  rmSync(TOOLS_DIR, { recursive: true, force: true });\n}\n", 1)
+          final_cleanup = "  rmSync(TOOLS_DIR, { recursive: true, force: true });\n}\n"
+          stage = stage.replace(final_cleanup, final_cleanup, 1)
+          stage_path.write_text(stage, encoding='utf-8')
+
+          pkg_verify = ROOT / 'scripts/verify-package-tooling.mjs'
+          pkg_verify.write_text(r'''import { existsSync, readFileSync, rmSync, mkdirSync } from 'node:fs';
+          import { resolve } from 'node:path';
+          import { spawnSync } from 'node:child_process';
+          import { runNpm } from './npm-cli.mjs';
+
+          const ROOT = resolve('.');
+          const CANDIDATE_IDS = [
+            'safe-path-resolver',
+            'runtime-capability-inspector',
+            'bounded-file-content-reader-safe-content-access',
+            'directory-walker-bounded-tree-traversal',
+            'filesystem-metadata-stat-normalizer',
+            'safe-file-quarantine-delete',
+          ];
+          const EXPECTED_FILES = new Set(['LICENSE', 'NOTICE', 'README.md', 'dist/index.d.ts', 'package.json', 'src/index.js']);
+          const CATALOG = JSON.parse(readFileSync(resolve(ROOT, 'scripts/package-catalog.json'), 'utf8'));
+          const bundledNpmCli = resolve(process.execPath, '..', 'node_modules/npm/bin/npm-cli.js');
+
+          function fail(message) { throw new Error(`[package-verify] ${message}`); }
+          function run(command, args, cwd = ROOT) {
+            const result = spawnSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
+            if (result.error) throw result.error;
+            if (result.status !== 0) fail(`${command} ${args.join(' ')} failed with ${result.status}: ${`${result.stdout ?? ''}${result.stderr ?? ''}`.trim()}`);
+            return result.stdout ?? '';
+          }
+          function runNpmSafe(args, cwd) {
+            if (existsSync(bundledNpmCli)) return run(process.execPath, [bundledNpmCli, ...args], cwd);
+            return runNpm(args, { cwd, stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' }).stdout ?? '';
+          }
+          function packageSpec(id) {
+            const spec = CATALOG[id];
+            if (!spec) fail(`candidate ${id} is absent from package catalog`);
+            return spec;
+          }
+
+          for (const id of CANDIDATE_IDS) {
+            const spec = packageSpec(id);
+            const packageDir = resolve(spec.packageDir);
+            const packageJsonPath = resolve(packageDir, 'package.json');
+            if (!existsSync(packageJsonPath)) fail(`${id} package.json is missing`);
+            const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+            if (pkg.private === true) fail(`${id} must not be private`);
+            if (pkg.license !== 'Apache-2.0') fail(`${id} has incorrect license`);
+            if (pkg.type !== 'module') fail(`${id} must be ESM`);
+            if (pkg.engines?.node !== '>=24') fail(`${id} must require Node >=24`);
+            if (pkg.sideEffects !== false) fail(`${id} must set sideEffects=false`);
+            const expectedDeps = spec.dependencies ?? {};
+            const actualDeps = pkg.dependencies ?? {};
+            if (JSON.stringify(actualDeps) !== JSON.stringify(expectedDeps)) fail(`${id} dependency boundary mismatch: expected ${JSON.stringify(expectedDeps)} got ${JSON.stringify(actualDeps)}`);
+            const expectedImports = spec.imports ?? {};
+            if (JSON.stringify(pkg.imports ?? {}) !== JSON.stringify(expectedImports)) fail(`${id} imports mapping mismatch`);
+            if (pkg.devDependencies || pkg.peerDependencies || pkg.optionalDependencies) fail(`${id} contains undeclared dependency classes`);
+            if (pkg.scripts) fail(`${id} must not ship development scripts`);
+            if (JSON.stringify(Object.keys(pkg.exports ?? {})) !== '["."]') fail(`${id} must expose only the root export`);
+            const rootExport = pkg.exports['.'];
+            if (rootExport?.types !== './dist/index.d.ts' || rootExport?.import !== './src/index.js' || rootExport?.default !== './src/index.js') fail(`${id} has an invalid root export map`);
+            if (!Array.isArray(pkg.files) || new Set(pkg.files).size !== pkg.files.length || !pkg.files.every((file) => EXPECTED_FILES.has(file))) fail(`${id} has an invalid files allowlist`);
+
+            const packDir = resolve('.artifacts/package-verify', id);
+            rmSync(packDir, { recursive: true, force: true });
+            mkdirSync(packDir, { recursive: true });
+            try {
+              run(process.execPath, [resolve(ROOT, 'scripts/package-stage.mjs'), id]);
+              const packed = JSON.parse(runNpmSafe(['pack', '--json', '--ignore-scripts', '--pack-destination', packDir], packageDir));
+              if (!Array.isArray(packed) || packed.length !== 1) fail(`${id} npm pack did not return exactly one package`);
+              const files = new Set((packed[0].files ?? []).map((entry) => String(entry.path).replaceAll('\\', '/')));
+              for (const file of EXPECTED_FILES) if (!files.has(file)) fail(`${id} tarball is missing ${file}`);
+              for (const file of files) if (!EXPECTED_FILES.has(file)) fail(`${id} tarball contains undeclared file ${file}`);
+              if (Object.keys(expectedDeps).length > 0) {
+                const packedPath = resolve(packDir, packed[0].filename);
+                if (!existsSync(packedPath)) fail(`${id} dependency-bearing tarball is missing`);
+                console.log(`[package-verify] ${id}: dependency declaration, alias map, staging, declaration surface, and npm pack passed`);
+              } else {
+                console.log(`[package-verify] ${id}: manifest, staging, declaration surface, and npm pack passed`);
+              }
+            } finally {
+              rmSync(packDir, { recursive: true, force: true });
+              rmSync(resolve(packageDir, 'src'), { recursive: true, force: true });
+              rmSync(resolve(packageDir, 'dist'), { recursive: true, force: true });
+              rmSync(resolve(packageDir, 'node_modules'), { recursive: true, force: true });
+              rmSync(resolve(packageDir, 'LICENSE'), { force: true });
+              rmSync(resolve(packageDir, 'NOTICE'), { force: true });
+            }
+          }
+
+          console.log('[package-verify] SAFE-PATH BOUNDARY QUALIFICATION WAVE PASSED');
+          ''', encoding='utf-8')
+
+          repro = ROOT / 'scripts/verify-reproducible-package.mjs'
+          repro.write_text(r'''import { createHash } from 'node:crypto';
+          import { existsSync, readFileSync, rmSync, mkdirSync } from 'node:fs';
+          import { resolve } from 'node:path';
+          import { spawnSync } from 'node:child_process';
+          import { runNpm } from './npm-cli.mjs';
+
+          const ROOT = resolve('.');
+          const OUT = resolve('.artifacts/reproducible-package');
+          const IDS = [
+            'safe-path-resolver',
+            'runtime-capability-inspector',
+            'bounded-file-content-reader-safe-content-access',
+            'directory-walker-bounded-tree-traversal',
+            'filesystem-metadata-stat-normalizer',
+            'safe-file-quarantine-delete',
+          ];
+          const CATALOG = JSON.parse(readFileSync(resolve(ROOT, 'scripts/package-catalog.json'), 'utf8'));
+
+          function fail(message) { throw new Error(`[repro-verify] ${message}`); }
+          function sha256(file) { return createHash('sha256').update(readFileSync(file)).digest('hex'); }
+          function runNpmSafe(args, cwd) {
+            const result = runNpm(args, { cwd, stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' });
+            if (result.status !== 0) fail(`npm ${args.join(' ')} failed with ${result.status}: ${(result.stderr ?? '').trim()}`);
+            return JSON.parse(result.stdout ?? '');
+          }
+          function packOnce(id, destination) {
+            const spec = CATALOG[id];
+            const packageDir = resolve(spec.packageDir);
+            rmSync(destination, { recursive: true, force: true });
+            mkdirSync(destination, { recursive: true });
+            const packed = runNpmSafe(['pack', '--json', '--ignore-scripts', '--pack-destination', destination], packageDir);
+            if (!Array.isArray(packed) || packed.length !== 1) fail(`${id} npm pack did not return exactly one result`);
+            const meta = packed[0];
+            const tarball = resolve(destination, meta.filename);
+            if (!existsSync(tarball)) fail(`${id} tarball missing`);
+            return { tarball, bytes: readFileSync(tarball), integrity: meta.integrity ?? null, shasum: meta.shasum ?? null, files: meta.files ?? [] };
+          }
+
+          rmSync(OUT, { recursive: true, force: true });
+          mkdirSync(OUT, { recursive: true });
+          try {
+            for (const id of IDS) {
+              const packageDir = resolve(CATALOG[id].packageDir);
+              const firstStage = spawnSync(process.execPath, [resolve(ROOT, 'scripts/package-stage.mjs'), id], { stdio: 'inherit', shell: false });
+              if (firstStage.status !== 0) fail(`${id} first staging failed with ${firstStage.status}`);
+              const first = packOnce(id, resolve(OUT, id, 'first'));
+              const secondStage = spawnSync(process.execPath, [resolve(ROOT, 'scripts/package-stage.mjs'), id], { stdio: 'inherit', shell: false });
+              if (secondStage.status !== 0) fail(`${id} second staging failed with ${secondStage.status}`);
+              const second = packOnce(id, resolve(OUT, id, 'second'));
+              if (!first.bytes.equals(second.bytes)) fail(`${id} tarball bytes are not reproducible: ${sha256(first.tarball)} != ${sha256(second.tarball)}`);
+              if (first.integrity !== second.integrity) fail(`${id} integrity changed between identical packs`);
+              if (first.shasum !== second.shasum) fail(`${id} shasum changed between identical packs`);
+              if (JSON.stringify(first.files) !== JSON.stringify(second.files)) fail(`${id} package file manifest changed between identical packs`);
+              console.log(`[repro-verify] ${id}: byte-identical tarball, integrity, shasum, and file manifest`);
+              rmSync(resolve(packageDir, 'src'), { recursive: true, force: true });
+              rmSync(resolve(packageDir, 'dist'), { recursive: true, force: true });
+              rmSync(resolve(packageDir, 'node_modules'), { recursive: true, force: true });
+              rmSync(resolve(packageDir, 'LICENSE'), { force: true });
+              rmSync(resolve(packageDir, 'NOTICE'), { force: true });
+            }
+            console.log('[repro-verify] SAFE-PATH BOUNDARY REPRODUCIBILITY PASSED');
+          } finally {
+            rmSync(OUT, { recursive: true, force: true });
+          }
+          ''', encoding='utf-8')
+
+          security = ROOT / 'scripts/verify-security-boundaries.mjs'
+          security.write_text(r'''import { existsSync, readdirSync, readFileSync } from 'node:fs';
+          import { resolve, join, relative } from 'node:path';
+
+          const ROOT = resolve('.');
+          const SELF = resolve(ROOT, 'scripts/verify-security-boundaries.mjs');
+          const violations = [];
+          const EXECUTION_RULES = [
+            { id: 'shell-true', pattern: /\bshell\s*:\s*true\b/g, message: 'shell execution must be explicitly disabled' },
+            { id: 'eval', pattern: /\beval\s*\(/g, message: 'eval() is forbidden' },
+            { id: 'new-function', pattern: /\bnew\s+Function\s*\(/g, message: 'dynamic Function construction is forbidden' },
+            { id: 'function-constructor', pattern: /(?<![\w$])Function\s*\(/g, message: 'Function() construction is forbidden' },
+            { id: 'vm-script', pattern: /\bvm\.Script\b|\bvm\.(?:runInThisContext|runInNewContext|runInContext)\s*\(/g, message: 'dynamic vm execution is forbidden' },
+            { id: 'child-process-exec', pattern: /(?:\bchild_process\s*\.\s*)?(?<!\.)\b(?:exec|execSync)\s*\(/g, message: 'shell-oriented child_process exec is forbidden' },
+          ];
+          function walk(dir) {
+            const files = [];
+            for (const entry of readdirSync(dir, { withFileTypes: true })) {
+              if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === '.artifacts') continue;
+              const full = join(dir, entry.name);
+              if (entry.isDirectory()) files.push(...walk(full)); else files.push(full);
+            }
+            return files;
+          }
+          function reportMatches(file, text) {
+            const lines = text.split(/\r?\n/);
+            for (const rule of EXECUTION_RULES) {
+              rule.pattern.lastIndex = 0;
+              let match;
+              while ((match = rule.pattern.exec(text)) !== null) {
+                const line = text.slice(0, match.index).split(/\r?\n/).length;
+                violations.push({ file: relative(ROOT, file), line, rule: rule.id, message: rule.message, source: lines[line - 1]?.trim() ?? '' });
+              }
+            }
+          }
+          for (const root of [resolve(ROOT, 'scripts'), resolve(ROOT, 'cubes')]) {
+            if (!existsSync(root)) continue;
+            for (const file of walk(root)) {
+              if (resolve(file) === SELF) continue;
+              if (root.endsWith('cubes') && !file.replaceAll('\\', '/').includes('/src/')) continue;
+              if (!file.endsWith('.mjs') && !file.endsWith('.js')) continue;
+              reportMatches(file, readFileSync(file, 'utf8'));
+            }
+          }
+
+          const catalog = JSON.parse(readFileSync(resolve(ROOT, 'scripts/package-catalog.json'), 'utf8'));
+          for (const [id, spec] of Object.entries(catalog)) {
+            const packageJsonPath = resolve(ROOT, spec.packageDir, 'package.json');
+            if (!existsSync(packageJsonPath)) continue;
+            const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+            const expectedDeps = spec.dependencies ?? {};
+            const actualDeps = pkg.dependencies ?? {};
+            if (JSON.stringify(actualDeps) !== JSON.stringify(expectedDeps)) {
+              violations.push({ file: relative(ROOT, packageJsonPath), line: 1, rule: 'package-dependency-boundary', message: `dependency declaration does not match catalog for ${id}`, source: JSON.stringify(actualDeps) });
+            }
+            for (const field of ['devDependencies', 'peerDependencies', 'optionalDependencies']) {
+              if (pkg[field] && Object.keys(pkg[field]).length > 0) {
+                violations.push({ file: relative(ROOT, packageJsonPath), line: 1, rule: 'package-extra-dependencies', message: `${field} must be absent`, source: JSON.stringify(pkg[field]) });
+              }
+            }
+            if (pkg.scripts && Object.keys(pkg.scripts).length > 0) violations.push({ file: relative(ROOT, packageJsonPath), line: 1, rule: 'package-no-scripts', message: 'public package must not ship development scripts', source: JSON.stringify(pkg.scripts) });
+          }
+          if (violations.length) {
+            console.error('[security-verify] SECURITY BOUNDARY VIOLATIONS');
+            for (const violation of violations) {
+              console.error(`- ${violation.file}:${violation.line} [${violation.rule}] ${violation.message}`);
+              if (violation.source) console.error(`  ${violation.source}`);
+            }
+            process.exitCode = 1;
+          } else {
+            console.log('[security-verify] dependency boundaries match catalog and no forbidden dynamic execution or shell-oriented exec was found');
+            console.log('[security-verify] ALL SECURITY BOUNDARY CHECKS PASSED');
+          }
+          ''', encoding='utf-8')
+
+          matrix_path = ROOT / 'docs/release/PACKAGE_QUALIFICATION_MATRIX-V0.1.md'
+          matrix = matrix_path.read_text(encoding='utf-8')
+          matrix = matrix.replace('# Package Qualification Matrix (v15)', '# Package Qualification Matrix (v16)', 1)
+          matrix = matrix.replace('| TECHNICALLY_READY | 73 |', '| TECHNICALLY_READY | 77 |', 1)
+          matrix = matrix.replace('| CONDITIONAL | 4 |', '| CONDITIONAL | 0 |', 1)
+          lines = {
+              '| bounded-file-content-reader-safe-content-access | CONDITIONAL | — | relative monorepo import(s) to safe-path-resolver: [\'../../safe-path-resolver-containment-boundary/src/index.js\']; needs source refactor to declare @sovereign/safe-path-resolver dependency |': '| bounded-file-content-reader-safe-content-access | TECHNICALLY_READY | @sovereign/bounded-file-content-reader-safe-content-access | explicit @sovereign/safe-path-resolver dependency boundary; standalone package staged and qualified |',
+              '| directory-walker-bounded-tree-traversal | CONDITIONAL | — | relative monorepo import(s) to safe-path-resolver: [\'../../safe-path-resolver-containment-boundary/src/index.js\']; needs source refactor to declare @sovereign/safe-path-resolver dependency |': '| directory-walker-bounded-tree-traversal | TECHNICALLY_READY | @sovereign/directory-walker-bounded-tree-traversal | explicit @sovereign/safe-path-resolver dependency boundary; standalone package staged and qualified |',
+              '| filesystem-metadata-stat-normalizer | CONDITIONAL | — | relative monorepo import(s) to safe-path-resolver: [\'../../safe-path-resolver-containment-boundary/src/index.js\']; needs source refactor to declare @sovereign/safe-path-resolver dependency |': '| filesystem-metadata-stat-normalizer | TECHNICALLY_READY | @sovereign/filesystem-metadata-stat-normalizer | explicit @sovereign/safe-path-resolver dependency boundary; standalone package staged and qualified |',
+              '| safe-file-quarantine-delete | CONDITIONAL | — | relative monorepo import(s) to safe-path-resolver: [\'../../safe-path-resolver-containment-boundary/src/index.js\']; needs source refactor to declare @sovereign/safe-path-resolver dependency |': '| safe-file-quarantine-delete | TECHNICALLY_READY | @sovereign/safe-file-quarantine-delete | explicit @sovereign/safe-path-resolver dependency boundary; standalone package staged and qualified |',
+          }
+          for old, new in lines.items():
+              if old not in matrix: raise SystemExit(f'matrix anchor not found: {old}')
+              matrix = matrix.replace(old, new, 1)
+          matrix_path.write_text(matrix, encoding='utf-8')
+
+          control_path = ROOT / 'PROJECT_CONTROL.md'
+          control = control_path.read_text(encoding='utf-8')
+          control = control.replace('74 package entries representing 73 unique Cube sources', '78 package entries representing 77 unique Cube sources', 1)
+          control = control.replace('- Cubes with unresolved runtime coupling kept CONDITIONAL until the dependency boundary can be made real without breaking monorepo behavior;\n', '- The previously Conditional safe-path-resolver consumers now use an explicit package dependency boundary; no current safe-path-resolver consumer remains in CONDITIONAL status.\n', 1)
+          control_path.write_text(control, encoding='utf-8')
+          PY
+
+      - name: Validate source and targeted contracts before commit
+        run: |
+          node --check cubes/bounded-file-content-reader-safe-content-access/src/index.js
+          node --check cubes/directory-walker-bounded-tree-traversal/src/index.js
+          node --check cubes/filesystem-metadata-stat-normalizer/src/index.js
+          node --check cubes/safe-file-quarantine-delete/src/index.js
+          node --test --test-timeout=10000 cubes/bounded-file-content-reader-safe-content-access/test/index.test.js cubes/directory-walker-bounded-tree-traversal/test/index.test.js cubes/filesystem-metadata-stat-normalizer/test/index.test.js cubes/safe-file-quarantine-delete/test/index.test.js
+
+      - name: Validate package qualification wave
+        run: |
+          node scripts/verify-package-tooling.mjs
+          node scripts/verify-reproducible-package.mjs
+          node scripts/verify-security-boundaries.mjs
+
+      - name: Remove migration marker
+        run: |
+          rm -f .automation/safe-path-boundary-qualification
+          rmdir .automation 2>/dev/null || true
+
+      - name: Commit ordinary project files only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git reset -- .github/workflows/one-time-safe-path-boundary-qualification.yml
+          git diff --cached --check
+          git commit -m "feat: resolve safe-path-resolver package dependency boundaries"
+          git push origin feat/continuity-hardening
