@@ -265,3 +265,4 @@ export async function launch(options = {}) {
   const session = new BrowserSession(options);
   try { return await session.start(); }
   catch (error) { await session.close(); throw error; }
+}
