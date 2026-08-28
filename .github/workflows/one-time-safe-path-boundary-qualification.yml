@@ -1,0 +1,34 @@
+name: one-time-safe-path-boundary-qualification
+
+on:
+  push:
+    branches: [feat/continuity-hardening]
+
+permissions:
+  contents: write
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Guard
+        run: |
+          if [ ! -f .automation/safe-path-boundary-qualification ]; then
+            echo "No pending qualification marker; nothing to do."
+            exit 0
+          fi
+      - name: Run migration and proof suite
+        run: node scripts/migrate-safe-path-boundaries.mjs
+      - name: Commit ordinary project files only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git reset -- .github/workflows/one-time-safe-path-boundary-qualification.yml
+          git diff --cached --check
+          git commit -m "feat: resolve safe-path-resolver package dependency boundaries"
+          git push origin feat/continuity-hardening
