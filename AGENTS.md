@@ -123,7 +123,14 @@ Released/frozen components require a dedicated authorized task before modificati
 
 Standing governance decisions and the hard DO-NOT list are authoritative in `GOVERNANCE.md`.
 
-Read it before any action that can affect release/publication state, frozen/released components, shared Git history, PR merge state, distribution policy, compatibility, or destructive changes.
+Read it before any action that can affect:
+
+- release/publication state;
+- frozen/released components;
+- shared Git history;
+- PR merge state;
+- distribution policy;
+- compatibility or destructive changes.
 
 ## Security
 
