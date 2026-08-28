@@ -108,3 +108,21 @@ If work is interrupted, read this file first, then `ROADMAP.md`, then the latest
 - **Catalog-driven packaging pipeline (additive):** `scripts/package-catalog-stage.mjs`, `scripts/verify-package-catalog.mjs`, `scripts/verify-package-catalog-reproducible.mjs`. Original first-batch scripts (`scripts/package-stage.mjs`, etc.) remain canonical for the two first-batch candidates.
 - **Verified (real execution, 2026-08-28):** 13 staged packages pass manifest/export-map AND reproducible byte-identical tarball verification via the catalog pipeline. Out-of-tree import confirmed for `safe-path-resolver` and `canonical-json`.
 - **CONDITIONAL cubes (4):** import first-batch via monorepo-relative path; remediation recorded in `PACKAGE_CATALOG.json` (`conditionalDependency.remediation`). Not yet applied — requires its own authorized task.
+
+## Known CI flake (recorded 2026-08-28, NOT a code defect)
+
+- PR #124 (branch `feat/package-catalog-qualification`, commit `1676ea4`) CI Run #33136941627
+  failed on **windows-latest only** (ubuntu + macOS green). The failing assertion is
+  `cubes/application-lifecycle/test/index.test.js:123` ("late participant completion cannot
+  mutate the terminal snapshot") — a **frozen timing-sensitive test** (see directive rule #11).
+  The diff is a 1ms `remainingMs` clock-granularity drift under GitHub Windows-runner load
+  (`29985` vs `29986`).
+- Classification: **INFRASTRUCTURE FLAKE / ENVIRONMENT** on a pre-existing frozen test.
+  This branch does NOT modify `application-lifecycle` source or tests (only adds
+  `packages/application-lifecycle/README.md` + `package.json` declarative metadata).
+- Local verification: the same test passes **14/14 on Windows 3 consecutive runs** on the same
+  machine, confirming it is not a deterministic regression introduced here.
+- Governance: the frozen test must NOT be weakened/silenced to "fix CI" (rule #11). Remediation
+  (if any) of the flake requires its own explicitly authorized maintenance task. CI cannot be
+  forced green here without violating the frozen-test rule; PR #124 is left for human review
+  with this flake disclosed.
