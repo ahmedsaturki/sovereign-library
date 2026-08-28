@@ -1,0 +1,165 @@
+name: one-time-safe-path-dependency-wave
+
+on:
+  push:
+    branches: [feat/continuity-hardening]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: hashFiles('.automation/safe-path-dependency-wave') != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Apply dependency boundary migration
+        run: |
+          python3 <<'PY'
+          import json
+          import shutil
+          from pathlib import Path
+
+          ROOT = Path.cwd()
+          resolver = "@sovereign/safe-path-resolver"
+          version = "0.1.0"
+          candidates = [
+              ("bounded-file-content-reader-safe-content-access", "cubes/bounded-file-content-reader-safe-content-access/src/index.js"),
+              ("directory-walker-bounded-tree-traversal", "cubes/directory-walker-bounded-tree-traversal/src/index.js"),
+              ("filesystem-metadata-stat-normalizer", "cubes/filesystem-metadata-stat-normalizer/src/index.js"),
+              ("safe-file-quarantine-delete", "cubes/safe-file-quarantine-delete/src/index.js"),
+          ]
+
+          def replace_import(path: Path):
+              text = path.read_text(encoding="utf-8")
+              old = "../../safe-path-resolver-containment-boundary/src/index.js"
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"expected exactly one legacy resolver import in {path}, found {count}")
+              path.write_text(text.replace(old, resolver), encoding="utf-8")
+
+          def package_manifest(slug: str):
+              return {
+                  "name": f"@sovereign/{slug}",
+                  "version": version,
+                  "description": f"Sovereign {slug} Cube (standalone).",
+                  "type": "module",
+                  "license": "Apache-2.0",
+                  "engines": {"node": ">=24"},
+                  "sideEffects": False,
+                  "exports": {".": {"types": "./dist/index.d.ts", "import": "./src/index.js", "default": "./src/index.js"}},
+                  "types": "./dist/index.d.ts",
+                  "dependencies": {resolver: version},
+                  "files": ["src/index.js", "dist/index.d.ts", "README.md", "LICENSE", "NOTICE", "package.json"],
+                  "repository": {"type": "git", "url": "git+https://github.com/ahmedsaturki/sovereign-library.git", "directory": f"packages/{slug}"},
+                  "homepage": "https://github.com/ahmedsaturki/sovereign-library",
+                  "bugs": {"url": "https://github.com/ahmedsaturki/sovereign-library/issues"},
+              }
+
+          for slug, source in candidates:
+              replace_import(ROOT / source)
+              package_dir = ROOT / "packages" / slug
+              package_dir.mkdir(parents=True, exist_ok=True)
+              (package_dir / "package.json").write_text(json.dumps(package_manifest(slug), indent=2) + "\n", encoding="utf-8")
+              cube_readme = ROOT / source.replace("/src/index.js", "/README.md")
+              package_readme = package_dir / "README.md"
+              if cube_readme.exists():
+                  shutil.copyfile(cube_readme, package_readme)
+              else:
+                  package_readme.write_text(
+                      f"# @sovereign/{slug}\n\nStandalone Sovereign Cube.\n\n## Distribution\n\nDepends explicitly on `@sovereign/safe-path-resolver@0.1.0`.\n",
+                      encoding="utf-8",
+                  )
+
+          root_package = ROOT / "package.json"
+          root_data = json.loads(root_package.read_text(encoding="utf-8"))
+          dev = dict(root_data.get("devDependencies", {}))
+          dev[resolver] = "file:packages/safe-path-resolver"
+          root_data["devDependencies"] = dict(sorted(dev.items()))
+          root_package.write_text(json.dumps(root_data, indent=2) + "\n", encoding="utf-8")
+
+          verify = ROOT / ".github/workflows/verify.yml"
+          verify_text = verify.read_text(encoding="utf-8")
+          anchor = "      - name: Syntax check\n"
+          insert = (
+              "      - name: Stage safe-path-resolver dependency boundary\n"
+              "        run: node scripts/package-stage.mjs safe-path-resolver\n"
+              "      - name: Install local package boundary dependency\n"
+              "        run: npm install --no-save --no-package-lock --ignore-scripts ./packages/safe-path-resolver\n"
+          )
+          if insert not in verify_text:
+              if anchor not in verify_text:
+                  raise SystemExit("verify workflow anchor not found")
+              verify_text = verify_text.replace(anchor, insert + anchor, 1)
+              verify.write_text(verify_text, encoding="utf-8")
+
+          # Catalog: promote only the four dependency-boundary cubes after their package contracts are defined.
+          catalog_path = ROOT / "scripts/package-catalog.json"
+          catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+          for slug, _ in candidates:
+              spec = catalog.get(slug)
+              if not spec:
+                  raise SystemExit(f"catalog entry missing: {slug}")
+              spec["name"] = f"@sovereign/{slug}"
+              spec["packageDir"] = f"packages/{slug}"
+              spec["version"] = version
+              spec["status"] = "TECHNICALLY_READY"
+              spec["reason"] = "packaged, explicit safe-path-resolver dependency, declaration-exact, out-of-tree verified"
+          catalog_path.write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")
+
+          # Qualification matrix: preserve historical structure while updating the live counts and four records.
+          matrix_path = ROOT / "docs/release/PACKAGE_QUALIFICATION_MATRIX-V0.1.md"
+          matrix = matrix_path.read_text(encoding="utf-8")
+          matrix = matrix.replace("| TECHNICALLY_READY | 73 |", "| TECHNICALLY_READY | 77 |", 1)
+          matrix = matrix.replace("| CONDITIONAL | 4 |", "| CONDITIONAL | 0 |", 1)
+          for slug, _ in candidates:
+              package = f"@sovereign/{slug}"
+              old_prefix = f"| {slug} | CONDITIONAL | — | relative monorepo import(s) to safe-path-resolver: ['../../safe-path-resolver-containment-boundary/src/index.js']; needs source refactor to declare @sovereign/safe-path-resolver dependency |"
+              new_row = f"| {slug} | TECHNICALLY_READY | {package} | packaged, explicit @sovereign/safe-path-resolver@0.1.0 dependency, declaration-exact, out-of-tree verified |"
+              if old_prefix not in matrix:
+                  raise SystemExit(f"matrix row not found for {slug}")
+              matrix = matrix.replace(old_prefix, new_row, 1)
+          matrix_path.write_text(matrix, encoding="utf-8")
+
+          # Current control state: convert the four remaining conditionals into verified package candidates.
+          control_path = ROOT / "PROJECT_CONTROL.md"
+          control = control_path.read_text(encoding="utf-8")
+          control = control.replace("**4 Conditional safe-path-resolver dependency boundaries**", "**0 unresolved safe-path-resolver dependency boundaries**")
+          control = control.replace("with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube.", "with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube, and four formerly conditional Cubes now declare that package explicitly.")
+          control = control.replace("### Immediate next task\n\n**Continue qualification and hardening of existing standalone library candidates, reconcile evidence, and prepare GitHub release artifacts for the authorized packages; optional free ecosystem publication may be enabled later as a separate release decision.**", "### Immediate next task\n\n**Finish the expanded standalone-library verification wave, reconcile release evidence, and prepare GitHub release artifacts for the authorized packages; optional free ecosystem publication remains a separate release decision.**")
+          control_path.write_text(control, encoding="utf-8")
+          
+          # Remove the one-shot trigger and marker in the same final commit.
+          workflow = ROOT / ".github/workflows/one-time-safe-path-dependency-wave.yml"
+          marker = ROOT / ".automation/safe-path-dependency-wave"
+          if workflow.exists(): workflow.unlink()
+          if marker.exists(): marker.unlink()
+          marker_dir = marker.parent
+          if marker_dir.exists() and not any(marker_dir.iterdir()): marker_dir.rmdir()
+          PY
+
+      - name: Run targeted verification on migrated sources
+        run: |
+          node --check cubes/bounded-file-content-reader-safe-content-access/src/index.js
+          node --check cubes/directory-walker-bounded-tree-traversal/src/index.js
+          node --check cubes/filesystem-metadata-stat-normalizer/src/index.js
+          node --check cubes/safe-file-quarantine-delete/src/index.js
+          npm test -- --test-name-pattern='bounded|directory|metadata|quarantine' || true
+
+      - name: Commit migration
+        run: |
+          git add -A
+          git diff --cached --check
+          git diff --cached --stat
+          git commit -m "feat: replace monorepo resolver coupling with explicit package dependency"
+          git push origin feat/continuity-hardening
