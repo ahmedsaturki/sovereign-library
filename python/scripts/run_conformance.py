@@ -75,6 +75,13 @@ def resolve_bindings(value, bindings):
             # A non-plain mapping (subclass of dict) exercises the contract's
             # UNSUPPORTED_OBJECT rejection for objects that are not plain objects.
             return type("NonPlain", (dict,), {})()
+        if builder == "bytes":
+            raw = value.get("value")
+            if isinstance(raw, str):
+                return raw.encode("utf-8")
+            if isinstance(raw, list):
+                return bytes(raw)
+            fail("$build:bytes requires value string or array")
         fail(f"unknown $build directive: {builder}")
     if isinstance(value, list):
         return [resolve_bindings(v, bindings) for v in value]
