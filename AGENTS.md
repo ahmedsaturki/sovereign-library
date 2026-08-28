@@ -20,13 +20,13 @@ Never use conversation memory as a substitute for repository evidence.
 
 When information conflicts, use this precedence:
 
-1. GitHub repository state (refs, commits, PRs, CI, releases) for actual repository state.
+1. GitHub repository state for actual refs, commits, PRs, CI, and releases.
 2. `PROJECT_CONTROL.md` for current execution, governance, blockers, and recovery.
 3. Relevant SPEC for behavioral semantics.
 4. Architecture Constitution for permanent architecture and independence principles.
 5. Package/API contract documents for package boundaries.
 6. Release records for release execution and evidence.
-7. README and other explanatory docs.
+7. README and explanatory docs.
 8. Conversation context only as supplemental intent, never authoritative project state.
 
 Historical records remain historical. Never rewrite history merely to make the current state look cleaner.
@@ -80,24 +80,21 @@ These are native implementations of one contract, not mechanical source translat
 
 ## Distribution policy — CURRENT
 
-**GITHUB IS THE CANONICAL SOURCE AND DEFAULT RELEASE CHANNEL.**
+**GITHUB IS CANONICAL. FREE ECOSYSTEM REGISTRIES ARE OPTIONAL.**
 
-The current policy is **free-by-default, multi-channel-optional**:
+GitHub is the canonical source, persistent project memory, release-evidence home, and default distribution channel.
 
-- GitHub remains the canonical source and persistent project memory;
-- GitHub Releases and release assets are the default distribution mechanism;
-- checksums, integrity records, documentation, and reproducible artifacts accompany releases;
-- free native ecosystem registries may be enabled later for a specific release wave when they provide real value.
+GitHub Releases and release assets are the default distribution mechanism. Checksums, integrity records, documentation, and reproducible artifacts accompany releases.
 
-Optional registries are NOT permanently prohibited. A registry is eligible only when it is genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly selected for that release wave.
+A free native ecosystem registry may be enabled later for a specific release wave when it is genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly selected for that wave.
 
-Possible optional channels include npm, PyPI, Maven-compatible registries/Maven Central, GitHub Packages, JSR, and other appropriate ecosystem-native services subject to current terms and limits.
+Possible optional channels include npm, PyPI, Maven-compatible registries/Maven Central, GitHub Packages, JSR, and other appropriate ecosystem-native services subject to their current terms and limits.
 
 No paid registry or mandatory third-party service is required by the architecture.
 
-Historical GitHub-only wording is preserved as history and is superseded by this policy. See `GOVERNANCE.md`.
+Historical GitHub-only wording is preserved as history and superseded by the current policy. See `GOVERNANCE.md`.
 
-Do NOT automatically publish to any registry merely because a package has a manifest.
+Do NOT publish automatically merely because a package has a manifest.
 
 ## Cube versus Product
 
@@ -121,16 +118,9 @@ Released/frozen components require a dedicated authorized task before modificati
 
 ## Governance
 
-Standing governance decisions and the hard DO-NOT list are authoritative in `GOVERNANCE.md`.
+Standing governance decisions and hard constraints are authoritative in `GOVERNANCE.md`.
 
-Read it before any action that can affect:
-
-- release/publication state;
-- frozen/released components;
-- shared Git history;
-- PR merge state;
-- distribution policy;
-- compatibility or destructive changes.
+Read it before any action affecting releases, frozen components, shared history, PR merges, distribution policy, compatibility, or destructive changes.
 
 ## Security
 
@@ -175,7 +165,7 @@ before deletion or silent replacement.
 
 Do NOT delete existing functionality, contracts, historical records, packages, tests, roadmap items, or decisions merely because a newer approach exists.
 
-If removal is truly necessary, record why and preserve the historical context.
+If removal is truly necessary, record why and preserve historical context.
 
 ## Git discipline and persistence
 
@@ -212,7 +202,7 @@ Material project decisions MUST be persisted in the appropriate repository autho
 - behavioral semantics -> SPEC;
 - package boundary -> package contract/catalog;
 - release state -> `docs/release/`;
-- standing governance decisions -> `GOVERNANCE.md`.
+- standing governance -> `GOVERNANCE.md`.
 
 Do not create competing sources of truth for dynamic state.
 
