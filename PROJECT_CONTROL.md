@@ -128,9 +128,11 @@ Current milestone:
 
 Immediate next task:
 
-**Maintain and verify qualified libraries; keep release-artifact infra ready (verified 2026-08-28); language-neutral conformance harness for port candidates (DONE 2026-08-28: SPR1 + RCI1 vectors + scripts/run-conformance.mjs, gated in CI). Browser/Product Readiness Wave COMPLETED (2026-08-28): the 7 browser/integration Cubes + 2 Products are qualified (TECHNICALLY_READY) — each with manifest, generated declaration surface, explicit dependency boundary, out-of-tree execution, reproducible packaging, security-boundary verification, cross-platform behavior, and real-browser/product evidence all verified and persisted.
+**Browser/Product Readiness Wave COMPLETED (2026-08-28): the 7 browser/integration Cubes + 2 Products are qualified (TECHNICALLY_READY) — each with manifest, generated declaration surface, explicit dependency boundary, out-of-tree execution, reproducible packaging, security-boundary verification, cross-platform behavior, and real-browser/product evidence all verified and persisted. A `verify.yml` fix links browser cubes into `node_modules/@sovereign/*` for in-repo Product test resolution (the same closure the published artifact injects).
 
-Next eligible non-gated technical layer: Python second wave (inspect remaining Node Cubes for Python applicability per the conformance framework) OR Kotlin/JVM first candidates — build only after a release-decision authorizes a port wave. Optional free ecosystem publication of the two authorized packages remains a separate, human-authorized release decision.**
+Python second wave IN PROGRESS: native CJSON1 canonical-json port added (stdlib only) — 15/15 language-neutral conformance vectors + 13 native pytest pass; wired into `python-ports.yml`; vectors grounded in real Node execution via `scripts/gen-canonical-json-vectors.mjs`.
+
+Next eligible non-gated technical layer: more Python second-wave candidates (high-value Cubes with stable contracts) OR Kotlin/JVM first candidates — build only after a release-decision authorizes a port wave. Optional free ecosystem publication of the two authorized packages remains a separate, human-authorized release decision.**
 
 Everything else is parked in `ROADMAP.md`, issue/task records, or explicit future status.
 

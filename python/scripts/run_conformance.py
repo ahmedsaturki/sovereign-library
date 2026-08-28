@@ -61,6 +61,21 @@ def get_path(obj, path: str):
 def resolve_bindings(value, bindings):
     if isinstance(value, str) and value.startswith("$"):
         return get_path(bindings, value[1:])
+    if isinstance(value, dict) and "$build" in value:
+        builder = value["$build"]
+        if builder == "circular":
+            o = {}
+            o["self"] = o
+            return o
+        if builder == "nan":
+            return float("nan")
+        if builder == "infinity":
+            return float("inf")
+        if builder == "map":
+            # A non-plain mapping (subclass of dict) exercises the contract's
+            # UNSUPPORTED_OBJECT rejection for objects that are not plain objects.
+            return type("NonPlain", (dict,), {})()
+        fail(f"unknown $build directive: {builder}")
     if isinstance(value, list):
         return [resolve_bindings(v, bindings) for v in value]
     if isinstance(value, dict):
