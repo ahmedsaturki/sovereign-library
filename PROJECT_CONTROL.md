@@ -88,14 +88,14 @@ Current package catalog: `scripts/package-catalog.json`.
 
 Current qualification matrix: `docs/release/PACKAGE_QUALIFICATION_MATRIX-V0.1.md`.
 
-The current reported Node packaging wave contains **74 package entries representing 73 unique Cube sources**, with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube.
+The current reported Node packaging wave contains **78 package entries representing 77 unique Cube sources**, with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube.
 
 The qualification rules remain stricter than merely creating `package.json`: exact public API, declaration surface, package boundary, out-of-tree use, reproducibility, security, documentation, and applicable CI evidence are required.
 
 Remaining categories include:
 
 - browser/integration Cubes kept PRE-RELEASE until their own release wave;
-- Cubes with unresolved runtime coupling kept CONDITIONAL until the dependency boundary can be made real without breaking monorepo behavior;
+- The four previously Conditional safe-path-resolver consumers now use explicit @sovereign/safe-path-resolver dependency boundaries and qualify as TECHNICALLY_READY;
 - future native Python/Kotlin/Android implementations only where justified by the authoritative contract and practical value.
 
 ## Continuity and non-destructive evolution

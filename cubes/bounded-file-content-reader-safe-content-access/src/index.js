@@ -1,5 +1,5 @@
 import { open as nativeOpen, lstat as nativeLstat, stat as nativeStat, realpath as nativeRealpath } from 'node:fs/promises';
-import { resolveContained } from '../../safe-path-resolver-containment-boundary/src/index.js';
+import { resolveContained } from '#safe-path-resolver';
 
 const FORMAT = 'FCR1';
 const HARD_MAX_PATH = 32 * 1024;

@@ -1306,5 +1306,94 @@
     ],
     "status": "TECHNICALLY_READY",
     "reason": "standalone-capable (no relative imports)"
+  },
+  "bounded-file-content-reader-safe-content-access": {
+    "name": "@sovereign/bounded-file-content-reader-safe-content-access",
+    "version": "0.1.0",
+    "description": "Sovereign bounded-file-content-reader-safe-content-access Cube (standalone).",
+    "packageDir": "packages/bounded-file-content-reader-safe-content-access",
+    "source": "cubes/bounded-file-content-reader-safe-content-access/src/index.js",
+    "expected": [
+      "FileContentReaderError",
+      "readFileContent",
+      "readFileStream",
+      "readFileChunks",
+      "defaultCapabilities",
+      "BOUNDED_FILE_CONTENT_READER_FORMAT"
+    ],
+    "dependencies": {
+      "@sovereign/safe-path-resolver": "0.1.0"
+    },
+    "imports": {
+      "#safe-path-resolver": "@sovereign/safe-path-resolver"
+    },
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable with explicit @sovereign/safe-path-resolver dependency boundary"
+  },
+  "directory-walker-bounded-tree-traversal": {
+    "name": "@sovereign/directory-walker-bounded-tree-traversal",
+    "version": "0.1.0",
+    "description": "Sovereign directory-walker-bounded-tree-traversal Cube (standalone).",
+    "packageDir": "packages/directory-walker-bounded-tree-traversal",
+    "source": "cubes/directory-walker-bounded-tree-traversal/src/index.js",
+    "expected": [
+      "DirectoryWalkerError",
+      "walk",
+      "defaultCapabilities"
+    ],
+    "dependencies": {
+      "@sovereign/safe-path-resolver": "0.1.0"
+    },
+    "imports": {
+      "#safe-path-resolver": "@sovereign/safe-path-resolver"
+    },
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable with explicit @sovereign/safe-path-resolver dependency boundary"
+  },
+  "filesystem-metadata-stat-normalizer": {
+    "name": "@sovereign/filesystem-metadata-stat-normalizer",
+    "version": "0.1.0",
+    "description": "Sovereign filesystem-metadata-stat-normalizer Cube (standalone).",
+    "packageDir": "packages/filesystem-metadata-stat-normalizer",
+    "source": "cubes/filesystem-metadata-stat-normalizer/src/index.js",
+    "expected": [
+      "MetadataNormalizerError",
+      "normalizeEntryMetadata",
+      "normalizeStat",
+      "serializeMetadata",
+      "parseMetadata",
+      "getDefaultCapabilities"
+    ],
+    "dependencies": {
+      "@sovereign/safe-path-resolver": "0.1.0"
+    },
+    "imports": {
+      "#safe-path-resolver": "@sovereign/safe-path-resolver"
+    },
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable with explicit @sovereign/safe-path-resolver dependency boundary"
+  },
+  "safe-file-quarantine-delete": {
+    "name": "@sovereign/safe-file-quarantine-delete",
+    "version": "0.1.0",
+    "description": "Sovereign safe-file-quarantine-delete Cube (standalone).",
+    "packageDir": "packages/safe-file-quarantine-delete",
+    "source": "cubes/safe-file-quarantine-delete/src/index.js",
+    "expected": [
+      "SafeFileQuarantineError",
+      "quarantineItem",
+      "restoreQuarantined",
+      "purgeQuarantined",
+      "defaultCapabilities",
+      "SAFE_FILE_QUARANTINE_FORMAT"
+    ],
+    "dependencies": {
+      "@sovereign/safe-path-resolver": "0.1.0"
+    },
+    "imports": {
+      "#safe-path-resolver": "@sovereign/safe-path-resolver"
+    },
+    "status": "TECHNICALLY_READY",
+    "reason": "standalone-capable with explicit @sovereign/safe-path-resolver dependency boundary"
   }
 }

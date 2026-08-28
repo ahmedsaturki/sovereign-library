@@ -3,18 +3,9 @@ import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const ROOT = resolve('.');
-const CANDIDATES = [
-  {
-    id: 'safe-path-resolver',
-    packageDir: resolve('packages/safe-path-resolver'),
-    script: resolve('scripts/package-stage.mjs'),
-  },
-  {
-    id: 'runtime-capability-inspector',
-    packageDir: resolve('packages/runtime-capability-inspector'),
-    script: resolve('scripts/package-stage.mjs'),
-  },
-];
+const CATALOG = JSON.parse(readFileSync(resolve(ROOT, 'scripts/package-catalog.json'), 'utf8'));
+const CANDIDATE_IDS = ['safe-path-resolver', 'runtime-capability-inspector', 'bounded-file-content-reader-safe-content-access', 'directory-walker-bounded-tree-traversal', 'filesystem-metadata-stat-normalizer', 'safe-file-quarantine-delete'];
+const CANDIDATES = CANDIDATE_IDS.map((id) => ({ id, packageDir: resolve(CATALOG[id].packageDir), script: resolve('scripts/package-stage.mjs'), dependencies: CATALOG[id].dependencies ?? {}, imports: CATALOG[id].imports ?? {} }));
 
 const expectedFiles = new Set([
   'LICENSE',
@@ -60,7 +51,9 @@ for (const candidate of CANDIDATES) {
   if (pkg.type !== 'module') fail(`${candidate.id} must be ESM`);
   if (pkg.engines?.node !== '>=24') fail(`${candidate.id} must require Node >=24`);
   if (pkg.sideEffects !== false) fail(`${candidate.id} must set sideEffects=false`);
-  if (pkg.dependencies || pkg.peerDependencies || pkg.optionalDependencies) fail(`${candidate.id} must have no runtime dependency declarations`);
+  if (JSON.stringify(pkg.dependencies ?? {}) !== JSON.stringify(candidate.dependencies)) fail(`${candidate.id} runtime dependency boundary mismatch`);
+  if (JSON.stringify(pkg.imports ?? {}) !== JSON.stringify(candidate.imports)) fail(`${candidate.id} imports boundary mismatch`);
+  if (pkg.devDependencies || pkg.peerDependencies || pkg.optionalDependencies) fail(`${candidate.id} must not declare dev/peer/optional dependencies`);
   if (pkg.scripts) fail(`${candidate.id} must not ship development scripts`);
   if (JSON.stringify(Object.keys(pkg.exports ?? {})) !== '["."]') fail(`${candidate.id} must expose only the root export`);
   const rootExport = pkg.exports['.'];
@@ -88,6 +81,7 @@ for (const candidate of CANDIDATES) {
         fail(`${candidate.id} tarball crossed a prohibited boundary: ${file}`);
       }
     }
+    run(process.execPath, ['--input-type=module', '-e', "await import('./src/index.js')"], candidate.packageDir);
     const tarball = resolve(packDir, packResult[0].filename);
     if (!existsSync(tarball)) fail(`${candidate.id} tarball was not created`);
     console.log(`[package-verify] ${candidate.id}: manifest, export map, staging, and npm pack contents passed`);
@@ -97,6 +91,7 @@ for (const candidate of CANDIDATES) {
     rmSync(resolve(candidate.packageDir, 'dist'), { recursive: true, force: true });
     rmSync(resolve(candidate.packageDir, 'LICENSE'), { force: true });
     rmSync(resolve(candidate.packageDir, 'NOTICE'), { force: true });
+    rmSync(resolve(candidate.packageDir, 'node_modules'), { recursive: true, force: true });
   }
 }
 
