@@ -1,0 +1,61 @@
+name: one-time-windows-browser-hardening
+
+on:
+  push:
+    branches: [feat/continuity-hardening]
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gate on marker
+        run: test -f .automation/windows-browser-hardening
+
+      - name: Add Windows Chromium GPU-safe launch flags
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          p = Path('cubes/browser/src/index.js')
+          text = p.read_text(encoding='utf-8')
+          old = "...(process.platform === 'linux' ? ['--no-sandbox'] : []),"
+          new = "...(process.platform === 'linux' ? ['--no-sandbox'] : []), ...(process.platform === 'win32' ? ['--disable-gpu'] : []),"
+          if text.count(old) != 1:
+              raise SystemExit(f'expected exactly one launch flag anchor, found {text.count(old)}')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+      - name: Syntax check
+        run: node --check cubes/browser/src/index.js
+
+      - name: Record hardening
+        run: |
+          cat > docs/release/WINDOWS_BROWSER_SMOKE_HARDENING_V0.1.md <<'EOF'
+          # Windows Browser Smoke Hardening v0.1
+
+          The Browser Cube now supplies `--disable-gpu` on Windows Chromium-family launches.
+
+          This is a targeted hosted-Windows compatibility hardening measure for headless CDP startup. It does not weaken the browser test contract, increase the test timeout, or bypass CDP verification.
+
+          Acceptance remains the same: the browser must expose CDP, navigate to the local fixture, evaluate page state, return metadata, produce a screenshot, and cleanly close its resources.
+          EOF
+
+      - name: Commit ordinary files only
+        run: |
+          rm -f .automation/windows-browser-hardening
+          rmdir .automation 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cubes/browser/src/index.js docs/release/WINDOWS_BROWSER_SMOKE_HARDENING_V0.1.md .automation/windows-browser-hardening 2>/dev/null || true
+          git add -A -- .automation docs/release/WINDOWS_BROWSER_SMOKE_HARDENING_V0.1.md cubes/browser/src/index.js
+          git diff --cached --check
+          git commit -m "fix: harden windows headless browser startup"
+          git push origin feat/continuity-hardening
