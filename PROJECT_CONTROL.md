@@ -109,21 +109,22 @@ Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter th
 
 ### Immediate next task
 
-**INDEPENDENT LIBRARY PACKAGING WAVE (v15)** in progress. Turn every technically suitable Cube into a REAL standalone library; do NOT publish externally; accumulate release-ready packages; release through GitHub later.
+**INDEPENDENT LIBRARY PACKAGING WAVE (v15)** — substantially complete. Turn every technically suitable Cube into a REAL standalone library; do NOT publish externally; accumulate release-ready packages; release through GitHub later.
 
 **Phase-0 first batch (2 authorized candidates):** TECHNICALLY_READY / AUTHORIZED / NOT YET GITHUB-RELEASED.
 - `@sovereign/safe-path-resolver` v0.1.0 — 11 exports
 - `@sovereign/runtime-capability-inspector` v0.1.0 — 8 exports
 
-**Packaging wave results so far (Node.js, publish-ready, GitHub distribution):**
-- 7 packages staged in prior waves (incl. the 2 authorized) + 10 new this wave = **74 standalone packages (37 prior + 37 this wave), all TECHNICALLY_READY / PUBLICATION_DEFERRED**.
-- New this wave (verified: declaration-exact, out-of-tree import, reproducible byte-identical tarballs):
-  `@sovereign/canonical-json`(8), `digest`(14), `validation`(5), `result`(5), `url`(17),
-  `cache`(4), `circuit-breaker`(3), `concurrency`(3), `diff-patch`(9), `event`(3),
-  `logger`(7), `serialization`(10), `timeout-deadline`(8), `config`(10), `data`(11).
-- Pipeline is now **data-driven**: `scripts/package-catalog.json` (single source of truth) + `scripts/package-stage.mjs` reads it; no per-Cube hardcoded switch.
+**Packaging wave results (Node.js, publish-ready, GitHub distribution):** **74 standalone packages**, all TECHNICALLY_READY / PUBLICATION_DEFERRED.
+- Verified per package: exact declaration surface (tsc, `scripts/package-stage.mjs`), out-of-tree ESM import (no monorepo coupling), reproducible byte-identical tarball (pack twice, sha256 match).
+- Pipeline is **data-driven**: `scripts/package-catalog.json` (74 entries, single source of truth) + `scripts/package-stage.mjs` reads it (copies full `src/`, cube README, LICENSE/NOTICE, emits `dist/index.d.ts`).
+- Classification matrix: `docs/release/PACKAGE_QUALIFICATION_MATRIX-V0.1.md` (84 Cubes → 73 TECHNICALLY_READY packages, 4 CONDITIONAL, 7 PRE_RELEASE browser/integration).
 
-**Remaining inventory (84 Cubes total):** 17 packaged; 21 classified PACKAGE-WORTHY-standalone (incl. the 10 new + others); 59 CONDITIONAL (browser/integration facades, or with relative monorepo imports requiring dependency-graph resolution before standalone packaging). NOT_PACKAGE_WORTHY = 0. Continue evaluating CONDITIONAL batch next.
+**Remaining (not blindly packaged):**
+- 7 browser/integration Cubes: PRE_RELEASE per policy #19 (keep pre-release; not in this wave).
+- 4 safe-path-resolver dependent Cubes (bounded-file-content-reader, directory-walker, filesystem-metadata-stat-normalizer, safe-file-quarantine-delete): CONDITIONAL — their source still imports `safe-path-resolver-containment-boundary` via a relative path; need a source refactor to declare `@sovereign/safe-path-resolver` as a real package dependency before standalone packaging (not done to avoid breaking monorepo coupling).
+
+**Next:** prepare GitHub Release artifacts for the 2 authorized packages (checksums + release notes + exact source SHA); then optionally resolve the 4 CONDITIONAL Cubes. No external publish.
 
 No external publish. No guard bypassed. No token invented.
 
