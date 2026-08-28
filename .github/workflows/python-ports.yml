@@ -32,12 +32,14 @@ jobs:
           python -m py_compile python/sovereign_safe_path_resolver/src/sovereign_safe_path_resolver/__init__.py
           python -m py_compile python/sovereign_runtime_capability_inspector/src/sovereign_runtime_capability_inspector/__init__.py
           python -m py_compile python/sovereign_canonical_json/src/sovereign_canonical_json/__init__.py
-          python -m py_compile python/scripts/run_conformance.py
-      - name: Native tests
+          python -m py_compile python/sovereign_result/src/sovereign_result/__init__.py
+      - name: Native pytest
         run: |
-          python -m pip install --quiet pytest
-          python -m pytest python/sovereign_safe_path_resolver/tests python/sovereign_runtime_capability_inspector/tests python/sovereign_canonical_json/tests -q
-      - name: Language-neutral conformance (SPR1 + RCI1 + CJSON1)
+          (cd python/sovereign_safe_path_resolver && python -m pytest tests -q)
+          (cd python/sovereign_runtime_capability_inspector && python -m pytest tests -q)
+          (cd python/sovereign_canonical_json && python -m pytest tests -q)
+          (cd python/sovereign_result && python -m pytest tests -q)
+      - name: Language-neutral conformance (SPR1, RCI1, CJSON1)
         run: |
           python python/scripts/run_conformance.py contracts/conformance/vectors.safe-path-resolver.json python/sovereign_safe_path_resolver/src/sovereign_safe_path_resolver/__init__.py
           python python/scripts/run_conformance.py contracts/conformance/vectors.runtime-capability-inspector.json python/sovereign_runtime_capability_inspector/src/sovereign_runtime_capability_inspector/__init__.py

@@ -86,10 +86,14 @@ def resolve_bindings(value, bindings):
 def call_export(mod, call_spec, bindings):
     name, args = call_spec
     resolved = [resolve_bindings(a, bindings) for a in (args or [])]
-    fn = getattr(mod, name, None)
+    fn = mod
+    for part in name.split("."):
+        fn = getattr(fn, part, None)
+        if fn is None:
+            fail(f"export not accessible: {name}")
     if callable(fn):
         return fn(*resolved)
-    if fn is not None and not args:
+    if not args:
         return fn
     fail(f"export not callable/accessible: {name}")
 
