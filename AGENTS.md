@@ -7,11 +7,12 @@ This file is the mandatory entry point for AI coding agents, automation agents, 
 At the beginning of every task, read in this order:
 
 1. `AGENTS.md` — agent operating rules.
-2. `PROJECT_CONTROL.md` — authoritative current mission, governance, blockers, and recovery point.
-3. `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md` — permanent architecture laws.
-4. `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md` — project-wide map and document hierarchy.
-5. `ROADMAP.md` — sequencing and future direction.
-6. Relevant SPEC, API boundary, package contract, tests, and release records.
+2. `GOVERNANCE.md` — standing decisions and hard constraints.
+3. `PROJECT_CONTROL.md` — authoritative current mission, governance, blockers, and recovery point.
+4. `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md` — permanent architecture laws.
+5. `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md` — project-wide map and document hierarchy.
+6. `ROADMAP.md` — sequencing and future direction.
+7. Relevant SPEC, API boundary, package contract, tests, and release records.
 
 Never use conversation memory as a substitute for repository evidence.
 
@@ -81,26 +82,22 @@ These are native implementations of one contract, not mechanical source translat
 
 **GITHUB IS THE CANONICAL SOURCE AND DEFAULT RELEASE CHANNEL.**
 
-The current project policy is **GitHub-first, free-by-default, multi-channel-optional**:
+The current policy is **free-by-default, multi-channel-optional**:
 
-- GitHub source remains authoritative;
-- Git tags remain the version anchors;
-- GitHub Releases remain the canonical release-artifact mechanism;
-- GitHub Release assets, checksums, integrity records, documentation, and reproducible artifacts are required for a proper release;
-- free native ecosystem registries may be used later when they provide real value for the relevant ecosystem.
+- GitHub remains the canonical source and persistent project memory;
+- GitHub Releases and release assets are the default distribution mechanism;
+- checksums, integrity records, documentation, and reproducible artifacts accompany releases;
+- free native ecosystem registries may be enabled later for a specific release wave when they provide real value.
 
-External registries are **OPTIONAL and DEFERRED BY WAVE**, not permanently forbidden:
+Optional registries are NOT permanently prohibited. A registry is eligible only when it is genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly selected for that release wave.
 
-- npmjs.org — optional / deferred until explicitly enabled for a release wave;
-- PyPI — optional / deferred until explicitly enabled for a release wave;
-- Maven Central or another Maven-compatible registry — optional / deferred until explicitly enabled for a release wave;
-- other appropriate free registries — optional / evaluated case-by-case.
+Possible optional channels include npm, PyPI, Maven-compatible registries/Maven Central, GitHub Packages, JSR, and other appropriate ecosystem-native services subject to current terms and limits.
 
-A registry must be genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly enabled for the relevant release wave. No paid registry or mandatory third-party service is required by the architecture.
+No paid registry or mandatory third-party service is required by the architecture.
 
-GitHub Packages may be used as an optional GitHub-hosted distribution mechanism when it provides clear value. Do NOT publish automatically merely because a package has a manifest.
+Historical GitHub-only wording is preserved as history and is superseded by this policy. See `GOVERNANCE.md`.
 
-Historical GitHub-only wording is preserved as history and is superseded by the current policy above. See `GOVERNANCE.md`.
+Do NOT automatically publish to any registry merely because a package has a manifest.
 
 ## Cube versus Product
 
@@ -126,14 +123,7 @@ Released/frozen components require a dedicated authorized task before modificati
 
 Standing governance decisions and the hard DO-NOT list are authoritative in `GOVERNANCE.md`.
 
-Read it before any action that can affect:
-
-- release/publication state;
-- frozen/released components;
-- shared Git history;
-- PR merge state;
-- distribution policy;
-- compatibility or destructive changes.
+Read it before any action that can affect release/publication state, frozen/released components, shared Git history, PR merge state, distribution policy, compatibility, or destructive changes.
 
 ## Security
 
