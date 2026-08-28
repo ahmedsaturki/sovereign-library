@@ -68,13 +68,7 @@ Target model:
 
 `ONE AUTHORITATIVE CONTRACT -> NATIVE IMPLEMENTATION PER ECOSYSTEM -> CONFORMANCE -> INDEPENDENT DISTRIBUTION`
 
-Targets include:
-
-- Node.js / JavaScript;
-- Python;
-- Kotlin/JVM;
-- Android/Kotlin;
-- iOS/Apple platforms where justified.
+Targets include Node.js / JavaScript, Python, Kotlin/JVM, Android/Kotlin, and iOS/Apple platforms where justified.
 
 These are native implementations of one contract, not mechanical source translations. Not every Cube needs every ecosystem; applicability and value decide.
 
@@ -88,7 +82,7 @@ GitHub Releases and release assets are the default distribution mechanism. Check
 
 A free native ecosystem registry may be enabled later for a specific release wave when it is genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly selected for that wave.
 
-Possible optional channels include npm, PyPI, Maven-compatible registries/Maven Central, GitHub Packages, JSR, and other appropriate ecosystem-native services subject to their current terms and limits.
+Possible optional channels include npm, PyPI, Maven-compatible registries/Maven Central, GitHub Packages, JSR, and other appropriate ecosystem-native services subject to current terms and limits.
 
 No paid registry or mandatory third-party service is required by the architecture.
 
