@@ -125,14 +125,26 @@ Current milestone:
 
 Immediate next task:
 
-**Continue the Browser/Product package-readiness wave. The language-neutral conformance layer for SPR1 + RCI1 and the first native Python ports for `@sovereign/safe-path-resolver` and `@sovereign/runtime-capability-inspector` are COMPLETE and CI-verified on exact HEAD `aa8d0eb`. The Browser/Product wave remains PRE-RELEASE until its package contracts are independently satisfied. Do not claim Browser/Product completion unless manifests, declarations, dependency boundaries, out-of-tree execution, reproducibility, security, cross-platform behavior, and applicable real-browser/product evidence are all verified and persisted. Optional free ecosystem publication remains a separate release decision.**
+**Continue the Browser/Product package-readiness wave. The language-neutral conformance layer for SPR1 + RCI1 and the first native Python ports for `@sovereign/safe-path-resolver` and `@sovereign/runtime-capability-inspector` are COMPLETE and CI-verified on the earlier `aa8d0eb` source state. The Browser/Product wave remains PRE-RELEASE until its package contracts are independently satisfied. Do not claim Browser/Product completion unless manifests, declarations, dependency boundaries, out-of-tree execution, reproducibility, security, cross-platform behavior, and applicable real-browser/product evidence are all verified and persisted. Optional free ecosystem publication remains a separate release decision.**
 
 Everything else is parked in `ROADMAP.md`, issue/task records, or explicit future status.
 
 ## Post-Python / Browser-Product reconciliation
 
-As of the current feature-branch evidence, the Python first wave is complete: native SPR1 and RCI1 ports pass their canonical vectors and native tests, and the dedicated Python CI is green on Python 3.9 and 3.12 across Ubuntu, Windows, and macOS. The next technical layer is therefore Browser/Product package readiness.
+The first native Python wave is complete: native SPR1 and RCI1 ports pass their canonical vectors and native tests, and the dedicated Python CI is green on Python 3.9 and 3.12 across Ubuntu, Windows, and macOS. The next technical layer is therefore Browser/Product package readiness.
 
 The seven Browser integration Cubes remain **PRE_RELEASE** in the authoritative qualification matrix. This means the Browser/Product wave is **active and not complete**. No roadmap or release record should mark those seven Cubes as released or technically ready until the full independent package contract is evidenced.
 
 This reconciliation is intentionally additive: it does not rewrite or delete historical Python, Browser, or release records.
+
+## Current control-plane reconciliation — authoritative after the post-Python documentation commits
+
+The current feature branch contains subsequent documentation-only reconciliation commits after the Python verification baseline. The latest branch HEAD must be read from GitHub; the earlier `aa8d0eb` value above is a **source/CI evidence baseline**, not a claim that it remains the branch tip.
+
+At the time of this reconciliation, the latest branch HEAD is `7dbf4def65fff67d77bbc0d8db8eda5b32594478`. The latest full verification evidence remains Run #990 / id `33185721902` on source state `aa8d0eb`, while the subsequent commits only reconcile project-control/roadmap documentation. Therefore do not describe Browser/Product as complete from this record.
+
+The authoritative current execution task is:
+
+**Browser/Product package-readiness qualification — active.**
+
+The seven Browser integration Cubes remain `PRE_RELEASE` until independent package contracts and their applicable verification evidence are complete.
