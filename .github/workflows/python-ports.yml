@@ -20,8 +20,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-15-intel]
-        python: ['3.9', '3.12']
+        include:
+          # Python 3.9 (pure-logic ports are OS-independent)
+          - os: ubuntu-latest
+            python: '3.9'
+          - os: macos-15-intel
+            python: '3.9'
+          # Python 3.12 across all platforms (includes Windows coverage)
+          - os: ubuntu-latest
+            python: '3.12'
+          - os: windows-latest
+            python: '3.12'
+          - os: macos-15-intel
+            python: '3.12'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -34,6 +45,7 @@ jobs:
           python -m py_compile python/sovereign_canonical_json/src/sovereign_canonical_json/__init__.py
           python -m py_compile python/sovereign_result/src/sovereign_result/__init__.py
           python -m py_compile python/sovereign_digest/src/sovereign_digest/__init__.py
+          python -m py_compile python/sovereign_cache/src/sovereign_cache/__init__.py
       - name: Install pytest
         run: python -m pip install --quiet pytest
       - name: Native pytest
@@ -43,6 +55,7 @@ jobs:
           (cd python/sovereign_canonical_json && python -m pytest tests -q)
           (cd python/sovereign_result && python -m pytest tests -q)
           (cd python/sovereign_digest && python -m pytest tests -q)
+          (cd python/sovereign_cache && python -m pytest tests -q)
       - name: Language-neutral conformance (SPR1, RCI1, CJSON1, DIG1)
         run: |
           python python/scripts/run_conformance.py contracts/conformance/vectors.safe-path-resolver.json python/sovereign_safe_path_resolver/src/sovereign_safe_path_resolver/__init__.py
