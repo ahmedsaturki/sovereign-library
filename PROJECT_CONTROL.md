@@ -179,3 +179,30 @@ A new agent must recover by reading:
 `AGENTS.md -> GOVERNANCE.md -> PROJECT_CONTROL.md -> ROADMAP.md -> Architecture Constitution -> Project Knowledge Base -> live GitHub state -> relevant SPEC -> package/release records`
 
 Never rely on chat history as authoritative state.
+
+## Native multi-ecosystem ports (started 2026-08-28)
+
+The language-neutral conformance harness (SPR1 + RCI1 vectors, `scripts/run-conformance.mjs`)
+unblocked the first native ports. Per the directives (ONE CONTRACT -> NATIVE IMPLEMENTATION
+PER ECOSYSTEM -> CONFORMANCE -> INDEPENDENT DISTRIBUTION), the two authorized candidates now
+have **dependency-free native Python implementations** that satisfy the SAME canonical vectors:
+
+- `python/sovereign_safe_path_resolver/` — SPR1, stdlib only, `pyproject.toml` (hatchling), native pytest suite.
+- `python/sovereign_runtime_capability_inspector/` — RCI1, stdlib only, `pyproject.toml` (hatchling), native pytest suite.
+
+Verification (real execution, 2026-08-28, Windows local + CI):
+- `python/scripts/run_conformance.py` (consumes the same JSON vectors the Node runner uses):
+  SPR1 = 7/7 PASS, RCI1 = 9/9 PASS.
+- Native pytest: 12/12 PASS (`tests/` in each package).
+- CI: `.github/workflows/python-ports.yml` runs on ubuntu/windows/macos × Python 3.9 & 3.12,
+  executing native tests + conformance (same vectors).
+
+Status: Python ports = CONFORMANT / NOT PUBLISHED to PyPI (PyPI is an optional, separate release
+decision per distribution policy). No Node runtime dependency; packages are independently installable.
+
+Next eligible port layers (each requires applicability + contract + tests + conformance; no fake ports):
+- Kotlin/JVM native ports of the same two contracts.
+- Android native modules where applicable.
+- iOS/Apple where justified.
+These remain DEFERRED until a release decision authorizes a port wave; the conformance harness is ready
+to gate them.
