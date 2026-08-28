@@ -9,7 +9,7 @@
 3. **Preserve shared history.** Never force-push or rewrite pushed history.
 4. **Protect security boundaries.** Never invent credentials, expose secrets, disable guards, or weaken validation to satisfy tests.
 5. **Protect frozen/released work.** Released/frozen components require a dedicated authorized maintenance task before modification.
-6. **CI is evidence, not authorization.** Green CI does not by itself authorize release/publication.
+6. **CI is evidence, not authorization.** Green CI does not by itself authorize a release or publication.
 7. **Persist important work.** A meaningful milestone is not complete while important work exists only locally.
 
 ## Architecture law
