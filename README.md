@@ -54,15 +54,39 @@ The target model is:
 
 Supported/planned ecosystems include:
 
-- **Node.js / JavaScript** → npm
-- **Python** → PyPI for suitable general-purpose Cubes
-- **Kotlin / JVM** → Maven-compatible distribution
-- **Android** → first-class Kotlin/Android library target
-- **iOS / Apple platforms** → native Swift-facing distribution and/or Kotlin Multiplatform where justified
+- **Node.js / JavaScript**
+- **Python**
+- **Kotlin / JVM**
+- **Android**
+- **iOS / Apple platforms** where justified
 
-Not every Cube must support every ecosystem. Support is decided by applicability and actual value.
+The implementations are native to their ecosystems and conform to the authoritative Cube contract. Not every Cube must support every ecosystem.
 
-Node.js, Python, Kotlin, and mobile implementations are **native implementations of one contract**, not mechanical source translations.
+## Distribution policy — current
+
+**GitHub is the canonical distribution channel for the current project phase.**
+
+The project intentionally avoids paid or unnecessary external registry distribution at this stage.
+
+Current distribution mechanisms:
+
+- GitHub repository/source;
+- Git tags;
+- GitHub Releases;
+- GitHub Release assets;
+- checksums/integrity records;
+- documentation and examples.
+
+GitHub Packages is an **optional GitHub-hosted package mechanism** for packages where it provides clear value. It is not required for every Cube and must not become an implicit dependency of the repository.
+
+External registry publication is currently deferred:
+
+- npmjs.org;
+- PyPI;
+- Maven Central;
+- other third-party registries.
+
+This is a project distribution decision, not a missing-credentials blocker.
 
 ## Engineering / release discipline
 
@@ -72,9 +96,12 @@ Each Cube follows:
 
 A release-ready Cube requires real implementation, meaningful tests, failure/recovery verification, security evidence, relevant platform evidence, a real consumer artifact, and documentation.
 
+Technically ready does not mean released.
+Authorized does not mean released.
+
 ## Dependency policy
 
-Target: zero runtime third-party dependencies per Cube unless an explicit versioned exception is approved.
+Target: zero runtime third-party dependencies per Cube unless an explicit, versioned exception is justified.
 
 Dependencies are allowed when they are explicit, versioned, resolvable in the distributed artifact, tested, and consistent with the Cube's contract.
 
@@ -82,7 +109,7 @@ Build/test/declaration tooling is not automatically a runtime dependency.
 
 ## Cross-platform target
 
-Windows, Linux, macOS, and WSL where the capability is supported. Android is a first-class future distribution target; iOS is a first-class future platform target.
+Windows, Linux, macOS, and WSL where the capability supports them. Android is a first-class mobile target; iOS is a first-class future platform target.
 
 Platform-specific behavior must be explicit and must not rely on accidental machine paths or shell assumptions.
 
@@ -94,7 +121,7 @@ The latest released Cube is:
 
 It is **FROZEN**. Earlier released/frozen Cubes remain recorded in `ROADMAP.md` and `PROJECT_CONTROL.md`.
 
-The current First Public Package Batch has explicit human release authorization, but publication is currently blocked by the environment prerequisite recorded in `PROJECT_CONTROL.md` and `docs/release/AUTHORIZATION_PACKAGE_STATUS-V0.1.json`.
+The first authorized package candidates are technically ready but have **not** been GitHub-released yet.
 
 ## Current architecture documents
 
@@ -105,20 +132,15 @@ The current First Public Package Batch has explicit human release authorization,
 - `PROJECT_CONTROL.md` — current state and governance control plane.
 - `ROADMAP.md` — roadmap and sequencing.
 
-## Phase 0 — First Public Package Batch
+## Repository continuity
 
-Completed gates include inventory/classification, Apache-2.0 licensing, public API boundary, declaration strategy, package contract/tooling, reproducible packaging/security verification, and publication-guard preparation.
+GitHub is the durable project memory. Important decisions, implementation changes, verification evidence, blockers, deferred work, release state, and next actions must be persisted to the repository.
 
-The two current release candidates are:
+The default evolution model is additive:
 
-1. `@sovereign/safe-path-resolver` v0.1.0
-2. `@sovereign/runtime-capability-inspector` v0.1.0
+`ADD -> EXTEND -> HARDEN -> IMPROVE -> SUPERSEDE -> DEPRECATE -> ARCHIVE -> DEFER`
 
-They are technically verified and explicitly authorized. Publication remains blocked only by the human-owned npm environment prerequisite; the repository must never bypass that prerequisite by inventing credentials or altering the guard.
-
-The controlled path is:
-
-`AUTHORIZED -> FINAL CLEAN VERIFY -> TAG/RELEASE -> PUBLISH -> POST-PUBLISH VERIFY -> FREEZE`
+Do not silently delete or replace existing functionality, historical records, tests, packages, contracts, or architecture.
 
 ## Repository shape
 
