@@ -26,8 +26,9 @@ function extractDeclarationExports(text) {
   const named = /export\s*\{([^}]+)\}/g;
   while ((match = named.exec(text)) !== null) {
     for (const item of match[1].split(',')) {
-      const name = item.trim().split(/\s+as\s+/)[0];
-      if (name && name !== 'default') found.add(name.trim().split(/\s+/)[0]);
+      const parts = item.trim().split(/\s+as\s+/);
+      const name = (parts[1] || parts[0]).trim();
+      if (name && name !== 'default') found.add(name.split(/\s+/)[0]);
     }
   }
   return found;
@@ -66,6 +67,32 @@ function writeDeclarationConfig(target, source, outDir) {
   return configPath;
 }
 
+function stageRuntimeDependencies(spec, catalog, packageDir) {
+  const dependencies = spec.dependencies || {};
+  if (Object.keys(dependencies).length === 0) return;
+  const nodeModules = resolve(packageDir, 'node_modules');
+  rmSync(nodeModules, { recursive: true, force: true });
+  for (const [dependencyName, dependencyVersion] of Object.entries(dependencies)) {
+    const dependencySpec = Object.values(catalog).find((candidate) => candidate.name === dependencyName && candidate.version === dependencyVersion);
+    if (!dependencySpec) fail(`runtime dependency not found in catalog: ${dependencyName}@${dependencyVersion}`);
+    const dependencySource = resolve(ROOT, dependencySpec.source);
+    if (!existsSync(dependencySource)) fail(`runtime dependency source is missing: ${dependencySource}`);
+    const parts = dependencyName.split('/');
+    const dependencyRoot = parts[0].startsWith('@')
+      ? resolve(nodeModules, parts[0], parts[1])
+      : resolve(nodeModules, dependencyName);
+    const dependencySrc = resolve(dependencyRoot, 'src');
+    mkdirSync(dependencySrc, { recursive: true });
+    const dependencySourceRoot = dirname(dependencySource);
+    for (const entry of readdirSync(dependencySourceRoot)) {
+      const full = resolve(dependencySourceRoot, entry);
+      if (statSync(full).isDirectory()) cpSync(full, resolve(dependencySrc, entry), { recursive: true });
+      else if (entry.endsWith('.js') || entry.endsWith('.mjs') || entry.endsWith('.d.ts')) copyFileSync(full, resolve(dependencySrc, entry));
+    }
+    writeFileSync(resolve(dependencyRoot, 'package.json'), `${JSON.stringify({ name: dependencyName, version: dependencyVersion, type: 'module', exports: { '.': './src/index.js' } }, null, 2)}\n`, 'utf8');
+  }
+}
+
 function main() {
   const candidate = process.argv[2];
   const catalog = loadCatalog();
@@ -84,7 +111,6 @@ function main() {
   mkdirSync(src, { recursive: true });
   mkdirSync(dist, { recursive: true });
   if (!existsSync(source)) fail(`source cube is missing: ${source}`);
-  // Copy the ENTIRE src/ directory (handles internal modular cubes with ./api.js, ./clock.js, etc.)
   const srcRoot = dirname(source);
   rmSync(src, { recursive: true, force: true });
   mkdirSync(src, { recursive: true });
@@ -98,7 +124,6 @@ function main() {
   }
   copyFileSync(resolve(ROOT, 'LICENSE'), resolve(packageDir, 'LICENSE'));
   copyFileSync(resolve(ROOT, 'NOTICE'), resolve(packageDir, 'NOTICE'));
-  // copy the cube-level README into the package (falls back to a minimal generated one)
   const cubeReadme = resolve(ROOT, spec.source).replace(/src[/\\]index\.js$/, 'README.md');
   const pkgReadme = resolve(packageDir, 'README.md');
   if (existsSync(cubeReadme)) {
@@ -107,6 +132,7 @@ function main() {
     writeFileSync(pkgReadme, `# ${spec.name}\n\n${spec.description}\n\n## Status\n\nTECHNICALLY_READY — publication deferred (GitHub-only distribution). See repository docs.\n`, 'utf8');
   }
 
+  stageRuntimeDependencies(spec, catalog, packageDir);
   rmSync(TOOLS_DIR, { recursive: true, force: true });
   mkdirSync(TOOLS_DIR, { recursive: true });
   const install = runNpm([
