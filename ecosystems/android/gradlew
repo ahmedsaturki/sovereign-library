@@ -24,8 +24,6 @@
 #
 ##############################################################################
 
-# Attempt to set APP_HOME
-
 app_path=$0
 while
     APP_HOME=${app_path%"${app_path##*/}"}
@@ -58,7 +56,7 @@ die () {
 # Sovereign Library bootstrap: keep the wrapper JAR out of Git while
 # deterministically bootstrapping the official Gradle 8.9 wrapper JAR.
 WRAPPER_JAR="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
-WRAPPER_URL="https://services.gradle.org/distributions/gradle-8.9-wrapper.jar"
+WRAPPER_URL="https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
 WRAPPER_SHA256="498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
 
 if [ ! -f "$WRAPPER_JAR" ]; then

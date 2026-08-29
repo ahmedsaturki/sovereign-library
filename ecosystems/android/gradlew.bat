@@ -39,7 +39,7 @@ if exist "%WRAPPER_JAR%" goto wrapperJarPresent
 
 if not exist "%APP_HOME%gradle\wrapper" mkdir "%APP_HOME%gradle\wrapper" >NUL 2>&1
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $url='https://services.gradle.org/distributions/gradle-8.9-wrapper.jar'; $out='%WRAPPER_JAR%'; $tmp=$out+'.tmp'; Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $tmp; $expected='498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17'; $actual=(Get-FileHash -Algorithm SHA256 -Path $tmp).Hash.ToLowerInvariant(); if ($actual -ne $expected) { Remove-Item -Force $tmp; throw ('Gradle wrapper JAR SHA-256 mismatch. Expected: '+$expected+' Actual: '+$actual) }; Move-Item -Force $tmp $out"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $url='https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar'; $out='%WRAPPER_JAR%'; $tmp=$out+'.tmp'; Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $tmp; $expected='498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17'; $actual=(Get-FileHash -Algorithm SHA256 -Path $tmp).Hash.ToLowerInvariant(); if ($actual -ne $expected) { Remove-Item -Force $tmp; throw ('Gradle wrapper JAR SHA-256 mismatch. Expected: '+$expected+' Actual: '+$actual) }; Move-Item -Force $tmp $out"
 if %ERRORLEVEL% neq 0 goto fail
 
 :wrapperJarPresent
