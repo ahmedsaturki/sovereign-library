@@ -5,3 +5,18 @@ packages/*/src/
 packages/*/dist/
 packages/*/LICENSE
 packages/*/NOTICE
+
+# Kotlin / JVM build artifacts
+.gradle/
+**/build/
+!ecosystems/kotlin/gradle/wrapper/
+gradle-wrapper.jar
+local.properties
+
+# Local toolchain / scratch files (never commit)
+jdk17.zip
+jdk17/
+java_home_check.sh
+*.iml
+.idea/
+out/
