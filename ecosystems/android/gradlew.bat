@@ -13,6 +13,8 @@
 @rem See the License for the specific language governing permissions and
 @rem limitations under the License.
 @rem
+@rem SPDX-License-Identifier: Apache-2.0
+@rem
 
 @if "%DEBUG%"=="" @echo off
 @rem ##########################################################################
@@ -21,22 +23,29 @@
 @rem
 @rem ##########################################################################
 
-@rem Set local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" setlocal
 
 set DIRNAME=%~dp0
 if "%DIRNAME%"=="" set DIRNAME=.
-@rem This is normally unused
 set APP_BASE_NAME=%~n0
 set APP_HOME=%DIRNAME%
 
-@rem Resolve any "." and ".." in APP_HOME to make it shorter.
 for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
 
-@rem Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
-set DEFAULT_JVM_OPTS="-Xmx64m" "-Xmx64m"
+@rem Sovereign Library bootstrap: keep the wrapper JAR out of Git while
+@rem deterministically bootstrapping the official Gradle 8.9 wrapper JAR.
+set WRAPPER_JAR=%APP_HOME%gradle\wrapper\gradle-wrapper.jar
+if exist "%WRAPPER_JAR%" goto wrapperJarPresent
 
-@rem Find java.exe
+if not exist "%APP_HOME%gradle\wrapper" mkdir "%APP_HOME%gradle\wrapper" >NUL 2>&1
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $url='https://services.gradle.org/distributions/gradle-8.9-wrapper.jar'; $out='%WRAPPER_JAR%'; $tmp=$out+'.tmp'; Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $tmp; $expected='498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17'; $actual=(Get-FileHash -Algorithm SHA256 -Path $tmp).Hash.ToLowerInvariant(); if ($actual -ne $expected) { Remove-Item -Force $tmp; throw ('Gradle wrapper JAR SHA-256 mismatch. Expected: '+$expected+' Actual: '+$actual) }; Move-Item -Force $tmp $out"
+if %ERRORLEVEL% neq 0 goto fail
+
+:wrapperJarPresent
+
+set DEFAULT_JVM_OPTS=-Dfile.encoding=UTF-8 "-Xmx64m" "-Xms64m"
+
 if defined JAVA_HOME goto findJavaFromJavaHome
 
 set JAVA_EXE=java.exe
@@ -68,19 +77,15 @@ goto fail
 :execute
 @rem Setup the command line
 
-set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
-
+set CLASSPATH=%WRAPPER_JAR%
 
 @rem Execute Gradle
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*
 
 :end
-@rem End local scope for the variables with windows NT shell
 if %ERRORLEVEL% equ 0 goto mainEnd
 
 :fail
-rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of
-rem the _cmd.exe /c_ return code!
 set EXIT_CODE=%ERRORLEVEL%
 if %EXIT_CODE% equ 0 set EXIT_CODE=1
 if not ""=="%GRADLE_EXIT_CONSOLE%" exit %EXIT_CODE%
