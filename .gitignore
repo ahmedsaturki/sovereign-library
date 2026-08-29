@@ -10,6 +10,7 @@ packages/*/NOTICE
 .gradle/
 **/build/
 !ecosystems/kotlin/gradle/wrapper/
+!ecosystems/android/gradle/wrapper/
 gradle-wrapper.jar
 local.properties
 
