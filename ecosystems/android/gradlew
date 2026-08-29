@@ -37,6 +37,48 @@
 APP_NAME="Gradle"
 APP_BASE_NAME=$(basename "$0")
 
+# Resolve the wrapper's directory: the directory containing this script.
+# Resolve symlinks: on macOS/Linux, readlink -f; on Windows, %~dp0.
+case "$(uname -s)" in
+  CYGWIN*|MSYS*|MINGW*|MINGW64*|MWING*)
+    # Windows/Git Bash: strip drive letter and get full path
+    APP_HOME=$(cd "$(dirname "$0")" 2>/dev/null && pwd) || die "Could not determine APP_HOME"
+    APP_HOME=${APP_HOME:-$(pwd)}
+    # Remove leading drive letter if present (e.g., /c/Users/...)
+    case "$APP_HOME" in
+      /c/*|/d/*|/e/*|/f/*|/g/*|/h/*|/i/*|/j/*|/k/*|/l/*|/m/*|/n/*|/o/*|/p/*|/q/*|/r/*|/s/*|/t/*|/u/*|/v/*|/w/*|/x/*|/y/*|/z/*)
+        # strip /c etc. → just the path after the letter
+        APP_HOME="${APP_HOME#/}"
+        ;;
+    esac
+    ;;
+  Darwin*)
+    # macOS: use readlink -f if available, else pwd of script dir
+    if [ -x "$(which readlink 2>/dev/null)" ]; then
+      SCRIPT_PATH=$(readlink -f "$0" 2>/dev/null) || SCRIPT_PATH="$0"
+    else
+      SCRIPT_PATH="$0"
+    fi
+    APP_HOME=$(cd "$(dirname "$SCRIPT_PATH")" 2>/dev/null && pwd) || die "Could not determine APP_HOME"
+    APP_HOME=${APP_HOME:-$(pwd)}
+    ;;
+  Linux*)
+    # Linux: use readlink -f if available, else pwd of script dir
+    if [ -x "$(which readlink 2>/dev/null)" ]; then
+      SCRIPT_PATH=$(readlink -f "$0" 2>/dev/null) || SCRIPT_PATH="$0"
+    else
+      SCRIPT_PATH="$0"
+    fi
+    APP_HOME=$(cd "$(dirname "$SCRIPT_PATH")" 2>/dev/null && pwd) || die "Could not determine APP_HOME"
+    APP_HOME=${APP_HOME:-$(pwd)}
+    ;;
+  *)
+    # Fallback: use dirname of $0
+    APP_HOME=$(cd "$(dirname "$0")" 2>/dev/null && pwd) || die "Could not determine APP_HOME"
+    APP_HOME=${APP_HOME:-$(pwd)}
+    ;;
+esac
+
 # Use the maximum available, or set MAX_FD != -1 to use that value.
 MAX_FD="maximum"
 
