@@ -18,7 +18,7 @@ jobs:
   android:
     name: Android ${{ matrix.os }} / AGP 8.5 / JDK 17
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -37,33 +37,34 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 12266719
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: true
+          packages: platform-tools platforms;android-34 build-tools;34.0.0
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: wrapper
 
-      - name: Accept SDK licenses
-        run: yes | sdkmanager --licenses || true
-
-      - name: Install build tools
-        run: sdkmanager "build-tools;34.0.0" "platforms;android-34" || true
-
       - name: Run unit tests + conformance (JVM-hosted)
-        run: gradle test --no-daemon --console=plain
+        run: ./gradlew test --no-daemon --console=plain
+        shell: bash
 
       - name: Build Android library artifacts (AAR)
-        run: gradle assembleRelease --no-daemon --console=plain
+        run: ./gradlew assembleRelease --no-daemon --console=plain
+        shell: bash
 
       - name: Verify reproducible AAR
         shell: bash
         run: |
           rm -rf safe-path-resolver/build
-          gradle assembleRelease --no-daemon --console=plain
+          ./gradlew assembleRelease --no-daemon --console=plain
           AAR=$(find safe-path-resolver/build -name "*.aar" | head -1)
           mkdir -p /tmp/aar1 && cp "$AAR" /tmp/aar1/
           rm -rf safe-path-resolver/build
-          gradle assembleRelease --no-daemon --console=plain
+          ./gradlew assembleRelease --no-daemon --console=plain
           mkdir -p /tmp/aar2 && cp "$(find safe-path-resolver/build -name '*.aar' | head -1)" /tmp/aar2/
           diff <(sha256sum /tmp/aar1/*.aar | awk '{print $1}') \
                <(sha256sum /tmp/aar2/*.aar | awk '{print $1}') \

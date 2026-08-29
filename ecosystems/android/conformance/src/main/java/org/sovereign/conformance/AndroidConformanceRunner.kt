@@ -27,10 +27,27 @@ object AndroidConformanceRunner {
     }
 
     private fun toKotlin(value: Any?): Any? = when (value) {
-        JSONObject.NULL -> null
-        is JSONObject -> value.toMap().mapValues { toKotlin(it.value) }
-        is JSONArray -> List(value.length()) { i -> toKotlin(value[i]) }
+        is JSONObject -> jsonObjectToMap(value)
+        is JSONArray -> jsonArrayToList(value)
         else -> value
+    }
+
+    private fun jsonObjectToMap(obj: JSONObject): Map<String, Any?> {
+        val result = mutableMapOf<String, Any?>()
+        val keys = obj.keys()
+        while (keys.hasNext()) {
+            val key = keys.next() as String
+            result[key] = toKotlin(obj.opt(key))
+        }
+        return result
+    }
+
+    private fun jsonArrayToList(arr: JSONArray): List<Any?> {
+        val result = mutableListOf<Any?>()
+        for (i in 0 until arr.length()) {
+            result.add(toKotlin(arr.opt(i)))
+        }
+        return result
     }
 
     private fun dispatch(methodName: String, args: List<Any?>): Any? {
@@ -56,7 +73,9 @@ object AndroidConformanceRunner {
     }
 
     fun runSuite(resourceName: String): Pair<Int, Int> {
-        val text = this::class.java.classLoader.getResourceAsStream(resourceName)?.bufferedReader()?.readText()
+        val loader = this::class.java.classLoader
+            ?: throw IllegalStateException("no class loader")
+        val text = loader.getResourceAsStream(resourceName)?.bufferedReader()?.readText()
             ?: throw IllegalStateException("conformance vector not found: $resourceName")
         val root = JSONObject(text)
         val vectors = root.getJSONArray("vectors")
@@ -67,7 +86,8 @@ object AndroidConformanceRunner {
             val id = v.optString("id", "#$i")
             val call = v.getJSONArray("call")
             val method = call.getString(0)
-            val rawArgs = List(call.getJSONArray(1).length()) { j -> toKotlin(call.getJSONArray(1)[j]) }
+            val rawArgsArray = call.getJSONArray(1)
+            val rawArgs = List(rawArgsArray.length()) { j -> toKotlin(rawArgsArray.opt(j)) }
             val bindings = mutableMapOf<String, Any?>()
             val args = rawArgs.map { resolveBinding(it as String, bindings) }
             val expect = v.getJSONObject("expect")
@@ -80,7 +100,7 @@ object AndroidConformanceRunner {
                         if (actual == expected) { pass++ } else { fail++; System.err.println("FAIL $id: expected $expected got $actual") }
                     }
                     "shape" -> {
-                        val keys = expect.getJSONArray("requiredKeys").toList()
+                        val keys = jsonArrayToList(expect.getJSONArray("requiredKeys"))
                         if (checkShape(actual, keys)) { pass++ } else { fail++; System.err.println("FAIL $id: shape mismatch $actual") }
                     }
                     "throws" -> { fail++; System.err.println("FAIL $id: expected throw but returned $actual") }

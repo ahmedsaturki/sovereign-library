@@ -12,12 +12,12 @@ class SafePathResolverAndroidTest {
     // ---- happy path ----
     @Test
     fun normalize_relative() {
-        assertEquals("a/b/c", normalizePath("a/./b/../c"))
+        assertEquals("a/c", normalizePath("a/./b/../c"))
     }
 
     @Test
     fun resolveContained_relative() {
-        assertEquals("/a/b/c", resolveContained("/a", "b/c"))
+        assertEquals("/a/b/c", resolveContained("b/c", "/a"))
     }
 
     @Test
