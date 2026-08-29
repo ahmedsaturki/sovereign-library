@@ -113,6 +113,42 @@ case "$(uname)" in
     ;;
 esac
 
+  # Resolve the wrapper directory from script location
+  case "$(uname -s)" in
+    CYGWIN*|MSYS*|MINGW*|MINGW64*|MWING*)
+      APP_HOME=$(cd "$(dirname "$0")" 2>/dev/null && pwd) || die "Could not determine APP_HOME"
+      APP_HOME=${APP_HOME:-$(pwd)}
+      # Remove leading /c etc. on Windows/Git Bash
+      case "$APP_HOME" in
+        /c/*|/d/*|/e/*|/f/*|/g/*|/h/*|/i/*|/j/*|/k/*|/l/*|/m/*|/n/*|/o/*|/p/*|/q/*|/r/*|/s/*|/t/*|/u/*|/v/*|/w/*|/x/*|/y/*|/z/*)
+          APP_HOME="${APP_HOME#/}"
+        ;;
+      esac
+    ;;
+    Darwin*)
+      if [ -x "$(which readlink 2>/dev/null)" ]; then
+        SCRIPT_PATH=$(readlink -f "$0" 2>/dev/null) || SCRIPT_PATH="$0"
+      else
+        SCRIPT_PATH="$0"
+      fi
+      APP_HOME=$(cd "$(dirname "$SCRIPT_PATH")" 2>/dev/null && pwd) || die "Could not determine APP_HOME"
+      APP_HOME=${APP_HOME:-$(pwd)}
+    ;;
+    Linux*)
+      if [ -x "$(which readlink 2>/dev/null)" ]; then
+        SCRIPT_PATH=$(readlink -f "$0" 2>/dev/null) || SCRIPT_PATH="$0"
+      else
+        SCRIPT_PATH="$0"
+      fi
+      APP_HOME=$(cd "$(dirname "$SCRIPT_PATH")" 2>/dev/null && pwd) || die "Could not determine APP_HOME"
+      APP_HOME=${APP_HOME:-$(pwd)}
+    ;;
+    *)
+      APP_HOME=$(cd "$(dirname "$0")" 2>/dev/null && pwd) || die "Could not determine APP_HOME"
+      APP_HOME=${APP_HOME:-$(pwd)}
+    ;;
+esac
+
 CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
 
 # Determine the Java command to use to start the JVM.
