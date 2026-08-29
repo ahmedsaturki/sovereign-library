@@ -34,7 +34,7 @@ The immediate objective is to qualify existing Sovereign Cubes as real standalon
 - Final pre-authorization verification: **Run #845**, commit `f14bbd9229fcda23f00602cfc9288881c61e213e`, passed completely on Ubuntu, Windows, and macOS-15-Intel.
 - Safe-path dependency-boundary qualification: **Run #33172159240**, final qualification job passed; commit `358cfef8ca168baa9e8402ecd972b2b0bc4d7e48` contains the resulting migration and cleanup. The qualification evidence covered all four previously Conditional consumers plus the existing safe-path/runtime-capability package candidates: targeted tests, package staging, declarations, npm pack contents, reproducibility, and security boundary checks all passed.
 - Release-readiness and authorization documents remain historical evidence; current distribution policy is recorded below.
-- **Android applicability assessment**: Matrix written (ANDROID_APPLICABILITY_MATRIX.md); Cube **safe-path-resolver** (SPR1) selected as first candidate. SDK installation in progress; AAR build + out-of-tree verification pending. Cube classified **IN_PROGRESS**, not TECHNICALLY_READY until SDK + emulator evidence.
+- **Android applicability assessment**: Matrix written (ANDROID_APPLICABILITY_MATRIX.md); Cube **safe-path-resolver** (SPR1) selected as first candidate. SDK installation in progress; AAR build + out-of-tree verification pending. Cube classified **IN_PROGRESS**, not TECHNICALLY_READY until SDK + emulator evidence. Android CI fixed: SDK licenses enforced, failure masking removed, conformance vectors wired. JVM-hosted unit/conformance tests pass on Ubuntu/macOS; Windows license workflow fixed.
 
 ## Project-wide architecture law
 
