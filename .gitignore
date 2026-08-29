@@ -20,3 +20,11 @@ java_home_check.sh
 *.iml
 .idea/
 out/
+
+# Android local SDK / tooling (never commit)
+local.properties
+android-sdk/
+.dl/
+*.iml
+.idea/
+captures/

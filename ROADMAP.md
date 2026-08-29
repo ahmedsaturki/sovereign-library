@@ -76,6 +76,9 @@ The frozen first-batch candidates are documented in `docs/PUBLIC_API_BOUNDARY_V0
 
 Run #809 passed on Ubuntu, Windows, and macOS-15-Intel with exact generated public-surface checks for Safe Path Resolver and Runtime Capability Inspector.
 
+### In Progress: Android Applicability Assessment
+
+The Android applicability matrix (ANDROID_APPLICABILITY_MATRIX.md) has been written. safe-path-resolver (SPR1) has been selected as the first native Android Cube. SDK installation is in progress; AAR build + out-of-tree verification pending. Cube classified IN_PROGRESS until SDK + emulator evidence.
 ### Completed: Package Contract / Tooling
 
 `docs/PACKAGE_CONTRACT_V0.1.md` is frozen. The two pilot packages are implemented with isolated manifests, exact `exports`, generated declarations, tarball boundaries, and npm pack verification.
