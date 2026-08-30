@@ -18,7 +18,7 @@ jobs:
   android:
     name: Android ${{ matrix.os }} / AGP 8.5 / JDK 17
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -54,6 +54,12 @@ jobs:
           log-accepted-android-sdk-licenses: true
           packages: platform-tools platforms;android-34 build-tools;34.0.0
 
+      - name: Install Android emulator image
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -73,13 +79,54 @@ jobs:
           rm -rf safe-path-resolver/build
           ./gradlew assembleRelease --no-daemon --console=plain
           AAR=$(find safe-path-resolver/build -name "*.aar" | head -1)
-          mkdir -p /tmp/aar1 && cp "$AAR" /tmp/aar1/
+          test -n "$AAR"
+          mkdir -p /tmp/aar1
+          cp "$AAR" /tmp/aar1/
           rm -rf safe-path-resolver/build
           ./gradlew assembleRelease --no-daemon --console=plain
-          mkdir -p /tmp/aar2 && cp "$(find safe-path-resolver/build -name '*.aar' | head -1)" /tmp/aar2/
+          AAR2=$(find safe-path-resolver/build -name '*.aar' | head -1)
+          test -n "$AAR2"
+          mkdir -p /tmp/aar2
+          cp "$AAR2" /tmp/aar2/
           diff <(sha256sum /tmp/aar1/*.aar | awk '{print $1}') \
                <(sha256sum /tmp/aar2/*.aar | awk '{print $1}') \
             && echo "REPRODUCIBLE OK"
+
+      - name: Run instrumentation tests on Android emulator
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          AVD_HOME="$RUNNER_TEMP/android-avd"
+          rm -rf "$AVD_HOME"
+          mkdir -p "$AVD_HOME"
+          export ANDROID_AVD_HOME="$AVD_HOME"
+          echo "no" | avdmanager create avd \
+            --name sovereign-android-api34 \
+            --package "system-images;android-34;google_apis;x86_64" \
+            --device "pixel_2" \
+            --force
+          nohup emulator \
+            -avd sovereign-android-api34 \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot \
+            -wipe-data \
+            -gpu swiftshader_indirect \
+            >/tmp/sovereign-emulator.log 2>&1 &
+          adb wait-for-device
+          for _ in $(seq 1 90); do
+            if adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' | grep -q '^1$'; then
+              break
+            fi
+            sleep 2
+          done
+          adb shell getprop sys.boot_completed | tr -d '\r' | grep -q '^1$'
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
+          ./gradlew :safe-path-resolver:connectedDebugAndroidTest --no-daemon --console=plain
 
       - name: Upload AAR artifacts
         if: matrix.os == 'ubuntu-latest'
