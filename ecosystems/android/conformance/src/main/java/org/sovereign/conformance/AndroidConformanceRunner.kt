@@ -3,15 +3,11 @@ package org.sovereign.conformance
 import org.json.JSONArray
 import org.json.JSONObject
 import org.sovereign.safePathResolver.android.ContainmentReport
-import java.util.Locale
 
 /**
  * Language-neutral conformance runner for the Android SPR1 build.
- * Mirrors `python/scripts/run_conformance.py` and the Kotlin/JVM `conformance` module:
- * fresh bindings per vector, `$binding` resolution, method dispatch by name + arity,
- * `throws` -> errorName check, `expectFailuresContains` -> failures check.
- *
- * The Android SPR1 public API is hosted by [org.sovereign.safePathResolver.android].
+ * Fresh bindings per vector, `$binding` resolution, method dispatch by name + arity,
+ * value/shape comparisons, and typed exception assertions.
  */
 object AndroidConformanceRunner {
 
@@ -44,13 +40,8 @@ object AndroidConformanceRunner {
         return result
     }
 
-    private fun jsonArrayToList(arr: JSONArray): List<Any?> {
-        val result = mutableListOf<Any?>()
-        for (i in 0 until arr.length()) {
-            result.add(toKotlin(arr.opt(i)))
-        }
-        return result
-    }
+    private fun jsonArrayToList(arr: JSONArray): List<Any?> =
+        List(arr.length()) { i -> toKotlin(arr.opt(i)) }
 
     private fun comparable(value: Any?): Any? = when (value) {
         is ContainmentReport -> mapOf(
@@ -66,18 +57,21 @@ object AndroidConformanceRunner {
     }
 
     private fun dispatch(methodName: String, args: List<Any?>): Any? {
-        for (m in apiClass.methods.filter { it.name == methodName }) {
-            val params = m.parameterTypes
-            if (params.size != args.size) continue
-            val converted = args.mapIndexed { i, a ->
+        for (method in apiClass.methods.filter { it.name == methodName }) {
+            if (method.parameterTypes.size != args.size) continue
+            val converted = args.mapIndexed { i, value ->
                 when {
-                    params[i].isAssignableFrom(a?.javaClass ?: Any::class.java) -> a
-                    a is Map<*, *> && params[i] == Map::class.java -> a
-                    a == null -> null
-                    else -> a
+                    value == null -> null
+                    method.parameterTypes[i].isAssignableFrom(value.javaClass) -> value
+                    method.parameterTypes[i] == Map::class.java && value is Map<*, *> -> value
+                    else -> value
                 }
             }
-            try { return m.invoke(null, *converted.toTypedArray()) } catch (e: java.lang.reflect.InvocationTargetException) { throw e.cause ?: e }
+            try {
+                return method.invoke(null, *converted.toTypedArray())
+            } catch (e: java.lang.reflect.InvocationTargetException) {
+                throw e.cause ?: e
+            }
         }
         throw IllegalStateException("No matching method $methodName with arity ${args.size}")
     }
@@ -87,57 +81,73 @@ object AndroidConformanceRunner {
         return requiredKeys.all { it in actual }
     }
 
+    private fun expectedErrorName(expect: JSONObject): String =
+        expect.optString("errorName", "").takeIf { it.isNotEmpty() } ?: "Throwable"
+
+    private fun actualErrorName(error: Throwable): String =
+        error::class.java.simpleName
+
     fun runSuite(resourceName: String): Pair<Int, Int> {
-        val loader = this::class.java.classLoader
-            ?: throw IllegalStateException("no class loader")
+        val loader = this::class.java.classLoader ?: throw IllegalStateException("no class loader")
         val text = loader.getResourceAsStream(resourceName)?.bufferedReader()?.readText()
             ?: throw IllegalStateException("conformance vector not found: $resourceName")
         val root = JSONObject(text)
         val vectors = root.getJSONArray("vectors")
         var pass = 0
         var fail = 0
+
         for (i in 0 until vectors.length()) {
-            val v = vectors.getJSONObject(i)
-            val id = v.optString("id", "#$i")
-            val call = v.getJSONArray("call")
+            val vector = vectors.getJSONObject(i)
+            val id = vector.optString("id", "#$i")
+            val call = vector.getJSONArray("call")
             val method = call.getString(0)
-            val rawArgsArray = call.getJSONArray(1)
-            val rawArgs = List(rawArgsArray.length()) { j -> toKotlin(rawArgsArray.opt(j)) }
+            val rawArgs = jsonArrayToList(call.getJSONArray(1))
             val bindings = mutableMapOf<String, Any?>()
-            val args = rawArgs.map { raw ->
-                if (raw is String) resolveBinding(raw, bindings) else raw
+            val args = rawArgs.map { value ->
+                if (value is String) resolveBinding(value, bindings) else value
             }
-            val expect = v.getJSONObject("expect")
+            val expect = vector.getJSONObject("expect")
             val kind = expect.getString("kind")
+
             try {
                 val actual = dispatch(method, args)
                 when (kind) {
                     "value" -> {
                         val expected = toKotlin(expect.get("value"))
-                        val left = comparable(actual)
-                        val right = comparable(expected)
-                        if (left == right) { pass++ } else {
+                        if (comparable(actual) == comparable(expected)) pass++ else {
                             fail++
-                            System.err.println("FAIL $id: expected $right got $left")
+                            System.err.println("FAIL $id: expected ${comparable(expected)} got ${comparable(actual)}")
                         }
                     }
                     "shape" -> {
                         val keys = jsonArrayToList(expect.getJSONArray("requiredKeys"))
-                        if (checkShape(actual, keys)) { pass++ } else {
+                        if (checkShape(actual, keys)) pass++ else {
                             fail++
                             System.err.println("FAIL $id: shape mismatch $actual")
                         }
                     }
-                    "throws" -> { fail++; System.err.println("FAIL $id: expected throw but returned $actual") }
-                    else -> { fail++; System.err.println("FAIL $id: unknown expect kind $kind") }
+                    "throws" -> {
+                        fail++
+                        System.err.println("FAIL $id: expected ${expectedErrorName(expect)} but method returned $actual")
+                    }
+                    else -> {
+                        fail++
+                        System.err.println("FAIL $id: unknown expect kind $kind")
+                    }
                 }
             } catch (e: Throwable) {
-                if (kind == "throws") { pass++ } else {
+                if (kind == "throws" && actualErrorName(e) == expectedErrorName(expect)) {
+                    pass++
+                } else if (kind == "throws") {
                     fail++
-                    System.err.println("FAIL $id: unexpected throw ${e::class.simpleName}: ${e.message}")
+                    System.err.println("FAIL $id: expected ${expectedErrorName(expect)} got ${actualErrorName(e)}: ${e.message}")
+                } else {
+                    fail++
+                    System.err.println("FAIL $id: unexpected throw ${actualErrorName(e)}: ${e.message}")
                 }
             }
         }
+
         return pass to fail
     }
 }
