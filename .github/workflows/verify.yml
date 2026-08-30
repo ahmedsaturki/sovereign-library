@@ -44,6 +44,19 @@ jobs:
         run: |
           node scripts/run-conformance.mjs --self contracts/conformance/vectors.safe-path-resolver.json
           node scripts/run-conformance.mjs --self contracts/conformance/vectors.runtime-capability-inspector.json
+      - name: Select Windows Chrome for deterministic CDP smoke
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $candidates = @(
+            "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
+            "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
+            "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
+          )
+          $browser = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $browser) { throw 'Google Chrome executable not found on Windows runner' }
+          Write-Host "Using Chrome: $browser"
+          "BROWSER_EXECUTABLE=$browser" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Prepare Linux Chromium CDP compatibility
         if: runner.os == 'Linux'
         shell: bash
