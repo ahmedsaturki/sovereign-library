@@ -89,8 +89,16 @@ jobs:
           if [ -z "$STDLIB" ] && [ "$CACHE_ROOT" != "$HOME/.gradle" ]; then
             STDLIB=$(find "$HOME/.gradle" -path '*/org.jetbrains.kotlin/kotlin-stdlib/*/kotlin-stdlib-*.jar' -print -quit 2>/dev/null || true)
           fi
-          test -n "$STDLIB"
-          cp "$STDLIB" "$TMP_DIR/lib/kotlin-stdlib.jar"
+          if [ -z "$STDLIB" ]; then
+            STDLIB="$TMP_DIR/lib/kotlin-stdlib-1.9.22.jar"
+            curl --fail --silent --show-error --location --retry 3 \
+              -o "$STDLIB" \
+              "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.9.22/kotlin-stdlib-1.9.22.jar"
+          fi
+          test -s "$STDLIB"
+          if [ "$STDLIB" != "$TMP_DIR/lib/kotlin-stdlib.jar" ]; then
+            cp "$STDLIB" "$TMP_DIR/lib/kotlin-stdlib.jar"
+          fi
           cat > "$TMP_DIR/Consumer.java" <<'JAVA'
           import org.sovereign.safePathResolver.android.SafePathResolverAndroidKt;
 
