@@ -112,11 +112,17 @@ jobs:
               }
           }
           JAVA
-          SEP=$(java -XshowSettings:properties -version 2>&1 | awk -F'= ' '/path.separator =/{print $2; exit}')
-          test -n "$SEP"
-          CP="$TMP_DIR/lib/classes.jar${SEP}$TMP_DIR/lib/kotlin-stdlib.jar"
+          if command -v cygpath >/dev/null 2>&1; then
+            CP="$(cygpath -wp "$TMP_DIR/lib/classes.jar:$TMP_DIR/lib/kotlin-stdlib.jar")"
+            RUNTIME_CP="$(cygpath -wp "$TMP_DIR:$TMP_DIR/lib/classes.jar:$TMP_DIR/lib/kotlin-stdlib.jar")"
+          else
+            SEP=$(java -XshowSettings:properties -version 2>&1 | awk -F'= ' '/path.separator =/{print $2; exit}')
+            test -n "$SEP"
+            CP="$TMP_DIR/lib/classes.jar${SEP}$TMP_DIR/lib/kotlin-stdlib.jar"
+            RUNTIME_CP="$TMP_DIR${SEP}$CP"
+          fi
           javac -cp "$CP" "$TMP_DIR/Consumer.java"
-          java -cp "$TMP_DIR${SEP}$CP" Consumer
+          java -cp "$RUNTIME_CP" Consumer
 
       - name: Verify reproducible AAR
         shell: bash
