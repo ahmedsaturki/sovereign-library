@@ -85,9 +85,9 @@ jobs:
           unzip -q "$AAR" classes.jar -d "$TMP_DIR"
           cp "$TMP_DIR/classes.jar" "$TMP_DIR/lib/classes.jar"
           CACHE_ROOT="${GRADLE_USER_HOME:-$HOME/.gradle}"
-          STDLIB=$(find "$CACHE_ROOT" -path '*/org.jetbrains.kotlin/kotlin-stdlib/1.9.22/kotlin-stdlib-1.9.22.jar' -print -quit 2>/dev/null || true)
-          if [ -z "$STDLIB" ]; then
-            STDLIB=$(find "$HOME/.gradle" -path '*/org.jetbrains.kotlin/kotlin-stdlib/1.9.22/kotlin-stdlib-1.9.22.jar' -print -quit 2>/dev/null || true)
+          STDLIB=$(find "$CACHE_ROOT" -path '*/org.jetbrains.kotlin/kotlin-stdlib/*/kotlin-stdlib-*.jar' -print -quit 2>/dev/null || true)
+          if [ -z "$STDLIB" ] && [ "$CACHE_ROOT" != "$HOME/.gradle" ]; then
+            STDLIB=$(find "$HOME/.gradle" -path '*/org.jetbrains.kotlin/kotlin-stdlib/*/kotlin-stdlib-*.jar' -print -quit 2>/dev/null || true)
           fi
           test -n "$STDLIB"
           cp "$STDLIB" "$TMP_DIR/lib/kotlin-stdlib.jar"
