@@ -43,7 +43,7 @@ class SafePathResolverAndroidTest {
     @Test
     fun resolveContained_absolute_escape_blocked() {
         val ex = assertThrows(SafePathResolverError::class.java) { resolveContained("/a", "/etc/passwd") }
-        assertEquals("ROOT_MISMATCH", ex.code)
+        assertEquals("TRAVERSAL_ESCAPE", ex.code)
     }
 
     @Test
