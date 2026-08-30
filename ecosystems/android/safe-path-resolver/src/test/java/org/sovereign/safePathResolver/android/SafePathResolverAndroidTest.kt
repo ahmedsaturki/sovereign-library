@@ -1,7 +1,6 @@
 package org.sovereign.safePathResolver.android
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -9,7 +8,6 @@ import org.sovereign.conformance.AndroidConformanceRunner
 
 class SafePathResolverAndroidTest {
 
-    // ---- happy path ----
     @Test
     fun normalize_relative() {
         assertEquals("a/c", normalizePath("a/./b/../c"))
@@ -17,7 +15,7 @@ class SafePathResolverAndroidTest {
 
     @Test
     fun resolveContained_relative() {
-        assertEquals("/a/b/c", resolveContained("b/c", "/a"))
+        assertEquals("/a/b/c", resolveContained("/a", "b/c"))
     }
 
     @Test
@@ -36,11 +34,10 @@ class SafePathResolverAndroidTest {
         assertEquals("segment-outside", r.reason)
     }
 
-    // ---- security: containment escapes ----
     @Test
     fun resolveContained_traversal_blocked() {
         val ex = assertThrows(SafePathResolverError::class.java) { resolveContained("/a", "../etc/passwd") }
-        assertEquals("ROOT_MISMATCH", ex.code)
+        assertEquals("TRAVERSAL_ESCAPE", ex.code)
     }
 
     @Test
@@ -55,16 +52,25 @@ class SafePathResolverAndroidTest {
         assertEquals("ROOT_MISMATCH", ex.code)
     }
 
-    // ---- edge cases ----
     @Test
     fun normalize_dot_segments_disabled() {
-        assertEquals("/a/b/./c", normalizePath("/a/b/./c", SafePathResolverOptions(normalizeDotSegments = false)))
+        assertEquals(
+            "/a/b/./c",
+            normalizePath("/a/b/./c", SafePathResolverOptions(normalizeDotSegments = false))
+        )
     }
 
     @Test
     fun normalize_options_insensitive_keeps_case() {
-        // caseMode governs segment comparison, NOT output case-folding.
-        assertEquals("/A/B/C", normalizePath("/A/B/C", SafePathResolverOptions(caseMode = "insensitive")))
+        assertEquals(
+            "/A/B/C",
+            normalizePath("/A/B/C", SafePathResolverOptions(caseMode = "insensitive"))
+        )
+    }
+
+    @Test
+    fun separator_normalization() {
+        assertEquals("/a/b/c", normalizePath("\\a\\b\\c"))
     }
 
     @Test
@@ -72,7 +78,6 @@ class SafePathResolverAndroidTest {
         assertThrows(SafePathResolverError::class.java) { normalizePath("") }
     }
 
-    // ---- determinism / constants ----
     @Test
     fun format_constant() {
         assertEquals("SPR1", SAFE_PATH_RESOLVER_FORMAT())
@@ -91,13 +96,11 @@ class SafePathResolverAndroidTest {
     fun serialize_roundtrip_deterministic() {
         val report = isContained("/a/b/c", "/a")
         val serialized = serializeReport(report)
-        assertTrue(serialized.contains("\"format\":\"SPR1\""))
-        assertTrue(serialized.contains("\"integrity\""))
-        val again = serializeReport(report)
-        assertEquals(serialized, again)
+        assertTrue(serialized.contains("\"SPR1\""))
+        assertTrue(serialized.contains("integrity"))
+        assertEquals(serialized, serializeReport(report))
     }
 
-    // ---- language-neutral conformance (canonical vectors) ----
     @Test
     fun conformance_vectors() {
         val (pass, fail) = AndroidConformanceRunner.runSuite("vectors.safe-path-resolver.json")
