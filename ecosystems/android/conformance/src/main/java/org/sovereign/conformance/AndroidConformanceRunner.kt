@@ -2,6 +2,8 @@ package org.sovereign.conformance
 
 import org.json.JSONArray
 import org.json.JSONObject
+import org.sovereign.safePathResolver.android.ContainmentReport
+import java.util.Locale
 
 /**
  * Language-neutral conformance runner for the Android SPR1 build.
@@ -50,6 +52,19 @@ object AndroidConformanceRunner {
         return result
     }
 
+    private fun comparable(value: Any?): Any? = when (value) {
+        is ContainmentReport -> mapOf(
+            "format" to value.format,
+            "status" to value.status,
+            "path" to value.path,
+            "root" to value.root,
+            "reason" to value.reason
+        )
+        is Map<*, *> -> value.entries.associate { it.key.toString() to it.value }
+        is List<*> -> value.map(::comparable)
+        else -> value
+    }
+
     private fun dispatch(methodName: String, args: List<Any?>): Any? {
         for (m in apiClass.methods.filter { it.name == methodName }) {
             val params = m.parameterTypes
@@ -89,7 +104,9 @@ object AndroidConformanceRunner {
             val rawArgsArray = call.getJSONArray(1)
             val rawArgs = List(rawArgsArray.length()) { j -> toKotlin(rawArgsArray.opt(j)) }
             val bindings = mutableMapOf<String, Any?>()
-            val args = rawArgs.map { resolveBinding(it as String, bindings) }
+            val args = rawArgs.map { raw ->
+                if (raw is String) resolveBinding(raw, bindings) else raw
+            }
             val expect = v.getJSONObject("expect")
             val kind = expect.getString("kind")
             try {
@@ -97,11 +114,19 @@ object AndroidConformanceRunner {
                 when (kind) {
                     "value" -> {
                         val expected = toKotlin(expect.get("value"))
-                        if (actual == expected) { pass++ } else { fail++; System.err.println("FAIL $id: expected $expected got $actual") }
+                        val left = comparable(actual)
+                        val right = comparable(expected)
+                        if (left == right) { pass++ } else {
+                            fail++
+                            System.err.println("FAIL $id: expected $right got $left")
+                        }
                     }
                     "shape" -> {
                         val keys = jsonArrayToList(expect.getJSONArray("requiredKeys"))
-                        if (checkShape(actual, keys)) { pass++ } else { fail++; System.err.println("FAIL $id: shape mismatch $actual") }
+                        if (checkShape(actual, keys)) { pass++ } else {
+                            fail++
+                            System.err.println("FAIL $id: shape mismatch $actual")
+                        }
                     }
                     "throws" -> { fail++; System.err.println("FAIL $id: expected throw but returned $actual") }
                     else -> { fail++; System.err.println("FAIL $id: unknown expect kind $kind") }
