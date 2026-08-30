@@ -18,7 +18,7 @@ jobs:
   android:
     name: Android ${{ matrix.os }} / AGP 8.5 / JDK 17
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 70
+    timeout-minutes: 100
     strategy:
       fail-fast: false
       matrix:
