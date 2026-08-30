@@ -1,5 +1,9 @@
 package org.sovereign.safePathResolver.android
 
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import java.util.Locale
+
 class SafePathResolverError(val code: String, message: String) : Exception(message)
 
 data class SafePathResolverOptions(
@@ -27,143 +31,350 @@ private const val MAX_SEGMENTS = 1024
 private const val MAX_SYMLINK_DEPTH = 64
 private const val MAX_SERIALIZED = 256 * 1024
 
-private fun fail(code: String, message: String): Nothing = throw SafePathResolverError(code, message)
+private fun fail(code: String, message: String): Nothing =
+    throw SafePathResolverError(code, message)
 
-private fun validatePathInput(value: String) {
-    if (value !is String) fail("INVALID_INPUT", "path must be a string")
-    if (value.isEmpty()) fail("INVALID_INPUT", "path must not be empty")
-    if (value.length > MAX_PATH) fail("PATH_TOO_LONG", "path exceeds $MAX_PATH characters")
+private fun validatePathInput(value: String, label: String = "path") {
+    if (value.isEmpty() || value.indexOf('\u0000') >= 0) fail("INVALID_PATH", "$label must be non-empty and NUL-free")
+    if (value.length > MAX_PATH) fail("LIMIT_EXCEEDED", "$label exceeds $MAX_PATH characters")
 }
 
-private fun validateOptions(options: SafePathResolverOptions) {
-    if (options.caseMode !in setOf("sensitive", "insensitive")) fail("INVALID_OPTION", "caseMode must be sensitive or insensitive")
-    if (options.symlinkPolicy !in setOf("lexical-only", "resolve", "none")) fail("INVALID_OPTION", "symlinkPolicy unsupported")
-    if (options.maxSegments <= 0 || options.maxSegments > MAX_SEGMENTS) fail("INVALID_OPTION", "maxSegments out of range")
-    if (options.maxSymlinkDepth < 0 || options.maxSymlinkDepth > MAX_SYMLINK_DEPTH) fail("INVALID_OPTION", "maxSymlinkDepth out of range")
-}
-
-private data class RootDescriptor(val kind: String, val identity: String, val prefix: String, val rest: List<String>)
-
-private fun rootDescriptor(value: String): RootDescriptor {
-    if (Regex("^//\\\\?/[A-Za-z]:(/|$)").containsMatchIn(value)) {
-        val m = Regex("^//\\\\?/([A-Za-z]:)(/|$)").find(value)!!
-        val drive = m.groupValues[1]
-        return RootDescriptor("namespace-drive", drive.lowercase(), "//?/$drive", emptyList())
+private fun validateOptions(options: SafePathResolverOptions): SafePathResolverOptions {
+    if (options.caseMode !in listOf("sensitive", "insensitive")) {
+        fail("INVALID_PATH", "caseMode must be sensitive or insensitive")
     }
-    if (Regex("^[A-Za-z]:/").containsMatchIn(value)) {
-        val drive = value.take(2)
-        return RootDescriptor("drive", drive.lowercase(), "$drive/", value.substring(3).split("/").filter { it.isNotEmpty() })
+    if (options.maxSegments !in 1..MAX_SEGMENTS) {
+        fail("LIMIT_EXCEEDED", "maxSegments must be between 1 and $MAX_SEGMENTS")
     }
-    if (value.startsWith("//")) return RootDescriptor("unc", "unc", "//", value.substring(2).split("/").filter { it.isNotEmpty() })
-    if (value.startsWith("/")) return RootDescriptor("absolute", "/", "/", value.substring(1).split("/").filter { it.isNotEmpty() }
-    if (Regex("^[A-Za-z]:[^/]").containsMatchIn(value)) fail("ROOT_MISMATCH", "drive-relative paths such as C:foo are rejected")
-    return RootDescriptor("relative", "", "", value.split("/").filter { it.isNotEmpty() }
+    if (options.symlinkPolicy !in listOf("lexical-only", "reject-symlink", "follow-contained")) {
+        fail("SYMLINK_REJECTED", "invalid symlink policy")
+    }
+    if (options.maxSymlinkDepth !in 1..MAX_SYMLINK_DEPTH) {
+        fail("LIMIT_EXCEEDED", "maxSymlinkDepth must be between 1 and $MAX_SYMLINK_DEPTH")
+    }
+    return options
 }
 
-private data class NormalizedPath(val root: RootDescriptor, val absolute: Boolean, val segments: List<String>, val path: String)
+private data class RootDescriptor(
+    val kind: String,
+    val identity: String,
+    val prefix: String,
+    val rest: List<String>
+)
+
+private data class NormalizedPath(
+    val root: RootDescriptor,
+    val absolute: Boolean,
+    val segments: List<String>,
+    val path: String
+)
 
 private fun normalizeSeparators(value: String, options: SafePathResolverOptions): String =
-    if (options.separatorNormalization) value.replace('\\\\', '/') else value
+    if (options.separatorNormalization) value.replace('\\', '/') else value
 
-private fun normalizeDotSegments(segments: List<String>): List<String> {
+private fun rootDescriptor(value: String): RootDescriptor {
+    if (value.startsWith("//?/UNC/")) {
+        val parts = value.substring("//?/UNC/".length).split('/')
+        if (parts.size < 2 || parts[0].isEmpty() || parts[1].isEmpty()) {
+            fail("ROOT_MISMATCH", "invalid UNC namespace root")
+        }
+        return RootDescriptor(
+            kind = "namespace-unc",
+            identity = "namespace-unc:${parts[0]}/${parts[1]}",
+            prefix = "//?/UNC/${parts[0]}/${parts[1]}",
+            rest = parts.drop(2)
+        )
+    }
+
+    if (Regex("^//\\?/[A-Za-z]:(/|$)").containsMatchIn(value)) {
+        val drive = value.substring(4, 6).uppercase(Locale.US)
+        val restStart = if (value.length > 6 && value[6] == '/') 7 else 6
+        return RootDescriptor(
+            kind = "namespace-drive",
+            identity = "namespace-drive:$drive",
+            prefix = "//?/$drive",
+            rest = value.substring(restStart).split('/')
+        )
+    }
+
+    if (Regex("^[A-Za-z]:/").containsMatchIn(value)) {
+        val drive = value.substring(0, 2).uppercase(Locale.US)
+        return RootDescriptor(
+            kind = "drive",
+            identity = "drive:$drive",
+            prefix = "$drive/",
+            rest = value.substring(3).split('/')
+        )
+    }
+
+    if (value.startsWith("//")) {
+        val parts = value.substring(2).split('/')
+        if (parts.size < 2 || parts[0].isEmpty() || parts[1].isEmpty()) {
+            fail("ROOT_MISMATCH", "invalid UNC root")
+        }
+        return RootDescriptor(
+            kind = "unc",
+            identity = "unc:${parts[0]}/${parts[1]}",
+            prefix = "//${parts[0]}/${parts[1]}",
+            rest = parts.drop(2)
+        )
+    }
+
+    if (value.startsWith('/')) {
+        return RootDescriptor("posix", "posix:/", "/", value.substring(1).split('/'))
+    }
+
+    return RootDescriptor("relative", "", "", value.split('/'))
+}
+
+private fun normalizeSegments(
+    rawSegments: List<String>,
+    descriptor: RootDescriptor,
+    options: SafePathResolverOptions
+): List<String> {
+    if (rawSegments.size > options.maxSegments) {
+        fail("LIMIT_EXCEEDED", "path exceeds ${options.maxSegments} segments")
+    }
+
     val out = mutableListOf<String>()
-    for (segment in segments) {
-        when {
-            segment.isEmpty() || segment == "." -> Unit
-            segment == ".." -> { if (out.isNotEmpty() && out.last() != "..") out.removeAt(out.size - 1) else out.add("..") }
-            else -> out.add(segment)
+    for (segment in rawSegments) {
+        if (segment.isEmpty() || segment == ".") {
+            if (!options.normalizeDotSegments) out.add(segment)
+            continue
+        }
+
+        if (segment == "..") {
+            if (!options.normalizeDotSegments) {
+                out.add(segment)
+                continue
+            }
+            if (out.isNotEmpty() && out.last() != "..") {
+                out.removeAt(out.lastIndex)
+                continue
+            }
+            if (descriptor.kind != "relative") {
+                fail("TRAVERSAL_ESCAPE", "path escapes an absolute root")
+            }
+            fail("TRAVERSAL_ESCAPE", "relative path escapes its caller-defined scope")
+        }
+
+        out.add(segment)
+        if (out.size > options.maxSegments) {
+            fail("LIMIT_EXCEEDED", "path exceeds ${options.maxSegments} segments")
         }
     }
     return out
 }
 
-private fun normalizeCase(segment: String, options: SafePathResolverOptions): String =
-    if (options.caseMode == "insensitive") segment.lowercase() else segment
-
-private fun formatDescriptor(root: RootDescriptor, segments: List<String>): String {
-    when (root.kind) {
-        "relative" -> segments.joinToString("/")
-        "namespace-drive", "drive" -> root.prefix + segments.joinToString("/")
-        "unc" -> "//" + segments.joinToString("/")
-        "absolute" -> "/" + segments.joinToString("/")
-        else -> "/" + segments.joinToString("/")
+private fun formatDescriptor(descriptor: RootDescriptor, segments: List<String>): String {
+    val body = segments.joinToString("/")
+    return when (descriptor.kind) {
+        "relative" -> if (body.isEmpty()) "." else body
+        "posix" -> if (body.isEmpty()) "/" else "/$body"
+        "drive" -> if (body.isEmpty()) descriptor.prefix else "${descriptor.prefix}$body"
+        "unc" -> if (body.isEmpty()) descriptor.prefix else "${descriptor.prefix}/$body"
+        "namespace-drive" -> if (body.isEmpty()) descriptor.prefix else "${descriptor.prefix}/$body"
+        "namespace-unc" -> if (body.isEmpty()) descriptor.prefix else "${descriptor.prefix}/$body"
+        else -> fail("ROOT_MISMATCH", "unsupported root descriptor")
     }
 }
 
 private fun parseAndNormalize(value: String, options: SafePathResolverOptions): NormalizedPath {
     validatePathInput(value)
-    validateOptions(options)
-    val normalizedInput = normalizeSeparators(value, options)
-    if (Regex("^[A-Za-z]:[^/]").containsMatchIn(normalizedInput)) fail("ROOT_MISMATCH", "drive-relative paths such as C:foo are rejected")
-    val root = rootDescriptor(normalizedInput)
-    val rawSegments = root.rest
-    if (rawSegments.size > options.maxSegments) fail("SEGMENT_LIMIT", "path segment count exceeds limit")
-    val segments = if (options.normalizeDotSegments) normalizeDotSegments(rawSegments) else rawSegments
-    for (segment in segments) {
-        if (segment.length > MAX_PATH) fail("SEGMENT_TOO_LONG", "segment exceeds $MAX_PATH characters")
+    val opts = validateOptions(options)
+    val normalizedInput = normalizeSeparators(value, opts)
+    if (Regex("^[A-Za-z]:[^/]").containsMatchIn(normalizedInput)) {
+        fail("ROOT_MISMATCH", "drive-relative paths such as C:foo are rejected")
     }
-    val path = formatDescriptor(root, segments)
-    if (path.length > MAX_PATH) fail("PATH_TOO_LONG", "normalized path exceeds $MAX_PATH characters")
-    return NormalizedPath(root, root.kind != "relative", segments, path)
+    val descriptor = rootDescriptor(normalizedInput)
+    val segments = normalizeSegments(descriptor.rest, descriptor, opts)
+    val path = formatDescriptor(descriptor, segments)
+    if (path.length > MAX_PATH) fail("LIMIT_EXCEEDED", "normalized path exceeds $MAX_PATH characters")
+    return NormalizedPath(
+        root = descriptor,
+        absolute = descriptor.kind != "relative",
+        segments = segments,
+        path = path
+    )
 }
 
-private fun sameRoot(a: String, b: String, caseMode: String): Boolean =
-    if (caseMode == "insensitive") a.equals(b, ignoreCase = true) else a == b
+private fun normalizeCase(value: String, caseMode: String): String =
+    if (caseMode == "insensitive") value.lowercase(Locale.US) else value
 
-private fun reportStatus(candidate: NormalizedPath, normalizedRoot: NormalizedPath, options: SafePathResolverOptions): String {
-    val contained = candidate.root.kind == normalizedRoot.root.kind &&
-        sameRoot(candidate.root.identity, normalizedRoot.root.identity, options.caseMode) &&
-        candidate.segments.size >= normalizedRoot.segments.size &&
-        candidate.segments.take(normalizedRoot.segments.size).map { normalizeCase(it, options) }
-            .zip(normalizedRoot.segments.map { normalizeCase(it, options) }).all { it.first == it.second }
-    return if (contained) "contained" else "outside"
+private fun sameRoot(left: RootDescriptor, right: RootDescriptor, caseMode: String): Boolean =
+    normalizeCase(left.identity, caseMode) == normalizeCase(right.identity, caseMode)
+
+private fun segmentCompare(left: String, right: String, caseMode: String): Int {
+    val a = normalizeCase(left, caseMode)
+    val b = normalizeCase(right, caseMode)
+    return a.compareTo(b)
 }
 
-private fun containmentReason(candidate: NormalizedPath, normalizedRoot: NormalizedPath, options: SafePathResolverOptions): String =
-    if (candidate.root.kind != normalizedRoot.root.kind ||
-        !sameRoot(candidate.root.identity, normalizedRoot.root.identity, options.caseMode)) "root-mismatch"
-    else "segment-outside"
+private fun containsNormalized(
+    candidate: NormalizedPath,
+    root: NormalizedPath,
+    options: SafePathResolverOptions
+): Boolean {
+    if (!sameRoot(candidate.root, root.root, options.caseMode) || !candidate.absolute || !root.absolute) return false
+    if (candidate.segments.size < root.segments.size) return false
+    for (i in root.segments.indices) {
+        if (segmentCompare(candidate.segments[i], root.segments[i], options.caseMode) != 0) return false
+    }
+    return true
+}
 
 /** Normalize a path string with default options. */
 fun normalizePath(input: String): String = normalizePath(input, SafePathResolverOptions())
 
 /** Normalize a path string. */
-fun normalizePath(input: String, options: SafePathResolverOptions): String {
-    val parsed = parseAndNormalize(input, options)
-    return parsed.path
+fun normalizePath(input: String, options: SafePathResolverOptions): String =
+    parseAndNormalize(input, options).path
+
+/** Resolve [input] against absolute [base]. */
+fun resolvePath(base: String, input: String): String = resolvePath(base, input, SafePathResolverOptions())
+
+/** Resolve [input] against absolute [base]. */
+fun resolvePath(base: String, input: String, options: SafePathResolverOptions): String {
+    validatePathInput(base, "base")
+    validatePathInput(input, "input")
+    val opts = validateOptions(options)
+    val normalizedInput = normalizeSeparators(input, opts)
+    val inputDescriptor = rootDescriptor(normalizedInput)
+    if (inputDescriptor.kind != "relative") return parseAndNormalize(normalizedInput, opts).path
+
+    parseAndNormalize(normalizedInput, opts)
+    val normalizedBase = parseAndNormalize(base, opts)
+    if (!normalizedBase.absolute) fail("MISSING_BASE", "base must be absolute for safe resolution")
+
+    val combined = "${normalizedBase.path}${if (normalizedBase.path.endsWith('/')) "" else "/"}$normalizedInput"
+    return parseAndNormalize(combined, opts).path
 }
 
-/** Decide whether [candidate] is contained within [root] with default options. */
-fun isContained(candidate: String, root: String): ContainmentReport = isContained(candidate, root, SafePathResolverOptions())
+/** Decide whether [path] is contained within [root]. */
+fun isContained(path: String, root: String): ContainmentReport =
+    isContained(path, root, SafePathResolverOptions())
 
-/** Decide whether [candidate] is contained within [root]. */
-fun isContained(candidate: String, root: String, options: SafePathResolverOptions): ContainmentReport {
-    val normalizedRoot = parseAndNormalize(root, options)
-    val candidatePath = parseAndNormalize(candidate, options)
-    val contained = reportStatus(candidatePath, normalizedRoot, options)
-    val reason = if (contained == "contained") "segment-contained" else containmentReason(candidatePath, normalizedRoot, options)
-    return ContainmentReport(FORMAT, contained, candidatePath.path, normalizedRoot.path, reason)
-}
-
-/** Resolve [candidate] against [root] with default options. */
-fun resolveContained(candidate: String, root: String): String = resolveContained(candidate, root, SafePathResolverOptions())
-
-/** Resolve [candidate] against [root]. */
-fun resolveContained(candidate: String, root: String, options: SafePathResolverOptions): String {
-    val normalizedRoot = parseAndNormalize(root, options)
-    val candidatePath = parseAndNormalize(candidate, options)
-    val resolvedPath: String = when (normalizedRoot.root.kind) {
-        "absolute" -> "/${normalizedRoot.root.rest.joinToString("/")}/${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
-        "relative" -> candidatePath.path
-        "drive" -> "${normalizedRoot.root.prefix}${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
-        "unc" -> "${normalizedRoot.root.prefix}/${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
-        "namespace-drive" -> "${normalizedRoot.root.prefix}/${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
-        "namespace-unc" -> "${normalizedRoot.root.prefix}/${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
-        else -> "/${candidatePath.path}"
+/** Decide whether [path] is contained within [root]. */
+fun isContained(path: String, root: String, options: SafePathResolverOptions): ContainmentReport {
+    val opts = validateOptions(options)
+    val candidate = parseAndNormalize(path, opts)
+    val normalizedRoot = parseAndNormalize(root, opts)
+    val contained = containsNormalized(candidate, normalizedRoot, opts)
+    val reason = when {
+        contained -> "segment-contained"
+        !sameRoot(candidate.root, normalizedRoot.root, opts.caseMode) -> "root-mismatch"
+        else -> "segment-outside"
     }
-    val report = isContained(resolvedPath, root, options)
-    if (report.status != "contained") fail("ROOT_MISMATCH", "candidate ${report.path} is not contained within root ${report.root} (${report.reason})")
-    return report.path
+    return ContainmentReport(
+        format = FORMAT,
+        status = if (contained) "contained" else "outside",
+        path = candidate.path,
+        root = normalizedRoot.path,
+        reason = reason
+    )
+}
+
+/** Resolve [input] against [root] and fail closed if the result escapes. */
+fun resolveContained(root: String, input: String): String =
+    resolveContained(root, input, SafePathResolverOptions())
+
+/** Resolve [input] against [root] and fail closed if the result escapes. */
+fun resolveContained(root: String, input: String, options: SafePathResolverOptions): String {
+    val opts = validateOptions(options)
+    val resolved = resolvePath(root, input, opts)
+    val report = isContained(resolved, root, opts)
+    if (report.status != "contained") {
+        val code = if (report.reason == "root-mismatch") "ROOT_MISMATCH" else "TRAVERSAL_ESCAPE"
+        fail(code, "resolved path is outside root: $resolved")
+    }
+    return resolved
+}
+
+/** Lexicographically compare two normalized paths. */
+fun comparePaths(left: String, right: String): Int =
+    comparePaths(left, right, SafePathResolverOptions())
+
+/** Lexicographically compare two normalized paths. */
+fun comparePaths(left: String, right: String, options: SafePathResolverOptions): Int {
+    val opts = validateOptions(options)
+    val a = parseAndNormalize(left, opts)
+    val b = parseAndNormalize(right, opts)
+    if (!sameRoot(a.root, b.root, opts.caseMode)) return a.root.identity.compareTo(b.root.identity)
+    val length = minOf(a.segments.size, b.segments.size)
+    for (i in 0 until length) {
+        val comparison = segmentCompare(a.segments[i], b.segments[i], opts.caseMode)
+        if (comparison != 0) return comparison
+    }
+    return a.segments.size.compareTo(b.segments.size)
+}
+
+private fun jsonQuote(value: String): String {
+    val out = StringBuilder(value.length + 2)
+    out.append('"')
+    for (ch in value) {
+        when (ch) {
+            '"' -> out.append("\\\"")
+            '\\' -> out.append("\\\\")
+            '\n' -> out.append("\\n")
+            '\r' -> out.append("\\r")
+            '\t' -> out.append("\\t")
+            '\b' -> out.append("\\b")
+            '\u000c' -> out.append("\\f")
+            else -> if (ch.code < 0x20) out.append("\\u%04x".format(ch.code)) else out.append(ch)
+        }
+    }
+    out.append('"')
+    return out.toString()
+}
+
+private fun canonicalJson(value: Any?): String = when (value) {
+    null -> "null"
+    is String -> jsonQuote(value)
+    is Boolean -> value.toString()
+    is Byte, is Short, is Int, is Long -> value.toString()
+    is Float -> {
+        if (value.isNaN() || value.isInfinite()) fail("CAPABILITY_RESULT_INVALID", "payload contains a non-finite number")
+        value.toString()
+    }
+    is Double -> {
+        if (value.isNaN() || value.isInfinite()) fail("CAPABILITY_RESULT_INVALID", "payload contains a non-finite number")
+        value.toString()
+    }
+    is List<*> -> value.joinToString(prefix = "[", postfix = "]", separator = ",") { canonicalJson(it) }
+    is Map<*, *> -> value.entries
+        .map { entry ->
+            val key = entry.key as? String ?: fail("CAPABILITY_RESULT_INVALID", "payload map keys must be strings")
+            key to entry.value
+        }
+        .sortedBy { it.first }
+        .joinToString(prefix = "{", postfix = "}", separator = ",") { (key, item) ->
+            "${jsonQuote(key)}:${canonicalJson(item)}"
+        }
+    is ContainmentReport -> canonicalJson(
+        linkedMapOf(
+            "format" to value.format,
+            "status" to value.status,
+            "path" to value.path,
+            "root" to value.root,
+            "reason" to value.reason
+        )
+    )
+    else -> fail("CAPABILITY_RESULT_INVALID", "unsupported value type in serialization: ${value::class.qualifiedName}")
+}
+
+private fun integrityDigest(payload: String): String {
+    val bytes = MessageDigest.getInstance("SHA-256")
+        .digest("$FORMAT|$VERSION|$payload".toByteArray(StandardCharsets.UTF_8))
+    return bytes.joinToString("") { "%02x".format(it) }
+}
+
+/** Serialize report data using the SPR1 deterministic envelope. */
+fun serializeReport(report: Any?): String {
+    val payload = canonicalJson(report)
+    if (payload.toByteArray(StandardCharsets.UTF_8).size > MAX_SERIALIZED) {
+        fail("LIMIT_EXCEEDED", "report exceeds $MAX_SERIALIZED bytes")
+    }
+    return "{\"format\":\"$FORMAT\",\"version\":$VERSION,\"payload\":${jsonQuote(payload)},\"integrity\":\"${integrityDigest(payload)}\"}"
 }
 
 /** Contract format identifier. */
@@ -172,7 +383,7 @@ fun SAFE_PATH_RESOLVER_FORMAT(): String = FORMAT
 /** Contract version. */
 fun SAFE_PATH_RESOLVER_VERSION(): Int = VERSION
 
-/** Contract limits (mirrors the canonical Node export). */
+/** Contract limits. */
 fun SAFE_PATH_RESOLVER_LIMITS(): Map<String, Int> = mapOf(
     "MAX_PATH" to MAX_PATH,
     "MAX_SEGMENTS" to MAX_SEGMENTS,
