@@ -44,5 +44,17 @@ jobs:
         run: |
           node scripts/run-conformance.mjs --self contracts/conformance/vectors.safe-path-resolver.json
           node scripts/run-conformance.mjs --self contracts/conformance/vectors.runtime-capability-inspector.json
+      - name: Prepare Linux Chromium CDP compatibility
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          REAL_BROWSER="$(node -e "import('./cubes/browser/src/index.js').then(({BrowserSession}) => process.stdout.write(BrowserSession.findExecutable() || ''))")"
+          test -n "$REAL_BROWSER"
+          WRAPPER="$RUNNER_TEMP/sovereign-chromium-cdp"
+          printf '%s\n' '#!/usr/bin/env bash' > "$WRAPPER"
+          printf 'exec %q --remote-allow-origins=* "$@"\n' "$REAL_BROWSER" >> "$WRAPPER"
+          chmod +x "$WRAPPER"
+          echo "BROWSER_EXECUTABLE=$WRAPPER" >> "$GITHUB_ENV"
       - name: Real browser smoke test
         run: npm run test:browser
