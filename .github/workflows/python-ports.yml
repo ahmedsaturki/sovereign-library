@@ -48,6 +48,7 @@ jobs:
           python -m py_compile python/sovereign_cache/src/sovereign_cache/__init__.py
           python -m py_compile python/sovereign_validation/src/sovereign_validation/__init__.py
           python -m py_compile python/sovereign_url/src/sovereign_url/__init__.py
+          python -m py_compile python/sovereign_circuit_breaker/src/sovereign_circuit_breaker/__init__.py
       - name: Install pytest
         run: python -m pip install --quiet pytest
       - name: Native pytest
@@ -60,6 +61,7 @@ jobs:
           (cd python/sovereign_cache && python -m pytest tests -q)
           (cd python/sovereign_validation && python -m pytest tests -q)
           (cd python/sovereign_url && python -m pytest tests -q)
+          (cd python/sovereign_circuit_breaker && python -m pytest tests -q)
       - name: Language-neutral conformance (SPR1, RCI1, CJSON1, DIG1)
         run: |
           python python/scripts/run_conformance.py contracts/conformance/vectors.safe-path-resolver.json python/sovereign_safe_path_resolver/src/sovereign_safe_path_resolver/__init__.py
