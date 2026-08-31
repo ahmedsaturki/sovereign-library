@@ -195,9 +195,11 @@ Ubuntu emulator instrumentation now uses an explicit headless AVD + ADB instrume
 
 The latest feature-branch HEAD must always be read from GitHub. At the time of this update, PR #125 points to:
 
-`40b7dfc1a449307142beef45626dacc000a1bd5b`
+`8a52916b9b27e1ebecdf9022cd015aabfa0e4a43`
 
-The latest workflow-only Browser verification commit is `40b7dfc...`; the Android CI hardening commit immediately beneath it is `f4ba6139...` and the Python URL implementation/fix chain is beneath that. Do not mix workflow evidence with source evidence from an unrelated SHA.
+The latest workflow-only Browser verification commit is `40b7dfc...`; the Android CI hardening commit immediately beneath it is `f4ba6139...`; the Python URL implementation/fix chain is beneath that; and the current Python circuit-breaker implementation/test/CI wiring is the newest native-Python layer.
+
+Do not mix workflow evidence with source evidence from an unrelated SHA.
 
 ### Effective next task
 
