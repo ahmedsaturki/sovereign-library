@@ -14,6 +14,10 @@ on:
       - ".github/workflows/kotlin-jvm.yml"
       - "contracts/conformance/**"
 
+concurrency:
+  group: kotlin-jvm-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   kotlin-jvm:
     name: Kotlin/JVM ${{ matrix.os }} / JDK 17
