@@ -64,10 +64,10 @@ jobs:
           set -Eeuo pipefail
           REAL_BROWSER="$(node -e "import('./cubes/browser/src/index.js').then(({BrowserSession}) => process.stdout.write(BrowserSession.findExecutable() || ''))")"
           test -n "$REAL_BROWSER"
-          WRAPPER="$RUNNER_TEMP/sovereign-chromium-cdp"
-          printf '%s\n' '#!/usr/bin/env bash' > "$WRAPPER"
-          printf 'exec %q --remote-allow-origins=* "$@"\n' "$REAL_BROWSER" >> "$WRAPPER"
-          chmod +x "$WRAPPER"
-          echo "BROWSER_EXECUTABLE=$WRAPPER" >> "$GITHUB_ENV"
+          test -x "$REAL_BROWSER"
+          echo "Using native Chromium executable: $REAL_BROWSER"
+          echo "BROWSER_EXECUTABLE=$REAL_BROWSER" >> "$GITHUB_ENV"
+          echo "SOVEREIGN_BROWSER_NO_SANDBOX=1" >> "$GITHUB_ENV"
+          "$REAL_BROWSER" --version
       - name: Real browser smoke test
         run: npm run test:browser
