@@ -46,13 +46,36 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Android SDK
+      - name: Set up Android SDK (Linux/Windows)
+        if: matrix.os != 'macos-15-intel'
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 12266719
           accept-android-sdk-licenses: true
           log-accepted-android-sdk-licenses: true
           packages: platform-tools platforms;android-34 build-tools;34.0.0
+
+      - name: Set up Android SDK (macOS preinstalled)
+        if: matrix.os == 'macos-15-intel'
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 12266719
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: true
+
+      - name: Verify macOS preinstalled Android SDK
+        if: matrix.os == 'macos-15-intel'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/Library/Android/sdk}}"
+          test -d "$SDK"
+          test -x "$SDK/platform-tools/adb"
+          test -d "$SDK/platforms/android-34"
+          test -x "$SDK/emulator/emulator"
+          echo "Using preinstalled Android SDK: $SDK"
+          "$SDK/platform-tools/adb" version
+          test -n "$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d -print -quit)"
 
       - name: Install Android emulator image
         if: matrix.os == 'ubuntu-latest'
@@ -177,7 +200,27 @@ jobs:
           adb shell settings put global window_animation_scale 0
           adb shell settings put global transition_animation_scale 0
           adb shell settings put global animator_duration_scale 0
-          ./gradlew :safe-path-resolver:connectedDebugAndroidTest --no-daemon --console=plain
+
+          ./gradlew :safe-path-resolver:installDebugAndroidTest --no-daemon --console=plain
+
+          INSTRUMENTATION="$(adb shell pm list instrumentation | tr -d '\r' | sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' | grep '/androidx.test.runner.AndroidJUnitRunner' | head -1)"
+          test -n "$INSTRUMENTATION"
+          echo "Instrumentation target: $INSTRUMENTATION"
+
+          set +e
+          timeout --preserve-status 15m adb shell am instrument -w -r "$INSTRUMENTATION"
+          status=$?
+          set -e
+
+          echo "===== ADB DEVICES ====="
+          adb devices -l || true
+          echo "===== INSTRUMENTATION LIST ====="
+          adb shell pm list instrumentation || true
+          echo "===== EMULATOR LOG ====="
+          tail -n 500 /tmp/sovereign-emulator.log || true
+          echo "===== LOGCAT ====="
+          adb logcat -d -t 500 || true
+          exit "$status"
 
       - name: Upload AAR artifacts
         if: matrix.os == 'ubuntu-latest'
