@@ -18,6 +18,7 @@ classifiers = [
 ]
 dependencies = []
 
+[project.optional-dependencies]
 test = ["pytest>=7"]
 
 [tool.hatch.build.targets.wheel]
