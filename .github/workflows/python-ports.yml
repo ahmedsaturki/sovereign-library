@@ -12,6 +12,10 @@ on:
       - 'python/**'
       - 'contracts/conformance/**'
 
+concurrency:
+  group: python-ports-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   python-ports:
     name: Python ${{ matrix.python }} / ${{ matrix.os }}
