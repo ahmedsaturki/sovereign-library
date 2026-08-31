@@ -1,6 +1,11 @@
 """Contract-grounded native tests for the Sovereign URL / Query / Encoding Python port."""
 
+import os
+import sys
+
 import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from sovereign_url import (
     UrlError,
