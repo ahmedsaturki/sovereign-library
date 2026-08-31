@@ -14,6 +14,10 @@ on:
       - ".github/workflows/android.yml"
       - "contracts/conformance/**"
 
+concurrency:
+  group: android-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   android:
     name: Android ${{ matrix.os }} / AGP 8.5 / JDK 17
