@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sovereign-url"
+version = "0.1.0"
+description = "Native Python implementation of the Sovereign URL / Query / Encoding contract."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Sovereign Library" }]
+keywords = ["sovereign", "url", "query", "encoding", "base64"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sovereign_url"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/sovereign_url", "README.md", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
