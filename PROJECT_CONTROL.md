@@ -141,7 +141,7 @@ Python second wave COMPLETED (2026-08-28): seven native ports now conformant and
 - Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
 
 - Current branch: `feat/continuity-hardening`
-- Current HEAD: `cac209c523334da7e1c57eefdf4611cfd4a71ba5`
+- Current HEAD: 36a913ba61771972d0dabc345c7643eedd51655e
 - PR #125: **OPEN / UNMERGED**
 - Publication status: **NOT PERFORMED**
 
@@ -163,7 +163,7 @@ Python second wave COMPLETED (2026-08-28): seven native ports now conformant and
 - Validation status: **TECHNICALLY_READY** (18/18 tests pass, no current-head regression evidence)
 
 - Current CI state:
-  - python-ports: **SUCCESS** (run 33519674799, HEAD `cac209c5...`)
+- python-ports: **SUCCESS** (run 33536475992, HEAD 36a913b...)
   - android: **IN_PROGRESS** (run 33519674705, HEAD `cac209c5...`)
   - verify: **SUCCESS** (run 33519674709, HEAD `cac209c5...`)
   - kotlin-jvm: **SUCCESS** (run 33519674738, HEAD `cac209c5...`)
@@ -188,7 +188,7 @@ This section is the authoritative current execution state and supersedes contrad
 - Browser integration Cubes: **7/7 TECHNICALLY_READY**.
 - Products: **2/2 TECHNICALLY_READY**.
 - Qualification matrix v17: **84/84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL**.
-- Python native ports currently qualified in the current expansion sequence: SPR1, RCI1, canonical-json, result, digest, cache, validation, and url.
+Python native ports currently qualified in the current expansion sequence: SPR1, RCI1, canonical-json, result, digest, cache, validation, url, retry, and circuit-breaker.
 
 ### Python validation
 
@@ -224,7 +224,7 @@ Ubuntu emulator instrumentation now uses an explicit headless AVD + ADB instrume
 
 The latest feature-branch HEAD must always be read from GitHub. At the time of this update, PR #125 points to:
 
-`cac209c523334da7e1c57eefdf4611cfd4a71ba5`
+`36a913ba61771972d0dabc345c7643eedd51655e`
 
 The latest workflow-only Browser verification commit is `40b7dfc...`; the Android CI hardening commit immediately beneath it is `f4ba6139...`; the Python URL implementation/fix chain is beneath that; and the current Python circuit-breaker implementation/test/CI wiring is the newest native-Python layer.
 
