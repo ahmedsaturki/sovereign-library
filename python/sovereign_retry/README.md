@@ -91,7 +91,7 @@ Python equivalents of DOM AbortController/AbortSignal for cooperative cancellati
 
 The native async test suite requires `pytest-asyncio`. Repository CI installs both `pytest` and `pytest-asyncio` before running `python -m pytest tests -q` for this package.
 
-Deterministic tests using `FakeClock` schedule the retry coroutine before advancing the clock. Timeout and backoff timers are driven by the injected clock rather than real wall-clock sleeps.
+Deterministic tests using `FakeClock` schedule the retry coroutine before advancing the clock. Timeout and backoff timers are driven by the injected clock rather than real wall-clock sleeps. Tests must not advance `FakeClock` before the async operation has been scheduled on the event loop.
 
 The CI test-environment correction is intentionally kept in the workflow rather than added as a runtime dependency of the package.
 
