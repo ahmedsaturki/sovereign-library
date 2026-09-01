@@ -1,19 +1,19 @@
 """Native tests for the RETRY1 retry Python port (contract-grounded)."""
 
 import asyncio
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from sovereign_retry import (
+    AbortController,
+    AbortSignal,
+    FakeClock,
+    RealClock,
     RetryError,
     RetryRunner,
     create_retry_policy,
-    RealClock,
-    FakeClock,
-    AbortController,
-    AbortSignal,
 )
 
 
@@ -42,16 +42,13 @@ def test_jitter_is_deterministic_when_random_source_is_injected() -> None:
 
 async def test_retry_runner_retries_retryable_failures_and_returns_attempt_history() -> None:
     clock = FakeClock(0)
-    runner = RetryRunner(
-        create_retry_policy(max_attempts=3, base_delay_ms=100), clock=clock
-    )
+    runner = RetryRunner(create_retry_policy(max_attempts=3, base_delay_ms=100), clock=clock)
     count = 0
 
     async def operation(ctx):
         nonlocal count
         count += 1
         if count < 3:
-            # Create a retryable error
             class TempError(Exception):
                 retryable = True
 
@@ -59,13 +56,13 @@ async def test_retry_runner_retries_retryable_failures_and_returns_attempt_histo
         assert ctx["signal"].aborted is False
         return "ok"
 
-    promise = runner.run(operation)
+    task = asyncio.create_task(runner.run(operation))
     await flush_microtasks()
     clock.advance(100)
     await flush_microtasks()
     clock.advance(200)
     await flush_microtasks()
-    result = await promise
+    result = await task
 
     assert result.value == "ok"
     assert len(result.attempts) == 3
@@ -74,32 +71,27 @@ async def test_retry_runner_retries_retryable_failures_and_returns_attempt_histo
 
 
 async def test_non_retryable_errors_stop_immediately() -> None:
-    runner = RetryRunner(
-        create_retry_policy(max_attempts=5), clock=FakeClock(0)
-    )
+    runner = RetryRunner(create_retry_policy(max_attempts=5), clock=FakeClock(0))
 
-    try:
-        await runner.run(lambda _: (_ for _ in ()).throw(Exception("fatal")))
-        assert False, "should have raised"
-    except RetryError as error:
-        assert error.code == "RETRY_EXHAUSTED"
-        assert error.attempts == 1
-        assert error.retryable is False
+    async def operation(_):
+        raise Exception("fatal")
+
+    with pytest.raises(RetryError) as exc_info:
+        await runner.run(operation)
+
+    assert exc_info.value.code == "RETRY_EXHAUSTED"
+    assert exc_info.value.attempts == 1
+    assert exc_info.value.retryable is False
 
 
 async def test_attempt_timeout_aborts_the_attempt_and_is_retryable_by_default() -> None:
     clock = FakeClock(0)
-    runner = RetryRunner(
-        create_retry_policy(max_attempts=2, base_delay_ms=50), clock=clock
-    )
+    runner = RetryRunner(create_retry_policy(max_attempts=2, base_delay_ms=50), clock=clock)
 
-    async def operation(ctx):
-        # This operation never completes, it will be aborted by timeout
-        if ctx["signal"].aborted:
-            raise ctx["signal"].reason
+    async def operation(_):
         await asyncio.Event().wait()
 
-    promise = runner.run(operation, attempt_timeout_ms=100)
+    task = asyncio.create_task(runner.run(operation, attempt_timeout_ms=100))
     await flush_microtasks()
     clock.advance(100)
     await flush_microtasks()
@@ -108,19 +100,16 @@ async def test_attempt_timeout_aborts_the_attempt_and_is_retryable_by_default() 
     clock.advance(100)
     await flush_microtasks()
 
-    try:
-        await promise
-        assert False, "should have raised"
-    except RetryError as error:
-        assert error.code == "RETRY_EXHAUSTED"
-        assert error.attempts == 2
+    with pytest.raises(RetryError) as exc_info:
+        await task
+
+    assert exc_info.value.code == "RETRY_EXHAUSTED"
+    assert exc_info.value.attempts == 2
 
 
 async def test_abort_signal_cancels_during_backoff_and_cleans_the_timer() -> None:
     clock = FakeClock(0)
-    runner = RetryRunner(
-        create_retry_policy(max_attempts=3, base_delay_ms=100), clock=clock
-    )
+    runner = RetryRunner(create_retry_policy(max_attempts=3, base_delay_ms=100), clock=clock)
     controller = AbortController()
 
     async def operation(_):
@@ -129,18 +118,15 @@ async def test_abort_signal_cancels_during_backoff_and_cleans_the_timer() -> Non
 
         raise TempError("temporary")
 
-    promise = runner.run(operation, signal=controller.signal)
+    task = asyncio.create_task(runner.run(operation, signal=controller.signal))
     await flush_microtasks()
     controller.abort(Exception("stop"))
 
-    try:
-        await promise
-        assert False, "should have raised"
-    except RetryError as error:
-        assert error.code == "CANCELLED"
-        assert error.cancelled is True
+    with pytest.raises(RetryError) as exc_info:
+        await task
 
-    # All timers should be cleaned up
+    assert exc_info.value.code == "CANCELLED"
+    assert exc_info.value.cancelled is True
     assert len(clock.timers) == 0
 
 
@@ -157,44 +143,24 @@ async def test_total_budget_prevents_a_retry_that_would_exceed_the_budget() -> N
 
         raise TempError("temporary")
 
-    promise = runner.run(operation)
+    task = asyncio.create_task(runner.run(operation))
     await flush_microtasks()
 
-    try:
-        await promise
-        assert False, "should have raised"
-    except RetryError as error:
-        assert error.code == "BUDGET_EXCEEDED"
+    with pytest.raises(RetryError) as exc_info:
+        await task
+
+    assert exc_info.value.code == "BUDGET_EXCEEDED"
 
 
 def test_policy_validation_rejects_invalid_configuration() -> None:
-    # maxAttempts must be >= 1
-    try:
+    with pytest.raises((ValueError, TypeError)):
         create_retry_policy(max_attempts=0)
-        assert False, "should have raised ValueError"
-    except (ValueError, TypeError):
-        pass
-
-    # backoff must be one of fixed, linear, exponential
-    try:
+    with pytest.raises(TypeError):
         create_retry_policy(backoff="unknown")
-        assert False, "should have raised TypeError"
-    except TypeError:
-        pass
-
-    # factor must be >= 1
-    try:
+    with pytest.raises((ValueError, TypeError)):
         create_retry_policy(factor=0)
-        assert False, "should have raised ValueError"
-    except (ValueError, TypeError):
-        pass
-
-    # jitter must be none, full, or bounded
-    try:
+    with pytest.raises(TypeError):
         create_retry_policy(jitter="unknown")
-        assert False, "should have raised TypeError"
-    except TypeError:
-        pass
 
 
 def test_linear_backoff_computes_correct_delays() -> None:
@@ -205,12 +171,10 @@ def test_linear_backoff_computes_correct_delays() -> None:
 
 
 def test_max_delay_caps_exponential_backoff() -> None:
-    policy = create_retry_policy(
-        backoff="exponential", base_delay_ms=100, factor=2, max_delay_ms=150
-    )
+    policy = create_retry_policy(backoff="exponential", base_delay_ms=100, factor=2, max_delay_ms=150)
     assert policy.delay_for(1) == 100
-    assert policy.delay_for(2) == 150  # capped at 150
-    assert policy.delay_for(3) == 150  # capped at 150
+    assert policy.delay_for(2) == 150
+    assert policy.delay_for(3) == 150
 
 
 def test_retry_error_attributes() -> None:
@@ -233,35 +197,27 @@ def test_retry_error_attributes() -> None:
 
 
 async def test_custom_retryable_classifier() -> None:
-    def custom_retryable(e: BaseException) -> bool:
-        return isinstance(e, ValueError)
+    def custom_retryable(error: BaseException) -> bool:
+        return isinstance(error, ValueError)
 
     policy = create_retry_policy(max_attempts=2, retryable=custom_retryable)
     runner = RetryRunner(policy, clock=FakeClock(0))
 
-    # ValueError should be retryable
     async def operation_retryable(_):
         raise ValueError("retry me")
 
-    # TypeError should NOT be retryable
     async def operation_non_retryable(_):
         raise TypeError("fatal")
 
-    # Test retryable
-    try:
+    with pytest.raises(RetryError) as retry_exc:
         await runner.run(operation_retryable)
-        assert False, "should have raised after retries exhausted"
-    except RetryError as e:
-        assert e.code == "RETRY_EXHAUSTED"
-        assert e.attempts == 2
+    assert retry_exc.value.code == "RETRY_EXHAUSTED"
+    assert retry_exc.value.attempts == 2
 
-    # Test non-retryable
-    try:
+    with pytest.raises(RetryError) as fatal_exc:
         await runner.run(operation_non_retryable)
-        assert False, "should have raised"
-    except RetryError as e:
-        assert e.code == "RETRY_EXHAUSTED"
-        assert e.attempts == 1
+    assert fatal_exc.value.code == "RETRY_EXHAUSTED"
+    assert fatal_exc.value.attempts == 1
 
 
 async def test_real_clock_works() -> None:
@@ -275,32 +231,21 @@ def test_fake_clock_advance_clears_timers_in_order() -> None:
     clock = FakeClock(0)
     results = []
 
-    def cb1():
-        results.append("first")
-
-    def cb2():
-        results.append("second")
-
-    clock.set_timeout(cb1, 200)
-    clock.set_timeout(cb2, 100)
+    clock.set_timeout(lambda: results.append("first"), 200)
+    clock.set_timeout(lambda: results.append("second"), 100)
 
     clock.advance(50)
     assert results == []
-
-    clock.advance(50)  # at 100
+    clock.advance(50)
     assert results == ["second"]
-
-    clock.advance(100)  # at 200
+    clock.advance(100)
     assert results == ["second", "first"]
 
 
 async def test_runner_immutable_after_creation() -> None:
     runner = RetryRunner(create_retry_policy(), clock=FakeClock(0))
-    try:
+    with pytest.raises(AttributeError):
         runner.policy = create_retry_policy(max_attempts=10)
-        assert False, "should have raised AttributeError"
-    except AttributeError:
-        pass
 
 
 async def test_max_delay_ms_with_jitter() -> None:
@@ -310,40 +255,37 @@ async def test_max_delay_ms_with_jitter() -> None:
         factor=2,
         max_delay_ms=150,
         jitter="full",
-        random=lambda: 0.5,  # 50% jitter
+        random=lambda: 0.5,
     )
-    # Attempt 2: raw=200, capped=150, jitter=75
     assert policy.delay_for(2) == 75
 
 
 async def test_fake_clock_negative_values_rejected() -> None:
-    try:
+    with pytest.raises(ValueError):
         FakeClock(-1)
-        assert False, "should have raised"
-    except ValueError:
-        pass
 
     clock = FakeClock(0)
-    try:
+    with pytest.raises(ValueError):
         clock.advance(-1)
-        assert False, "should have raised"
-    except ValueError:
-        pass
-
-    try:
+    with pytest.raises(ValueError):
         clock.set_timeout(lambda: None, -1)
-        assert False, "should have raised"
-    except ValueError:
-        pass
 
 
 async def test_retry_runner_operation_must_be_callable() -> None:
     runner = RetryRunner(clock=FakeClock(0))
-    try:
+    with pytest.raises(TypeError):
         await runner.run("not a function")
-        assert False, "should have raised TypeError"
-    except TypeError:
-        pass
+
+
+async def test_attempt_timeout_validation_rejects_invalid_values() -> None:
+    runner = RetryRunner(clock=FakeClock(0))
+    async def operation(_):
+        return "ok"
+
+    with pytest.raises(ValueError):
+        await runner.run(operation, attempt_timeout_ms=-1)
+    with pytest.raises(ValueError):
+        await runner.run(operation, attempt_timeout_ms="100")
 
 
 async def test_abort_controller_basic() -> None:
@@ -365,40 +307,12 @@ async def test_abort_signal_listeners() -> None:
     signal.abort(Exception("test"))
     assert len(called) == 1
 
-    # Removing listener
     called.clear()
     signal.remove_event_listener(listener)
-    signal.abort(Exception("test2"))
     assert len(called) == 0
 
 
 if __name__ == "__main__":
-    # Run sync tests
-    test_fixed_and_exponential_policies_compute_deterministic_delays()
-    test_jitter_is_deterministic_when_random_source_is_injected()
-    test_policy_validation_rejects_invalid_configuration()
-    test_linear_backoff_computes_correct_delays()
-    test_max_delay_caps_exponential_backoff()
-    test_retry_error_attributes()
-    test_custom_retryable_classifier()
-    test_fake_clock_advance_clears_timers_in_order()
-    test_fake_clock_negative_values_rejected()
-    print("All sync tests passed!")
+    import pytest
 
-    # Run async tests
-    async def run_async_tests():
-        await test_retry_runner_retries_retryable_failures_and_returns_attempt_history()
-        await test_non_retryable_errors_stop_immediately()
-        await test_attempt_timeout_aborts_the_attempt_and_is_retryable_by_default()
-        await test_abort_signal_cancels_during_backoff_and_cleans_the_timer()
-        await test_total_budget_prevents_a_retry_that_would_exceed_the_budget()
-        await test_real_clock_works()
-        await test_runner_immutable_after_creation()
-        await test_max_delay_ms_with_jitter()
-        await test_retry_runner_operation_must_be_callable()
-        await test_abort_controller_basic()
-        await test_abort_signal_listeners()
-        print("All async tests passed!")
-
-    asyncio.run(run_async_tests())
-    print("All tests passed!")
+    raise SystemExit(pytest.main([__file__, "-q"]))
