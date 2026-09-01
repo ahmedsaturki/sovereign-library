@@ -1,5 +1,4 @@
 import asyncio
-import math
 import os
 import sys
 
@@ -42,7 +41,7 @@ def test_jitter_is_deterministic_with_injected_random_source():
     assert bounded["delay_for"](1) == 63
 
 
-def test_retry_runner_retries_and_returns_attempt_history():
+def test_retry_runner_retries_retryable_failures_and_returns_history():
     async def scenario():
         clock = FakeClock(0)
         runner = RetryRunner(
@@ -84,6 +83,35 @@ def test_non_retryable_errors_stop_immediately():
             await runner.run(fatal)
         assert exc.value.code == "RETRY_EXHAUSTED"
         assert exc.value.attempts == 1
+
+    run(scenario())
+
+
+def test_attempt_timeout_uses_the_injected_clock_deterministically():
+    async def scenario():
+        clock = FakeClock(0)
+        runner = RetryRunner(
+            create_retry_policy(max_attempts=1),
+            clock=clock,
+        )
+
+        async def operation(_):
+            await asyncio.Event().wait()
+
+        promise = asyncio.create_task(runner.run(operation, attempt_timeout_ms=100))
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+        assert len(clock.timers) == 1
+        clock.advance(99)
+        await asyncio.sleep(0)
+        assert not promise.done()
+        clock.advance(1)
+        await asyncio.sleep(0)
+        with pytest.raises(RetryError) as exc:
+            await promise
+        assert exc.value.code == "RETRY_EXHAUSTED"
+        assert exc.value.attempts == 1
+        assert len(clock.timers) == 0
 
     run(scenario())
 
