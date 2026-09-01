@@ -87,6 +87,10 @@ Clock implementations for production and testing.
 
 Python equivalents of DOM AbortController/AbortSignal for cooperative cancellation.
 
+## Testing
+
+The native async test suite requires `pytest-asyncio`. The repository CI installs both `pytest` and `pytest-asyncio` before running `python -m pytest tests -q` for this package.
+
 ## License
 
 Apache-2.0
