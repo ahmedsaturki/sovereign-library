@@ -1,103 +1,72 @@
-# PR #125 — Live Continuation Status
+# PR #125 — Current Continuation Checkpoint
 
-This file is a durable continuation note for the current feature branch.
-
-## Source of truth
-
-Always read the live Git ref:
+Read the live branch ref first:
 
 `refs/heads/feat/continuity-hardening`
 
-Do not use a hard-coded SHA in this document as current evidence.
+The ref is the authoritative current HEAD. Do not treat any older SHA in reports or comments as current evidence.
 
-## Current scope
+## State
 
-Repository: `ahmedsaturki/sovereign-library`
+- Branch: `feat/continuity-hardening`
+- PR: `#125`
+- Base: `main`
+- PR state: OPEN / UNMERGED
+- Publication: NOT PERFORMED
 
-PR: `#125`
-
-Branch: `feat/continuity-hardening`
-
-Base: `main`
-
-Merge state: OPEN / UNMERGED
-
-Publication: NOT PERFORMED
-
-## Completed / implemented areas
+## Completed implementation work
 
 - Browser/Product Readiness Wave completed.
 - Existing qualified Python ports preserved.
-- `sovereign_validation` remains correctly structured at `python/sovereign_validation/src/sovereign_validation/__init__.py`.
-- `sovereign_url` native port exists with tests/package metadata/CI.
-- `sovereign_circuit_breaker` native port exists with tests/package metadata/CI.
-- `sovereign_retry` native port exists with implementation, clock adapters, tests, package metadata, README, and CI wiring.
+- `sovereign_validation` remains correctly structured in `src/sovereign_validation`.
+- `sovereign_url` native port present.
+- `sovereign_circuit_breaker` native port present.
+- `sovereign_retry` native port present with clock adapters, package metadata, README, tests, and CI wiring.
+- Retry invalid timeout handling corrected to Python `ValueError`.
+- Retry FakeClock timeout scheduling uses the injected clock.
+- Retry FakeClock backoff scheduling uses the injected clock.
+- Retry async tests schedule operations before advancing the fake clock.
+- Retry classifier test uses zero delay because it is a classifier test, not a delay test.
 - Python CI installs `pytest pytest-asyncio`.
-- Retry tests were corrected to schedule asynchronous runs before advancing `FakeClock`.
-- Retry classifier tests use zero-delay when testing classification so they do not wait on an intentionally unadvanced fake clock.
-- Browser Chromium/CDP smoke remains enabled and fail-closed.
-- Android CI remains a real-emulator gate; no emulator requirement was removed.
+- Browser Linux Chromium/CDP smoke remains enabled and fail-closed.
+- Android CI keeps real emulator instrumentation as a required gate.
 
-## Current qualification rule
+## Qualification policy
 
-A native port is not TECHNICALLY_READY solely because local tests pass.
+Do not mark Retry or Circuit Breaker TECHNICALLY_READY solely from local tests.
 
-Current-head terminal CI evidence is required.
+Require current-head terminal CI evidence, packaging, and out-of-tree verification.
 
-Required Python matrix:
+## Historical CI findings
 
-- Python 3.9 / Ubuntu
-- Python 3.9 / macOS
-- Python 3.12 / Ubuntu
-- Python 3.12 / macOS
+The Python Retry path previously exposed:
 
-## Current retry history
+1. Missing `pytest-asyncio` in CI.
+2. Unscheduled coroutines being advanced with FakeClock before execution.
+3. A classifier test waiting on a fake-clock delay it never advanced.
 
-Historical failure 1:
+All three have been addressed in the repository.
 
-`pytest` was installed without `pytest-asyncio`, causing async tests to fail with:
-
-`async def functions are not natively supported`
-
-Fixed by installing:
-
-`pytest pytest-asyncio`
-
-Historical failure 2:
-
-Several tests created a coroutine with `runner.run(...)` but advanced `FakeClock` before scheduling it.
-
-Fixed by using `asyncio.create_task(...)` before clock advancement.
-
-Historical failure 3:
-
-The classifier test used `FakeClock` with a non-zero retry delay while awaiting a retry without advancing the clock.
-
-Fixed by using `base_delay_ms=0` in that test because delay behavior is tested separately.
-
-These are historical findings and must not be reused as current-head results.
-
-## Current required actions
+## Current execution rule
 
 1. Read live branch HEAD.
-2. Verify current PR HEAD matches it.
-3. Obtain terminal CI results for that exact SHA.
-4. If Python CI fails, diagnose the exact current failure and fix it.
-5. Audit Retry and Circuit Breaker against their authoritative Node contracts.
-6. Verify package build/out-of-tree behavior.
-7. Resolve Android emulator state honestly.
-8. Synchronize project-control documentation.
-9. Determine one authorized next Cube.
-10. Continue autonomously.
+2. Find workflows whose `head_sha` exactly matches that HEAD.
+3. Wait for/inspect terminal conclusions.
+4. Diagnose and fix actual failures.
+5. Verify Retry and Circuit Breaker.
+6. Resolve Android honestly.
+7. Update project-control records.
+8. Select exactly one next authorized task.
+9. Continue autonomously.
 
 ## Governance
 
 - Do not merge PR #125 automatically.
 - Do not publish externally without explicit release authorization.
 - Do not weaken tests.
-- Do not bypass Android instrumentation requirements.
-- Do not destroy history.
+- Do not remove Android emulator requirements.
+- Do not destroy historical evidence.
 
-Required loop:
+Required lifecycle:
 
 `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE PREP -> FREEZE -> NEXT CUBE`
