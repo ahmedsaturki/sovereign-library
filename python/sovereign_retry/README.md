@@ -89,7 +89,9 @@ Python equivalents of DOM AbortController/AbortSignal for cooperative cancellati
 
 ## Testing
 
-The native async test suite requires `pytest-asyncio`. The repository CI installs both `pytest` and `pytest-asyncio` before running `python -m pytest tests -q` for this package.
+The native async test suite requires `pytest-asyncio`. Repository CI installs both `pytest` and `pytest-asyncio` before running `python -m pytest tests -q` for this package.
+
+The CI test-environment correction is intentionally kept in the workflow rather than added as a runtime dependency of the package.
 
 ## License
 
