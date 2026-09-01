@@ -210,21 +210,39 @@ jobs:
           INSTRUMENTATION="$(adb shell pm list instrumentation | tr -d '\r' | sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' | grep '/androidx.test.runner.AndroidJUnitRunner' | head -1)"
           test -n "$INSTRUMENTATION"
           echo "Instrumentation target: $INSTRUMENTATION"
+          adb shell pm list instrumentation
 
-          set +e
-          timeout --preserve-status 60m adb shell am instrument -w -r "$INSTRUMENTATION"
-          status=$?
-          set -e
+          TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
 
-          echo "===== ADB DEVICES ====="
-          adb devices -l || true
-          echo "===== INSTRUMENTATION LIST ====="
-          adb shell pm list instrumentation || true
-          echo "===== EMULATOR LOG ====="
-          tail -n 500 /tmp/sovereign-emulator.log || true
-          echo "===== LOGCAT ====="
-          adb logcat -d -t 500 || true
-          exit "$status"
+          run_instrumentation() {
+            local method="$1"
+            echo "===== START $method ====="
+            set +e
+            timeout --preserve-status 3m adb shell am instrument -w -r \
+              -e class "$TEST_CLASS#$method" \
+              "$INSTRUMENTATION"
+            local status=$?
+            set -e
+            echo "===== END $method status=$status ====="
+            if [ "$status" -ne 0 ]; then
+              echo "===== ADB DEVICES ====="
+              adb devices -l || true
+              echo "===== PACKAGE/INSTRUMENTATION ====="
+              adb shell pm list packages || true
+              adb shell pm list instrumentation || true
+              echo "===== EMULATOR LOG ====="
+              tail -n 500 /tmp/sovereign-emulator.log || true
+              echo "===== LOGCAT ====="
+              adb logcat -d -t 500 || true
+              return "$status"
+            fi
+          }
+
+          run_instrumentation normalize_and_contain_on_art
+          run_instrumentation traversal_escape_is_blocked_on_art
+          run_instrumentation serializer_is_deterministic_on_art
+
+          echo "ANDROID_EMULATOR_INSTRUMENTATION_OK"
 
       - name: Upload AAR artifacts
         if: matrix.os == 'ubuntu-latest'
