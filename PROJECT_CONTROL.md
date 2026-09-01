@@ -178,9 +178,7 @@ The old `PRE_RELEASE` wording remains only as historical evidence from the earli
 
 Earlier feature-branch documentation recorded `7dbf4def...` and `aa8d0eb` as reconciliation baselines. Those statements are historical source/CI evidence and are not the current branch tip. The current branch state is determined from GitHub HEAD and the authoritative current-state section below.
 
-## CURRENT AUTHORITATIVE STATE — 2026-08-31
-
-This section is the authoritative current execution state and supersedes contradictory historical wording elsewhere in this file.
+## CURRENT AUTHORITATIVE STATE — 2026-09-01
 
 ### Completed distribution/readiness layers
 
@@ -224,15 +222,26 @@ Ubuntu emulator instrumentation now uses an explicit headless AVD + ADB instrume
 
 The latest feature-branch HEAD must always be read from GitHub. At the time of this update, PR #125 points to:
 
-`36a913ba61771972d0dabc345c7643eedd51655e`
+`a55e31da575cba0b65b1ed1a6d3b08fb74293cf5`
 
 The latest workflow-only Browser verification commit is `40b7dfc...`; the Android CI hardening commit immediately beneath it is `f4ba6139...`; the Python URL implementation/fix chain is beneath that; and the current Python circuit-breaker implementation/test/CI wiring is the newest native-Python layer.
 
 Do not mix workflow evidence with source evidence from an unrelated SHA.
 
+### Current CI state
+
+- python-ports: **SUCCESS** (run 33540205250, HEAD a55e31d...)
+- verify: **SUCCESS** (run 33540205475, HEAD a55e31d...)
+- kotlin-jvm: **SUCCESS** (run 33540205376, HEAD a55e31d...)
+- android: **IN_PROGRESS** (run 33540205357, HEAD a55e31d...)
+
+### Android status
+
+**IN_PROGRESS** (instrumentation step running for over 50 minutes; awaiting terminal success or failure)
+
 ### Effective next task
 
-Once the current CI gates are terminal-successful, the next eligible technical task is the next high-value Python native port selected from repository contracts and existing Node implementations. Do not redo Browser/Product or validation. Kotlin/JVM release/port-wave activation remains separately governed.
+None - awaiting the completion of the Android instrumentation gate. Once the Android gate reaches terminal success, the next eligible technical task will be determined by governance.
 
 ### Governance locks
 
