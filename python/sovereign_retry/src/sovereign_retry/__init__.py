@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import math
 import random as _random
 import time
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Any, Awaitable, Callable, Mapping, Optional
+from typing import Any, Callable, Mapping, Optional
 
 __all__ = [
     "RetryError",
@@ -140,15 +141,13 @@ def _validate_nonnegative_int(value: Any, name: str) -> None:
 
 
 def _validate_safe_integer_or_infinity(value: Any, name: str, minimum: int = 0) -> None:
-    if value is math.inf:
+    if isinstance(value, float) and math.isinf(value) and value > 0:
         return
     if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
         raise ValueError(f"{name} must be a safe integer >= {minimum} or Infinity")
 
 
 def _round_js(value: float) -> int:
-    if value < 0:
-        return math.floor(value + 0.5)
     return math.floor(value + 0.5)
 
 
@@ -180,7 +179,12 @@ def create_retry_policy(
         raise TypeError("retryable must be a function")
 
     rand = random_source or _random.random
-    predicate = retryable or (lambda error: bool(getattr(error, "retryable", False) or getattr(error, "code", None) == "RETRYABLE"))
+    predicate = retryable or (
+        lambda error: bool(
+            getattr(error, "retryable", False)
+            or getattr(error, "code", None) == "RETRYABLE"
+        )
+    )
 
     def raw_delay(attempt: int) -> float:
         if backoff == "fixed":
@@ -243,22 +247,36 @@ async def _run_with_attempt_timeout(
     attempt: int,
     attempt_timeout_ms: float,
     parent_cancel: Optional[asyncio.Event],
+    clock: Any,
 ) -> Any:
     attempt_cancel = asyncio.Event()
     task = asyncio.create_task(_maybe_await(operation({"attempt": attempt, "signal": attempt_cancel})))
     parent_task: Optional[asyncio.Task[bool]] = None
+    timeout_future: Optional[asyncio.Future[None]] = None
+    timeout_timer: Any = None
     try:
         if parent_cancel is not None and parent_cancel.is_set():
             attempt_cancel.set()
+            task.cancel()
             raise RetryError("CANCELLED", "retry operation cancelled", attempts=attempt - 1, cancelled=True)
+
+        wait_set: set[Any] = {task}
         if parent_cancel is not None:
             parent_task = asyncio.create_task(parent_cancel.wait())
-        timeout = None if attempt_timeout_ms is math.inf else attempt_timeout_ms / 1000.0
-        wait_set: set[asyncio.Task[Any] | asyncio.Future[Any]] = {task}
-        if parent_task is not None:
             wait_set.add(parent_task)
-        done, _ = await asyncio.wait(wait_set, timeout=timeout, return_when=asyncio.FIRST_COMPLETED)
-        if not done:
+
+        if not (isinstance(attempt_timeout_ms, float) and math.isinf(attempt_timeout_ms)):
+            loop = asyncio.get_running_loop()
+            timeout_future = loop.create_future()
+            timeout_timer = clock.set_timeout(
+                lambda: (not timeout_future.done()) and timeout_future.set_result(None),
+                int(attempt_timeout_ms),
+            )
+            wait_set.add(timeout_future)
+
+        done, _ = await asyncio.wait(wait_set, return_when=asyncio.FIRST_COMPLETED)
+
+        if timeout_future is not None and timeout_future in done:
             attempt_cancel.set()
             task.cancel()
             raise RetryError(
@@ -268,18 +286,22 @@ async def _run_with_attempt_timeout(
                 retryable=True,
                 timed_out=True,
             )
+
         if parent_task is not None and parent_task in done and parent_cancel is not None and parent_cancel.is_set():
             attempt_cancel.set()
             task.cancel()
             raise RetryError("CANCELLED", "retry operation cancelled", attempts=attempt, cancelled=True)
+
         return await task
     finally:
+        if timeout_timer is not None:
+            clock.clear_timeout(timeout_timer)
         if parent_task is not None:
             parent_task.cancel()
 
 
 async def _maybe_await(value: Any) -> Any:
-    if isinstance(value, Awaitable):
+    if inspect.isawaitable(value):
         return await value
     return value
 
@@ -309,7 +331,7 @@ class RetryRunner:
         attempts: list[Mapping[str, Any]] = []
         max_attempts = self.policy["maxAttempts"]
         attempt = 1
-        while max_attempts is math.inf or attempt <= max_attempts:
+        while (isinstance(max_attempts, float) and math.isinf(max_attempts)) or attempt <= max_attempts:
             if signal is not None and signal.is_set():
                 raise RetryError("CANCELLED", "retry operation cancelled", attempts=attempt - 1, cancelled=True)
             elapsed_before = max(0, self.clock.now() - started_at)
@@ -318,23 +340,18 @@ class RetryRunner:
 
             attempt_started = self.clock.now()
             try:
-                value = await _run_with_attempt_timeout(operation, attempt, attempt_timeout_ms, signal)
+                value = await _run_with_attempt_timeout(operation, attempt, attempt_timeout_ms, signal, self.clock)
                 attempts.append(MappingProxyType({"attempt": attempt, "ok": True, "elapsedMs": max(0, self.clock.now() - attempt_started)}))
-                return MappingProxyType(
-                    {
-                        "value": value,
-                        "attempts": tuple(attempts),
-                        "totalElapsedMs": max(0, self.clock.now() - started_at),
-                    }
-                )
+                return MappingProxyType({
+                    "value": value,
+                    "attempts": tuple(attempts),
+                    "totalElapsedMs": max(0, self.clock.now() - started_at),
+                })
             except RetryError as error:
                 if error.code == "CANCELLED":
                     attempts.append(MappingProxyType({"attempt": attempt, "ok": False, "error": error, "elapsedMs": max(0, self.clock.now() - attempt_started)}))
                     raise
-                if error.code == "TIMEOUT":
-                    cause: BaseException = error
-                else:
-                    cause = error
+                cause: BaseException = error
             except BaseException as error:
                 cause = error
 
@@ -342,7 +359,8 @@ class RetryRunner:
             if signal is not None and signal.is_set():
                 raise RetryError("CANCELLED", "retry operation cancelled", attempts=attempt, cancelled=True, cause=signal, last_error=cause)
 
-            can_retry = (max_attempts is math.inf or attempt < max_attempts) and bool(self.policy["retryable"](cause))
+            infinite = isinstance(max_attempts, float) and math.isinf(max_attempts)
+            can_retry = (infinite or attempt < max_attempts) and bool(self.policy["retryable"](cause))
             if not can_retry:
                 raise RetryError(
                     "RETRY_EXHAUSTED",
