@@ -4,6 +4,8 @@ import asyncio
 import os
 import sys
 
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from sovereign_retry import (
@@ -279,6 +281,7 @@ async def test_retry_runner_operation_must_be_callable() -> None:
 
 async def test_attempt_timeout_validation_rejects_invalid_values() -> None:
     runner = RetryRunner(clock=FakeClock(0))
+
     async def operation(_):
         return "ok"
 
@@ -309,10 +312,5 @@ async def test_abort_signal_listeners() -> None:
 
     called.clear()
     signal.remove_event_listener(listener)
-    assert len(called) == 0
-
-
-if __name__ == "__main__":
-    import pytest
-
-    raise SystemExit(pytest.main([__file__, "-q"]))
+    signal.abort(Exception("test2"))
+    assert len(called) == 1
