@@ -307,7 +307,7 @@ class RetryRunner:
         if not callable(operation):
             raise TypeError("operation must be a function")
         if not isinstance(attempt_timeout_ms, (int, float)) or attempt_timeout_ms < 0:
-            raise RangeError("attempt_timeout_ms must be a safe integer >= 0 or Infinity")
+                    raise ValueError("attempt_timeout_ms must be a safe integer >= 0 or Infinity")
 
         started_at = self.clock.now()
         attempts: List[AttemptSnapshot] = []
@@ -430,44 +430,43 @@ class RetryRunner:
         )
 
     async def _run_with_attempt_timeout(
-        self,
-        operation: Callable[[Dict[str, Any]], Any],
-        attempt: int,
-        attempt_timeout_ms: Union[int, float],
-        parent_signal: Optional[AbortSignal],
-    ) -> Any:
-        controller = AbortController()
+            self,
+            operation: Callable[[Dict[str, Any]], Any],
+            attempt: int,
+            attempt_timeout_ms: Union[int, float],
+            parent_signal: Optional[AbortSignal],
+        ) -> Any:
+            controller = AbortController()
 
-        # Link parent signal
-        parent_listener = None
-        if parent_signal is not None:
-            def forward() -> None:
-                controller.abort(parent_signal.reason)
+            # Link parent signal
+            parent_listener = None
+            if parent_signal is not None:
+                def forward() -> None:
+                    controller.abort(parent_signal.reason)
 
-            if parent_signal.aborted:
-                controller.abort(parent_signal.reason)
-            else:
-                parent_signal.add_event_listener(forward)
-                parent_listener = lambda: parent_signal.remove_event_listener(forward)
+                if parent_signal.aborted:
+                    controller.abort(parent_signal.reason)
+                else:
+                    parent_signal.add_event_listener(forward)
+                    parent_listener = lambda: parent_signal.remove_event_listener(forward)
 
-        timer = None
-        timed_out = False
+            timer = None
+            timed_out = False
 
-        try:
-            async def work() -> Any:
-                return await operation({"attempt": attempt, "signal": controller.signal})
+            try:
+                async def work() -> Any:
+                    return await operation({"attempt": attempt, "signal": controller.signal})
 
-            if attempt_timeout_ms == float("inf"):
-                return await work()
+                if attempt_timeout_ms == float("inf"):
+                    return await work()
 
-            # Use asyncio wait_for for timeout
-            import asyncio
+                # Use injected clock for timeout (matching Node contract)
+                import asyncio
 
-            async def guarded() -> Any:
-                nonlocal timed_out
-                try:
-                    return await asyncio.wait_for(work(), timeout=attempt_timeout_ms / 1000.0)
-                except asyncio.TimeoutError:
+                timeout_event = asyncio.Event()
+
+                def on_timeout() -> None:
+                    nonlocal timed_out
                     timed_out = True
                     timeout_error = RetryError(
                         "TIMEOUT",
@@ -477,47 +476,87 @@ class RetryRunner:
                         retryable=True,
                     )
                     controller.abort(timeout_error)
-                    raise timeout_error
+                    timeout_event.set()
 
-            return await guarded()
+                timer = self.clock.set_timeout(on_timeout, int(attempt_timeout_ms))
 
-        except BaseException as error:
-            if _is_abort_error(error) and parent_signal is not None and parent_signal.aborted:
+                # Race operation against timeout
+                async def guarded() -> Any:
+                    nonlocal timed_out
+                    try:
+                        operation_task = asyncio.create_task(work())
+                        timeout_task = asyncio.create_task(timeout_event.wait())
+                        done, pending = await asyncio.wait(
+                            [operation_task, timeout_task], return_when=asyncio.FIRST_COMPLETED
+                        )
+                        for task in pending:
+                            task.cancel()
+                        if timeout_task in done:
+                            # Timeout fired
+                            raise RetryError(
+                                "TIMEOUT",
+                                f"attempt {attempt} timed out",
+                                attempts=attempt,
+                                timed_out=True,
+                                retryable=True,
+                            )
+                        return operation_task.result()
+                    except asyncio.CancelledError:
+                        if timed_out:
+                            raise RetryError(
+                                "TIMEOUT",
+                                f"attempt {attempt} timed out",
+                                attempts=attempt,
+                                timed_out=True,
+                                retryable=True,
+                            )
+                        raise
+
+                return await guarded()
+
+            except BaseException as error:
+                if _is_abort_error(error) and parent_signal is not None and parent_signal.aborted:
+                    raise
+                if parent_signal is not None and parent_signal.aborted:
+                    raise parent_signal.reason or error
+                if timed_out:
+                    raise
                 raise
-            if parent_signal is not None and parent_signal.aborted:
-                raise parent_signal.reason or error
-            if timed_out:
-                raise
-            raise
-        finally:
-            if parent_listener is not None:
-                parent_listener()
+            finally:
+                if parent_listener is not None:
+                    parent_listener()
+                if timer is not None:
+                    self.clock.clear_timeout(timer)
 
     async def _delay(self, ms: int, signal: Optional[AbortSignal]) -> None:
-        if ms <= 0:
-            return
-        if signal is not None and signal.aborted:
-            raise signal.reason or RetryError("CANCELLED", "operation aborted")
-
-        import asyncio
-
-        # Create an event that can be triggered by abort
-        abort_event = asyncio.Event()
-
-        def on_abort() -> None:
-            abort_event.set()
-
-        listener_registered = False
-        if signal is not None:
-            signal.add_event_listener(on_abort)
-            listener_registered = True
-
-        try:
-            await asyncio.wait_for(asyncio.sleep(ms / 1000.0), timeout=None)
-        except asyncio.CancelledError:
+            if ms <= 0:
+                return
             if signal is not None and signal.aborted:
                 raise signal.reason or RetryError("CANCELLED", "operation aborted")
-            raise
-        finally:
-            if listener_registered:
-                signal.remove_event_listener(on_abort)
+
+            import asyncio
+
+            # Create an event that can be triggered by abort or clock
+            abort_event = asyncio.Event()
+
+            def on_abort() -> None:
+                abort_event.set()
+
+            listener_registered = False
+            if signal is not None:
+                signal.add_event_listener(on_abort)
+                listener_registered = True
+
+            # Use injected clock for delay
+            timer = self.clock.set_timeout(lambda: abort_event.set(), ms)
+
+            try:
+                await abort_event.wait()
+            except asyncio.CancelledError:
+                if signal is not None and signal.aborted:
+                    raise signal.reason or RetryError("CANCELLED", "operation aborted")
+                raise
+            finally:
+                if listener_registered:
+                    signal.remove_event_listener(on_abort)
+                self.clock.clear_timeout(timer)

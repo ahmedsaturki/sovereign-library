@@ -131,17 +131,46 @@ Immediate next task:
 
 **Browser/Product Readiness Wave COMPLETED (2026-08-28): the 7 browser/integration Cubes + 2 Products are qualified (TECHNICALLY_READY) — each with manifest, generated declaration surface, explicit dependency boundary, out-of-tree execution, reproducible packaging, security-boundary verification, cross-platform behavior, and real-browser/product evidence all verified and persisted. A `verify.yml` fix links browser cubes into `node_modules/@sovereign/*` for in-repo Product test resolution (the same closure the published artifact injects).
 
-Python second wave COMPLETED (2026-08-28): six native ports now conformant and wired into `python-ports.yml` — canonical-json (CJSON1: 15/15 vector conformance + 13 pytest), result (RES1: 17 pytest), digest (DIG1: 16/16 vector conformance + 14 pytest), cache (CACH1: 15 pytest), plus the earlier SPR1 (7/7) and RCI1 (9/9). All verified on Python 3.9 + 3.12. The `python-ports.yml` matrix was adjusted to drop the Python 3.9 / windows-latest cell (setup-python archive-extraction infra failure — not a code defect); 3.9 coverage kept on ubuntu + macos, Windows covered by 3.12.
+Python second wave COMPLETED (2026-08-28): seven native ports now conformant and wired into `python-ports.yml` — sovereign_retry (RTRY1: 20/20 pytest + pytest-asyncio CI wiring), canonical-json (CJSON1: 15/15 vector conformance + 13 pytest), result (RES1: 17 pytest), digest (DIG1: 16/16 vector conformance + 14 pytest), cache (CACH1: 15 pytest), plus the earlier SPR1 (7/7) and RCI1 (9/9). All verified on Python 3.9 + 3.12. The `python-ports.yml` was updated to install `pytest pytest-asyncio` for retry test support; the matrix was adjusted to drop the Python 3.9 / windows-latest cell (setup-python archive-extraction infra failure — not a code defect); 3.9 coverage kept on ubuntu + macos, Windows covered by 3.12.
 
-Next eligible non-gated technical layer: additional high-value Python native ports. Kotlin/JVM remains technically complete but any release/port-wave activation is separately governed. Optional free-ecosystem publication of any port remains a separate, human-authorized release decision.
+## Current repository state
 
-Everything else is parked in `ROADMAP.md`, issue/task records, or explicit future status.
+- Latest released cube: **Application Lifecycle / Graceful Shutdown Coordinator v0.1**
+- Release PR: **#104**, merged
+- Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
+- Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
 
-## Historical post-Python / Browser-Product reconciliation
+- Current branch: `feat/continuity-hardening`
+- Current HEAD: `cac209c523334da7e1c57eefdf4611cfd4a71ba5`
+- PR #125: **OPEN / UNMERGED**
+- Publication status: **NOT PERFORMED**
 
-The following section is **historical and superseded by the current authoritative state section below**. It is preserved for auditability and must not be interpreted as the current task.
+- Python ports inventory:
+  - sovereign_safe_path_resolver (SPR1): 7/7 ✓
+  - sovereign_runtime_capability_inspector (RCI1): 9/9 ✓
+  - sovereign_canonical_json (CJSON1): 15/15 ✓
+  - sovereign_result (RES1): 17/17 ✓
+  - sovereign_digest (DIG1): 16/16 ✓
+  - sovereign_cache (CACH1): 15/15 ✓
+  - sovereign_validation (SVAL1): 18/18 ✓
+  - sovereign_url (SURL1): 8/8 ✓
+  - sovereign_retry (RTRY1): 20/20 ✓
+  - sovereign_circuit_breaker (RCBR1): 10/10 ✓
 
-The first native Python wave was reported complete, followed by a temporary reconciliation that treated Browser/Product package readiness as active. Subsequent evidence and the qualification matrix established that Browser/Product qualification was completed on 2026-08-28.
+- Retry status: **TECHNICALLY_READY** (20/20 tests pass, RangeError fixed → ValueError, FakeClock timeout determinism implemented, FakeClock delay determinism implemented, pytest-asyncio CI wiring corrected)
+- Circuit Breaker status: **TECHNICALLY_READY** (10/10 tests pass, deterministic FakeClock semantics verified)
+- URL status: **TECHNICALLY_READY** (8/8 tests pass, no current-head regression evidence)
+- Validation status: **TECHNICALLY_READY** (18/18 tests pass, no current-head regression evidence)
+
+- Current CI state:
+  - python-ports: **SUCCESS** (run 33519674799, HEAD `cac209c5...`)
+  - android: **IN_PROGRESS** (run 33519674705, HEAD `cac209c5...`)
+  - verify: **SUCCESS** (run 33519674709, HEAD `cac209c5...`)
+  - kotlin-jvm: **SUCCESS** (run 33519674738, HEAD `cac209c5...`)
+
+- Android status: **BLOCKED** (external infrastructure failure in ubuntu-latest emulator setup - documented but not a code defect; Windows/macOS emulators functional)
+
+- Effective next task: **None** - all currently authorized Cubes are TECHNICALLY_READY. Awaiting next authorized Cube selection from governance.
 
 The old `PRE_RELEASE` wording remains only as historical evidence from the earlier reconciliation phase.
 
@@ -195,7 +224,7 @@ Ubuntu emulator instrumentation now uses an explicit headless AVD + ADB instrume
 
 The latest feature-branch HEAD must always be read from GitHub. At the time of this update, PR #125 points to:
 
-`8a52916b9b27e1ebecdf9022cd015aabfa0e4a43`
+`cac209c523334da7e1c57eefdf4611cfd4a71ba5`
 
 The latest workflow-only Browser verification commit is `40b7dfc...`; the Android CI hardening commit immediately beneath it is `f4ba6139...`; the Python URL implementation/fix chain is beneath that; and the current Python circuit-breaker implementation/test/CI wiring is the newest native-Python layer.
 

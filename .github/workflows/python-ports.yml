@@ -55,7 +55,7 @@ jobs:
           python -m py_compile python/sovereign_circuit_breaker/src/sovereign_circuit_breaker/__init__.py
           python -m py_compile python/sovereign_retry/src/sovereign_retry/__init__.py
       - name: Install pytest
-        run: python -m pip install --quiet pytest
+        run: python -m pip install --quiet pytest pytest-asyncio
       - name: Native pytest
         run: |
           (cd python/sovereign_safe_path_resolver && python -m pytest tests -q)
