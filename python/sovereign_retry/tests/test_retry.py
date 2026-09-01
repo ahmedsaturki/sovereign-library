@@ -293,4 +293,4 @@ async def test_abort_signal_listeners() -> None:
     called.clear()
     signal.remove_event_listener(listener)
     signal.abort(Exception("test2"))
-    assert len(called) == 1
+    assert len(called) == 0
