@@ -191,13 +191,9 @@ Android macOS SDK setup now validates the runner's preinstalled SDK instead of r
 
 Ubuntu emulator instrumentation now uses an explicit headless AVD + ADB instrumentation path with a bounded test command and diagnostic log capture. This is an infrastructure/test-harness change; the emulator result must still be terminal-successful before Android SPR1 is marked TECHNICALLY_READY.
 
-### Current exact branch state
+### Historical HEAD reference
 
-The latest feature-branch HEAD must always be read from GitHub. At the time of this update, PR #125 points to the prior implementation baseline `b0358182012bc6f317b7b7aa38ab48ec03e36de4`. This baseline is historical; the current branch tip is recorded in the current-dated section below.
-
-The latest workflow-only Browser verification commit is `40b7dfc...`; the Android CI hardening commit immediately beneath it is `f4ba6139...`; the Python URL implementation/fix chain is beneath that; and the current Python circuit-breaker implementation/test/CI wiring is a completed native-Python layer.
-
-Do not mix workflow evidence with source evidence from an unrelated SHA.
+The earlier user-referenced implementation baseline was `b0358182012bc6f317b7b7aa38ab48ec03e36de4`. It is preserved as historical evidence, not as the current branch tip.
 
 ### Effective next task
 
@@ -210,7 +206,7 @@ Once the current CI gates are terminal-successful, the next eligible technical t
 - No credential or 2FA guard has been bypassed.
 - No Android emulator requirement has been removed.
 - No tests may be weakened merely to obtain green CI.
-- Historical contradictory wording must not override this current-state section.
+- Historical contradictory wording must not override the current authoritative state.
 
 ## CURRENT AUTHORITATIVE STATE — 2026-09-01
 
@@ -220,84 +216,74 @@ This section supersedes any earlier current-state sentence or SHA in this file. 
 
 - Branch: `feat/continuity-hardening`
 - PR: **#125**, OPEN / UNMERGED
-- Previous implementation/reporting baseline: `b0358182012bc6f317b7b7aa38ab48ec03e36de4`
-- Live branch HEAD before the current control-plane correction: `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`
-- Current live branch HEAD after this documentation update: **must be read from `refs/heads/feat/continuity-hardening`**; the ref is authoritative and avoids self-referential SHA drift.
-- Historical baselines must not be reported as the current tip.
+- Historical implementation/reporting baseline: `b0358182012bc6f317b7b7aa38ab48ec03e36de4`
+- Latest CI/configuration baseline before this final control-plane update: `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`
+- Current exact branch tip MUST be read from `refs/heads/feat/continuity-hardening` because control-plane documentation commits necessarily advance the ref.
 
 ### Python native-port state
-
-The current Python native expansion contains:
 
 - `sovereign_validation` — implementation present; structure already correct; no relocation required.
 - `sovereign_url` — native implementation present; package metadata/tests/CI wiring present; prior matrix evidence exists.
 - `sovereign_circuit_breaker` — native implementation present; package metadata/tests/CI wiring present; current-head terminal qualification still required.
-- `sovereign_retry` — native implementation is tracked on the branch with package metadata, README, clock adapters, tests, and CI wiring.
+- `sovereign_retry` — native implementation tracked on the branch with package metadata, README, clock adapters, tests, and CI wiring.
 
-Retry MUST NOT be marked `TECHNICALLY_READY` until the exact current HEAD receives terminal-successful CI plus package/out-of-tree verification.
+### Pytest async CI correction
 
-### Python CI failure and corrective action
+The current-head Retry CI attempt failed in every Python matrix cell at Native pytest because the workflow installed `pytest` but not `pytest-asyncio`.
 
-The first current-head `python-ports` run that included Retry failed on all four Python matrix cells at the Native pytest step because the workflow installed `pytest` but did not install `pytest-asyncio`.
-
-The failure was explicit:
+Observed failure:
 
 `async def functions are not natively supported`
 
-and pytest also reported:
+and:
 
 `PytestConfigWarning: Unknown config option: asyncio_mode`
 
-The corrective workflow change was committed as:
-
-`0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`
-
-The workflow now installs:
+The workflow was corrected in commit `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20` to install:
 
 `pytest pytest-asyncio`
 
-before running the async native test suite.
+before running the native Python tests.
 
-This is a CI configuration fix. It is not proof that Retry itself is semantically correct.
+The Retry package test extras also declare `pytest` and `pytest-asyncio`.
 
-A new current-head CI run is required against the resulting branch HEAD.
+The failure was a CI test-environment configuration issue. It is not a qualification result for Retry implementation correctness.
+
+A new current-head `python-ports` run is required after this correction.
 
 ### Exact-head verification rule
 
-Historical green runs are not current-head evidence.
+`current branch ref -> exact HEAD -> workflow run -> terminal conclusion -> qualification decision`
 
-The effective rule is:
-
-`current PR HEAD -> current workflow run -> terminal conclusion -> qualification decision`
-
-Never mix evidence across SHAs.
+Never substitute historical green evidence for the exact current SHA.
 
 ### Browser / Product
 
-Browser/Product Readiness remains **COMPLETED** according to the current qualification evidence. Do not redo this wave unless a real regression appears.
+Browser/Product Readiness is **COMPLETED** under qualification evidence. Do not redo it unless a real regression appears.
 
 ### Android
 
-Android remains a separate real-emulator gate. A cancelled, queued, or pending emulator instrumentation run is not a technical pass. The emulator requirement must not be removed or weakened.
+Android remains a separate real-emulator gate. Pending/queued/cancelled instrumentation is not a technical pass.
 
-### Governance
+### Governance locks
 
 - PR #125 remains **OPEN / UNMERGED**.
-- No external package publication has been performed.
-- No credentials or 2FA protections have been bypassed.
-- No publication guard has been bypassed.
-- No tests may be weakened merely to obtain green CI.
-- Historical evidence must remain preserved.
+- External publication remains disabled unless explicitly authorized.
+- No credentials or 2FA protections may be bypassed.
+- No publication guard may be bypassed.
+- No tests may be weakened.
+- Historical records remain preserved.
 
 ### Effective immediate task
 
-1. Verify `refs/heads/feat/continuity-hardening` and record its exact SHA.
+1. Read the exact current branch ref.
 2. Obtain terminal CI results for that exact HEAD.
-3. If Python CI fails, diagnose the actual failure and fix it; do not guess.
-4. If Python CI succeeds, qualify Retry and Circuit Breaker only with exact-head evidence.
-5. Keep Browser/Product untouched unless a real regression is found.
-6. Determine the next single authorized technical Cube from this reconciled control plane.
-7. Continue:
+3. Verify the `pytest-asyncio` correction.
+4. If CI fails, diagnose the actual failure and fix it.
+5. Qualify Retry and Circuit Breaker only after exact-head evidence passes.
+6. Resolve Android status honestly.
+7. Determine the next authorized Cube.
+8. Continue with:
 
 `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE PREP -> FREEZE -> NEXT CUBE`
 
@@ -305,64 +291,10 @@ Android remains a separate real-emulator gate. A cancelled, queued, or pending e
 
 Do not claim:
 
-- current HEAD = `b035818...`
-- Retry = TECHNICALLY_READY
-- Python CI = GREEN
-- Android = GREEN
-- 100% complete
+- `b035818...` is the current HEAD,
+- Retry is TECHNICALLY_READY,
+- Python CI is GREEN,
+- Android is GREEN,
+- or the entire milestone is 100% complete
 
-unless current GitHub evidence explicitly supports the claim for the current HEAD.
-
-## CURRENT AUTHORITATIVE STATE — 2026-09-01 / POST-CI-FIX
-
-This section is the latest authoritative reconciliation. It supersedes earlier current-state text while preserving historical evidence above.
-
-### Exact branch reference
-
-- Branch: `feat/continuity-hardening`
-- Prior user-referenced baseline: `b0358182012bc6f317b7b7aa38ab48ec03e36de4`
-- Live branch ref must be read from GitHub `refs/heads/feat/continuity-hardening`.
-- The ref currently resolves to the commit produced by the latest control-plane update; do not infer that SHA from an earlier report.
-
-### Python native ports
-
-- `sovereign_validation`: existing structure and implementation retained; no relocation required.
-- `sovereign_url`: native implementation retained with existing package/tests/CI evidence.
-- `sovereign_circuit_breaker`: native implementation retained; current-head qualification requires terminal CI evidence.
-- `sovereign_retry`: native implementation is tracked and wired into `python-ports.yml`.
-
-### Pytest async CI correction
-
-The exact observed CI failure on the Retry wave occurred because `python-ports.yml` installed `pytest` without `pytest-asyncio`. All four matrix cells reached Native pytest and the async tests failed with `async def functions are not natively supported`; pytest also emitted `Unknown config option: asyncio_mode`.
-
-The workflow was corrected so the test environment installs:
-
-`pytest pytest-asyncio`
-
-The Retry package's optional test dependencies also declare `pytest` and `pytest-asyncio`.
-
-This correction MUST be retained. Do not remove `pytest-asyncio` from the workflow while Retry tests use async functions.
-
-### Current verification state
-
-- The failed run for the pre-fix Retry HEAD is historical and must not be used as current-head evidence.
-- A new terminal `python-ports` run is required on the live branch HEAD after the CI correction.
-- Retry remains **NOT QUALIFIED** until that exact-head run passes.
-
-### Other governance state
-
-- Browser/Product wave remains completed.
-- Android emulator instrumentation remains mandatory and unresolved until a terminal-successful real-emulator result exists.
-- Kotlin/JVM release/port-wave authorization remains a separate governance boundary.
-- PR #125 remains open/unmerged.
-- External publication remains disabled unless explicitly authorized.
-
-### One current task
-
-**Obtain terminal CI results on the current branch HEAD after the `pytest-asyncio` correction; diagnose and fix any real failures; then qualify Retry and Circuit Breaker only with exact-head evidence.**
-
-Follow:
-
-`SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE PREP -> FREEZE -> NEXT CUBE`
-
-This control-plane state is authoritative as of 2026-09-01.
+unless current GitHub evidence explicitly supports the claim.
