@@ -189,7 +189,7 @@ The Linux Chromium CDP smoke harness was corrected to use the actual Chromium ex
 
 Android macOS SDK setup now validates the runner's preinstalled SDK instead of relying on network downloads that previously failed against `dl.google.com`.
 
-Ubuntu emulator instrumentation now uses an explicit headless AVD + ADB instrumentation path with a bounded test command and diagnostic log capture. This is an infrastructure/test-harness hardening change; the emulator result must still be terminal-successful before Android SPR1 is marked TECHNICALLY_READY.
+Ubuntu emulator instrumentation now uses an explicit headless AVD + ADB instrumentation path with a bounded test command and diagnostic log capture. This is an infrastructure/test-harness change; the emulator result must still be terminal-successful before Android SPR1 is marked TECHNICALLY_READY.
 
 ### Current exact branch state
 
@@ -213,3 +213,106 @@ Once the current CI gates are terminal-successful, the next eligible technical t
 - No Android emulator requirement has been removed.
 - No tests may be weakened merely to obtain green CI.
 - Historical contradictory wording must not override this current-state section.
+
+## CURRENT AUTHORITATIVE STATE — 2026-09-01
+
+This section supersedes any earlier current-state sentence or SHA in this file. Historical references remain preserved for auditability.
+
+### Live branch / PR
+
+- Branch: `feat/continuity-hardening`
+- PR: **#125**, OPEN / UNMERGED
+- Previous implementation/reporting baseline: `b0358182012bc6f317b7b7aa38ab48ec03e36de4`
+- Current live branch HEAD after CI workflow reconciliation: `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`
+- The current HEAD is authoritative. `b035818...` is historical and must not be reported as the current tip.
+
+### Python native-port state
+
+The current Python native expansion contains:
+
+- `sovereign_validation` — implementation present; structure already correct; no relocation required.
+- `sovereign_url` — native implementation present; package metadata/tests/CI wiring present; prior matrix evidence exists.
+- `sovereign_circuit_breaker` — native implementation present; package metadata/tests/CI wiring present; current-head terminal qualification still required.
+- `sovereign_retry` — native implementation is now tracked on the branch with package metadata, README, clock adapters, tests, and CI wiring.
+
+Retry MUST NOT be marked `TECHNICALLY_READY` until the exact current HEAD receives terminal-successful CI plus package/out-of-tree verification.
+
+### Python CI failure and corrective action
+
+The first current-head `python-ports` run for the Retry wave failed on all four Python matrix cells at the Native pytest step because the workflow installed `pytest` but did not install `pytest-asyncio`.
+
+The resulting failure was explicit:
+
+`async def functions are not natively supported`
+
+and the pytest configuration also reported:
+
+`PytestConfigWarning: Unknown config option: asyncio_mode`
+
+This was a CI dependency configuration defect, not evidence that the Retry implementation itself passed or failed semantically.
+
+Corrective action completed in commit:
+
+`0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`
+
+The `python-ports` workflow now installs:
+
+`pytest pytest-asyncio`
+
+before running the native async Python test suite.
+
+The existing Retry `pyproject.toml` test extras also specify `pytest` and `pytest-asyncio`.
+
+A new current-head CI run is required before declaring Retry qualified.
+
+### Exact-head verification rule
+
+Historical green runs are not current-head evidence.
+
+The effective rule is:
+
+`current PR HEAD -> current workflow run -> terminal conclusion -> qualification decision`
+
+Never mix evidence across SHAs.
+
+### Browser / Product
+
+Browser/Product Readiness remains **COMPLETED** according to the current qualification evidence. Do not redo this wave unless a real regression appears.
+
+### Android
+
+Android remains a separate real-emulator gate. A cancelled, queued, or pending emulator instrumentation run is not a technical pass. The emulator requirement must not be removed or weakened.
+
+### Governance
+
+- PR #125 remains **OPEN / UNMERGED**.
+- No external package publication has been performed.
+- No credentials or 2FA protections have been bypassed.
+- No publication guard has been bypassed.
+- No tests may be weakened merely to obtain green CI.
+- Historical evidence must remain preserved.
+
+### Effective immediate task
+
+1. Obtain terminal CI results for exact HEAD `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`.
+2. If Python CI fails, diagnose the actual failure and fix it; do not guess.
+3. If Python CI succeeds, qualify Retry and Circuit Breaker only with exact-head evidence.
+4. Keep Browser/Product untouched unless a real regression is found.
+5. Determine the next single authorized technical Cube from this reconciled control plane.
+6. Continue:
+
+`SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE PREP -> FREEZE -> NEXT CUBE`
+
+### Final truth rule
+
+Do not claim:
+
+- current HEAD = `b035818...`
+- Retry = TECHNICALLY_READY
+- Python CI = GREEN
+- Android = GREEN
+- 100% complete
+
+unless current GitHub evidence explicitly supports the claim for the current HEAD.
+
+This section is the current control-plane authority as of 2026-09-01.
