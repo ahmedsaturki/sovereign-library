@@ -221,9 +221,9 @@ This section supersedes any earlier current-state sentence or SHA in this file. 
 - Branch: `feat/continuity-hardening`
 - PR: **#125**, OPEN / UNMERGED
 - Previous implementation/reporting baseline: `b0358182012bc6f317b7b7aa38ab48ec03e36de4`
-- Live branch HEAD before this documentation update: `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`
-- Current live branch HEAD after this documentation commit: **set by the resulting commit of this file update and must be verified from `refs/heads/feat/continuity-hardening`**.
-- The current Git ref is authoritative. Historical baselines must not be reported as current.
+- Live branch HEAD before the current control-plane correction: `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`
+- Current live branch HEAD after this documentation update: **must be read from `refs/heads/feat/continuity-hardening`**; the ref is authoritative and avoids self-referential SHA drift.
+- Historical baselines must not be reported as the current tip.
 
 ### Python native-port state
 
@@ -313,4 +313,56 @@ Do not claim:
 
 unless current GitHub evidence explicitly supports the claim for the current HEAD.
 
-This section is the current control-plane authority as of 2026-09-01.
+## CURRENT AUTHORITATIVE STATE — 2026-09-01 / POST-CI-FIX
+
+This section is the latest authoritative reconciliation. It supersedes earlier current-state text while preserving historical evidence above.
+
+### Exact branch reference
+
+- Branch: `feat/continuity-hardening`
+- Prior user-referenced baseline: `b0358182012bc6f317b7b7aa38ab48ec03e36de4`
+- Live branch ref must be read from GitHub `refs/heads/feat/continuity-hardening`.
+- The ref currently resolves to the commit produced by the latest control-plane update; do not infer that SHA from an earlier report.
+
+### Python native ports
+
+- `sovereign_validation`: existing structure and implementation retained; no relocation required.
+- `sovereign_url`: native implementation retained with existing package/tests/CI evidence.
+- `sovereign_circuit_breaker`: native implementation retained; current-head qualification requires terminal CI evidence.
+- `sovereign_retry`: native implementation is tracked and wired into `python-ports.yml`.
+
+### Pytest async CI correction
+
+The exact observed CI failure on the Retry wave occurred because `python-ports.yml` installed `pytest` without `pytest-asyncio`. All four matrix cells reached Native pytest and the async tests failed with `async def functions are not natively supported`; pytest also emitted `Unknown config option: asyncio_mode`.
+
+The workflow was corrected so the test environment installs:
+
+`pytest pytest-asyncio`
+
+The Retry package's optional test dependencies also declare `pytest` and `pytest-asyncio`.
+
+This correction MUST be retained. Do not remove `pytest-asyncio` from the workflow while Retry tests use async functions.
+
+### Current verification state
+
+- The failed run for the pre-fix Retry HEAD is historical and must not be used as current-head evidence.
+- A new terminal `python-ports` run is required on the live branch HEAD after the CI correction.
+- Retry remains **NOT QUALIFIED** until that exact-head run passes.
+
+### Other governance state
+
+- Browser/Product wave remains completed.
+- Android emulator instrumentation remains mandatory and unresolved until a terminal-successful real-emulator result exists.
+- Kotlin/JVM release/port-wave authorization remains a separate governance boundary.
+- PR #125 remains open/unmerged.
+- External publication remains disabled unless explicitly authorized.
+
+### One current task
+
+**Obtain terminal CI results on the current branch HEAD after the `pytest-asyncio` correction; diagnose and fix any real failures; then qualify Retry and Circuit Breaker only with exact-head evidence.**
+
+Follow:
+
+`SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE PREP -> FREEZE -> NEXT CUBE`
+
+This control-plane state is authoritative as of 2026-09-01.
