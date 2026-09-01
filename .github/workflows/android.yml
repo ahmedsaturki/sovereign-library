@@ -212,7 +212,7 @@ jobs:
           echo "Instrumentation target: $INSTRUMENTATION"
 
           set +e
-          timeout --preserve-status 15m adb shell am instrument -w -r "$INSTRUMENTATION"
+          timeout --preserve-status 30m adb shell am instrument -w -r "$INSTRUMENTATION"
           status=$?
           set -e
 

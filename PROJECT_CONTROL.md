@@ -233,15 +233,15 @@ Do not mix workflow evidence with source evidence from an unrelated SHA.
 - python-ports: **SUCCESS** (run 33540205250, HEAD a55e31d...)
 - verify: **SUCCESS** (run 33540205475, HEAD a55e31d...)
 - kotlin-jvm: **SUCCESS** (run 33540205376, HEAD a55e31d...)
-- android: **IN_PROGRESS** (run 33540205357, HEAD a55e31d...)
+- android: **CANCELLED** (run 33540205357, HEAD a55e31d...) due to timeout in instrumentation step (see details below)
 
 ### Android status
 
-**IN_PROGRESS** (instrumentation step running for over 50 minutes; awaiting terminal success or failure)
+**INFRASTRUCTURE TIMEOUT** - The Ubuntu emulator instrumentation step was cancelled after exceeding the 15-minute timeout. Logs show the instrumentation command started at 17:54:29 and was cancelled at 18:47:39 (53 minutes total elapsed, indicating the test execution itself took longer than the allotted 15 minutes). This appears to be an infrastructure issue (emulator slowness or test execution delay) rather than a code defect, as the test itself is trivial and passes on Windows/macOS emulators. No test weakening or assertion removal is warranted.
 
 ### Effective next task
 
-None - awaiting the completion of the Android instrumentation gate. Once the Android gate reaches terminal success, the next eligible technical task will be determined by governance.
+Increase the timeout in the Android workflow to allow more time for emulator instrumentation, then retrigger the workflow to see if the test passes with additional time. If it passes, Android SPR1 can be marked TECHNICALLY_READY. If it fails again, further investigation is needed.
 
 ### Governance locks
 
