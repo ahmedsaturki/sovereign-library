@@ -27,7 +27,6 @@ async def flush_microtasks(rounds: int = 8) -> None:
 def test_fixed_and_exponential_policies_compute_deterministic_delays() -> None:
     fixed = create_retry_policy(backoff="fixed", base_delay_ms=100)
     exp = create_retry_policy(backoff="exponential", base_delay_ms=100, factor=2)
-
     assert fixed.delay_for(3) == 100
     assert exp.delay_for(1) == 100
     assert exp.delay_for(2) == 200
@@ -37,7 +36,6 @@ def test_fixed_and_exponential_policies_compute_deterministic_delays() -> None:
 def test_jitter_is_deterministic_when_random_source_is_injected() -> None:
     full = create_retry_policy(base_delay_ms=100, jitter="full", random=lambda: 0.25)
     bounded = create_retry_policy(base_delay_ms=100, jitter="bounded", random=lambda: 0.25)
-
     assert full.delay_for(1) == 25
     assert bounded.delay_for(1) == 63
 
@@ -53,7 +51,6 @@ async def test_retry_runner_retries_retryable_failures_and_returns_attempt_histo
         if count < 3:
             class TempError(Exception):
                 retryable = True
-
             raise TempError("temporary")
         assert ctx["signal"].aborted is False
         return "ok"
@@ -65,7 +62,6 @@ async def test_retry_runner_retries_retryable_failures_and_returns_attempt_histo
     clock.advance(200)
     await flush_microtasks()
     result = await task
-
     assert result.value == "ok"
     assert len(result.attempts) == 3
     assert result.attempts[0].retry is True
@@ -80,7 +76,6 @@ async def test_non_retryable_errors_stop_immediately() -> None:
 
     with pytest.raises(RetryError) as exc_info:
         await runner.run(operation)
-
     assert exc_info.value.code == "RETRY_EXHAUSTED"
     assert exc_info.value.attempts == 1
     assert exc_info.value.retryable is False
@@ -104,7 +99,6 @@ async def test_attempt_timeout_aborts_the_attempt_and_is_retryable_by_default() 
 
     with pytest.raises(RetryError) as exc_info:
         await task
-
     assert exc_info.value.code == "RETRY_EXHAUSTED"
     assert exc_info.value.attempts == 2
 
@@ -117,7 +111,6 @@ async def test_abort_signal_cancels_during_backoff_and_cleans_the_timer() -> Non
     async def operation(_):
         class TempError(Exception):
             retryable = True
-
         raise TempError("temporary")
 
     task = asyncio.create_task(runner.run(operation, signal=controller.signal))
@@ -126,7 +119,6 @@ async def test_abort_signal_cancels_during_backoff_and_cleans_the_timer() -> Non
 
     with pytest.raises(RetryError) as exc_info:
         await task
-
     assert exc_info.value.code == "CANCELLED"
     assert exc_info.value.cancelled is True
     assert len(clock.timers) == 0
@@ -142,15 +134,12 @@ async def test_total_budget_prevents_a_retry_that_would_exceed_the_budget() -> N
     async def operation(_):
         class TempError(Exception):
             retryable = True
-
         raise TempError("temporary")
 
     task = asyncio.create_task(runner.run(operation))
     await flush_microtasks()
-
     with pytest.raises(RetryError) as exc_info:
         await task
-
     assert exc_info.value.code == "BUDGET_EXCEEDED"
 
 
@@ -189,7 +178,6 @@ def test_retry_error_attributes() -> None:
         cancelled=False,
         last_error=Exception("original"),
     )
-
     assert error.code == "TEST_CODE"
     assert error.attempts == 3
     assert error.retryable is True
@@ -202,7 +190,7 @@ async def test_custom_retryable_classifier() -> None:
     def custom_retryable(error: BaseException) -> bool:
         return isinstance(error, ValueError)
 
-    policy = create_retry_policy(max_attempts=2, retryable=custom_retryable)
+    policy = create_retry_policy(max_attempts=2, base_delay_ms=0, retryable=custom_retryable)
     runner = RetryRunner(policy, clock=FakeClock(0))
 
     async def operation_retryable(_):
@@ -232,10 +220,8 @@ async def test_real_clock_works() -> None:
 def test_fake_clock_advance_clears_timers_in_order() -> None:
     clock = FakeClock(0)
     results = []
-
     clock.set_timeout(lambda: results.append("first"), 200)
     clock.set_timeout(lambda: results.append("second"), 100)
-
     clock.advance(50)
     assert results == []
     clock.advance(50)
@@ -265,7 +251,6 @@ async def test_max_delay_ms_with_jitter() -> None:
 async def test_fake_clock_negative_values_rejected() -> None:
     with pytest.raises(ValueError):
         FakeClock(-1)
-
     clock = FakeClock(0)
     with pytest.raises(ValueError):
         clock.advance(-1)
@@ -281,10 +266,8 @@ async def test_retry_runner_operation_must_be_callable() -> None:
 
 async def test_attempt_timeout_validation_rejects_invalid_values() -> None:
     runner = RetryRunner(clock=FakeClock(0))
-
     async def operation(_):
         return "ok"
-
     with pytest.raises(ValueError):
         await runner.run(operation, attempt_timeout_ms=-1)
     with pytest.raises(ValueError):
@@ -302,14 +285,11 @@ async def test_abort_controller_basic() -> None:
 async def test_abort_signal_listeners() -> None:
     signal = AbortSignal()
     called = []
-
     def listener():
         called.append(True)
-
     signal.add_event_listener(listener)
     signal.abort(Exception("test"))
     assert len(called) == 1
-
     called.clear()
     signal.remove_event_listener(listener)
     signal.abort(Exception("test2"))
