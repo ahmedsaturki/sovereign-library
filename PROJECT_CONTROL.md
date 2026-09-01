@@ -139,7 +139,7 @@ Everything else is parked in `ROADMAP.md`, issue/task records, or explicit futur
 
 ## Historical post-Python / Browser-Product reconciliation
 
-The following section is **historical and superseded by the current authoritative state section below**. It is preserved for auditability and must not be interpreted as the current task.
+The following section is **historical and superseded by the current authoritative state below**. It is preserved for auditability and must not be interpreted as the current task.
 
 The first native Python wave was reported complete, followed by a temporary reconciliation that treated Browser/Product package readiness as active. Subsequent evidence and the qualification matrix established that Browser/Product qualification was completed on 2026-08-28.
 
@@ -193,11 +193,9 @@ Ubuntu emulator instrumentation now uses an explicit headless AVD + ADB instrume
 
 ### Current exact branch state
 
-The latest feature-branch HEAD must always be read from GitHub. At the time of this update, PR #125 points to:
+The latest feature-branch HEAD must always be read from GitHub. At the time of this update, PR #125 points to the prior implementation baseline `b0358182012bc6f317b7b7aa38ab48ec03e36de4`. This baseline is historical; the current branch tip is recorded in the current-dated section below.
 
-`8a52916b9b27e1ebecdf9022cd015aabfa0e4a43`
-
-The latest workflow-only Browser verification commit is `40b7dfc...`; the Android CI hardening commit immediately beneath it is `f4ba6139...`; the Python URL implementation/fix chain is beneath that; and the current Python circuit-breaker implementation/test/CI wiring is the newest native-Python layer.
+The latest workflow-only Browser verification commit is `40b7dfc...`; the Android CI hardening commit immediately beneath it is `f4ba6139...`; the Python URL implementation/fix chain is beneath that; and the current Python circuit-breaker implementation/test/CI wiring is a completed native-Python layer.
 
 Do not mix workflow evidence with source evidence from an unrelated SHA.
 
@@ -223,8 +221,9 @@ This section supersedes any earlier current-state sentence or SHA in this file. 
 - Branch: `feat/continuity-hardening`
 - PR: **#125**, OPEN / UNMERGED
 - Previous implementation/reporting baseline: `b0358182012bc6f317b7b7aa38ab48ec03e36de4`
-- Current live branch HEAD after CI workflow reconciliation: `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`
-- The current HEAD is authoritative. `b035818...` is historical and must not be reported as the current tip.
+- Live branch HEAD before this documentation update: `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`
+- Current live branch HEAD after this documentation commit: **set by the resulting commit of this file update and must be verified from `refs/heads/feat/continuity-hardening`**.
+- The current Git ref is authoritative. Historical baselines must not be reported as current.
 
 ### Python native-port state
 
@@ -233,37 +232,35 @@ The current Python native expansion contains:
 - `sovereign_validation` — implementation present; structure already correct; no relocation required.
 - `sovereign_url` — native implementation present; package metadata/tests/CI wiring present; prior matrix evidence exists.
 - `sovereign_circuit_breaker` — native implementation present; package metadata/tests/CI wiring present; current-head terminal qualification still required.
-- `sovereign_retry` — native implementation is now tracked on the branch with package metadata, README, clock adapters, tests, and CI wiring.
+- `sovereign_retry` — native implementation is tracked on the branch with package metadata, README, clock adapters, tests, and CI wiring.
 
 Retry MUST NOT be marked `TECHNICALLY_READY` until the exact current HEAD receives terminal-successful CI plus package/out-of-tree verification.
 
 ### Python CI failure and corrective action
 
-The first current-head `python-ports` run for the Retry wave failed on all four Python matrix cells at the Native pytest step because the workflow installed `pytest` but did not install `pytest-asyncio`.
+The first current-head `python-ports` run that included Retry failed on all four Python matrix cells at the Native pytest step because the workflow installed `pytest` but did not install `pytest-asyncio`.
 
-The resulting failure was explicit:
+The failure was explicit:
 
 `async def functions are not natively supported`
 
-and the pytest configuration also reported:
+and pytest also reported:
 
 `PytestConfigWarning: Unknown config option: asyncio_mode`
 
-This was a CI dependency configuration defect, not evidence that the Retry implementation itself passed or failed semantically.
-
-Corrective action completed in commit:
+The corrective workflow change was committed as:
 
 `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`
 
-The `python-ports` workflow now installs:
+The workflow now installs:
 
 `pytest pytest-asyncio`
 
-before running the native async Python test suite.
+before running the async native test suite.
 
-The existing Retry `pyproject.toml` test extras also specify `pytest` and `pytest-asyncio`.
+This is a CI configuration fix. It is not proof that Retry itself is semantically correct.
 
-A new current-head CI run is required before declaring Retry qualified.
+A new current-head CI run is required against the resulting branch HEAD.
 
 ### Exact-head verification rule
 
@@ -294,12 +291,13 @@ Android remains a separate real-emulator gate. A cancelled, queued, or pending e
 
 ### Effective immediate task
 
-1. Obtain terminal CI results for exact HEAD `0bf85eff9cdb1e0ec220bc987445cd5f0fc6bb20`.
-2. If Python CI fails, diagnose the actual failure and fix it; do not guess.
-3. If Python CI succeeds, qualify Retry and Circuit Breaker only with exact-head evidence.
-4. Keep Browser/Product untouched unless a real regression is found.
-5. Determine the next single authorized technical Cube from this reconciled control plane.
-6. Continue:
+1. Verify `refs/heads/feat/continuity-hardening` and record its exact SHA.
+2. Obtain terminal CI results for that exact HEAD.
+3. If Python CI fails, diagnose the actual failure and fix it; do not guess.
+4. If Python CI succeeds, qualify Retry and Circuit Breaker only with exact-head evidence.
+5. Keep Browser/Product untouched unless a real regression is found.
+6. Determine the next single authorized technical Cube from this reconciled control plane.
+7. Continue:
 
 `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE PREP -> FREEZE -> NEXT CUBE`
 
