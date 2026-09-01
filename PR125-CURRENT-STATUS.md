@@ -1,10 +1,10 @@
 # PR #125 — Current Continuation Checkpoint
 
-Read the live branch ref first:
+Always read the live branch ref first:
 
 `refs/heads/feat/continuity-hardening`
 
-The ref is the authoritative current HEAD. Do not treat any older SHA in reports or comments as current evidence.
+That live ref is the only authoritative current HEAD. Historical SHA references in reports, comments, or older control records must not be used as current evidence.
 
 ## State
 
@@ -14,58 +14,56 @@ The ref is the authoritative current HEAD. Do not treat any older SHA in reports
 - PR state: OPEN / UNMERGED
 - Publication: NOT PERFORMED
 
-## Completed implementation work
+## Completed implementation
 
 - Browser/Product Readiness Wave completed.
 - Existing qualified Python ports preserved.
-- `sovereign_validation` remains correctly structured in `src/sovereign_validation`.
-- `sovereign_url` native port present.
-- `sovereign_circuit_breaker` native port present.
-- `sovereign_retry` native port present with clock adapters, package metadata, README, tests, and CI wiring.
-- Retry invalid timeout handling corrected to Python `ValueError`.
-- Retry FakeClock timeout scheduling uses the injected clock.
-- Retry FakeClock backoff scheduling uses the injected clock.
-- Retry async tests schedule operations before advancing the fake clock.
-- Retry classifier test uses zero delay because it is a classifier test, not a delay test.
+- `sovereign_validation` correctly uses `src/sovereign_validation` layout.
+- Native `sovereign_url` exists with tests, metadata, README, and CI wiring.
+- Native `sovereign_circuit_breaker` exists with tests, metadata, README, and CI wiring.
+- Native `sovereign_retry` exists with implementation, clock adapters, metadata, README, tests, and CI wiring.
+- Retry timeout validation uses Python `ValueError` rather than an undefined `RangeError`.
+- Retry FakeClock controls timeout and backoff timers.
+- Retry tests schedule operations before advancing FakeClock.
+- Retry classifier test avoids an unadvanced fake-clock backoff by using zero delay.
 - Python CI installs `pytest pytest-asyncio`.
-- Browser Linux Chromium/CDP smoke remains enabled and fail-closed.
-- Android CI keeps real emulator instrumentation as a required gate.
+- Browser Chromium/CDP smoke remains fail-closed.
+- Android instrumentation remains a real qualification gate.
 
-## Qualification policy
+## Current qualification rule
 
-Do not mark Retry or Circuit Breaker TECHNICALLY_READY solely from local tests.
+Current-head terminal CI evidence is required before Retry or Circuit Breaker may be declared TECHNICALLY_READY.
 
-Require current-head terminal CI evidence, packaging, and out-of-tree verification.
+Local tests are supporting evidence, not a substitute for current-head CI.
 
-## Historical CI findings
-
-The Python Retry path previously exposed:
+## Historical failures corrected
 
 1. Missing `pytest-asyncio` in CI.
-2. Unscheduled coroutines being advanced with FakeClock before execution.
-3. A classifier test waiting on a fake-clock delay it never advanced.
+2. Unscheduled Retry coroutines while advancing FakeClock.
+3. Classifier test waiting on an unadvanced fake-clock delay.
 
-All three have been addressed in the repository.
+These findings are historical and must not be confused with current-head terminal results.
 
-## Current execution rule
+## Required continuation
 
-1. Read live branch HEAD.
-2. Find workflows whose `head_sha` exactly matches that HEAD.
-3. Wait for/inspect terminal conclusions.
-4. Diagnose and fix actual failures.
-5. Verify Retry and Circuit Breaker.
-6. Resolve Android honestly.
-7. Update project-control records.
-8. Select exactly one next authorized task.
-9. Continue autonomously.
+1. Read the live branch HEAD.
+2. Match PR #125 `head_sha` to that HEAD.
+3. Find current workflow runs whose `head_sha` matches exactly.
+4. Confirm `python-ports` terminal result for the current HEAD.
+5. If it fails, diagnose the current failure and fix it.
+6. Verify Retry and Circuit Breaker package/out-of-tree readiness.
+7. Resolve Android emulator status honestly.
+8. Synchronize `PROJECT_CONTROL.md`.
+9. Select exactly one next authorized Cube.
+10. Continue autonomously.
 
 ## Governance
 
 - Do not merge PR #125 automatically.
 - Do not publish externally without explicit release authorization.
-- Do not weaken tests.
-- Do not remove Android emulator requirements.
-- Do not destroy historical evidence.
+- Do not weaken or remove emulator requirements.
+- Do not bypass 2FA/publication guards.
+- Do not rewrite or destroy historical evidence.
 
 Required lifecycle:
 
