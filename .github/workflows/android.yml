@@ -185,37 +185,39 @@ jobs:
             --device "pixel_2" \
             --force
 
-          # Start emulator with faster config and explicit logging
+          # Start emulator with robust CI configuration
           echo "Starting emulator..."
           nohup emulator \
             -avd sovereign-android-api34 \
             -no-window \
             -no-audio \
             -no-boot-anim \
-            -no-snapshot \
+            -no-snapshot-load \
+            -no-snapshot-save \
             -wipe-data \
             -gpu swiftshader_indirect \
             -no-passive-gpu \
-            -qemu -m 2048 \
+            -qemu -m 3072 \
+            -accel auto \
             >/tmp/sovereign-emulator.log 2>&1 &
           EMULATOR_PID=$!
           echo "Emulator PID: $EMULATOR_PID"
 
-          # Wait for device with timeout and progress
+          # Wait for device with extended timeout and progress
           echo "Waiting for adb device..."
-          timeout 180 adb wait-for-device
+          timeout 300 adb wait-for-device
           echo "Device connected"
 
           # Wait for boot with progress logging
           echo "Waiting for boot completion..."
-          for i in $(seq 1 120); do
+          for i in $(seq 1 180); do
             boot=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
             if [ "$boot" = "1" ]; then
               echo "Boot completed at attempt $i"
               break
             fi
             if [ $((i % 15)) -eq 0 ]; then
-              echo "  ... still waiting (attempt $i/120)"
+              echo "  ... still waiting (attempt $i/180)"
               adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' | xargs -I{} echo "  boot_completed={}"
             fi
             sleep 2
