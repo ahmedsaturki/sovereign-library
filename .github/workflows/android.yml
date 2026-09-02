@@ -185,8 +185,8 @@ jobs:
             --device "pixel_2" \
             --force
 
-          # Start emulator with robust CI configuration
-          echo "Starting emulator..."
+          # Start emulator with verbose logging to see what's happening
+          echo "Starting emulator with verbose logging..."
           nohup emulator \
             -avd sovereign-android-api34 \
             -no-window \
@@ -196,9 +196,7 @@ jobs:
             -no-snapshot-save \
             -wipe-data \
             -gpu swiftshader_indirect \
-            -no-passive-gpu \
-            -qemu -m 3072 \
-            -accel auto \
+            -verbose \
             >/tmp/sovereign-emulator.log 2>&1 &
           EMULATOR_PID=$!
           echo "Emulator PID: $EMULATOR_PID"
