@@ -202,25 +202,34 @@ jobs:
           echo "Emulator PID: $EMULATOR_PID"
 
           # Wait for device with extended timeout and progress
-          echo "Waiting for adb device..."
-          timeout 300 adb wait-for-device
+          echo "Waiting for adb device (timeout 600s)..."
+          if ! timeout 600 adb wait-for-device; then
+            echo "===== EMULATOR LOG (due to timeout waiting for device) ====="
+            tail -n 500 /tmp/sovereign-emulator.log || true
+            exit 1
+          fi
           echo "Device connected"
 
           # Wait for boot with progress logging
           echo "Waiting for boot completion..."
-          for i in $(seq 1 180); do
+          for i in $(seq 1 300); do
             boot=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
             if [ "$boot" = "1" ]; then
               echo "Boot completed at attempt $i"
               break
             fi
-            if [ $((i % 15)) -eq 0 ]; then
-              echo "  ... still waiting (attempt $i/180)"
+            if [ $((i % 30)) -eq 0 ]; then
+              echo "  ... still waiting (attempt $i/300)"
               adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' | xargs -I{} echo "  boot_completed={}"
             fi
             sleep 2
           done
           adb shell getprop sys.boot_completed | tr -d '\r' | grep -q '^1$'
+          if [ $? -ne 0 ]; then
+            echo "===== EMULATOR LOG (due to timeout waiting for boot) ====="
+            tail -n 500 /tmp/sovereign-emulator.log || true
+            exit 1
+          fi
           echo "Boot verified"
 
           # Disable animations
