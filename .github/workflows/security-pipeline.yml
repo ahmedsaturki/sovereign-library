@@ -1,8 +1,5 @@
 name: Security Pipeline (CI/CD)
 
-# Security pipeline for Python code: Bandit (SAST), Safety (dependency audit), GitHub MCP
-# Tools configured: bandit, safety, github-mcp
-
 on:
   push:
     branches: [main]
@@ -19,63 +16,19 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install security tools
-        run: |
-          pip install bandit safety bandit-sarif
+        run: pip install bandit safety
       - name: Bandit SAST scan
         continue-on-error: true
-        run: |
-          mkdir -p sarif-reports
-          bandit -r . -f json -o bandit-report.json || true
-          if [ -f bandit-report.json ]; then
-            python -c "
-import json, sys
-with open('bandit-report.json') as f:
-    data = json.load(f)
-sarif = {
-    'version': '2.1.0',
-    'runs': [{
-        'tool': {
-            'driver': {
-                'name': 'bandit',
-                'version': '1.9.4',
-                'informationUri': 'https://github.com/PyCQA/bandit',
-                'rules': []
-            }
-        },
-        'results': [
-            {
-                'ruleId': r.get('test_id', 'B000'),
-                'level': 'error' if r.get('issue_severity') == 'HIGH' else 'warning',
-                'message': {'text': r.get('issue_text', '')},
-                'locations': [{
-                    'physicalLocation': {
-                        'artifactUri': f"file:///{r.get('filename', 'unknown')}",
-                        'region': {'startLine': r.get('line_number', 1)}
-                    }
-                }]
-            } for r in data.get('results', [])
-        ]
-    }]
-}
-with open('sarif-reports/bandit.sarif', 'w') as f:
-    json.dump(sarif, f)
-print('Bandit SARIF generated')
-"
-          fi
+        run: bandit -r . -f json -o bandit-report.json || true
       - name: Safety dependency audit
         continue-on-error: true
-        run: |
-          safety check --json --output safety-report.json || true
+        run: safety check --json --output safety-report.json || true
       - name: GitHub MCP security integration
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo "GitHub MCP configured for security reporting"
-
-      - name: Upload security findings to GitHub Security tab (SARIF)
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Summary
         if: always()
-        with:
-          sarif_file: sarif-reports/bandit.sarif
-          category: security-pipeline
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Security scan completed"
+          ls -la *.json 2>/dev/null || echo "No reports"
