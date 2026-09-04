@@ -1,0 +1,27 @@
+{
+  "name": "@sovereign/automation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Unified, dependency-free browser automation product composed from Sovereign cubes.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "sovereign-automation": "./bin/cli.js"
+  },
+  "imports": {
+    "#browser": "@sovereign/browser",
+    "#browser-interactions": "@sovereign/browser-interactions",
+    "#browser-assertions": "@sovereign/browser-assertions",
+    "#browser-network-interception": "@sovereign/browser-network-interception",
+    "#browser-tab-manager": "@sovereign/browser-tab-manager",
+    "#browser-visual-testing": "@sovereign/browser-visual-testing",
+    "#browser-recorder": "@sovereign/browser-recorder"
+  },
+  "scripts": {
+    "check": "node --check src/index.js && node --check bin/cli.js",
+    "test": "node --test test/index.test.js",
+    "smoke": "node bin/cli.js check"
+  }
+}

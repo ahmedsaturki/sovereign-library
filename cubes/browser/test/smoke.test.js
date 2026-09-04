@@ -7,6 +7,14 @@ function shouldRun() {
   return process.env.SOVEREIGN_BROWSER_SMOKE !== '0';
 }
 
+function extraArgs() {
+  // Sandboxed/containerized/admin environments (some Windows sessions, CI
+  // mintty, root containers) require --no-sandbox for Chromium to launch.
+  // This is opt-in via env so the cube's default cross-platform launch surface
+  // is unchanged for normal hosts.
+  return process.env.SOVEREIGN_BROWSER_NO_SANDBOX === '1' ? ['--no-sandbox'] : [];
+}
+
 function startFixtureServer() {
   const server = createServer((request, response) => {
     if (request.url !== '/') {
@@ -53,9 +61,10 @@ test('browser smoke: launch, navigate, evaluate, metadata, screenshot, cleanup',
   assert.ok(executablePath, 'A Chromium-family executable must be available for the smoke test');
 
   const fixture = await startFixtureServer();
-  const browser = await launch({ executablePath, headless: true, timeoutMs: 20000 });
+  let browser = null;
 
   try {
+    browser = await launch({ executablePath, headless: true, timeoutMs: 20000, extraArgs: extraArgs() });
     await browser.navigate(fixture.url);
     await waitForPageReady(browser);
 
@@ -72,10 +81,14 @@ test('browser smoke: launch, navigate, evaluate, metadata, screenshot, cleanup',
     assert.ok(png.length > 1000, 'Screenshot should contain image data');
     assert.equal(browser.closed, false);
   } finally {
-    await browser.close();
-    await closeFixtureServer(fixture.server);
+    try {
+      await browser?.close();
+    } finally {
+      await closeFixtureServer(fixture.server);
+    }
   }
 
+  assert.ok(browser);
   assert.equal(browser.closed, true);
   assert.equal(browser.process, null);
 });

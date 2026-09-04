@@ -1,0 +1,293 @@
+name: android
+
+on:
+  push:
+    branches: [main, "feat/**"]
+    paths:
+      - "ecosystems/android/**"
+      - ".github/workflows/android.yml"
+      - "contracts/conformance/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "ecosystems/android/**"
+      - ".github/workflows/android.yml"
+      - "contracts/conformance/**"
+
+concurrency:
+  group: android-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android ${{ matrix.os }} / AGP 8.5 / JDK 17
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15-intel]
+    defaults:
+      run:
+        working-directory: ecosystems/android
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact source revision
+        shell: bash
+        run: |
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          echo "Expected source revision: $expected"
+          echo "Actual source revision:   $actual"
+          test "$actual" = "$expected"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK (Linux/Windows)
+        if: matrix.os != 'macos-15-intel'
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 12266719
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: true
+          packages: platform-tools platforms;android-34 build-tools;34.0.0
+
+      - name: Set up Android SDK (macOS preinstalled)
+        if: matrix.os == 'macos-15-intel'
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 12266719
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: true
+
+      - name: Verify macOS preinstalled Android SDK
+        if: matrix.os == 'macos-15-intel'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/Library/Android/sdk}}"
+          test -d "$SDK"
+          test -x "$SDK/platform-tools/adb"
+          test -d "$SDK/platforms/android-34"
+          test -x "$SDK/emulator/emulator"
+          echo "Using preinstalled Android SDK: $SDK"
+          "$SDK/platform-tools/adb" version
+          test -n "$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d -print -quit)"
+
+      - name: Install Android emulator image
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+
+      - name: Run unit tests + conformance (JVM-hosted)
+        run: ./gradlew test --no-daemon --console=plain
+        shell: bash
+
+      - name: Build Android library artifacts (AAR)
+        run: ./gradlew assembleRelease --no-daemon --console=plain
+        shell: bash
+
+      - name: Verify packaged AAR out-of-tree
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          AAR=$(find safe-path-resolver/build/outputs/aar -name '*.aar' | head -1)
+          test -n "$AAR"
+          TMP_DIR=$(mktemp -d)
+          trap 'rm -rf "$TMP_DIR"' EXIT
+          mkdir -p "$TMP_DIR/lib"
+          unzip -q "$AAR" classes.jar -d "$TMP_DIR"
+          cp "$TMP_DIR/classes.jar" "$TMP_DIR/lib/classes.jar"
+          CACHE_ROOT="${GRADLE_USER_HOME:-$HOME/.gradle}"
+          STDLIB=$(find "$CACHE_ROOT" -path '*/org.jetbrains.kotlin/kotlin-stdlib/*/kotlin-stdlib-*.jar' -print -quit 2>/dev/null || true)
+          if [ -z "$STDLIB" ] && [ "$CACHE_ROOT" != "$HOME/.gradle" ]; then
+            STDLIB=$(find "$HOME/.gradle" -path '*/org.jetbrains.kotlin/kotlin-stdlib/*/kotlin-stdlib-*.jar' -print -quit 2>/dev/null || true)
+          fi
+          if [ -z "$STDLIB" ]; then
+            STDLIB="$TMP_DIR/lib/kotlin-stdlib-1.9.22.jar"
+            curl --fail --silent --show-error --location --retry 3 \
+              -o "$STDLIB" \
+              "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.9.22/kotlin-stdlib-1.9.22.jar"
+          fi
+          test -s "$STDLIB"
+          if [ "$STDLIB" != "$TMP_DIR/lib/kotlin-stdlib.jar" ]; then
+            cp "$STDLIB" "$TMP_DIR/lib/kotlin-stdlib.jar"
+          fi
+          cat > "$TMP_DIR/Consumer.java" <<'JAVA'
+          import org.sovereign.safePathResolver.android.SafePathResolverAndroidKt;
+
+          public final class Consumer {
+              public static void main(String[] args) {
+                  String resolved = SafePathResolverAndroidKt.resolveContained("/consumer/root", "nested/./file.txt");
+                  if (!"/consumer/root/nested/file.txt".equals(resolved)) {
+                      throw new AssertionError("unexpected packaged result: " + resolved);
+                  }
+                  System.out.println("OUT_OF_TREE_AAR_OK " + resolved);
+              }
+          }
+          JAVA
+          if command -v cygpath >/dev/null 2>&1; then
+            CP="$(cygpath -wp "$TMP_DIR/lib/classes.jar:$TMP_DIR/lib/kotlin-stdlib.jar")"
+            RUNTIME_CP="$(cygpath -wp "$TMP_DIR:$TMP_DIR/lib/classes.jar:$TMP_DIR/lib/kotlin-stdlib.jar")"
+          else
+            SEP=$(java -XshowSettings:properties -version 2>&1 | awk -F'= ' '/path.separator =/{print $2; exit}')
+            test -n "$SEP"
+            CP="$TMP_DIR/lib/classes.jar${SEP}$TMP_DIR/lib/kotlin-stdlib.jar"
+            RUNTIME_CP="$TMP_DIR${SEP}$CP"
+          fi
+          javac -cp "$CP" "$TMP_DIR/Consumer.java"
+          java -cp "$RUNTIME_CP" Consumer
+
+      - name: Verify reproducible AAR
+        shell: bash
+        run: |
+          rm -rf safe-path-resolver/build
+          ./gradlew assembleRelease --no-daemon --console=plain
+          AAR=$(find safe-path-resolver/build -name "*.aar" | head -1)
+          test -n "$AAR"
+          mkdir -p /tmp/aar1
+          cp "$AAR" /tmp/aar1/
+          rm -rf safe-path-resolver/build
+          ./gradlew assembleRelease --no-daemon --console=plain
+          AAR2=$(find safe-path-resolver/build -name '*.aar' | head -1)
+          test -n "$AAR2"
+          mkdir -p /tmp/aar2
+          cp "$AAR2" /tmp/aar2/
+          diff <(sha256sum /tmp/aar1/*.aar | awk '{print $1}') \
+               <(sha256sum /tmp/aar2/*.aar | awk '{print $1}') \
+            && echo "REPRODUCIBLE OK"
+
+      - name: Run instrumentation tests on Android emulator
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          AVD_HOME="$RUNNER_TEMP/android-avd"
+          rm -rf "$AVD_HOME"
+          mkdir -p "$AVD_HOME"
+          export ANDROID_AVD_HOME="$AVD_HOME"
+          echo "no" | avdmanager create avd \
+            --name sovereign-android-api34 \
+            --package "system-images;android-34;google_apis;x86_64" \
+            --device "pixel_2" \
+            --force
+
+          # Start emulator with verbose logging to see what's happening
+          echo "Starting emulator with verbose logging..."
+          nohup emulator \
+            -avd sovereign-android-api34 \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot-load \
+            -no-snapshot-save \
+            -wipe-data \
+            -gpu swiftshader_indirect \
+            -verbose \
+            >/tmp/sovereign-emulator.log 2>&1 &
+          EMULATOR_PID=$!
+          echo "Emulator PID: $EMULATOR_PID"
+
+          # Wait for device with extended timeout and progress
+          echo "Waiting for adb device (timeout 600s)..."
+          if ! timeout 600 adb wait-for-device; then
+            echo "===== EMULATOR LOG (due to timeout waiting for device) ====="
+            tail -n 500 /tmp/sovereign-emulator.log || true
+            exit 1
+          fi
+          echo "Device connected"
+
+          # Wait for boot with progress logging
+          echo "Waiting for boot completion..."
+          for i in $(seq 1 300); do
+            boot=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            if [ "$boot" = "1" ]; then
+              echo "Boot completed at attempt $i"
+              break
+            fi
+            if [ $((i % 30)) -eq 0 ]; then
+              echo "  ... still waiting (attempt $i/300)"
+              adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' | xargs -I{} echo "  boot_completed={}"
+            fi
+            sleep 2
+          done
+          adb shell getprop sys.boot_completed | tr -d '\r' | grep -q '^1$'
+          if [ $? -ne 0 ]; then
+            echo "===== EMULATOR LOG (due to timeout waiting for boot) ====="
+            tail -n 500 /tmp/sovereign-emulator.log || true
+            exit 1
+          fi
+          echo "Boot verified"
+
+          # Disable animations
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
+
+          # Install test APK
+          echo "Installing test APK..."
+          ./gradlew :safe-path-resolver:installDebugAndroidTest --no-daemon --console=plain
+
+          # Verify instrumentation target
+          INSTRUMENTATION="$(adb shell pm list instrumentation | tr -d '\r' | sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' | grep '/androidx.test.runner.AndroidJUnitRunner' | head -1)"
+          test -n "$INSTRUMENTATION"
+          echo "Instrumentation target: $INSTRUMENTATION"
+          adb shell pm list instrumentation
+
+          TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
+
+          run_instrumentation() {
+            local method="$1"
+            echo "===== START $method ====="
+            set +e
+            timeout --preserve-status 3m adb shell am instrument -w -r \
+              -e class "$TEST_CLASS#$method" \
+              "$INSTRUMENTATION"
+            local status=$?
+            set -e
+            echo "===== END $method status=$status ====="
+            if [ "$status" -ne 0 ]; then
+              echo "===== ADB DEVICES ====="
+              adb devices -l || true
+              echo "===== PACKAGE/INSTRUMENTATION ====="
+              adb shell pm list packages || true
+              adb shell pm list instrumentation || true
+              echo "===== EMULATOR LOG ====="
+              tail -n 500 /tmp/sovereign-emulator.log || true
+              echo "===== LOGCAT ====="
+              adb logcat -d -t 500 || true
+              return "$status"
+            fi
+          }
+
+          run_instrumentation normalize_and_contain_on_art
+          run_instrumentation traversal_escape_is_blocked_on_art
+          run_instrumentation serializer_is_deterministic_on_art
+
+          echo "ANDROID_EMULATOR_INSTRUMENTATION_OK"
+
+          # Always print emulator log at end for diagnostics
+          echo "===== FINAL EMULATOR LOG (last 200 lines) ====="
+          tail -n 200 /tmp/sovereign-emulator.log || true
+
+      - name: Upload AAR artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aars
+          path: |
+            ecosystems/android/safe-path-resolver/build/outputs/aar/*.aar
+          if-no-files-found: error

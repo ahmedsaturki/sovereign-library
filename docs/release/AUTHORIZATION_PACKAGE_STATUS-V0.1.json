@@ -1,0 +1,771 @@
+{
+  "schema": "sovereign-library.release-authorization-checklist/v0.1",
+  "generatedAt": "2026-08-27T21:30:00Z",
+  "phase": "PHASE-0-FIRST-BATCH",
+  "authorized": true,
+  "authorizationRequired": false,
+  "candidates": [
+    {
+      "name": "@sovereign/agent-runtime",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/ai-inference-runtime",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 4
+    },
+    {
+      "name": "@sovereign/application-lifecycle",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/artifact-admission-gate",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 9
+    },
+    {
+      "name": "@sovereign/artifact-audit-drift-reporter",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 6
+    },
+    {
+      "name": "@sovereign/artifact-bundle",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 7
+    },
+    {
+      "name": "@sovereign/artifact-catalog",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 6
+    },
+    {
+      "name": "@sovereign/artifact-compliance-policy-evaluator",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 12
+    },
+    {
+      "name": "@sovereign/artifact-dependency-graph",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 6
+    },
+    {
+      "name": "@sovereign/artifact-lifecycle-retention",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 10
+    },
+    {
+      "name": "@sovereign/artifact-provenance-lineage-ledger",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 8
+    },
+    {
+      "name": "@sovereign/artifact-reconciliation-consistency-checker",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 6
+    },
+    {
+      "name": "@sovereign/artifact-reference-resolver",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
+    },
+    {
+      "name": "@sovereign/artifact-release-approval",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 10
+    },
+    {
+      "name": "@sovereign/artifact-release-closure-receipt",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 9
+    },
+    {
+      "name": "@sovereign/artifact-release-plan",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 11
+    },
+    {
+      "name": "@sovereign/artifact-release-publication-confirmation",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 6
+    },
+    {
+      "name": "@sovereign/artifact-release-publication-executor",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 7
+    },
+    {
+      "name": "@sovereign/artifact-release-snapshot",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 9
+    },
+    {
+      "name": "@sovereign/atomic-batch-file-transaction-safe-multi-file-commit",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 7
+    },
+    {
+      "name": "@sovereign/atomic-file-writer-safe-replace",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 4
+    },
+    {
+      "name": "@sovereign/cache",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 4
+    },
+    {
+      "name": "@sovereign/canonical-json",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 8
+    },
+    {
+      "name": "@sovereign/circuit-breaker",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/cli",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 2
+    },
+    {
+      "name": "@sovereign/compression",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 14
+    },
+    {
+      "name": "@sovereign/concurrency",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/config",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 10
+    },
+    {
+      "name": "@sovereign/content-addressed-storage",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
+    },
+    {
+      "name": "@sovereign/data",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 11
+    },
+    {
+      "name": "@sovereign/diff-patch",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 9
+    },
+    {
+      "name": "@sovereign/digest",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 14
+    },
+    {
+      "name": "@sovereign/directory-snapshot-tree-manifest",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 6
+    },
+    {
+      "name": "@sovereign/ephemeral-workspace-scratch-directory",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 7
+    },
+    {
+      "name": "@sovereign/event",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/execution-engine",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/file-lease-advisory-lock",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 6
+    },
+    {
+      "name": "@sovereign/filesystem",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 17
+    },
+    {
+      "name": "@sovereign/filesystem-permission-ownership-descriptor-v0-1",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 9
+    },
+    {
+      "name": "@sovereign/filesystem-recovery-journal",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 4
+    },
+    {
+      "name": "@sovereign/filesystem-watcher-change-stream",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
+    },
+    {
+      "name": "@sovereign/glob-path-matcher",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 9
+    },
+    {
+      "name": "@sovereign/host-identity-environment-fingerprint",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 6
+    },
+    {
+      "name": "@sovereign/http",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 9
+    },
+    {
+      "name": "@sovereign/http-metadata",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 13
+    },
+    {
+      "name": "@sovereign/http-server",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
+    },
+    {
+      "name": "@sovereign/logger",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 7
+    },
+    {
+      "name": "@sovereign/metrics",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 8
+    },
+    {
+      "name": "@sovereign/mime",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 4
+    },
+    {
+      "name": "@sovereign/policy-capability-security",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/process",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/process-supervisor",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/rate-limiter",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 1
+    },
+    {
+      "name": "@sovereign/redaction",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 8
+    },
+    {
+      "name": "@sovereign/release-manifest-integrity",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 6
+    },
+    {
+      "name": "@sovereign/release-verification-harness",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/reporting-export",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/result",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
+    },
+    {
+      "name": "@sovereign/retry",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/runtime-capability-inspector",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": true,
+      "exportsCount": 8
+    },
+    {
+      "name": "@sovereign/safe-path-resolver",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": true,
+      "exportsCount": 11
+    },
+    {
+      "name": "@sovereign/safe-path-resolver-containment-boundary",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 11
+    },
+    {
+      "name": "@sovereign/scheduler",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
+    },
+    {
+      "name": "@sovereign/search-index",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 2
+    },
+    {
+      "name": "@sovereign/serialization",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 10
+    },
+    {
+      "name": "@sovereign/storage",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 2
+    },
+    {
+      "name": "@sovereign/storage-persistence",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 3
+    },
+    {
+      "name": "@sovereign/stream",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
+    },
+    {
+      "name": "@sovereign/timeout-deadline",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 8
+    },
+    {
+      "name": "@sovereign/url",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 17
+    },
+    {
+      "name": "@sovereign/validation",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
+    },
+    {
+      "name": "@sovereign/websocket",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 10
+    },
+    {
+      "name": "@sovereign/worker-pool",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 5
+    },
+    {
+      "name": "@sovereign/workflow-durable",
+      "version": "0.1.0",
+      "releaseHead": "cc1ba084532d82bb2cbe7d73c64b57fa9538fecb",
+      "packageStatus": "TECHNICALLY_READY",
+      "publicationStatus": "DEFERRED_GITHUB_ONLY",
+      "authorized": false,
+      "exportsCount": 2
+    }
+  ],
+  "verificationSummary": {
+    "npmRunCheck": "pass",
+    "npmTest": "761/761",
+    "boundedTests": "ALL PASS",
+    "publicationGuard": "PASS (fail-closed; no credential present)",
+    "securityBoundaries": "PASS",
+    "browserAssertionsTarball": "PASS",
+    "realBrowserSmoke": "pass",
+    "packageTooling": "verified (exact export surface: safe=11, rt=8)",
+    "reproduciblePack": "verified (byte-identical, integrity+shasum+file manifest)",
+    "declarations": "verified"
+  },
+  "flakeClassification": [
+    {
+      "cube": "application-lifecycle",
+      "test": "late participant completion cannot mutate the terminal snapshot",
+      "class": "B_TEST_DEFECT_C_INFRASTRUCTURE_FLAKE",
+      "isolatedStable": "14/14 x6",
+      "underLoad": "intermittent",
+      "rootCauseHypothesis": "defaultTimeoutMs:5 + single Promise.resolve() microtask; nondeterministic under runner saturation",
+      "remediation": "test-only: increase timing margin or use explicit completion signaling (DO NOT modify frozen runtime)"
+    },
+    {
+      "cube": "atomic-batch-file-transaction-safe-multi-file-commit",
+      "test": "timing-sensitive assertion",
+      "class": "B_TEST_DEFECT_C_INFRASTRUCTURE_FLAKE",
+      "isolatedStable": "8/8 x6",
+      "underLoad": "intermittent",
+      "rootCauseHypothesis": "bounded-deadline timing assertion under load",
+      "remediation": "test-only timing hardening (DO NOT modify frozen runtime)"
+    },
+    {
+      "cube": "process-supervisor",
+      "test": "graceful stop escalates to forced kill after bounded grace period",
+      "class": "B_TEST_DEFECT_C_INFRASTRUCTURE_FLAKE",
+      "isolatedStable": "13/13 x6",
+      "underLoad": "intermittent (surfaced in full npm test run)",
+      "rootCauseHypothesis": "grace-period kill-escalation assertion occasionally not elapsed under full-suite load",
+      "remediation": "test-only timing hardening (DO NOT modify frozen runtime)"
+    }
+  ],
+  "browserInterceptionClassification": {
+    "cube": "browser-network-interception",
+    "cdpControlPlane": "REAL (Network.enable / requestWillBeSent / continueInterceptedRequest hooked)",
+    "bodyCapture": "MOCK_LEVEL_ONLY (source leaves body null unless user opts in via mock; getResponseBody not wired)",
+    "testsUse": "FakeCDP synthetic events",
+    "releaseBlocker": false,
+    "futureArchitecture": "real response-body capture via Network.getResponseBody",
+    "specVsImplGap": "SPEC advertises 'respond with custom body/status' and 'body (capped)'; implementation is capability/mock-level for body \u2014 SPEC should be reconciled to v0.1 scope"
+  },
+  "governanceBlockers": [],
+  "nonGovernanceBlockersRemoved": [
+    "package manifests now present and contract-correct",
+    "declaration surface verified exact",
+    "tarballs pack with correct allowlist (6 files, no repo leakage)",
+    "publication guard fails closed (no publish path, no credential, no publishConfig)",
+    "human release authorization received (PR #111 closure)"
+  ],
+  "nextStep": "Continue packaging CONDITIONAL Cubes (dependency-graph resolution for those with relative imports; keep browser/integration cubes pre-release). Prepare GitHub Release artifacts for the 2 authorized packages. No external publish.",
+  "authorizedAt": "2026-08-27T21:12:00Z",
+  "authorizationRecordedBy": "explicit human release authorization (PR #111 audit closure)",
+  "releaseHead": "013478a0f9bc6a1c70b14ef93155727007a7f946",
+  "ciRunAtRelease": 867,
+  "publicationStatusActual": "GITHUB_DISTRIBUTION_DEFERRED",
+  "releaseFailure": {
+    "step": "PUBLISH",
+    "exactError": "npm error code E403; 403 Forbidden - PUT https://registry.npmjs.org/@sovereign%2f<name> - Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages.",
+    "reproducedOn": [
+      "agent machine (NODE_AUTH_TOKEN + .npmrc)",
+      "human machine (PowerShell npm publish)"
+    ],
+    "cause": "npm enforces 2FA/bypass on the @sovereign scope. Account-level 2FA is disabled, so the only override is a granular token with 'bypass 2FA for publishing' explicitly enabled for @sovereign, OR disabling the scope's 2FA requirement in npm org settings.",
+    "guardBypassed": false,
+    "agentCannot": "create npm token (human-owned credential), toggle org 2FA policy, or inject bypass.",
+    "action": "STOPPED per runbook. Human must supply a granular access token with bypass-2fa for @sovereign (with Read+Write to the scope), or disable the scope 2FA requirement in npm settings. Package tarballs are staged, metadata-corrected, and ready to publish."
+  },
+  "npmEnvironment": {
+    "whoami_existing_token": "ahmedsturki",
+    "orgOwnership": "@sovereign -> owner",
+    "accountTwoFactor": "disabled (per npm profile get)",
+    "blocker": "E403 Two-factor authentication OR granular access token with bypass-2fa REQUIRED to publish @sovereign scope. Enforced by npm scope policy regardless of account-level 2FA setting.",
+    "providedToken_npm_fchd": "rejected: 404 'do not have permission' when used directly (no publish permission for @sovereign); also not read from NODE_AUTH_TOKEN in this shell (ENEEDAUTH when global npmrc emptied).",
+    "existingGlobalToken": "authenticates (whoami=ahmedsturki) but publish returns E403 2FA-policy."
+  },
+  "publishDeferredByUser": true,
+  "deferralReason": "User chose to NOT publish now (no paid npm plan / no urgency). Publish all authorized packages together at the end after more Cubes are packaged. npm public publish is free; the earlier E403 was a scope 2FA-policy block, not a paywall, but user elects to batch the release later.",
+  "distributionPolicy": "GITHUB_ONLY",
+  "externalRegistryPublication": "DEFERRED_BY_PROJECT_POLICY",
+  "npmPublication": "CLOSED_FOR_THIS_PHASE",
+  "summary": {
+    "totalPackages": 74,
+    "authorized": 2,
+    "technicallyReady": 74,
+    "githubReleased": 0,
+    "deferred": 74
+  }
+}

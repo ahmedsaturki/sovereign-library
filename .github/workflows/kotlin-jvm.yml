@@ -1,0 +1,81 @@
+name: kotlin-jvm
+
+on:
+  push:
+    branches: [main, "feat/**"]
+    paths:
+      - "ecosystems/kotlin/**"
+      - ".github/workflows/kotlin-jvm.yml"
+      - "contracts/conformance/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "ecosystems/kotlin/**"
+      - ".github/workflows/kotlin-jvm.yml"
+      - "contracts/conformance/**"
+
+concurrency:
+  group: kotlin-jvm-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kotlin-jvm:
+    name: Kotlin/JVM ${{ matrix.os }} / JDK 17
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15-intel]
+    defaults:
+      run:
+        working-directory: ecosystems/kotlin
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+
+      - name: Validate wrapper
+        run: gradle wrapper --version
+
+      - name: Run tests + language-neutral conformance
+        run: gradle test --no-daemon --console=plain
+
+      - name: Build JVM artifacts
+        run: gradle jar --no-daemon --console=plain
+
+      - name: Verify reproducible archives
+        shell: bash
+        run: |
+          rm -rf safe-path-resolver/build runtime-capability-inspector/build conformance/build
+          gradle jar --no-daemon --console=plain
+          mkdir -p /tmp/oot1 && rm -f /tmp/oot1/* \
+            && cp safe-path-resolver/build/libs/safe-path-resolver-0.1.0.jar /tmp/oot1/ \
+            && cp runtime-capability-inspector/build/libs/runtime-capability-inspector-0.1.0.jar /tmp/oot1/
+          rm -rf safe-path-resolver/build runtime-capability-inspector/build conformance/build
+          gradle jar --no-daemon --console=plain
+          mkdir -p /tmp/oot2 && rm -f /tmp/oot2/* \
+            && cp safe-path-resolver/build/libs/safe-path-resolver-0.1.0.jar /tmp/oot2/ \
+            && cp runtime-capability-inspector/build/libs/runtime-capability-inspector-0.1.0.jar /tmp/oot2/
+          diff <(sha256sum /tmp/oot1/*.jar | awk '{print $1}' | sort) \
+               <(sha256sum /tmp/oot2/*.jar | awk '{print $1}' | sort) \
+            && echo "REPRODUCIBLE OK"
+
+      - name: Upload JVM artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-jvm-jars
+          path: |
+            ecosystems/kotlin/safe-path-resolver/build/libs/*.jar
+            ecosystems/kotlin/runtime-capability-inspector/build/libs/*.jar
+          if-no-files-found: error
