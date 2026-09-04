@@ -1,5 +1,8 @@
 name: Security Pipeline (CI/CD)
 
+# Security pipeline: Bandit (SAST), Safety (dependency audit), SARIF upload
+# Tools: bandit, safety, codeql-action/upload-sarif@v3
+
 on:
   push:
     branches: [main]
@@ -9,6 +12,9 @@ on:
 jobs:
   security-scan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
@@ -20,15 +26,24 @@ jobs:
       - name: Bandit SAST scan
         continue-on-error: true
         run: bandit -r . -f json -o bandit-report.json || true
+      - name: Generate SARIF from Bandit
+        continue-on-error: true
+        run: |
+          python generate_sarif.py bandit-report.json bandit.sarif || echo "SARIF generation skipped"
       - name: Safety dependency audit
         continue-on-error: true
         run: safety check --json --output safety-report.json || true
-      - name: GitHub MCP security integration
+      - name: Upload SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: bandit.sarif
+          category: security-pipeline
+          tags: security,python,sarif
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "GitHub MCP configured for security reporting"
       - name: Summary
         if: always()
         run: |
-          echo "Security scan completed"
-          ls -la *.json 2>/dev/null || echo "No reports"
+          echo "Security Pipeline completed"
+          ls -la *.json *.sarif 2>/dev/null || echo "No reports generated"
