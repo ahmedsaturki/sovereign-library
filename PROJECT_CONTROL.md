@@ -18,6 +18,9 @@ The immediate objective is to qualify existing Sovereign Cubes as real standalon
 - Release PR: **#104**, merged
 - Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
 - Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
+- **RELEASED (Phase-0 First Batch):**
+  - `@sovereign/safe-path-resolver` v0.1.0 → GitHub Release v0.1.0-safe-path-resolver; CI Run #862; tarball verified independent (6 files, no monorepo paths)
+  - `@sovereign/runtime-capability-inspector` v0.1.0 → GitHub Release v0.1.0-runtime-capability-inspector; CI Run #862; tarball verified independent (2 files, no monorepo paths)
 - Process Supervisor / Managed Child Lifecycle v0.1 remains **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
 - Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0df16265b6c6897812c56ca2`.
 - Safe File Quarantine / Delete v0.1 remains **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
@@ -132,7 +135,8 @@ Everything else is parked in `ROADMAP.md`, issue/task records, or explicit futur
 
 The first two Phase-0 candidates remain authorized in principle:
 
-- `@sovereign/safe-path-resolver` v0.1.0
+-  v0.1.0 → RELEASED (GitHub Release v0.1.0-safe-path-resolver; npm publish DEFERRED per policy; tarball verified independent)
+- 
 - `@sovereign/runtime-capability-inspector` v0.1.0
 
 They are **TECHNICALLY_READY / AUTHORIZED / NOT YET GITHUB-RELEASED**.
