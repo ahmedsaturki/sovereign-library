@@ -8,6 +8,35 @@ One active Cube or readiness task at a time:
 
 A Cube is released only after clean syntax checks, unit/contract tests, integration tests, failure/recovery tests, documentation, examples, and GitHub CI across the supported platform matrix pass.
 
+## Permanent architecture direction
+
+The project-wide architecture is governed by:
+
+- `AGENTS.md`
+- `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md`
+- `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md`
+- `docs/SOVEREIGN_ECOSYSTEM_CONTRACT_V1.0.json`
+
+Permanent model:
+
+`INDEPENDENT CUBES -> EXPLICIT COMPOSITION -> REAL PRODUCTS`
+
+Every suitable Cube should be independently usable, testable, packageable, distributable, versioned, secure, deterministic within its contract, failure/recovery hardened, cross-platform where applicable, and replaceable without requiring the whole system.
+
+The multi-ecosystem model is:
+
+`ONE AUTHORITATIVE CONTRACT -> NATIVE IMPLEMENTATION PER ECOSYSTEM -> CONFORMANCE -> INDEPENDENT DISTRIBUTION`
+
+Target ecosystems:
+
+- Node.js / JavaScript → npm
+- Python → PyPI for suitable general-purpose Cubes
+- Kotlin / JVM → Maven-compatible distribution
+- Android → first-class Kotlin/Android target
+- iOS / Apple platforms → future native Swift-facing and/or KMP-based distribution where justified
+
+Not every Cube must support every ecosystem. Support is determined by applicability and value.
+
 ## Latest released Cube
 
 ### Application Lifecycle / Graceful Shutdown Coordinator v0.1
@@ -73,25 +102,28 @@ Candidates:
 1. `@sovereign/safe-path-resolver` v0.1.0
 2. `@sovereign/runtime-capability-inspector` v0.1.0
 
-### Active: Explicit Release Authorization
+### Active: First Public Batch Publication
 
-**Technical readiness is complete.** The next and only active decision is an explicit release-authorization decision for the two candidates.
+**Technical readiness and human release authorization are complete.** The current task is to complete publication of the two authorized candidates.
 
-Until that decision exists, the following remain prohibited:
+Current publication status is **blocked by the environment prerequisite** recorded in `docs/release/AUTHORIZATION_PACKAGE_STATUS-V0.1.json`: the authorized environment must provide valid npm authentication and verified `@sovereign` ownership. No agent may invent credentials, commit tokens, modify `publishConfig` to bypass the guard, or silently change the authorized source.
 
-- npm organization creation or reservation
-- npm token configuration
-- registry automation
-- `npm publish`
-- GitHub Packages publication
-- public release announcements
+Once the authorized npm environment is available, the controlled path is:
 
-Once explicitly authorized, the controlled path becomes:
-
-`AUTHORIZED -> FINAL CLEAN VERIFY -> TAG/RELEASE -> PUBLISH -> POST-PUBLISH VERIFY -> FREEZE`
+`FINAL CLEAN VERIFY -> TAG/RELEASE -> PUBLISH -> POST-PUBLISH VERIFY -> FREEZE -> UPDATE CONTROL PLANE`
 
 ## Future product direction
 
-After package-readiness is proven, Browser Automation remains the strongest product wedge because it composes a large set of stabilized primitives. This is a future product milestone, not an active implementation task during Phase 0.
+After the First Public Batch closes, the next architectural expansion is **Sovereign Multi-Language & Mobile Distribution**:
 
-No second Cube may start concurrently with the current Phase 0 task.
+1. preserve one authoritative SPEC per Cube;
+2. add native Python implementations for suitable portable Cubes;
+3. add native Kotlin implementations for suitable portable Cubes;
+4. make Android a first-class consumer/distribution target;
+5. add iOS/Apple support where real value exists, using native Swift-facing APIs and/or Kotlin Multiplatform where justified;
+6. introduce language-neutral conformance vectors;
+7. distribute each suitable implementation independently through its ecosystem's normal package mechanism.
+
+The next product wave remains Browser Automation and its Products, including Web Test Kit and Sovereign Automation. Browser work is a product composition strategy, not permission to collapse Cube boundaries.
+
+No second Cube may start concurrently with the current official release task.

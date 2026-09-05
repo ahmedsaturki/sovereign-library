@@ -1,0 +1,14 @@
+{
+  "name": "@sovereign/browser-visual-testing",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone, dependency-free structural DOM snapshot capture and diffing for regression testing",
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "main": "./src/index.js",
+  "exports": { ".": "./src/index.js" },
+  "scripts": {
+    "check": "node --check src/index.js",
+    "test": "node --test test/index.test.js"
+  }
+}

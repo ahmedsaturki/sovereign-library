@@ -4,9 +4,13 @@
 
 This file is the anti-drift control for the repository. It keeps development finite, visible, and recoverable.
 
+**Agent entry:** every autonomous agent must read `AGENTS.md` first, then this file. The permanent architecture contract is `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md`, and the project-wide knowledge map is `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md`.
+
 ## Current mission
 
-**Phase 0 — First Public Package Batch / Release Authorization Readiness** after freezing **Application Lifecycle / Graceful Shutdown Coordinator v0.1**.
+**LIBRARY DISTRIBUTION EXPANSION — ACTIVE (GitHub-first / free multi-channel optional)**
+
+The immediate objective is to qualify existing Sovereign Cubes as real standalone libraries without deleting, replacing, or destabilizing completed work, while preparing free, reproducible distribution channels for later release waves.
 
 ## Current repository state
 
@@ -14,6 +18,9 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Release PR: **#104**, merged
 - Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
 - Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
+- **RELEASED (Phase-0 First Batch):**
+  - `@sovereign/safe-path-resolver` v0.1.0 → GitHub Release v0.1.0-safe-path-resolver; CI Run #862; tarball verified independent (6 files, no monorepo paths)
+  - `@sovereign/runtime-capability-inspector` v0.1.0 → GitHub Release v0.1.0-runtime-capability-inspector; CI Run #862; tarball verified independent (2 files, no monorepo paths)
 - Process Supervisor / Managed Child Lifecycle v0.1 remains **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
 - Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0df16265b6c6897812c56ca2`.
 - Safe File Quarantine / Delete v0.1 remains **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
@@ -28,74 +35,124 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Package tooling, reproducibility, and security verification: **DONE / VERIFIED** by **Run #835**, passed on Ubuntu, Windows, and macOS-15-Intel.
 - Publication guard implementation: merged in commit `91ff69c40c72b62e97d6e1e07a83f87397acacdc` and wired into CI at `9e2ca35668e5ad2923a8c6c6c4992483a07b181d`.
 - Final pre-authorization verification: **Run #845**, commit `f14bbd9229fcda23f00602cfc9288881c61e213e`, passed completely on Ubuntu, Windows, and macOS-15-Intel.
-- Release-readiness evidence is frozen in `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`.
-- Release authorization packet is frozen in `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`.
-- No public package publication is authorized yet.
+- Release-readiness and authorization documents remain historical evidence; current distribution policy is recorded below.
+
+## Project-wide architecture law
+
+The repository-wide independence and ecosystem model is governed by:
+
+- `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md`
+- `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md`
+- `docs/SOVEREIGN_ECOSYSTEM_CONTRACT_V1.0.json`
+- `GOVERNANCE.md`
+
+The permanent principle is:
+
+**INDEPENDENT CUBES -> EXPLICIT COMPOSITION -> REAL PRODUCTS**
+
+A suitable Cube is intended to be independently usable, testable, packageable, distributable, versioned, secure, deterministic within contract, failure/recovery hardened, cross-platform where applicable, and replaceable without requiring the whole repository.
+
+Sovereign is not Node-only. The ecosystem target is:
+
+`ONE AUTHORITATIVE CONTRACT -> NATIVE IMPLEMENTATION PER ECOSYSTEM -> CONFORMANCE -> INDEPENDENT DISTRIBUTION`
+
+Target ecosystems include Node.js, Python, Kotlin/JVM, Android, and future iOS/Apple platforms where a Cube is applicable and valuable. These are implementation/distribution targets, not a claim that every Cube already has every port.
+
+An internal dependency is allowed only when it is explicit, versioned, resolvable in the distributed artifact, tested, and consistent with the Cube contract. Monorepo-relative runtime coupling must not leak into released packages.
+
+## Current distribution policy
+
+**GITHUB-FIRST / FREE-MULTI-CHANNEL-OPTIONAL.**
+
+GitHub remains the canonical source, persistent project memory, release-evidence home, and default distribution channel.
+
+Distribution is intentionally free-by-default. Additional ecosystem registries are **optional and deferred by release wave**, not permanently prohibited. A registry may be enabled for a release only when it is genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly selected for that release wave.
+
+Canonical GitHub mechanisms:
+
+- Git repository/source;
+- Git tags;
+- GitHub Releases;
+- GitHub Release assets;
+- checksums/integrity records;
+- documentation and examples.
+
+Optional free ecosystem mechanisms may include npm, PyPI, Maven-compatible registries/Maven Central, GitHub Packages, JSR, or other appropriate services, subject to current terms/limits and a deliberate release decision. No paid registry or mandatory third-party service is required.
+
+No external publication should be attempted merely because a package is technically ready. Release timing and channel selection remain explicit controls.
+
+Historical wording that prohibited external registries absolutely is superseded by this policy and remains preserved as history in governance/release records.
+
+## Current packaging wave
+
+Existing suitable Cubes are being qualified as genuine standalone libraries.
+
+Current package catalog: `scripts/package-catalog.json`.
+
+Current qualification matrix: `docs/release/PACKAGE_QUALIFICATION_MATRIX-V0.1.md`.
+
+The current reported Node packaging wave contains **74 package entries representing 73 unique Cube sources**, with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube.
+
+The qualification rules remain stricter than merely creating `package.json`: exact public API, declaration surface, package boundary, out-of-tree use, reproducibility, security, documentation, and applicable CI evidence are required.
+
+Remaining categories include:
+
+- browser/integration Cubes kept PRE-RELEASE until their own release wave;
+- Cubes with unresolved runtime coupling kept CONDITIONAL until the dependency boundary can be made real without breaking monorepo behavior;
+- future native Python/Kotlin/Android implementations only where justified by the authoritative contract and practical value.
+
+## Continuity and non-destructive evolution
+
+GitHub is the durable project memory.
+
+Meaningful work is complete only after:
+
+`CHANGE -> TEST -> DOCUMENT -> COMMIT -> PUSH -> VERIFY REMOTE`
+
+The default evolution policy is additive:
+
+`ADD -> EXTEND -> HARDEN -> IMPROVE -> SUPERSEDE -> DEPRECATE -> ARCHIVE -> DEFER`
+
+Do not silently delete or replace working functionality, contracts, tests, packages, history, or architecture merely because a newer approach exists.
+
+Historical failures remain historical evidence. Current state must be updated separately rather than rewriting history.
 
 ## The one-current-task rule
 
 At any moment there is exactly **one active milestone** and **one immediate next task**.
 
-Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter the current task unless required for its gate.
+Current milestone:
 
-## Current milestone
+**LIBRARY DISTRIBUTION EXPANSION — ACTIVE**
 
-**PHASE-0-RELEASE-AUTHORIZATION-READY**
+Immediate next task:
 
-### Immediate next task
+**Continue qualification and hardening of existing standalone library candidates, reconcile evidence, and prepare GitHub release artifacts for the authorized packages; optional free ecosystem publication may be enabled later as a separate release decision.**
 
-Obtain the explicit release-authorization decision for the two verified candidates: `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. Until that decision exists, do not publish, create/reserve an npm organization, configure npm tokens, add registry automation, or announce a public release.
+Everything else is parked in `ROADMAP.md`, issue/task records, or explicit future status.
 
-### Completed Phase 0 gates
+## Release state
 
-1. Inventory & Classification — **DONE / FROZEN** in PR #105.
-2. License decision and repository licensing artifacts — **DONE / FROZEN** in PR #106; Apache-2.0 is authoritative on `main`.
-3. Public API boundary freeze — **DONE / VERIFIED**; Run #782 passed on Ubuntu, Windows, and macOS-15-Intel.
-4. Type/declaration strategy without a full rewrite — **DONE / VERIFIED**; Run #809 passed on Ubuntu, Windows, and macOS-15-Intel.
-5. Package contract — **DONE / VERIFIED**; PR #108 merged at `b7b8f985058fb4a13e73cf255dd6fdf7508da5bd`; Run #812 passed on Ubuntu, Windows, and macOS-15-Intel.
-6. Package tooling implementation — **DONE / VERIFIED**.
-7. Reproducible `npm pack` and security verification — **DONE / VERIFIED** by Run #835.
-8. Publication guard — **DONE / WIRED / VERIFIED** by Run #845 on all supported platforms.
-9. Release-readiness record — **DONE / FROZEN**.
-10. Release authorization packet — **DONE / FROZEN**.
+The first two Phase-0 candidates remain authorized in principle:
 
-## Governing release records
+-  v0.1.0 → RELEASED (GitHub Release v0.1.0-safe-path-resolver; npm publish DEFERRED per policy; tarball verified independent)
+- 
+- `@sovereign/runtime-capability-inspector` v0.1.0
 
-- `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`
-- `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`
+They are **TECHNICALLY_READY / AUTHORIZED / NOT YET GITHUB-RELEASED**.
 
-## Declaration strategy artifact
+External publication is intentionally deferred by current project timing/policy, not because the technical artifacts are invalid.
 
-`docs/DECLARATION_STRATEGY_V0.1.md` is the governing decision record.
+A package is not `RELEASED` until an actual GitHub release/artifact distribution event is evidenced.
 
-The repository remains JavaScript-first. Public declarations are produced incrementally from JSDoc with no TypeScript runtime dependency and no full source rewrite.
+## Known frozen-cube timing issues
 
-## Release sequence
+The released/frozen `application-lifecycle`, `atomic-batch-file-transaction`, and `process-supervisor` cubes contain documented timing-sensitive tests. They are not modified by unrelated library-distribution work. Any remediation requires a dedicated authorized task.
 
-Cube work follows:
+## Recovery point
 
-`SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE -> NEXT CUBE`
+A new agent must recover by reading:
 
-Phase 0 readiness work is controlled by the same one-current-task discipline; it does not authorize parallel Cube implementation.
+`AGENTS.md -> GOVERNANCE.md -> PROJECT_CONTROL.md -> ROADMAP.md -> Architecture Constitution -> Project Knowledge Base -> live GitHub state -> relevant SPEC -> package/release records`
 
-The public package release path is:
-
-`READY -> EXPLICIT AUTHORIZATION -> FINAL CLEAN VERIFY -> TAG/RELEASE -> PUBLISH -> POST-PUBLISH VERIFY -> FREEZE`
-
-## Definition of done
-
-A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verified, documented, and merged to `main` with the control plane advanced to exactly one next task.
-
-## Anti-loop rules
-
-- Do not redesign the whole architecture during readiness work.
-- Do not add dependencies merely to solve a local problem without a recorded decision.
-- Do not start a second Cube while a Phase 0 task is active.
-- Do not turn a technically complete cube into a public package without API/package/security/release-authorization gates.
-- Do not call a package production-ready from source inspection alone.
-- Do not treat CI success as publication authorization.
-- Park out-of-scope work and continue.
-
-## Recovery rule
-
-If work is interrupted, read this file first, then `ROADMAP.md`, then the latest Git commit. Resume from the listed immediate next task; do not restart from memory.
+Never rely on chat history as authoritative state.
