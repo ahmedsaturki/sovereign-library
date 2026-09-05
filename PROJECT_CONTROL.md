@@ -21,6 +21,13 @@ The immediate objective is to qualify existing Sovereign Cubes as real standalon
 - **RELEASED (Phase-0 First Batch):**
   - `@sovereign/safe-path-resolver` v0.1.0 → GitHub Release v0.1.0-safe-path-resolver; CI Run #862; tarball verified independent (6 files, no monorepo paths)
   - `@sovereign/runtime-capability-inspector` v0.1.0 → GitHub Release v0.1.0-runtime-capability-inspector; CI Run #862; tarball verified independent (2 files, no monorepo paths)
+- **RELEASED (Phase-0 Second Batch):**
+  - `@sovereign/filesystem` v0.1.0 → GitHub Release v0.1.0-filesystem; CI Run #862; tarball verified independent (17 exports)
+  - `@sovereign/url` v0.1.0 → GitHub Release v0.1.0-url; CI Run #862; tarball verified independent (17 exports)
+  - `@sovereign/compression` v0.1.0 → GitHub Release v0.1.0-compression; CI Run #862; tarball verified independent (14 exports)
+  - `@sovereign/digest` v0.1.0 → GitHub Release v0.1.0-digest; CI Run #862; tarball verified independent (14 exports)
+  - `@sovereign/http-metadata` v0.1.0 → GitHub Release v0.1.0-http-metadata; CI Run #862; tarball verified independent (13 exports)
+  - `@sovereign/artifact-compliance-policy-evaluator` v0.1.0 → GitHub Release v0.1.0-artifact-compliance-policy-evaluator; CI Run #862; tarball verified independent (12 exports)
 - Process Supervisor / Managed Child Lifecycle v0.1 remains **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
 - Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0df16265b6c6897812c56ca2`.
 - Safe File Quarantine / Delete v0.1 remains **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
