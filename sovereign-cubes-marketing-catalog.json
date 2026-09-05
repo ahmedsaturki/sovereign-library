@@ -1,0 +1,621 @@
+{
+  "product_name": "Sovereign Cubes",
+  "tagline": "74 Zero-Dependency, CI-Verified, Governance-Compliant Building Blocks",
+  "total_packages": 74,
+  "categories": {
+    "core-utilities": [
+      "canonical-json",
+      "circuit-breaker",
+      "concurrency",
+      "diff-patch",
+      "timeout-deadline",
+      "config",
+      "data",
+      "compression",
+      "stream",
+      "search-index"
+    ],
+    "crypto-hashing": [
+      "digest",
+      "serialization"
+    ],
+    "data-validation": [
+      "validation",
+      "result"
+    ],
+    "filesystem": [
+      "safe-path-resolver",
+      "glob-path-matcher",
+      "filesystem-permission-ownership-descriptor-v0-1",
+      "content-addressed-storage",
+      "atomic-file-writer-safe-replace",
+      "directory-snapshot-tree-manifest",
+      "ephemeral-workspace-scratch-directory",
+      "file-lease-advisory-lock",
+      "artifact-release-snapshot",
+      "atomic-batch-file-transaction-safe-multi-file-commit",
+      "filesystem",
+      "filesystem-recovery-journal",
+      "filesystem-watcher-change-stream",
+      "safe-path-resolver-containment-boundary"
+    ],
+    "network-http": [
+      "url",
+      "cache",
+      "mime",
+      "retry",
+      "rate-limiter",
+      "http-metadata",
+      "http",
+      "http-server",
+      "websocket"
+    ],
+    "process-management": [
+      "scheduler",
+      "process-supervisor",
+      "cli",
+      "execution-engine",
+      "process",
+      "worker-pool"
+    ],
+    "artifact-lifecycle": [
+      "application-lifecycle",
+      "artifact-admission-gate",
+      "artifact-audit-drift-reporter",
+      "artifact-bundle",
+      "artifact-catalog",
+      "artifact-compliance-policy-evaluator",
+      "artifact-dependency-graph",
+      "artifact-lifecycle-retention",
+      "artifact-provenance-lineage-ledger",
+      "artifact-reconciliation-consistency-checker",
+      "artifact-reference-resolver",
+      "artifact-release-approval",
+      "artifact-release-closure-receipt",
+      "artifact-release-plan",
+      "artifact-release-publication-confirmation",
+      "artifact-release-publication-executor",
+      "release-manifest-integrity",
+      "release-verification-harness"
+    ],
+    "release-automation": [
+      "storage",
+      "reporting-export",
+      "storage-persistence"
+    ],
+    "monitoring-observability": [
+      "event",
+      "logger",
+      "metrics"
+    ],
+    "security-policy": [
+      "runtime-capability-inspector",
+      "redaction",
+      "host-identity-environment-fingerprint",
+      "policy-capability-security"
+    ],
+    "storage-persistence": [],
+    "workflow-orchestration": [
+      "agent-runtime",
+      "ai-inference-runtime",
+      "workflow-durable"
+    ]
+  },
+  "packages_by_category": {
+    "filesystem": [
+      {
+        "key": "safe-path-resolver",
+        "name": "@sovereign/safe-path-resolver",
+        "exports": 11,
+        "description": "Sovereign safe-path-resolver Cube (standalone)."
+      },
+      {
+        "key": "glob-path-matcher",
+        "name": "@sovereign/glob-path-matcher",
+        "exports": 9,
+        "description": "Sovereign glob-path-matcher Cube (standalone)."
+      },
+      {
+        "key": "filesystem-permission-ownership-descriptor-v0-1",
+        "name": "@sovereign/filesystem-permission-ownership-descriptor-v0-1",
+        "exports": 9,
+        "description": "Sovereign filesystem-permission-ownership-descriptor-v0-1 Cube (standalone)."
+      },
+      {
+        "key": "content-addressed-storage",
+        "name": "@sovereign/content-addressed-storage",
+        "exports": 5,
+        "description": "Sovereign content-addressed-storage Cube (standalone)."
+      },
+      {
+        "key": "atomic-file-writer-safe-replace",
+        "name": "@sovereign/atomic-file-writer-safe-replace",
+        "exports": 4,
+        "description": "Sovereign atomic-file-writer-safe-replace Cube (standalone)."
+      },
+      {
+        "key": "directory-snapshot-tree-manifest",
+        "name": "@sovereign/directory-snapshot-tree-manifest",
+        "exports": 6,
+        "description": "Sovereign directory-snapshot-tree-manifest Cube (standalone)."
+      },
+      {
+        "key": "ephemeral-workspace-scratch-directory",
+        "name": "@sovereign/ephemeral-workspace-scratch-directory",
+        "exports": 7,
+        "description": "Sovereign ephemeral-workspace-scratch-directory Cube (standalone)."
+      },
+      {
+        "key": "file-lease-advisory-lock",
+        "name": "@sovereign/file-lease-advisory-lock",
+        "exports": 6,
+        "description": "Sovereign file-lease-advisory-lock Cube (standalone)."
+      },
+      {
+        "key": "artifact-release-snapshot",
+        "name": "@sovereign/artifact-release-snapshot",
+        "exports": 9,
+        "description": "Sovereign artifact-release-snapshot Cube (standalone)."
+      },
+      {
+        "key": "atomic-batch-file-transaction-safe-multi-file-commit",
+        "name": "@sovereign/atomic-batch-file-transaction-safe-multi-file-commit",
+        "exports": 7,
+        "description": "Sovereign atomic-batch-file-transaction-safe-multi-file-commit Cube (standalone)."
+      },
+      {
+        "key": "filesystem",
+        "name": "@sovereign/filesystem",
+        "exports": 17,
+        "description": "Sovereign filesystem Cube (standalone)."
+      },
+      {
+        "key": "filesystem-recovery-journal",
+        "name": "@sovereign/filesystem-recovery-journal",
+        "exports": 4,
+        "description": "Sovereign filesystem-recovery-journal Cube (standalone)."
+      },
+      {
+        "key": "filesystem-watcher-change-stream",
+        "name": "@sovereign/filesystem-watcher-change-stream",
+        "exports": 5,
+        "description": "Sovereign filesystem-watcher-change-stream Cube (standalone)."
+      },
+      {
+        "key": "safe-path-resolver-containment-boundary",
+        "name": "@sovereign/safe-path-resolver-containment-boundary",
+        "exports": 11,
+        "description": "Sovereign safe-path-resolver-containment-boundary Cube (standalone)."
+      }
+    ],
+    "security-policy": [
+      {
+        "key": "runtime-capability-inspector",
+        "name": "@sovereign/runtime-capability-inspector",
+        "exports": 8,
+        "description": "Sovereign runtime-capability-inspector Cube (standalone)."
+      },
+      {
+        "key": "redaction",
+        "name": "@sovereign/redaction",
+        "exports": 8,
+        "description": "Sovereign redaction Cube (standalone)."
+      },
+      {
+        "key": "host-identity-environment-fingerprint",
+        "name": "@sovereign/host-identity-environment-fingerprint",
+        "exports": 6,
+        "description": "Sovereign host-identity-environment-fingerprint Cube (standalone)."
+      },
+      {
+        "key": "policy-capability-security",
+        "name": "@sovereign/policy-capability-security",
+        "exports": 3,
+        "description": "Sovereign policy-capability-security Cube (standalone)."
+      }
+    ],
+    "core-utilities": [
+      {
+        "key": "canonical-json",
+        "name": "@sovereign/canonical-json",
+        "exports": 8,
+        "description": "Sovereign canonical-json Cube (standalone)."
+      },
+      {
+        "key": "circuit-breaker",
+        "name": "@sovereign/circuit-breaker",
+        "exports": 3,
+        "description": "Sovereign circuit-breaker Cube (standalone)."
+      },
+      {
+        "key": "concurrency",
+        "name": "@sovereign/concurrency",
+        "exports": 3,
+        "description": "Sovereign concurrency Cube (standalone)."
+      },
+      {
+        "key": "diff-patch",
+        "name": "@sovereign/diff-patch",
+        "exports": 9,
+        "description": "Sovereign diff-patch Cube (standalone)."
+      },
+      {
+        "key": "timeout-deadline",
+        "name": "@sovereign/timeout-deadline",
+        "exports": 8,
+        "description": "Sovereign timeout-deadline Cube (standalone)."
+      },
+      {
+        "key": "config",
+        "name": "@sovereign/config",
+        "exports": 10,
+        "description": "Sovereign config Cube (standalone)."
+      },
+      {
+        "key": "data",
+        "name": "@sovereign/data",
+        "exports": 11,
+        "description": "Sovereign data Cube (standalone)."
+      },
+      {
+        "key": "compression",
+        "name": "@sovereign/compression",
+        "exports": 14,
+        "description": "Sovereign compression Cube (standalone)."
+      },
+      {
+        "key": "stream",
+        "name": "@sovereign/stream",
+        "exports": 5,
+        "description": "Sovereign stream Cube (standalone)."
+      },
+      {
+        "key": "search-index",
+        "name": "@sovereign/search-index",
+        "exports": 2,
+        "description": "Sovereign search-index Cube (standalone)."
+      }
+    ],
+    "crypto-hashing": [
+      {
+        "key": "digest",
+        "name": "@sovereign/digest",
+        "exports": 14,
+        "description": "Sovereign digest Cube (standalone)."
+      },
+      {
+        "key": "serialization",
+        "name": "@sovereign/serialization",
+        "exports": 10,
+        "description": "Sovereign serialization Cube (standalone)."
+      }
+    ],
+    "data-validation": [
+      {
+        "key": "validation",
+        "name": "@sovereign/validation",
+        "exports": 5,
+        "description": "Sovereign validation Cube (standalone)."
+      },
+      {
+        "key": "result",
+        "name": "@sovereign/result",
+        "exports": 5,
+        "description": "Sovereign result Cube (standalone)."
+      }
+    ],
+    "network-http": [
+      {
+        "key": "url",
+        "name": "@sovereign/url",
+        "exports": 17,
+        "description": "Sovereign url Cube (standalone)."
+      },
+      {
+        "key": "cache",
+        "name": "@sovereign/cache",
+        "exports": 4,
+        "description": "Sovereign cache Cube (standalone)."
+      },
+      {
+        "key": "mime",
+        "name": "@sovereign/mime",
+        "exports": 4,
+        "description": "Sovereign mime Cube (standalone)."
+      },
+      {
+        "key": "retry",
+        "name": "@sovereign/retry",
+        "exports": 3,
+        "description": "Sovereign retry Cube (standalone)."
+      },
+      {
+        "key": "rate-limiter",
+        "name": "@sovereign/rate-limiter",
+        "exports": 1,
+        "description": "Sovereign rate-limiter Cube (standalone)."
+      },
+      {
+        "key": "http-metadata",
+        "name": "@sovereign/http-metadata",
+        "exports": 13,
+        "description": "Sovereign http-metadata Cube (standalone)."
+      },
+      {
+        "key": "http",
+        "name": "@sovereign/http",
+        "exports": 9,
+        "description": "Sovereign http Cube (standalone)."
+      },
+      {
+        "key": "http-server",
+        "name": "@sovereign/http-server",
+        "exports": 5,
+        "description": "Sovereign http-server Cube (standalone)."
+      },
+      {
+        "key": "websocket",
+        "name": "@sovereign/websocket",
+        "exports": 10,
+        "description": "Sovereign websocket Cube (standalone)."
+      }
+    ],
+    "monitoring-observability": [
+      {
+        "key": "event",
+        "name": "@sovereign/event",
+        "exports": 3,
+        "description": "Sovereign event Cube (standalone)."
+      },
+      {
+        "key": "logger",
+        "name": "@sovereign/logger",
+        "exports": 7,
+        "description": "Sovereign logger Cube (standalone)."
+      },
+      {
+        "key": "metrics",
+        "name": "@sovereign/metrics",
+        "exports": 8,
+        "description": "Sovereign metrics Cube (standalone)."
+      }
+    ],
+    "process-management": [
+      {
+        "key": "scheduler",
+        "name": "@sovereign/scheduler",
+        "exports": 5,
+        "description": "Sovereign scheduler Cube (standalone)."
+      },
+      {
+        "key": "process-supervisor",
+        "name": "@sovereign/process-supervisor",
+        "exports": 3,
+        "description": "Sovereign process-supervisor Cube (standalone)."
+      },
+      {
+        "key": "cli",
+        "name": "@sovereign/cli",
+        "exports": 2,
+        "description": "Sovereign cli Cube (standalone)."
+      },
+      {
+        "key": "execution-engine",
+        "name": "@sovereign/execution-engine",
+        "exports": 3,
+        "description": "Sovereign execution-engine Cube (standalone)."
+      },
+      {
+        "key": "process",
+        "name": "@sovereign/process",
+        "exports": 3,
+        "description": "Sovereign process Cube (standalone)."
+      },
+      {
+        "key": "worker-pool",
+        "name": "@sovereign/worker-pool",
+        "exports": 5,
+        "description": "Sovereign worker-pool Cube (standalone)."
+      }
+    ],
+    "release-automation": [
+      {
+        "key": "storage",
+        "name": "@sovereign/storage",
+        "exports": 2,
+        "description": "Sovereign storage Cube (standalone)."
+      },
+      {
+        "key": "reporting-export",
+        "name": "@sovereign/reporting-export",
+        "exports": 3,
+        "description": "Sovereign reporting-export Cube (standalone)."
+      },
+      {
+        "key": "storage-persistence",
+        "name": "@sovereign/storage-persistence",
+        "exports": 3,
+        "description": "Sovereign storage-persistence Cube (standalone)."
+      }
+    ],
+    "workflow-orchestration": [
+      {
+        "key": "agent-runtime",
+        "name": "@sovereign/agent-runtime",
+        "exports": 3,
+        "description": "Sovereign agent-runtime Cube (standalone)."
+      },
+      {
+        "key": "ai-inference-runtime",
+        "name": "@sovereign/ai-inference-runtime",
+        "exports": 4,
+        "description": "Sovereign ai-inference-runtime Cube (standalone)."
+      },
+      {
+        "key": "workflow-durable",
+        "name": "@sovereign/workflow-durable",
+        "exports": 2,
+        "description": "Sovereign workflow-durable Cube (standalone)."
+      }
+    ],
+    "artifact-lifecycle": [
+      {
+        "key": "application-lifecycle",
+        "name": "@sovereign/application-lifecycle",
+        "exports": 3,
+        "description": "Sovereign application-lifecycle Cube (standalone)."
+      },
+      {
+        "key": "artifact-admission-gate",
+        "name": "@sovereign/artifact-admission-gate",
+        "exports": 9,
+        "description": "Sovereign artifact-admission-gate Cube (standalone)."
+      },
+      {
+        "key": "artifact-audit-drift-reporter",
+        "name": "@sovereign/artifact-audit-drift-reporter",
+        "exports": 6,
+        "description": "Sovereign artifact-audit-drift-reporter Cube (standalone)."
+      },
+      {
+        "key": "artifact-bundle",
+        "name": "@sovereign/artifact-bundle",
+        "exports": 7,
+        "description": "Sovereign artifact-bundle Cube (standalone)."
+      },
+      {
+        "key": "artifact-catalog",
+        "name": "@sovereign/artifact-catalog",
+        "exports": 6,
+        "description": "Sovereign artifact-catalog Cube (standalone)."
+      },
+      {
+        "key": "artifact-compliance-policy-evaluator",
+        "name": "@sovereign/artifact-compliance-policy-evaluator",
+        "exports": 12,
+        "description": "Sovereign artifact-compliance-policy-evaluator Cube (standalone)."
+      },
+      {
+        "key": "artifact-dependency-graph",
+        "name": "@sovereign/artifact-dependency-graph",
+        "exports": 6,
+        "description": "Sovereign artifact-dependency-graph Cube (standalone)."
+      },
+      {
+        "key": "artifact-lifecycle-retention",
+        "name": "@sovereign/artifact-lifecycle-retention",
+        "exports": 10,
+        "description": "Sovereign artifact-lifecycle-retention Cube (standalone)."
+      },
+      {
+        "key": "artifact-provenance-lineage-ledger",
+        "name": "@sovereign/artifact-provenance-lineage-ledger",
+        "exports": 8,
+        "description": "Sovereign artifact-provenance-lineage-ledger Cube (standalone)."
+      },
+      {
+        "key": "artifact-reconciliation-consistency-checker",
+        "name": "@sovereign/artifact-reconciliation-consistency-checker",
+        "exports": 6,
+        "description": "Sovereign artifact-reconciliation-consistency-checker Cube (standalone)."
+      },
+      {
+        "key": "artifact-reference-resolver",
+        "name": "@sovereign/artifact-reference-resolver",
+        "exports": 5,
+        "description": "Sovereign artifact-reference-resolver Cube (standalone)."
+      },
+      {
+        "key": "artifact-release-approval",
+        "name": "@sovereign/artifact-release-approval",
+        "exports": 10,
+        "description": "Sovereign artifact-release-approval Cube (standalone)."
+      },
+      {
+        "key": "artifact-release-closure-receipt",
+        "name": "@sovereign/artifact-release-closure-receipt",
+        "exports": 9,
+        "description": "Sovereign artifact-release-closure-receipt Cube (standalone)."
+      },
+      {
+        "key": "artifact-release-plan",
+        "name": "@sovereign/artifact-release-plan",
+        "exports": 11,
+        "description": "Sovereign artifact-release-plan Cube (standalone)."
+      },
+      {
+        "key": "artifact-release-publication-confirmation",
+        "name": "@sovereign/artifact-release-publication-confirmation",
+        "exports": 6,
+        "description": "Sovereign artifact-release-publication-confirmation Cube (standalone)."
+      },
+      {
+        "key": "artifact-release-publication-executor",
+        "name": "@sovereign/artifact-release-publication-executor",
+        "exports": 7,
+        "description": "Sovereign artifact-release-publication-executor Cube (standalone)."
+      },
+      {
+        "key": "release-manifest-integrity",
+        "name": "@sovereign/release-manifest-integrity",
+        "exports": 6,
+        "description": "Sovereign release-manifest-integrity Cube (standalone)."
+      },
+      {
+        "key": "release-verification-harness",
+        "name": "@sovereign/release-verification-harness",
+        "exports": 3,
+        "description": "Sovereign release-verification-harness Cube (standalone)."
+      }
+    ]
+  },
+  "value_propositions": [
+    "Zero third-party dependencies",
+    "Cross-platform CI verified (Ubuntu, Windows, macOS)",
+    "Exact declaration surface verified",
+    "Reproducible builds (byte-identical)",
+    "Governance-compliant (no monorepo coupling)",
+    "Apache-2.0 licensed",
+    "GitHub-only distribution (no vendor lock-in)",
+    "Audit-ready with verification evidence"
+  ],
+  "target_audiences": [
+    "Privacy-first organizations",
+    "Regulated industries (finance, healthcare, gov)",
+    "Sovereign infrastructure teams",
+    "Developers building zero-dep systems"
+  ],
+  "offering_tiers": {
+    "community": {
+      "price": "Free",
+      "includes": [
+        "GitHub access",
+        "Source code",
+        "Issues",
+        "Documentation"
+      ],
+      "support": "Community"
+    },
+    "professional": {
+      "price": "$500/mo",
+      "includes": [
+        "Priority support",
+        "Integration consulting",
+        "Security updates",
+        "Custom builds"
+      ],
+      "support": "Business hours"
+    },
+    "enterprise": {
+      "price": "Custom",
+      "includes": [
+        "Dedicated support",
+        "Custom cube development",
+        "SLA",
+        "On-premise deployment",
+        "Training"
+      ],
+      "support": "24/7"
+    }
+  }
+}

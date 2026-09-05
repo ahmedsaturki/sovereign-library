@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Durable project-memory checkpoint schema for Sovereign Library",
+  "required": [
+    "git",
+    "completed",
+    "preserved",
+    "added",
+    "deferred",
+    "blocked",
+    "verification",
+    "release",
+    "current_task",
+    "next_task",
+    "notes"
+  ],
+  "authority": {
+    "current_state": "PROJECT_CONTROL.md",
+    "architecture": "docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md",
+    "knowledge": "docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md",
+    "roadmap": "ROADMAP.md",
+    "release": "docs/release/"
+  },
+  "rules": {
+    "github_is_persistent_memory": true,
+    "default_evolution": "additive",
+    "preserve_history": true,
+    "no_local_only_completion": true,
+    "live_github_beats_stale_docs": true,
+    "one_current_task": true
+  }
+}

@@ -23,11 +23,14 @@ test('set/get/has/list/delete works', async () => {
 });
 
 test('ttl expires within a bounded deterministic window', async () => {
-  const { root, store } = await fixture();
+  let now = 1_000_000;
+  const clock = () => now;
+  const { root } = await fixture();
+  const store = await new Storage({ root, maxValueBytes: 4096, now: clock }).init();
   try {
     await store.set('ttl', 'a', { value: 1 }, { ttlMs: 50 });
     assert.deepEqual(await store.get('ttl', 'a'), { value: 1 });
-    await new Promise(resolve => setTimeout(resolve, 150));
+    now += 150; // advance the injected clock past the TTL
     assert.equal(await store.get('ttl', 'a'), undefined);
   } finally { await rm(root, { recursive: true, force: true }); }
 });

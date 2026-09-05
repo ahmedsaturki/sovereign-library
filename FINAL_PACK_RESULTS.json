@@ -1,0 +1,362 @@
+{
+  "canonical-json": {
+    "status": "OK",
+    "tarball": "sovereign-canonical-json-0.1.0.tgz",
+    "exit": 0
+  },
+  "digest": {
+    "status": "OK",
+    "tarball": "sovereign-digest-0.1.0.tgz",
+    "exit": 0
+  },
+  "validation": {
+    "status": "OK",
+    "tarball": "sovereign-validation-0.1.0.tgz",
+    "exit": 0
+  },
+  "result": {
+    "status": "OK",
+    "tarball": "sovereign-result-0.1.0.tgz",
+    "exit": 0
+  },
+  "url": {
+    "status": "OK",
+    "tarball": "sovereign-url-0.1.0.tgz",
+    "exit": 0
+  },
+  "cache": {
+    "status": "OK",
+    "tarball": "sovereign-cache-0.1.0.tgz",
+    "exit": 0
+  },
+  "circuit-breaker": {
+    "status": "OK",
+    "tarball": "sovereign-circuit-breaker-0.1.0.tgz",
+    "exit": 0
+  },
+  "concurrency": {
+    "status": "OK",
+    "tarball": "sovereign-concurrency-0.1.0.tgz",
+    "exit": 0
+  },
+  "diff-patch": {
+    "status": "OK",
+    "tarball": "sovereign-diff-patch-0.1.0.tgz",
+    "exit": 0
+  },
+  "event": {
+    "status": "OK",
+    "tarball": "sovereign-event-0.1.0.tgz",
+    "exit": 0
+  },
+  "logger": {
+    "status": "OK",
+    "tarball": "sovereign-logger-0.1.0.tgz",
+    "exit": 0
+  },
+  "serialization": {
+    "status": "OK",
+    "tarball": "sovereign-serialization-0.1.0.tgz",
+    "exit": 0
+  },
+  "timeout-deadline": {
+    "status": "OK",
+    "tarball": "sovereign-timeout-deadline-0.1.0.tgz",
+    "exit": 0
+  },
+  "config": {
+    "status": "OK",
+    "tarball": "sovereign-config-0.1.0.tgz",
+    "exit": 0
+  },
+  "data": {
+    "status": "OK",
+    "tarball": "sovereign-data-0.1.0.tgz",
+    "exit": 0
+  },
+  "glob-path-matcher": {
+    "status": "OK",
+    "tarball": "sovereign-glob-path-matcher-0.1.0.tgz",
+    "exit": 0
+  },
+  "mime": {
+    "status": "OK",
+    "tarball": "sovereign-mime-0.1.0.tgz",
+    "exit": 0
+  },
+  "retry": {
+    "status": "OK",
+    "tarball": "sovereign-retry-0.1.0.tgz",
+    "exit": 0
+  },
+  "rate-limiter": {
+    "status": "OK",
+    "tarball": "sovereign-rate-limiter-0.1.0.tgz",
+    "exit": 0
+  },
+  "scheduler": {
+    "status": "OK",
+    "tarball": "sovereign-scheduler-0.1.0.tgz",
+    "exit": 0
+  },
+  "compression": {
+    "status": "OK",
+    "tarball": "sovereign-compression-0.1.0.tgz",
+    "exit": 0
+  },
+  "stream": {
+    "status": "OK",
+    "tarball": "sovereign-stream-0.1.0.tgz",
+    "exit": 0
+  },
+  "storage": {
+    "status": "OK",
+    "tarball": "sovereign-storage-0.1.0.tgz",
+    "exit": 0
+  },
+  "http-metadata": {
+    "status": "OK",
+    "tarball": "sovereign-http-metadata-0.1.0.tgz",
+    "exit": 0
+  },
+  "metrics": {
+    "status": "OK",
+    "tarball": "sovereign-metrics-0.1.0.tgz",
+    "exit": 0
+  },
+  "redaction": {
+    "status": "OK",
+    "tarball": "sovereign-redaction-0.1.0.tgz",
+    "exit": 0
+  },
+  "search-index": {
+    "status": "OK",
+    "tarball": "sovereign-search-index-0.1.0.tgz",
+    "exit": 0
+  },
+  "filesystem-permission-ownership-descriptor-v0-1": {
+    "status": "OK",
+    "tarball": "sovereign-filesystem-permission-ownership-descriptor-v0-1-0.1.0.tgz",
+    "exit": 0
+  },
+  "process-supervisor": {
+    "status": "OK",
+    "tarball": "sovereign-process-supervisor-0.1.0.tgz",
+    "exit": 0
+  },
+  "cli": {
+    "status": "OK",
+    "tarball": "sovereign-cli-0.1.0.tgz",
+    "exit": 0
+  },
+  "content-addressed-storage": {
+    "status": "OK",
+    "tarball": "sovereign-content-addressed-storage-0.1.0.tgz",
+    "exit": 0
+  },
+  "atomic-file-writer-safe-replace": {
+    "status": "OK",
+    "tarball": "sovereign-atomic-file-writer-safe-replace-0.1.0.tgz",
+    "exit": 0
+  },
+  "directory-snapshot-tree-manifest": {
+    "status": "OK",
+    "tarball": "sovereign-directory-snapshot-tree-manifest-0.1.0.tgz",
+    "exit": 0
+  },
+  "ephemeral-workspace-scratch-directory": {
+    "status": "OK",
+    "tarball": "sovereign-ephemeral-workspace-scratch-directory-0.1.0.tgz",
+    "exit": 0
+  },
+  "file-lease-advisory-lock": {
+    "status": "OK",
+    "tarball": "sovereign-file-lease-advisory-lock-0.1.0.tgz",
+    "exit": 0
+  },
+  "agent-runtime": {
+    "status": "OK",
+    "tarball": "sovereign-agent-runtime-0.1.0.tgz",
+    "exit": 0
+  },
+  "ai-inference-runtime": {
+    "status": "OK",
+    "tarball": "sovereign-ai-inference-runtime-0.1.0.tgz",
+    "exit": 0
+  },
+  "application-lifecycle": {
+    "status": "OK",
+    "tarball": "sovereign-application-lifecycle-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-admission-gate": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-admission-gate-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-audit-drift-reporter": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-audit-drift-reporter-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-bundle": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-bundle-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-catalog": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-catalog-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-compliance-policy-evaluator": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-compliance-policy-evaluator-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-dependency-graph": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-dependency-graph-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-lifecycle-retention": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-lifecycle-retention-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-provenance-lineage-ledger": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-provenance-lineage-ledger-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-reconciliation-consistency-checker": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-reconciliation-consistency-checker-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-reference-resolver": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-reference-resolver-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-release-approval": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-release-approval-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-release-closure-receipt": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-release-closure-receipt-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-release-plan": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-release-plan-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-release-publication-confirmation": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-release-publication-confirmation-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-release-publication-executor": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-release-publication-executor-0.1.0.tgz",
+    "exit": 0
+  },
+  "artifact-release-snapshot": {
+    "status": "OK",
+    "tarball": "sovereign-artifact-release-snapshot-0.1.0.tgz",
+    "exit": 0
+  },
+  "atomic-batch-file-transaction-safe-multi-file-commit": {
+    "status": "OK",
+    "tarball": "sovereign-atomic-batch-file-transaction-safe-multi-file-commit-0.1.0.tgz",
+    "exit": 0
+  },
+  "execution-engine": {
+    "status": "OK",
+    "tarball": "sovereign-execution-engine-0.1.0.tgz",
+    "exit": 0
+  },
+  "filesystem": {
+    "status": "OK",
+    "tarball": "sovereign-filesystem-0.1.0.tgz",
+    "exit": 0
+  },
+  "filesystem-recovery-journal": {
+    "status": "OK",
+    "tarball": "sovereign-filesystem-recovery-journal-0.1.0.tgz",
+    "exit": 0
+  },
+  "filesystem-watcher-change-stream": {
+    "status": "OK",
+    "tarball": "sovereign-filesystem-watcher-change-stream-0.1.0.tgz",
+    "exit": 0
+  },
+  "host-identity-environment-fingerprint": {
+    "status": "OK",
+    "tarball": "sovereign-host-identity-environment-fingerprint-0.1.0.tgz",
+    "exit": 0
+  },
+  "http": {
+    "status": "OK",
+    "tarball": "sovereign-http-0.1.0.tgz",
+    "exit": 0
+  },
+  "http-server": {
+    "status": "OK",
+    "tarball": "sovereign-http-server-0.1.0.tgz",
+    "exit": 0
+  },
+  "policy-capability-security": {
+    "status": "OK",
+    "tarball": "sovereign-policy-capability-security-0.1.0.tgz",
+    "exit": 0
+  },
+  "process": {
+    "status": "OK",
+    "tarball": "sovereign-process-0.1.0.tgz",
+    "exit": 0
+  },
+  "release-manifest-integrity": {
+    "status": "OK",
+    "tarball": "sovereign-release-manifest-integrity-0.1.0.tgz",
+    "exit": 0
+  },
+  "release-verification-harness": {
+    "status": "OK",
+    "tarball": "sovereign-release-verification-harness-0.1.0.tgz",
+    "exit": 0
+  },
+  "reporting-export": {
+    "status": "OK",
+    "tarball": "sovereign-reporting-export-0.1.0.tgz",
+    "exit": 0
+  },
+  "safe-path-resolver-containment-boundary": {
+    "status": "OK",
+    "tarball": "sovereign-safe-path-resolver-containment-boundary-0.1.0.tgz",
+    "exit": 0
+  },
+  "storage-persistence": {
+    "status": "OK",
+    "tarball": "sovereign-storage-persistence-0.1.0.tgz",
+    "exit": 0
+  },
+  "websocket": {
+    "status": "OK",
+    "tarball": "sovereign-websocket-0.1.0.tgz",
+    "exit": 0
+  },
+  "worker-pool": {
+    "status": "OK",
+    "tarball": "sovereign-worker-pool-0.1.0.tgz",
+    "exit": 0
+  },
+  "workflow-durable": {
+    "status": "OK",
+    "tarball": "sovereign-workflow-durable-0.1.0.tgz",
+    "exit": 0
+  }
+}
