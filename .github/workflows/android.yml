@@ -87,6 +87,13 @@ jobs:
         run: |
           sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
 
+      - name: Add emulator to PATH (ubuntu-latest)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          echo "$ANDROID_HOME/emulator" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
