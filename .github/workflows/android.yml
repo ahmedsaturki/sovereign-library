@@ -81,11 +81,16 @@ jobs:
           "$SDK/platform-tools/adb" version
           test -n "$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d -print -quit)"
 
-      - name: Install Android emulator image
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install Android emulator image (x86_64 for Windows/macOS, ARM64 for Ubuntu)
+        if: matrix.os != 'macos-15-intel'
         shell: bash
         run: |
-          sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            # ARM64 image doesn't require KVM on GitHub Actions ubuntu-latest
+            sdkmanager "emulator" "system-images;android-34;google_apis;arm64-v8a"
+          else
+            sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
+          fi
 
       - name: Add emulator to PATH (ubuntu-latest)
         if: matrix.os == 'ubuntu-latest'
@@ -178,7 +183,7 @@ jobs:
             && echo "REPRODUCIBLE OK"
 
       - name: Run instrumentation tests on Android emulator
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'windows-latest'
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -186,14 +191,23 @@ jobs:
           rm -rf "$AVD_HOME"
           mkdir -p "$AVD_HOME"
           export ANDROID_AVD_HOME="$AVD_HOME"
+
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            AVD_IMAGE="system-images;android-34;google_apis;arm64-v8a"
+            AVD_ARCH="arm64"
+          else
+            AVD_IMAGE="system-images;android-34;google_apis;x86_64"
+            AVD_ARCH="x86_64"
+          fi
+
           echo "no" | avdmanager create avd \
             --name sovereign-android-api34 \
-            --package "system-images;android-34;google_apis;x86_64" \
+            --package "$AVD_IMAGE" \
             --device "pixel_2" \
             --force
 
           # Start emulator with verbose logging to see what's happening
-          echo "Starting emulator with verbose logging..."
+          echo "Starting emulator with verbose logging (arch: $AVD_ARCH)..."
           nohup emulator \
             -avd sovereign-android-api34 \
             -no-window \
