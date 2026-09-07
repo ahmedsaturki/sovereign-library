@@ -189,6 +189,8 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
+          # Add Android SDK tools to PATH for this step
+          export PATH="C:\Android\android-sdk\emulator:C:\Android\android-sdk\platform-tools:C:\Android\android-sdk\cmdline-tools\16.0\bin:$PATH"
           AVD_HOME="$RUNNER_TEMP/android-avd"
           rm -rf "$AVD_HOME"
           mkdir -p "$AVD_HOME"
