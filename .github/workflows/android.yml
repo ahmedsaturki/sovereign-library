@@ -189,14 +189,13 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          # Ensure Android SDK tools are in PATH for this step
-          export PATH="C:\Android\android-sdk\tools:C:\Android\android-sdk\tools\bin:$PATH"
           AVD_HOME="$RUNNER_TEMP/android-avd"
           rm -rf "$AVD_HOME"
           mkdir -p "$AVD_HOME"
           export ANDROID_AVD_HOME="$AVD_HOME"
 
-          echo "no" | avdmanager create avd \
+          # Use full path to avdmanager.bat
+          "C:\Android\android-sdk\tools\bin\avdmanager.bat" create avd \
             --name sovereign-android-api34 \
             --package "system-images;android-34;google_apis;x86_64" \
             --device "pixel_2" \
