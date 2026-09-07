@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Continuity-Hardening Wave (feat/continuity-hardening)
+
+- Pinned every GitHub Actions `uses:` reference to a 40-char commit SHA across all five workflows (android, kotlin-jvm, python-ports, verify, prepare-authorized-release-artifacts) and added a top-level `permissions: { contents: read }` block to each. The publish workflow is the only one that requests `id-token: write` + `attestations: write`, and only on its single job. See `docs/HARDENING_FINDINGS_V1.0.md`.
+- Added `.github/workflows/security-pipeline.yml` covering SBOM (SPDX + CycloneDX), Trivy filesystem and rootfs scans (SARIF → Security tab), `safety` Python dependency audit, `gitleaks` secret detection, `actionlint` + `yamllint` + `markdownlint-cli2` lint, OIDC token reachability probe, cosign keyless-signature reachability probe, and SHA-256 pinning of every conformance vector file.
+- Hardened the existing reproducibility scripts in `android.yml` and `kotlin-jvm.yml`: switched to per-run `$RUNNER_TEMP` directories, added `set -euo pipefail`, asserted exactly-one-AAR with `find ... | wc -l`, and exported `SOURCE_DATE_EPOCH` for stable zip metadata.
+- Added `ecosystems/android/gradle.properties` enabling build cache, parallel execution, and reproducible file timestamps; added `ecosystems/android/local.properties.example` and verified `local.properties` is already in `.gitignore`.
+- Added `.yamllint.yml`, `.markdownlint-cli2.yaml`, and `.pre-commit-config.yaml` for local and CI lint consistency.
+- Fixed two Kotlin compile errors in `SafePathResolverAndroid.kt` (missing closing parens on lines 58 + 60; replaced Java `?:` ternary on lines 156-161 with idiomatic Kotlin `if/else`). The file now compiles; the conformance runner is unblocked.
+- Wired cosign keyless signing (OIDC-bound) and SLSA Level-3 provenance into `prepare-authorized-release-artifacts.yml`. Downstream consumers verify with `cosign verify-blob` and `gh attestation verify`.
+- Re-added the dropped `windows-latest / Python 3.12` cell to `python-ports.yml` (the upstream setup-python archive-extraction bug is fixed in setup-python ≥ v5.1.0).
+- Deleted three untracked scratch files (`.github/workflows/android.yml.bak/.fixed/.org`) that would have been misinterpreted as workflows by GitHub if ever committed.
+
 ### Atomic Batch File Transaction / Safe Multi-File Commit v0.1
 
 - Added deterministic bounded batch planning for create, replace, and delete operations.

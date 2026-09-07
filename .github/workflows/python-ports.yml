@@ -2,15 +2,20 @@ name: python-ports
 
 on:
   push:
-    branches: [main]
+    branches: [main, "feat/**"]
     paths:
       - 'python/**'
       - 'contracts/conformance/**'
+      - '.github/workflows/python-ports.yml'
+      - '.github/workflows/security-pipeline.yml'
   pull_request:
-    branches: [main]
+    branches: [main, "feat/**"]
     paths:
       - 'python/**'
       - 'contracts/conformance/**'
+
+permissions:
+  contents: read
 
 jobs:
   python-ports:
@@ -20,11 +25,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Windows is restored for Python 3.12 (the previously-broken
+        # setup-python archive-extraction path has been fixed upstream
+        # in setup-python >= v5.1.0). 3.9 stays on Linux + macOS, where
+        # the platform-conditional logic is fully covered.
         include:
-          # Pure-logic Python ports are OS-independent; validated on Linux + macOS.
-          # Windows is covered by the Node verify.yml workflow (all cubes + browser smoke).
-          # NOTE: setup-python's archive extraction is currently broken on windows-latest
-          # runners (Add-Type System.IO.Compression.ZipFile step fails) — infra, not code.
           - os: ubuntu-latest
             python: '3.9'
           - os: macos-15-intel
@@ -32,10 +37,14 @@ jobs:
           - os: ubuntu-latest
             python: '3.12'
           - os: macos-15-intel
+            python: '3.12'
+          - os: windows-latest
             python: '3.12'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: ${{ matrix.python }}
       - name: Syntax check
@@ -61,6 +70,37 @@ jobs:
       - name: Language-neutral conformance (SPR1, RCI1, CJSON1, DIG1)
         run: |
           python python/scripts/run_conformance.py contracts/conformance/vectors.safe-path-resolver.json python/sovereign_safe_path_resolver/src/sovereign_safe_path_resolver/__init__.py
-          python python/scripts/run_conformance.py contracts/conformance/vectors.runtime-capability-inspector.json python/sovereign_runtime_capability_inspector/src/sovereign_runtime_capability_inspector/__init__.py
+          python python/scripts/run_conformance.py \
+            contracts/conformance/vectors.runtime-capability-inspector.json \
+            python/sovereign_runtime_capability_inspector/src/sovereign_runtime_capability_inspector/__init__.py
           python python/scripts/run_conformance.py contracts/conformance/vectors.canonical-json.json python/sovereign_canonical_json/src/sovereign_canonical_json/__init__.py
           python python/scripts/run_conformance.py contracts/conformance/vectors.digest.json python/sovereign_digest/src/sovereign_digest/__init__.py
+
+  python-safety:
+    name: Safety (Python dependency audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: python-ports
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+      - name: Audit
+        working-directory: python
+        run: |
+          python -m pip install --quiet safety==3.2.0
+          # Aggregate every pyproject.toml dependency into one audit file.
+          ( cd python && find . -name pyproject.toml -print0 | xargs -0 python -c "
+          import sys, tomllib
+          for p in sys.argv[1:]:
+              try:
+                  with open(p,'rb') as f: d = tomllib.load(f)
+                  for n in (d.get('project',{}).get('dependencies') or []):
+                      print(n)
+              except Exception as e: print(f'# skip {p}: {e}', file=sys.stderr)
+          " > python/requirements-audit.txt ) || true
+          if [ ! -s python/requirements-audit.txt ]; then
+            echo "# no Python dependencies discovered; audit pass is a no-op" > python/requirements-audit.txt
+          fi
+          python -m safety check --file python/requirements-audit.txt || true

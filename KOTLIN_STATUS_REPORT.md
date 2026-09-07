@@ -96,3 +96,35 @@ Zero third-party runtime dependencies (stdlib-only JSON + serialization).
 ## N. Release state
 - NOT published externally. Frozen on branch `feat/continuity-hardening`, PR #125.
 - No `main` merge, no npm publish, no Android until explicitly authorized.
+
+---
+
+## Appendix — Continuity-Hardening Wave (Sept 2026)
+
+The supply-chain hardening wave (commit sequence on
+`feat/continuity-hardening`) is the authoritative overlay for the
+CI surface. It is documented in detail in
+`docs/HARDENING_FINDINGS_V1.0.md`,
+`docs/SECURITY_AUDIT_V1.0.md`, and `docs/DEPLOYMENT_RUNBOOK_V1.0.md`.
+Specifically relevant for the Kotlin/Android surface:
+
+- Two compile-blocking defects in
+  `ecosystems/android/safe-path-resolver/src/main/java/org/sovereign/safePathResolver/android/SafePathResolverAndroid.kt`
+  were fixed (missing closing parens on lines 58 + 60; Java
+  `?:` ternary replaced with idiomatic Kotlin `if/else` on
+  lines 156-161). The file now compiles.
+- A new `ecosystems/android/gradle.properties` enables
+  `org.gradle.caching=true`, `org.gradle.parallel=true`, and
+  reproducible file timestamps.
+- `ecosystems/android/local.properties.example` is added so
+  contributors can wire their SDK path without committing a
+  machine-specific value. `local.properties` is already in
+  `.gitignore`.
+- The `.github/workflows/android.yml` workflow now pins every
+  action to a commit SHA, declares least-privilege
+  `permissions: { contents: read }`, exports
+  `SOURCE_DATE_EPOCH`, asserts exactly-one-AAR, and uploads an
+  SPDX SBOM on Ubuntu.
+
+This document is the status snapshot from before the hardening
+wave; the audit findings supersede it where they overlap.

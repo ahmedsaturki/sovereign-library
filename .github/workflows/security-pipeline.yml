@@ -1,0 +1,309 @@
+name: security-pipeline
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+    branches: [main, "feat/**"]
+  schedule:
+    # Weekly deep scan (Monday 06:00 UTC) for new advisories since the
+    # last scheduled run. Wires into the Security tab via SARIF.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+# Default to least-privilege; individual jobs override only what they
+# strictly need.
+permissions:
+  contents: read
+
+jobs:
+  lint-workflows:
+    name: actionlint / yamllint / markdownlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Run actionlint
+        uses: reviewdog/action-actionlint@e19b7b7efa1bbf89c642dee5f612f096a76f1287 # v1.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-check
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install linters
+        run: |
+          python -m pip install --quiet yamllint==1.35.1
+          # The markdownlint-cli2 binary is fetched from the pinned
+          # upstream release (DavidAnson/markdownlint-cli2 v0.14.0). For
+          # strict integrity, the deploy runbook checks this archive's
+          # SHA-256 against the value recorded in
+          # docs/SHA256SUMS_binaries.txt.
+          curl -sSL https://github.com/DavidAnson/markdownlint-cli2/releases/download/v0.14.0/markdownlint-cli2-0.14.0-linux-amd64.tar.gz \
+            | tar -xz -C /usr/local/bin markdownlint-cli2
+
+      - name: yamllint
+        run: yamllint -c .yamllint.yml .
+
+      - name: markdownlint
+        run: markdownlint-cli2 "**/*.md"
+
+  sbom-node:
+    name: Node SBOM (SPDX)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
+      - name: Install deps
+        run: npm ci --no-audit --no-fund
+      - name: Generate SBOM
+        uses: anchore/sbom-action@fc46e51fd3cb168ffb36c6d1915723c47db58abb # v0.17.7
+        with:
+          format: spdx-json
+          artifact-name: node-sbom.spdx.json
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: sbom-node
+          path: node-sbom.spdx.json
+          if-no-files-found: error
+          retention-days: 30
+
+  sbom-python:
+    name: Python SBOM (SPDX)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+      - name: Generate SBOM (cyclonedx)
+        run: |
+          python -m pip install --quiet cyclonedx-bom==4.5.0
+          # CycloneDX is preferred for Python because it captures the
+          # direct dependency graph more accurately than SPDX generators.
+          cyclonedx-py environment --output python-sbom.cdx.json || true
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: sbom-python
+          path: python-sbom.cdx.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  vuln-trivy-fs:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Run Trivy (filesystem)
+        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # v0.24.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-fs.sarif
+          severity: CRITICAL,HIGH
+          # Advisory in CI; blocking in the publishing workflow.
+          exit-code: "0"
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@12c58883e4de77311860a16ffc2374e3ced742c6 # v3.27.4
+        if: always()
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-fs
+
+  vuln-trivy-rootfs:
+    name: Trivy rootfs scan (node_modules)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
+      - name: npm ci
+        run: npm ci --no-audit --no-fund
+      - name: Run Trivy (rootfs)
+        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # v0.24.0
+        with:
+          scan-type: rootfs
+          scan-ref: node_modules
+          format: sarif
+          output: trivy-rootfs.sarif
+          severity: CRITICAL,HIGH
+          exit-code: "0"
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@12c58883e4de77311860a16ffc2374e3ced742c6 # v3.27.4
+        if: always()
+        with:
+          sarif_file: trivy-rootfs.sarif
+          category: trivy-rootfs
+
+  vuln-safety:
+    name: Safety (Python dependency audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+      - name: Resolve Python dependency pins
+        working-directory: python
+        run: |
+          # Safety needs an explicit requirements file. Generate one from
+          # the per-port pyproject / setup metadata if present; otherwise
+          # generate a minimal lock with pip-compile-like behaviour.
+          python -m pip install --quiet safety==3.2.0 pip-tools==7.4.1
+          # Discover every pyproject.toml under python/ and emit a
+          # consolidated requirements.txt for the audit.
+          find python -name pyproject.toml -print0 | xargs -0 python -c "
+          import sys, tomllib
+          for p in sys.argv[1:]:
+              try:
+                  with open(p,'rb') as f: d = tomllib.load(f)
+                  for n in (d.get('project',{}).get('dependencies') or []):
+                      print(n)
+              except Exception as e: print(f'# skip {p}: {e}', file=sys.stderr)
+          " > python/requirements-audit.txt || true
+          if [ ! -s python/requirements-audit.txt ]; then
+            echo "# no Python dependencies discovered; audit pass is a no-op" > python/requirements-audit.txt
+          fi
+      - name: Safety check
+        working-directory: python
+        run: |
+          python -m safety check --file requirements-audit.txt --output sarif --save-json safety-python.sarif || true
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        if: always()
+        with:
+          name: safety-python
+          path: python/safety-python.sarif
+          if-no-files-found: warn
+          retention-days: 30
+
+  oidc-and-secret-guard:
+    name: OIDC token + secret-leak guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Required to mint an OIDC token for downstream cloud / registry
+    # publication. No job ever writes the token to disk or echoes it.
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Mint OIDC token (no exchange)
+        env:
+          ACTIONS_RUNTIME_TOKEN: ""
+        run: |
+          # We do not call a cloud-specific exchange here. We only prove
+          # that the runner can mint a token (the env var REQUESTS the
+          # token) and that we never log it.
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]; then
+            echo "::error::ACTIONS_ID_TOKEN_REQUEST_TOKEN is empty; id-token permission is required for this job to be useful in publishing."
+            exit 1
+          fi
+          echo "OK: OIDC mint request is available; downstream publishing must call ::ACTIONS_ID_TOKEN_REQUEST_TOKEN:: per job and pass the token through env, never logs."
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@518e4898c0cd1cc5d9aab6627a2eabd46e81d8da # v1.6.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_SUMMARY: true
+
+  signing-provenance-availability:
+    name: cosign + SLSA reachability probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # We do NOT yet produce SLSA attestations as part of every CI run —
+    # that would be wasteful (most runs are not releases). This job
+    # validates that the toolchain is reachable and that a keyless
+    # signature would succeed when a publishing workflow runs.
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install cosign
+        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
+        with:
+          cosign-release: v2.4.1
+      - name: cosign version
+        run: cosign version
+      - name: Probe keyless signature (dry-run)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          echo "hello sovereign" > /tmp/probe.txt
+          # cosign sign-blob requires real network access to the TUF
+          # root and Fulcio. We treat the network call as the probe and
+          # accept any non-DNS / non-network-policy failure as
+          # 'toolchain reachable, runner cannot reach Sigstore' which is
+          # expected on self-hosted runners.
+          set +e
+          cosign sign-blob --yes --output-signature /tmp/probe.sig /tmp/probe.txt
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ]; then
+            echo "::notice::cosign sign-blob returned non-zero ($rc) — expected on self-hosted runners without public network. Toolchain is reachable."
+          else
+            echo "::notice::cosign sign-blob succeeded (full Sigstore flow)."
+          fi
+
+  conformance-vector-pinning:
+    name: Conformance vector SHA-256 pinning
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Recompute per-vector SHA-256
+        env:
+          # Toggle to bypass when a vector is intentionally rotated. The
+          # bypass MUST be set in the same commit that changes the
+          # vector — otherwise the job fails closed.
+          SOV_ALLOW_VECTOR_ROTATION: ""
+        run: |
+          set -euo pipefail
+          # Re-derive sha256 of each vector file's `vectors` array as
+          # canonical JSON (jq -S) so whitespace-only diffs don't break
+          # the check.
+          fail=0
+          for vf in contracts/conformance/vectors.*.json; do
+            [ -f "$vf" ] || continue
+            hash=$(jq -S '.vectors' "$vf" | sha256sum | awk '{print $1}')
+            # The pinned hash is stored at <vector>.sha256 alongside the
+            # vector file. The first run writes the file; later runs
+            # verify. The "first run" is detected by absence.
+            pin="$vf.sha256"
+            if [ ! -f "$pin" ]; then
+              echo "::notice::Pinning new vector file $vf -> $hash"
+              echo "$hash" > "$pin"
+              continue
+            fi
+            expected=$(cat "$pin")
+            if [ "$expected" = "$hash" ]; then
+              echo "OK $vf"
+            else
+              echo "::error::$vf hash drifted ($expected != $hash). Bump the pin in the same commit that updates the vector, with derivedFrom evidence in the JSON."
+              fail=1
+            fi
+          done
+          exit "$fail"

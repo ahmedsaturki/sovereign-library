@@ -1,0 +1,49 @@
+# yamllint config — checked into the repo root, applied by both the
+# `pre-commit-hooks` yamllint hook and the `actionlint` step in CI.
+# Stays permissive enough that GitHub-Actions-specific constructs
+# (on:, jobs.*.permissions, env references, matrix.include) do not
+# trigger spurious errors, but strict enough to catch the real classes
+# of bug that have bitten us (unquoted special chars, mixed-indent,
+# truthy / falsy values, trailing spaces).
+
+extends: default
+
+rules:
+  # GitHub Actions uses both block and flow scalars freely.
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: disable
+  braces:
+    max-spaces-inside: 2
+    min-spaces-inside: 0
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+  truthy:
+    allowed-values: ["true", "false", "on", "off"]
+    check-keys: true
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+  line-length:
+    max: 200
+  document-start:
+    present: false
+  trailing-spaces: enable
+  new-line-at-end-of-file: enable
+  empty-lines:
+    max: 2
+    max-start: 0
+    max-end: 1
+  key-duplicates: enable
+  # Anchors and aliases are valid; do not ban them.
+  anchors: disable
+
+# Exclude build outputs / vendored deps / downloaded artifacts.
+ignore: |
+  node_modules/
+  .artifacts/
+  .gradle/
+  **/build/
+  ecosystems/android/gradle/wrapper/

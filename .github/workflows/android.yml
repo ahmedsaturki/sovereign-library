@@ -7,12 +7,18 @@ on:
       - "ecosystems/android/**"
       - ".github/workflows/android.yml"
       - "contracts/conformance/**"
+      - ".github/workflows/security-pipeline.yml"
   pull_request:
-    branches: [main]
+    branches: [main, "feat/**"]
     paths:
       - "ecosystems/android/**"
       - ".github/workflows/android.yml"
       - "contracts/conformance/**"
+
+# Least-privilege default. The `upload-artifact` step does NOT require
+# write permissions — it uses an OIDC token via the GitHub token.
+permissions:
+  contents: read
 
 jobs:
   android:
@@ -27,16 +33,19 @@ jobs:
       run:
         working-directory: ecosystems/android
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
         with:
           distribution: temurin
           java-version: "17"
+          cache: gradle
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@13f81365a437096ca29f87b1e7389bf0ea1385ed # v3.0.0
         with:
           cmdline-tools-version: 12266719
           accept-android-sdk-licenses: true
@@ -44,9 +53,10 @@ jobs:
           packages: platform-tools platforms;android-34 build-tools;34.0.0
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@da187c8e6ffbd3802e00f2477aa5a822b25f2dda # v4.4.4
         with:
           gradle-version: wrapper
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
 
       - name: Run unit tests + conformance (JVM-hosted)
         run: ./gradlew test --no-daemon --console=plain
@@ -58,23 +68,51 @@ jobs:
 
       - name: Verify reproducible AAR
         shell: bash
+        env:
+          # SOURCE_DATE_EPOCH makes zip metadata stable; pinned to the
+          # build start so the workflow stays deterministic within a run.
+          SOURCE_DATE_EPOCH: "1735689600"
         run: |
+          set -euo pipefail
+          RUN_TEMP="${RUNNER_TEMP:-/tmp}"
+          BUILD_DIR="$RUN_TEMP/aar-build-$RANDOM"
+          mkdir -p "$BUILD_DIR"
+          AAR=$(find safe-path-resolver/build -name "*.aar" -print | head -1)
+          if [ -z "$AAR" ]; then
+            echo "::error::no AAR produced"
+            exit 1
+          fi
+          count=$(find safe-path-resolver/build -name "*.aar" -print | wc -l)
+          if [ "$count" -ne 1 ]; then
+            echo "::error::expected exactly one AAR, got $count"
+            exit 1
+          fi
+          HASH1=$(sha256sum "$AAR" | awk '{print $1}')
           rm -rf safe-path-resolver/build
           ./gradlew assembleRelease --no-daemon --console=plain
-          AAR=$(find safe-path-resolver/build -name "*.aar" | head -1)
-          mkdir -p /tmp/aar1 && cp "$AAR" /tmp/aar1/
-          rm -rf safe-path-resolver/build
-          ./gradlew assembleRelease --no-daemon --console=plain
-          mkdir -p /tmp/aar2 && cp "$(find safe-path-resolver/build -name '*.aar' | head -1)" /tmp/aar2/
-          diff <(sha256sum /tmp/aar1/*.aar | awk '{print $1}') \
-               <(sha256sum /tmp/aar2/*.aar | awk '{print $1}') \
-            && echo "REPRODUCIBLE OK"
+          AAR2=$(find safe-path-resolver/build -name "*.aar" -print | head -1)
+          HASH2=$(sha256sum "$AAR2" | awk '{print $1}')
+          if [ "$HASH1" = "$HASH2" ]; then
+            echo "REPRODUCIBLE OK ($HASH1)"
+          else
+            echo "::error::AAR hashes differ ($HASH1 vs $HASH2)"
+            exit 1
+          fi
 
       - name: Upload AAR artifacts
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: android-aars
           path: |
             ecosystems/android/safe-path-resolver/build/outputs/aar/*.aar
           if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload SBOM (SPDX, ubuntu only)
+        if: matrix.os == 'ubuntu-latest' && always()
+        uses: anchore/sbom-action@fc46e51fd3cb168ffb36c6d1915723c47db58abb # v0.17.7
+        with:
+          format: spdx-json
+          artifact-name: android-aar-sbom.spdx.json
+        continue-on-error: true

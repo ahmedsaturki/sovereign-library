@@ -157,6 +157,20 @@ docs/         architecture, governance, research, release evidence
 .github/      CI/workflow automation
 ```
 
+## Current hardening wave
+
+The `feat/continuity-hardening` branch carries the supply-chain
+hardening wave (Sept 2026). It pins every GitHub Actions reference to
+a commit SHA, adds a top-level `permissions: { contents: read }` to
+every workflow, introduces a dedicated `security-pipeline.yml`
+covering SBOM, Trivy, Safety, gitleaks, actionlint, cosign reachability,
+and conformance-vector SHA-256 pinning, wires cosign keyless signing
+and SLSA Level-3 provenance into the authorized-release workflow, and
+fixes two Kotlin compile errors that had blocked the Android SPR1 cube
+from advancing. See `docs/HARDENING_FINDINGS_V1.0.md`,
+`docs/SECURITY_AUDIT_V1.0.md`, and `docs/DEPLOYMENT_RUNBOOK_V1.0.md`
+for the authoritative record.
+
 ## License
 
 Apache License, Version 2.0. See `LICENSE` and `NOTICE`.

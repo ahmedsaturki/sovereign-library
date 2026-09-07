@@ -55,9 +55,9 @@ private fun rootDescriptor(value: String): RootDescriptor {
         return RootDescriptor("drive", drive.lowercase(), "$drive/", value.substring(3).split("/").filter { it.isNotEmpty() })
     }
     if (value.startsWith("//")) return RootDescriptor("unc", "unc", "//", value.substring(2).split("/").filter { it.isNotEmpty() })
-    if (value.startsWith("/")) return RootDescriptor("absolute", "/", "/", value.substring(1).split("/").filter { it.isNotEmpty() }
+    if (value.startsWith("/")) return RootDescriptor("absolute", "/", "/", value.substring(1).split("/").filter { it.isNotEmpty() })
     if (Regex("^[A-Za-z]:[^/]").containsMatchIn(value)) fail("ROOT_MISMATCH", "drive-relative paths such as C:foo are rejected")
-    return RootDescriptor("relative", "", "", value.split("/").filter { it.isNotEmpty() }
+    return RootDescriptor("relative", "", "", value.split("/").filter { it.isNotEmpty() })
 }
 
 private data class NormalizedPath(val root: RootDescriptor, val absolute: Boolean, val segments: List<String>, val path: String)
@@ -152,13 +152,16 @@ fun resolveContained(candidate: String, root: String): String = resolveContained
 fun resolveContained(candidate: String, root: String, options: SafePathResolverOptions): String {
     val normalizedRoot = parseAndNormalize(root, options)
     val candidatePath = parseAndNormalize(candidate, options)
+    val tail: String =
+        if (candidatePath.absolute) candidatePath.path
+        else candidatePath.segments.joinToString("/")
     val resolvedPath: String = when (normalizedRoot.root.kind) {
-        "absolute" -> "/${normalizedRoot.root.rest.joinToString("/")}/${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
+        "absolute" -> "/${normalizedRoot.root.rest.joinToString("/")}/$tail"
         "relative" -> candidatePath.path
-        "drive" -> "${normalizedRoot.root.prefix}${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
-        "unc" -> "${normalizedRoot.root.prefix}/${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
-        "namespace-drive" -> "${normalizedRoot.root.prefix}/${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
-        "namespace-unc" -> "${normalizedRoot.root.prefix}/${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
+        "drive" -> "${normalizedRoot.root.prefix}$tail"
+        "unc" -> "${normalizedRoot.root.prefix}/$tail"
+        "namespace-drive" -> "${normalizedRoot.root.prefix}/$tail"
+        "namespace-unc" -> "${normalizedRoot.root.prefix}/$tail"
         else -> "/${candidatePath.path}"
     }
     val report = isContained(resolvedPath, root, options)
