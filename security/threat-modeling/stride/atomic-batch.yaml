@@ -1,0 +1,8 @@
+cube: atomic-batch-file-transaction
+version: 0.1
+last_review: 2026-09-07
+threats:
+  - name: "T — Tampering: torn writes visible to reader"
+    mitigation: "all-or-nothing commit; rollback on partial failure"
+    status: "mitigated"
+    references: ["formal-verification/coq/AtomicBatch.v"]

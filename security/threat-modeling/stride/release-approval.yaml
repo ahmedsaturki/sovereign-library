@@ -1,0 +1,11 @@
+cube: artifact-release-approval
+version: 0.1
+last_review: 2026-09-07
+threats:
+  - name: "S — Spoofing: forged approver signature"
+    mitigation: "approver principal is signed by OIDC"
+    status: "mitigated"
+  - name: "R — Repudiation: approval denied by approver"
+    mitigation: "approval carries monotonic nonce"
+    status: "mitigated"
+    references: ["formal-verification/coq/ReleaseApproval.v"]

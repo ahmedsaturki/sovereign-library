@@ -1,0 +1,23 @@
+cube: file-lease-advisory-lock
+version: 0.1
+last_review: '2026-09-07'
+reviewer: '@sovereign/fellow-engineer'
+threats:
+  - name: "S - Spoofing: attacker fakes a holder identity"
+    mitigation: 'holder id is a strong UUIDv4 or peer-cert fingerprint'
+    status: 'mitigated'
+  - name: "T - Tampering: lock file modified externally"
+    mitigation: 'lock file stored on POSIX-locked directory; integrity check on read'
+    status: 'mitigated'
+  - name: "R - Repudiation: lease acquired without audit"
+    mitigation: 'every acquire/release is signed and committed to journal'
+    status: 'mitigated'
+  - name: "I - Information Disclosure: lease contents reveal internal paths"
+    mitigation: 'lease record only references opaque IDs'
+    status: 'mitigated'
+  - name: "D - Denial of Service: malicious lease never released"
+    mitigation: 'lease has a TTL; expired leases are reclaimed by janitor'
+    status: 'mitigated'
+  - name: "E - Elevation of Privilege: lock escalation across trust domains"
+    mitigation: 'leases are scoped to a single trust domain; cross-domain acquire rejected'
+    status: 'mitigated'

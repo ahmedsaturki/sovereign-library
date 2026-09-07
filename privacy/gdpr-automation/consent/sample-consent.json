@@ -1,0 +1,14 @@
+{
+  "user_id": "u-001",
+  "subject_id": "u-001",
+  "data_class": "personal-data",
+  "fields": {
+    "user_email": "user@example.com",
+    "user_name": "User",
+    "user_id": "u-001"
+  },
+  "consent_state": "granted",
+  "consent_ts": "2026-09-01T00:00:00.000Z",
+  "consent_expiry": "2027-09-01T00:00:00.000Z",
+  "lawful_basis": "consent"
+}

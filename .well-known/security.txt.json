@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json.schemastore.org/security.txt",
+  "contact": ["mailto:security@sovereign.example"],
+  "expires": "2027-09-07T00:00:00.000Z",
+  "encryption": "https://sovereign.example/.well-known/pgp-key.asc",
+  "preferred-languages": ["en"],
+  "canonical": "https://sovereign.example/.well-known/security.txt"
+}

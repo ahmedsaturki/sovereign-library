@@ -1,0 +1,6 @@
+[
+  { "input": {"b": 2, "a": 1},                            "expected": "{\"a\":1,\"b\":2}" },
+  { "input": {"x": {"y": 1, "z": 2}, "a": [3, 1, 2]},    "expected": "{\"a\":[3,1,2],\"x\":{\"y\":1,\"z\":2}}" },
+  { "input": {"empty": {}, "k": "v"},                     "expected": "{\"empty\":{},\"k\":\"v\"}" },
+  { "input": {"unicode": "héllo"},                        "expected": "{\"unicode\":\"héllo\"}" }
+]

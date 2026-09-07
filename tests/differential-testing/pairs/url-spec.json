@@ -1,0 +1,7 @@
+{
+  "name": "url-spec",
+  "left": "new URL(input)",
+  "right": "cubes/url/src/index.js",
+  "fixtures": "fixtures/url.json",
+  "invariant": "left(input).pathname == right(input).pathname for parseable inputs"
+}

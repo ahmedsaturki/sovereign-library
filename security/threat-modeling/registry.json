@@ -1,0 +1,14 @@
+[
+  { "name": "safe-path-resolver", "version": "0.1", "stride": "stride/safe-path-resolver.yaml", "pasta": "pasta/safe-path-resolver.yaml" },
+  { "name": "file-lease-advisory-lock", "version": "0.1", "stride": "stride/file-lease.yaml", "pasta": "pasta/file-lease.yaml" },
+  { "name": "atomic-file-writer-safe-replace", "version": "0.1", "stride": "stride/atomic-file-writer.yaml" },
+  { "name": "atomic-batch-file-transaction", "version": "0.1", "stride": "stride/atomic-batch.yaml", "pasta": "pasta/safe-path-resolver.yaml" },
+  { "name": "policy-capability-security", "version": "0.1", "stride": "stride/policy-capability.yaml", "pasta": "pasta/policy-capability.yaml" },
+  { "name": "release-verification-harness", "version": "0.1", "stride": "stride/release-verification.yaml", "pasta": "pasta/release-verification.yaml" },
+  { "name": "canonical-json", "version": "0.1", "stride": "stride/canonical-json.yaml" },
+  { "name": "filesystem-recovery-journal", "version": "0.1", "stride": "stride/recovery-journal.yaml" },
+  { "name": "bounded-file-content-reader-safe-content-access", "version": "0.1", "stride": "stride/bounded-file-content-reader.yaml" },
+  { "name": "release-manifest-integrity", "version": "0.1", "stride": "stride/release-manifest-integrity.yaml" },
+  { "name": "artifact-release-approval", "version": "0.1", "stride": "stride/release-approval.yaml" },
+  { "name": "artifact-admission-gate", "version": "0.1", "stride": "stride/admission-gate.yaml" }
+]

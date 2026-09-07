@@ -1,0 +1,20 @@
+{
+  "phase": 0,
+  "current_date": "2026-09-07",
+  "target_phases": [
+    { "phase": 1, "date": "2026-Q4", "default_outbound": "hybrid-x25519-ml-kem-768" },
+    { "phase": 2, "date": "2027-Q1", "default_inbound": "hybrid-x25519-ml-kem-768" },
+    { "phase": 3, "date": "2027-Q4", "hybrid_mandatory": true },
+    { "phase": 4, "date": "2028-Q4", "x25519_fallback_removed": true }
+  ],
+  "suites": {
+    "tls_kex": ["X25519", "X25519MLKEM768", "ML-KEM-768"],
+    "tls_signature": ["ML-DSA-65", "Ed25519 (legacy only)"],
+    "at_rest": ["AES-256-GCM", "ChaCha20-Poly1305"]
+  },
+  "cubes": {
+    "http-server": { "kex": "X25519MLKEM768", "signature": "ML-DSA-65" },
+    "http-client": { "kex": "X25519MLKEM768", "server_pin_required": true },
+    "websocket":  { "kex": "X25519MLKEM768", "signature": "ML-DSA-65" }
+  }
+}

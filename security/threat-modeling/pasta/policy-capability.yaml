@@ -1,0 +1,13 @@
+cube: policy-capability-security
+version: 0.1
+last_review: 2026-09-07
+business_objective: "Capability-based authorisation with deny-default."
+threats:
+  - id: "PASTA-PCS-1"
+    description: "Caller requests exec; default allows exec"
+    likelihood: "low"
+    impact: "critical"
+    risk: "medium"
+    mitigation: "Formal proof in formal-verification/coq/PolicyCapability.v"
+    status: "mitigated"
+residual_risk: "low"

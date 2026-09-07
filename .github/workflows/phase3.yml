@@ -1,0 +1,51 @@
+name: phase3
+
+on:
+  push:
+    branches: [feat/continuity-hardening, main]
+  pull_request:
+    branches: [feat/continuity-hardening, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  phase3:
+    name: phase3 hardening aggregator
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Phase-3 hardening summary
+        run: node scripts/phase3-summary.mjs --out .hermes/phase3
+
+      - name: Upload transcripts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-transcripts
+          path: |
+            .hermes/phase3
+            security/threat-modeling/reports
+          if-no-files-found: ignore
+
+      - name: Static-analysis SARIF
+        if: always()
+        run: node scripts/static-analyse.mjs --out .hermes/phase3/static || true
+
+      - name: CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          config-file: tests/static-analysis/codeql/codeql-config.yml
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
