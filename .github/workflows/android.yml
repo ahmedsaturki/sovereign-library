@@ -194,8 +194,8 @@ jobs:
           mkdir -p "$AVD_HOME"
           export ANDROID_AVD_HOME="$AVD_HOME"
 
-          # Use full path to avdmanager.bat
-          "C:\Android\android-sdk\tools\bin\avdmanager.bat" create avd \
+          # Use cmdline-tools avdmanager (same location as sdkmanager)
+          "C:\Android\android-sdk\cmdline-tools\16.0\bin\avdmanager.bat" create avd \
             --name sovereign-android-api34 \
             --package "system-images;android-34;google_apis;x86_64" \
             --device "pixel_2" \
