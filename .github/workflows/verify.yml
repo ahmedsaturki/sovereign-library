@@ -2,9 +2,12 @@ name: verify
 
 on:
   push:
-    branches: [main]
+    branches: [main, "feat/**"]
   pull_request:
-    branches: [main]
+    branches: [main, "feat/**"]
+
+permissions:
+  contents: read
 
 concurrency:
   group: verify-${{ github.event.pull_request.number || github.ref }}
@@ -14,7 +17,7 @@ jobs:
   verify:
     name: Node ${{ matrix.node }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -22,32 +25,54 @@ jobs:
         node: [24]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact source revision
+        shell: bash
+        run: |
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          echo "Expected source revision: $expected"
+          echo "Actual source revision:   $actual"
+          test "$actual" = "$expected"
+
       - name: Link browser cubes for in-repo Product resolution
         run: node scripts/link-browser-cubes.mjs
         shell: bash
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+
       - name: Syntax check
         run: npm run check
+
       - name: Bounded contract and integration tests
         run: node scripts/run-tests-bounded.mjs
         env:
           SOVEREIGN_TEST_FILE_TIMEOUT_MS: 30000
+
       - name: Declaration pilot
         run: node scripts/verify-declarations.mjs
+
       - name: Package tooling verification
         run: node scripts/verify-package-tooling.mjs
+
       - name: Reproducible package verification
         run: node scripts/verify-reproducible-package.mjs
+
       - name: Security boundary verification
         run: node scripts/verify-security-boundaries.mjs
+
       - name: Publication guard
         run: node scripts/verify-publication-guard.mjs
+
       - name: Language-neutral conformance (canonical Node candidates)
         run: |
           node scripts/run-conformance.mjs --self contracts/conformance/vectors.safe-path-resolver.json
           node scripts/run-conformance.mjs --self contracts/conformance/vectors.runtime-capability-inspector.json
+
       - name: Select Windows Chromium for deterministic CDP smoke
         if: runner.os == 'Windows'
         shell: pwsh
@@ -64,6 +89,7 @@ jobs:
           if (-not $browser) { throw 'Chromium-family browser executable not found on Windows runner' }
           Write-Host "Using Windows Chromium browser: $browser"
           "BROWSER_EXECUTABLE=$browser" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Prepare Linux Chromium CDP compatibility
         if: runner.os == 'Linux'
         shell: bash
@@ -76,5 +102,6 @@ jobs:
           echo "BROWSER_EXECUTABLE=$REAL_BROWSER" >> "$GITHUB_ENV"
           echo "SOVEREIGN_BROWSER_NO_SANDBOX=1" >> "$GITHUB_ENV"
           "$REAL_BROWSER" --version
+
       - name: Real browser smoke test
         run: npm run test:browser

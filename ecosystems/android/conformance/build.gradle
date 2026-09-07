@@ -20,8 +20,10 @@ android {
         jvmTarget = "17"
     }
 
-    testOptions {
-        // unitTests.isIncludeAndroidResources = true -- deprecated/removed in newer AGP
+    buildFeatures {
+        buildConfig = false
+        resValues = false
+        shaders = false
     }
 }
 

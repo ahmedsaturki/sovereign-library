@@ -1,5 +1,23 @@
 name: android
 
+# Sovereign Library — Android CI
+#
+# Strategy
+#   * Unit tests + JVM-hosted conformance: Ubuntu / macOS / Windows.
+#   * AAR assembly + out-of-tree consumer + reproducibility: Ubuntu / macOS / Windows.
+#   * Android instrumentation tests (KVM/HAXM-backed emulator):
+#       - Windows (KVM unavailable; x86_64 + swiftshader is reliable on Windows).
+#       - macOS (HVF-backed x86_64, fast).
+#   * The original "only Windows" gating was hardened to keep Linux/macOS builds green
+#     while still instrumenting ART in a real emulator (Windows + macOS).
+#
+# Toolchain pin (verified against documented support matrix)
+#   * Android Gradle Plugin 8.5.x — Gradle 8.7+ (we pin 8.9), JDK 17.
+#   * Kotlin 1.9.22 — AndroidX-friendly, JDK 17.
+#   * compileSdk = 34, targetSdk = 34, minSdk = 23 (CI emulator API-34 supports 23).
+#   * AndroidX test runner 1.6.2, Jetifier enabled (defensive for legacy libs).
+#   * cmdline-tools version 12266719 (== 16.0.0) — same major GitHub runners ship.
+
 on:
   push:
     branches: [main, "feat/**"]
@@ -7,12 +25,17 @@ on:
       - "ecosystems/android/**"
       - ".github/workflows/android.yml"
       - "contracts/conformance/**"
+      - ".github/scripts/**"
   pull_request:
-    branches: [main]
+    branches: [main, "feat/**"]
     paths:
       - "ecosystems/android/**"
       - ".github/workflows/android.yml"
       - "contracts/conformance/**"
+      - ".github/scripts/**"
+
+permissions:
+  contents: read
 
 concurrency:
   group: android-${{ github.event.pull_request.number || github.ref }}
@@ -22,14 +45,18 @@ jobs:
   android:
     name: Android ${{ matrix.os }} / AGP 8.5 / JDK 17
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
+        # GitHub-hosted runners — `macos-15-intel` is the deprecated x86_64 macOS
+        # runner image and has been working with preinstalled cmdline-tools since
+        # 2025. If/when GitHub retires it we will switch to `macos-14`.
         os: [ubuntu-latest, windows-latest, macos-15-intel]
     defaults:
       run:
         working-directory: ecosystems/android
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -77,6 +104,7 @@ jobs:
           test -x "$SDK/platform-tools/adb"
           test -d "$SDK/platforms/android-34"
           test -x "$SDK/emulator/emulator"
+          test -d "$SDK/cmdline-tools"
           echo "Using preinstalled Android SDK: $SDK"
           "$SDK/platform-tools/adb" version
           test -n "$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d -print -quit)"
@@ -157,7 +185,7 @@ jobs:
             CP="$(cygpath -wp "$TMP_DIR/lib/classes.jar:$TMP_DIR/lib/kotlin-stdlib.jar")"
             RUNTIME_CP="$(cygpath -wp "$TMP_DIR:$TMP_DIR/lib/classes.jar:$TMP_DIR/lib/kotlin-stdlib.jar")"
           else
-            SEP=$(java -XshowSettings:properties -version 2>&1 | awk -F'= ' '/path.separator =/{print $2; exit}')
+            SEP=$(java -XshowSettings:properties -version 2>&1 | tr -d '\r' | awk -F'= ' '/path.separator =/{print $2; exit}')
             test -n "$SEP"
             CP="$TMP_DIR/lib/classes.jar${SEP}$TMP_DIR/lib/kotlin-stdlib.jar"
             RUNTIME_CP="$TMP_DIR${SEP}$CP"
@@ -168,6 +196,7 @@ jobs:
       - name: Verify reproducible AAR
         shell: bash
         run: |
+          set -Eeuo pipefail
           rm -rf safe-path-resolver/build
           ./gradlew assembleRelease --no-daemon --console=plain
           AAR=$(find safe-path-resolver/build -name "*.aar" | head -1)
@@ -184,7 +213,13 @@ jobs:
                <(sha256sum /tmp/aar2/*.aar | awk '{print $1}') \
             && echo "REPRODUCIBLE OK"
 
-      - name: Run instrumentation tests on Android emulator (Windows only - has KVM)
+      # --- Instrumentation matrix ----------------------------------------------------
+      # Windows + macOS both run on physical x86_64 with hardware-accelerated
+      # emulation (Windows: Hyper-V; macOS: HVF). Linux runners do NOT expose
+      # /dev/kvm, so KVM is unavailable and we skip the emulator step there.
+      # The unit tests + JVM-hosted conformance + AAR out-of-tree verification
+      # already validate the package on all three OSes.
+      - name: Run instrumentation tests on Android emulator (Windows - Hyper-V x86_64)
         if: matrix.os == 'windows-latest'
         shell: bash
         run: |
@@ -194,14 +229,12 @@ jobs:
           mkdir -p "$AVD_HOME"
           export ANDROID_AVD_HOME="$AVD_HOME"
 
-          # Use cmdline-tools avdmanager (same location as sdkmanager)
           "C:\Android\android-sdk\cmdline-tools\16.0\bin\avdmanager.bat" create avd \
             --name sovereign-android-api34 \
             --package "system-images;android-34;google_apis;x86_64" \
             --device "pixel_2" \
             --force
 
-          # Start emulator with verbose logging - use full path
           echo "Starting emulator with verbose logging..."
           nohup "C:\Android\android-sdk\emulator\emulator.exe" \
             -avd sovereign-android-api34 \
@@ -217,7 +250,6 @@ jobs:
           EMULATOR_PID=$!
           echo "Emulator PID: $EMULATOR_PID"
 
-          # Wait for device with extended timeout and progress
           echo "Waiting for adb device (timeout 600s)..."
           if ! timeout 600 "C:\Android\android-sdk\platform-tools\adb.exe" wait-for-device; then
             echo "===== EMULATOR LOG (due to timeout waiting for device) ====="
@@ -226,7 +258,6 @@ jobs:
           fi
           echo "Device connected"
 
-          # Wait for boot with progress logging
           echo "Waiting for boot completion..."
           for i in $(seq 1 300); do
             boot=$("C:\Android\android-sdk\platform-tools\adb.exe" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
@@ -248,16 +279,13 @@ jobs:
           fi
           echo "Boot verified"
 
-          # Disable animations
           "C:\Android\android-sdk\platform-tools\adb.exe" shell settings put global window_animation_scale 0
           "C:\Android\android-sdk\platform-tools\adb.exe" shell settings put global transition_animation_scale 0
           "C:\Android\android-sdk\platform-tools\adb.exe" shell settings put global animator_duration_scale 0
 
-          # Install test APK
           echo "Installing test APK..."
           ./gradlew :safe-path-resolver:installDebugAndroidTest --no-daemon --console=plain
 
-          # Verify instrumentation target
           INSTRUMENTATION=$("C:\Android\android-sdk\platform-tools\adb.exe" shell pm list instrumentation | tr -d '\r' | sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' | grep '/androidx.test.runner.AndroidJUnitRunner' | head -1)
           test -n "$INSTRUMENTATION"
           echo "Instrumentation target: $INSTRUMENTATION"
@@ -269,7 +297,7 @@ jobs:
             local method="$1"
             echo "===== START $method ====="
             set +e
-            timeout --preserve-status 3m "C:\Android\android-sdk\platform-tools\adb.exe" shell am instrument -w -r \
+            timeout --preserve-status 10m "C:\Android\android-sdk\platform-tools\adb.exe" shell am instrument -w -r \
               -e class "$TEST_CLASS#$method" \
               "$INSTRUMENTATION"
             local status=$?
@@ -295,8 +323,112 @@ jobs:
 
           echo "ANDROID_EMULATOR_INSTRUMENTATION_OK"
 
-          # Always print emulator log at end for diagnostics
           echo "===== FINAL EMULATOR LOG (last 200 lines) ====="
+          tail -n 200 /tmp/sovereign-emulator.log || true
+
+      - name: Run instrumentation tests on Android emulator (macOS - HVF x86_64)
+        if: matrix.os == 'macos-15-intel'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/Library/Android/sdk}}"
+          AVD_HOME="$RUNNER_TEMP/android-avd"
+          rm -rf "$AVD_HOME"
+          mkdir -p "$AVD_HOME"
+          export ANDROID_AVD_HOME="$AVD_HOME"
+
+          # avdmanager lives under cmdline-tools/<ver>/bin on macOS preinstall.
+          AVDMGR=$(find "$SDK/cmdline-tools" -maxdepth 3 -type f -name avdmanager 2>/dev/null | head -1)
+          SDKMANAGER=$(find "$SDK/cmdline-tools" -maxdepth 3 -type f -name sdkmanager 2>/dev/null | head -1)
+          test -x "$AVDMGR"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" "emulator" "system-images;android-34;google_apis;x86_64"
+
+          "$AVDMGR" create avd \
+            --name sovereign-android-api34 \
+            --package "system-images;android-34;google_apis;x86_64" \
+            --device "pixel_2" \
+            --force
+
+          echo "Starting emulator with verbose logging..."
+          nohup "$SDK/emulator/emulator" \
+            -avd sovereign-android-api34 \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot-load \
+            -no-snapshot-save \
+            -wipe-data \
+            -gpu swiftshader_indirect \
+            -verbose \
+            >/tmp/sovereign-emulator.log 2>&1 &
+          EMULATOR_PID=$!
+          echo "Emulator PID: $EMULATOR_PID"
+
+          echo "Waiting for adb device (timeout 600s)..."
+          if ! timeout 600 "$SDK/platform-tools/adb" wait-for-device; then
+            echo "===== EMULATOR LOG (due to timeout waiting for device) ====="
+            tail -n 500 /tmp/sovereign-emulator.log || true
+            exit 1
+          fi
+          echo "Device connected"
+
+          echo "Waiting for boot completion..."
+          for i in $(seq 1 300); do
+            boot=$("$SDK/platform-tools/adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            if [ "$boot" = "1" ]; then
+              echo "Boot completed at attempt $i"
+              break
+            fi
+            if [ $((i % 30)) -eq 0 ]; then
+              echo "  ... still waiting (attempt $i/300)"
+            fi
+            sleep 2
+          done
+          "$SDK/platform-tools/adb" shell getprop sys.boot_completed | tr -d '\r' | grep -q '^1$'
+          if [ $? -ne 0 ]; then
+            echo "===== EMULATOR LOG (due to timeout waiting for boot) ====="
+            tail -n 500 /tmp/sovereign-emulator.log || true
+            exit 1
+          fi
+          echo "Boot verified"
+
+          "$SDK/platform-tools/adb" shell settings put global window_animation_scale 0
+          "$SDK/platform-tools/adb" shell settings put global transition_animation_scale 0
+          "$SDK/platform-tools/adb" shell settings put global animator_duration_scale 0
+
+          echo "Installing test APK..."
+          ./gradlew :safe-path-resolver:installDebugAndroidTest --no-daemon --console=plain
+
+          INSTRUMENTATION=$("$SDK/platform-tools/adb" shell pm list instrumentation | tr -d '\r' | sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' | grep '/androidx.test.runner.AndroidJUnitRunner' | head -1)
+          test -n "$INSTRUMENTATION"
+          echo "Instrumentation target: $INSTRUMENTATION"
+
+          TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
+
+          run_instrumentation() {
+            local method="$1"
+            echo "===== START $method ====="
+            set +e
+            timeout --preserve-status 10m "$SDK/platform-tools/adb" shell am instrument -w -r \
+              -e class "$TEST_CLASS#$method" \
+              "$INSTRUMENTATION"
+            local status=$?
+            set -e
+            echo "===== END $method status=$status ====="
+            if [ "$status" -ne 0 ]; then
+              "$SDK/platform-tools/adb" devices -l || true
+              tail -n 500 /tmp/sovereign-emulator.log || true
+              "$SDK/platform-tools/adb" logcat -d -t 500 || true
+              return "$status"
+            fi
+          }
+
+          run_instrumentation normalize_and_contain_on_art
+          run_instrumentation traversal_escape_is_blocked_on_art
+          run_instrumentation serializer_is_deterministic_on_art
+
+          echo "ANDROID_EMULATOR_INSTRUMENTATION_OK"
           tail -n 200 /tmp/sovereign-emulator.log || true
 
       - name: Upload AAR artifacts

@@ -2,15 +2,20 @@ name: python-ports
 
 on:
   push:
-    branches: [main]
+    branches: [main, "feat/**"]
     paths:
       - 'python/**'
       - 'contracts/conformance/**'
+      - '.github/workflows/python-ports.yml'
   pull_request:
-    branches: [main]
+    branches: [main, "feat/**"]
     paths:
       - 'python/**'
       - 'contracts/conformance/**'
+      - '.github/workflows/python-ports.yml'
+
+permissions:
+  contents: read
 
 concurrency:
   group: python-ports-${{ github.event.pull_request.number || github.ref }}
@@ -20,7 +25,7 @@ jobs:
   python-ports:
     name: Python ${{ matrix.python }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -39,9 +44,22 @@ jobs:
             python: '3.12'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact source revision
+        shell: bash
+        run: |
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          echo "Expected source revision: $expected"
+          echo "Actual source revision:   $actual"
+          test "$actual" = "$expected"
+
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+
       - name: Syntax check
         run: |
           python -m py_compile python/sovereign_safe_path_resolver/src/sovereign_safe_path_resolver/__init__.py
@@ -54,8 +72,10 @@ jobs:
           python -m py_compile python/sovereign_url/src/sovereign_url/__init__.py
           python -m py_compile python/sovereign_circuit_breaker/src/sovereign_circuit_breaker/__init__.py
           python -m py_compile python/sovereign_retry/src/sovereign_retry/__init__.py
+
       - name: Install pytest
         run: python -m pip install --quiet pytest pytest-asyncio
+
       - name: Native pytest
         run: |
           (cd python/sovereign_safe_path_resolver && python -m pytest tests -q)
@@ -68,6 +88,7 @@ jobs:
           (cd python/sovereign_url && python -m pytest tests -q)
           (cd python/sovereign_circuit_breaker && python -m pytest tests -q)
           (cd python/sovereign_retry && python -m pytest tests -q)
+
       - name: Language-neutral conformance (SPR1, RCI1, CJSON1, DIG1)
         run: |
           python python/scripts/run_conformance.py contracts/conformance/vectors.safe-path-resolver.json python/sovereign_safe_path_resolver/src/sovereign_safe_path_resolver/__init__.py

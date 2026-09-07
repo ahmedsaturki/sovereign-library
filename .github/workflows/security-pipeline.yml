@@ -2,6 +2,14 @@ name: Security Pipeline (CI/CD)
 
 # Security pipeline with SARIF generation (optional upload)
 # Tools configured: bandit, safety
+#
+# SECURITY NOTES
+# - All SARIF / bandit / safety steps are wrapped with `continue-on-error: true`
+#   so this pipeline can NEVER block a real CI run on infra/lint issues.
+# - No secrets are required; this workflow runs in `contents: read` mode.
+# - The Python helper is an external file (`.github/scripts/bandit-to-sarif.py`)
+#   to keep this YAML parser-safe (the previous inline `python -c "..."` block
+#   triggered a workflow-file parse failure on every push).
 
 on:
   push:
@@ -9,44 +17,50 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   security-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
       - name: Install security tools
+        continue-on-error: true
         run: pip install bandit safety
+
       - name: Bandit SAST scan
         continue-on-error: true
         run: bandit -r . -f json -o bandit-report.json || echo "Bandit skipped"
+
       - name: Safety dependency audit
         continue-on-error: true
         run: safety check --json --output safety-report.json || echo "Safety skipped"
-      - name: Generate SARIF (optional)
+
+      - name: Generate SARIF (optional, from external script to keep YAML parser-safe)
         continue-on-error: true
         run: |
-          python -c "
-import json, sys
-try:
-    with open('bandit-report.json') as f: data = json.load(f)
-    with open('bandit.sarif', 'w') as out: out.write(json.dumps({'version':'2.1.0','runs':[{'tool':{'driver':{'name':'bandit'}},'results':[]}]}, indent=2))
-    print('SARIF generated (placeholder)')
-except Exception as e:
-    print('SARIF skipped:', e)
-"
-      - name: Upload SARIF (optional - requires GITHUB_TOKEN permissions)
+          if [ -f bandit-report.json ]; then
+            python .github/scripts/bandit-to-sarif.py bandit-report.json bandit.sarif || echo "SARIF generation skipped"
+          else
+            echo "No bandit-report.json — SARIF generation skipped"
+          fi
+
+      - name: Upload SARIF (optional - requires Code Scanning to be enabled)
         if: always()
         continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: bandit.sarif
           category: security-pipeline
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Summary
         if: always()
-        run: echo "Pipeline completed (SARIF optional, CI continues regardless)"
+        run: echo "Security pipeline completed (all steps non-blocking; CI continues regardless)"

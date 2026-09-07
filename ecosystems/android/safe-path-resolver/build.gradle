@@ -10,6 +10,7 @@ android {
     defaultConfig {
         minSdk = 23
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
@@ -19,6 +20,14 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    // Reproducibility: build artifacts byte-stable across machines and runs.
+    // AGP 8.x generates a per-build BuildConfig; we don't need it.
+    buildFeatures {
+        buildConfig = false
+        resValues = false
+        shaders = false
     }
 }
 
