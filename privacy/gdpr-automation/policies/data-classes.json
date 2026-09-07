@@ -1,0 +1,26 @@
+{
+  "data_classes": {
+    "personal-data": {
+      "fields": ["user_email", "user_name", "user_id"],
+      "automation": ["erasure", "portability", "consent", "retention"],
+      "retention_days": 365,
+      "lawful_basis": "consent"
+    },
+    "sensitive-personal": {
+      "fields": ["health", "biometric", "political"],
+      "automation": ["erasure", "portability", "consent", "retention", "double-opt-in"],
+      "retention_days": 90,
+      "lawful_basis": "explicit-consent"
+    },
+    "non-personal": {
+      "fields": ["metrics", "logs", "request_count"],
+      "automation": [],
+      "retention_days": 30
+    },
+    "aggregated-anonymous": {
+      "fields": ["counts", "statistics"],
+      "automation": [],
+      "retention_days": 1825
+    }
+  }
+}

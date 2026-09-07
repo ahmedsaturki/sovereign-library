@@ -1,0 +1,40 @@
+{
+  "defaults": {
+    "authn": "mTLS",
+    "authz": "deny-all",
+    "credential_ttl_seconds": 900,
+    "rate_limit_per_minute": 1000,
+    "audit_log": "required",
+    "tls_min_version": "1.3",
+    "post_quantum": "hybrid-x25519-ml-kem-768",
+    "certificate_pinning": "required",
+    "sct_required": true
+  },
+  "cubes": {
+    "http-server": {
+      "authn": "mTLS",
+      "authz": "deny-all + signed-token",
+      "rate_limit_per_minute": 5000,
+      "audit_log": "release-verification-harness"
+    },
+    "http-client": {
+      "authn": "pin-server-cert",
+      "authz": "ssrf-allow-list",
+      "audit_log": "release-verification-harness",
+      "loopback_blocked": true,
+      "ssrf_allow_list_required": true
+    },
+    "websocket": {
+      "authn": "subprotocol-signed-token",
+      "authz": "per-message",
+      "audit_log": "release-verification-harness",
+      "per_message_authz": true
+    },
+    "policy-capability-security": {
+      "authn": "oidc-jwt",
+      "authz": "per-request-allow-list",
+      "audit_log": "release-verification-harness",
+      "deny_default": true
+    }
+  }
+}

@@ -1,0 +1,7 @@
+cube: canonical-json
+version: 0.1
+last_review: 2026-09-07
+threats:
+  - name: "T — Tampering: same logical value yields different bytes"
+    mitigation: "Determinism proven in formal-verification/coq/CanonicalJson.v"
+    status: "mitigated"

@@ -1,0 +1,14 @@
+# Template for ecosystems/android/local.properties
+#
+# Copy this file to local.properties (gitignored) and set the absolute path
+# to your Android SDK install. The path MUST use forward slashes or escaped
+# backslashes per Gradle convention. Do not commit local.properties.
+
+# Linux / WSL:
+# sdk.dir=/opt/android-sdk
+
+# macOS (default Android Studio install):
+# sdk.dir=/Users/<you>/Library/Android/sdk
+
+# Windows (note the escaped backslash + colon):
+# sdk.dir=C\\:\\\\Users\\\\<you>\\\\AppData\\\\Local\\\\Android\\\\Sdk

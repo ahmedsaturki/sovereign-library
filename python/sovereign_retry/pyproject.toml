@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sovereign-retry"
+version = "0.1.0"
+description = "Native Python implementation of the RETRY1 retry contract (Sovereign Library). Deterministic retry runner with backoff, jitter, budgets, timeouts, and cooperative cancellation."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Sovereign Library" }]
+keywords = ["sovereign", "retry", "resilience", "backoff", "jitter", "cancellation"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=7", "pytest-asyncio>=0.21"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sovereign_retry"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/sovereign_retry", "README.md", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

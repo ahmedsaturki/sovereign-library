@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "Chaos suite executed by scripts/chaos.mjs in the Phase-2 release-engineering workflow. Each probe runs hermetically in the CI process; live-cluster chaos (pod-kill, netem, Chaos Mesh / Litmus) lives in deploy/chaos/ and is triggered manually by an authorized operator.",
+  "probes": [
+    "process-kill",
+    "network-failure",
+    "disk-full",
+    "clock-jump",
+    "signal-storm"
+  ]
+}

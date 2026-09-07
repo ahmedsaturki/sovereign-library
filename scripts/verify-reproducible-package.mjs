@@ -9,6 +9,10 @@ const OUT = resolve('.artifacts/reproducible-package');
 const CANDIDATES = [
   { id: 'safe-path-resolver', packageDir: resolve('packages/safe-path-resolver') },
   { id: 'runtime-capability-inspector', packageDir: resolve('packages/runtime-capability-inspector') },
+  { id: 'bounded-file-content-reader-safe-content-access', packageDir: resolve('packages/bounded-file-content-reader-safe-content-access') },
+  { id: 'directory-walker-bounded-tree-traversal', packageDir: resolve('packages/directory-walker-bounded-tree-traversal') },
+  { id: 'filesystem-metadata-stat-normalizer', packageDir: resolve('packages/filesystem-metadata-stat-normalizer') },
+  { id: 'safe-file-quarantine-delete', packageDir: resolve('packages/safe-file-quarantine-delete') },
 ];
 
 function fail(message) {
@@ -80,6 +84,7 @@ try {
     rmSync(resolve(candidate.packageDir, 'dist'), { recursive: true, force: true });
     rmSync(resolve(candidate.packageDir, 'LICENSE'), { force: true });
     rmSync(resolve(candidate.packageDir, 'NOTICE'), { force: true });
+    rmSync(resolve(candidate.packageDir, 'node_modules'), { recursive: true, force: true });
   }
   rmSync(OUT, { recursive: true, force: true });
 }

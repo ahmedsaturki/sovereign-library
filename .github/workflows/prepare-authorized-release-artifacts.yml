@@ -1,0 +1,85 @@
+name: prepare-authorized-release-artifacts
+
+on:
+  workflow_dispatch:
+
+# This workflow publishes release artifacts. It needs:
+#   - id-token: write  -> mint OIDC tokens for cloud / registry auth
+#                          and for the SLSA provenance generator.
+#   - contents: write  -> create GitHub Releases / tag refs.
+#   - attestations: write -> write SLSA provenance to the GH attestations API.
+# Other jobs are NOT granted these scopes.
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare authorized v0.1 packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+
+      - name: Verify source contracts before packing
+        run: |
+          node scripts/verify-package-tooling.mjs
+          node scripts/verify-reproducible-package.mjs
+          node scripts/verify-security-boundaries.mjs
+
+      - name: Install cosign (Sigstore keyless signing)
+        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
+        with:
+          cosign-release: v2.4.1
+
+      - name: Build authorized release artifacts
+        run: node scripts/prepare-authorized-release-artifacts.mjs
+        env:
+          # Per-job OIDC mint. The actual value is filled in by the
+          # runner at job start and is never echoed to logs because we
+          # only forward it through env to cosign / SLSA, not to
+          # console.
+          SOV_OIDC_AUDIENCE: "https://github.com/ahmedsaturki/sovereign-library"
+
+      - name: Sign each artifact with cosign (keyless, OIDC)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          set -euo pipefail
+          for f in $(find .artifacts/authorized-release-v0.1 -type f); do
+            echo "signing $f"
+            cosign sign-blob --yes --output-signature "${f}.sig" "$f"
+            cosign verify-blob \
+            --signature "${f}.sig" \
+            --certificate-identity-regexp 'https://github.com/ahmedsaturki/sovereign-library' \
+            --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+            "$f"
+          done
+
+      - name: Generate SLSA provenance attestation
+        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@5a775b367a56d5bd118a224a811bba288150a563 # v2.0.0
+        with:
+          base64-subjects: ${{ needs.prepare.outputs.subjects }}
+          # The generator records the workflow identity, the source
+          # commit, the OIDC issuer, and the digest of every produced
+          # artifact. Downstream consumers verify with `slsa-verifier`.
+
+      - name: Upload prepared artifacts
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: sovereign-authorized-release-v0.1
+          path: .artifacts/authorized-release-v0.1/*
+          if-no-files-found: error
+          retention-days: 14

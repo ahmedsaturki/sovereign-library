@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#safe-path-resolver": "./safe-path-resolver-containment-boundary/src/index.js"
+  }
+}

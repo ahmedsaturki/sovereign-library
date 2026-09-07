@@ -1,0 +1,22 @@
+# markdownlint-cli2 config — checked into the repo root.
+#
+# The project has long-form governance / architecture docs that need to
+# stay readable. We disable the noisy defaults (line length, inline-HTML,
+# heading case) and only enforce the structural rules that catch real
+# documentation bugs (no duplicate headings at the same level, code
+# fences have a language tag, no trailing whitespace).
+
+config:
+  default: true
+  MD013: false   # line-length — long URLs and architecture tables
+  MD024:        # no-duplicate-heading — keep on, but allow sibling headings
+    siblings_only: true
+  MD033: false   # no-inline-html — governance docs use <br> etc.
+  MD041: false   # first-line-h1 — checked manually because some files
+                 # start with a YAML frontmatter
+  MD046: false   # code-block-style — both fenced and indented are used
+
+globs:
+  - "**/*.md"
+  - "!node_modules/**"
+  - "!.artifacts/**"

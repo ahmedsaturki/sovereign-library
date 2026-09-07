@@ -1,0 +1,49 @@
+{
+  "name": "@sovereign/web-test-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone, dependency-free web testing product composed from Sovereign browser cubes.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "sideEffects": false,
+  "imports": {
+    "#browser": "@sovereign/browser",
+    "#browser-interactions": "@sovereign/browser-interactions",
+    "#browser-assertions": "@sovereign/browser-assertions",
+    "#browser-recorder": "@sovereign/browser-recorder"
+  },
+  "dependencies": {
+    "@sovereign/browser": "0.1.0",
+    "@sovereign/browser-interactions": "0.1.0",
+    "@sovereign/browser-assertions": "0.1.0",
+    "@sovereign/browser-recorder": "0.1.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "src/index.js",
+    "dist/index.d.ts",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "package.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmedsaturki/sovereign-library.git",
+    "directory": "packages/web-test-kit"
+  },
+  "homepage": "https://github.com/ahmedsaturki/sovereign-library",
+  "bugs": {
+    "url": "https://github.com/ahmedsaturki/sovereign-library/issues"
+  }
+}

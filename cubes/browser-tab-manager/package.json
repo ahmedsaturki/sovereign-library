@@ -1,0 +1,14 @@
+{
+  "name": "@sovereign/browser-tab-manager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone, dependency-free multi-tab orchestration for the Sovereign Browser Cube",
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "main": "./src/index.js",
+  "exports": { ".": "./src/index.js" },
+  "scripts": {
+    "check": "node --check src/index.js",
+    "test": "node --test test/index.test.js"
+  }
+}

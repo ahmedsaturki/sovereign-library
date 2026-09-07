@@ -1,0 +1,260 @@
+{
+  "contract": "digest",
+  "format": "DIG1",
+  "version": "0.1.0",
+  "package": "@sovereign/digest",
+  "derivedFrom": "cubes/digest/src/index.js (canonical Node implementation)",
+  "derivedAt": "2026-08-28",
+  "notes": "Canonical vectors grounded in real Node execution. Hex outputs used for JSON-safe round-trip. A native port MUST satisfy every vector exactly.",
+  "vectors": [
+    {
+      "id": "sha256-hex",
+      "call": [
+        "digestHex",
+        [
+          "sha256",
+          "The quick brown fox jumps over the lazy dog"
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592"
+      }
+    },
+    {
+      "id": "sha512-hex",
+      "call": [
+        "digestHex",
+        [
+          "sha512",
+          "The quick brown fox jumps over the lazy dog"
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "07e547d9586f6a73f73fbac0435ed76951218fb7d0c8d788a309d785436bbb642e93a252a954f23912547d1e8a3b5ed6e1bfd7097821233fa0538f3db854fee6"
+      }
+    },
+    {
+      "id": "hmacSha256-hex",
+      "call": [
+        "hmacHex",
+        [
+          "sha256",
+          "secret",
+          "The quick brown fox jumps over the lazy dog"
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "54cd5b827c0ec938fa072a29b177469c843317b095591dc846767aa338bac600"
+      }
+    },
+    {
+      "id": "hmacSha512-hex",
+      "call": [
+        "hmacHex",
+        [
+          "sha512",
+          "secret",
+          "The quick brown fox jumps over the lazy dog"
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "76af3588620ef6e2c244d5a360e080c0d649b6dd6b82ccd115eeefee8ff403bcee9aeb08618db9a2a94a9e80c7996bb2cb0c00f6e69de38ed8af2758ef39df0a"
+      }
+    },
+    {
+      "id": "sha256-empty",
+      "call": [
+        "digestHex",
+        [
+          "sha256",
+          ""
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "sha256-dash-normalization",
+      "call": [
+        "digestHex",
+        [
+          "sha-256",
+          "The quick brown fox jumps over the lazy dog"
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592"
+      }
+    },
+    {
+      "id": "sha256-upper-normalization",
+      "call": [
+        "digestHex",
+        [
+          "SHA256",
+          "The quick brown fox jumps over the lazy dog"
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592"
+      }
+    },
+    {
+      "id": "cte-equal",
+      "call": [
+        "constantTimeEqual",
+        [
+          {
+            "$build": "bytes",
+            "value": "abc"
+          },
+          {
+            "$build": "bytes",
+            "value": "abc"
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": true
+      }
+    },
+    {
+      "id": "cte-different",
+      "call": [
+        "constantTimeEqual",
+        [
+          {
+            "$build": "bytes",
+            "value": "abc"
+          },
+          {
+            "$build": "bytes",
+            "value": "abd"
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": false
+      }
+    },
+    {
+      "id": "cte-length-mismatch",
+      "call": [
+        "constantTimeEqual",
+        [
+          {
+            "$build": "bytes",
+            "value": "ab"
+          },
+          {
+            "$build": "bytes",
+            "value": "abc"
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": false
+      }
+    },
+    {
+      "id": "config-default",
+      "call": [
+        "createDigestConfig",
+        []
+      ],
+      "expect": {
+        "kind": "value",
+        "value": {
+          "maxInputBytes": 5242880,
+          "maxChunkBytes": 1048576,
+          "maxTotalBytes": 268435456
+        }
+      }
+    },
+    {
+      "id": "throws-unsupported-algorithm",
+      "call": [
+        "digestHex",
+        [
+          "md5",
+          "The quick brown fox jumps over the lazy dog"
+        ]
+      ],
+      "expect": {
+        "kind": "throws",
+        "errorName": "DigestError"
+      }
+    },
+    {
+      "id": "throws-invalid-input",
+      "call": [
+        "digestHex",
+        [
+          "sha256",
+          123
+        ]
+      ],
+      "expect": {
+        "kind": "throws",
+        "errorName": "DigestError"
+      }
+    },
+    {
+      "id": "throws-invalid-options",
+      "call": [
+        "digestHex",
+        [
+          "sha256",
+          "The quick brown fox jumps over the lazy dog",
+          null
+        ]
+      ],
+      "expect": {
+        "kind": "throws",
+        "errorName": "DigestError"
+      }
+    },
+    {
+      "id": "throws-input-too-large",
+      "call": [
+        "digestHex",
+        [
+          "sha256",
+          "xxxxxxxxxx",
+          {
+            "maxInputBytes": 5
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "throws",
+        "errorName": "DigestError"
+      }
+    },
+    {
+      "id": "cte-invalid-type",
+      "call": [
+        "constantTimeEqual",
+        [
+          "abc",
+          "abc"
+        ]
+      ],
+      "expect": {
+        "kind": "throws",
+        "errorName": "DigestError"
+      }
+    }
+  ]
+}

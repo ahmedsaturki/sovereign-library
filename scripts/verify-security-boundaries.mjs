@@ -59,12 +59,23 @@ for (const root of scanRoots) {
   }
 }
 
-for (const packageName of ['safe-path-resolver', 'runtime-capability-inspector']) {
+const approvedPackageDependencies = {
+  'safe-path-resolver': {},
+  'runtime-capability-inspector': {},
+  'bounded-file-content-reader-safe-content-access': { '@sovereign/safe-path-resolver': '0.1.0' },
+  'directory-walker-bounded-tree-traversal': { '@sovereign/safe-path-resolver': '0.1.0' },
+  'filesystem-metadata-stat-normalizer': { '@sovereign/safe-path-resolver': '0.1.0' },
+  'safe-file-quarantine-delete': { '@sovereign/safe-path-resolver': '0.1.0' },
+};
+for (const [packageName, approvedDependencies] of Object.entries(approvedPackageDependencies)) {
   const packageJsonPath = resolve(ROOT, 'packages', packageName, 'package.json');
   const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-  for (const field of ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']) {
+  if (JSON.stringify(pkg.dependencies ?? {}) !== JSON.stringify(approvedDependencies)) {
+    violations.push({ file: relative(ROOT, packageJsonPath), line: 1, rule: 'package-dependency-boundary', message: 'runtime dependency declaration is outside approved boundary', source: JSON.stringify(pkg.dependencies ?? {}) });
+  }
+  for (const field of ['devDependencies', 'peerDependencies', 'optionalDependencies']) {
     if (pkg[field] && Object.keys(pkg[field]).length > 0) {
-      violations.push({ file: relative(ROOT, packageJsonPath), line: 1, rule: 'package-dependency-free', message: `${field} must be absent for a dependency-free public cube`, source: JSON.stringify(pkg[field]) });
+      violations.push({ file: relative(ROOT, packageJsonPath), line: 1, rule: 'package-extra-dependencies', message: `${field} must be absent`, source: JSON.stringify(pkg[field]) });
     }
   }
   if (pkg.scripts && Object.keys(pkg.scripts).length > 0) {

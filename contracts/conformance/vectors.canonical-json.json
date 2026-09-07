@@ -1,0 +1,329 @@
+{
+  "contract": "canonical-json",
+  "format": "CJSON1",
+  "version": "0.1.0",
+  "package": "@sovereign/canonical-json",
+  "derivedFrom": "cubes/canonical-json/src/index.js (canonical Node implementation)",
+  "derivedAt": "2026-08-28",
+  "notes": "Canonical vectors are grounded in real execution of the Node implementation. A native port (Python/Kotlin/JVM/Android) MUST satisfy every vector exactly. Expected outputs are facts, not guesses.",
+  "vectors": [
+    {
+      "id": "stringify-basic",
+      "call": [
+        "canonicalStringify",
+        [
+          {
+            "b": 1,
+            "a": 2,
+            "c": [
+              3,
+              1,
+              2
+            ]
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "{\"a\":2,\"b\":1,\"c\":[3,1,2]}"
+      }
+    },
+    {
+      "id": "stringify-key-order",
+      "call": [
+        "canonicalStringify",
+        [
+          {
+            "z": 1,
+            "a": 2,
+            "m": 3
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "{\"a\":2,\"m\":3,\"z\":1}"
+      }
+    },
+    {
+      "id": "normalize-deterministic",
+      "call": [
+        "canonicalStringify",
+        [
+          {
+            "a": 1,
+            "b": {
+              "y": 2,
+              "x": 3
+            }
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "{\"a\":1,\"b\":{\"x\":3,\"y\":2}}"
+      }
+    },
+    {
+      "id": "stringify-negative-zero",
+      "call": [
+        "canonicalStringify",
+        [
+          0
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "0"
+      }
+    },
+    {
+      "id": "stringify-float",
+      "call": [
+        "canonicalStringify",
+        [
+          0.30000000000000004
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "0.30000000000000004"
+      }
+    },
+    {
+      "id": "stringify-nested",
+      "call": [
+        "canonicalStringify",
+        [
+          [
+            1,
+            [
+              2,
+              [
+                3
+              ]
+            ]
+          ]
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "[1,[2,[3]]]"
+      }
+    },
+    {
+      "id": "stringify-unicode",
+      "call": [
+        "canonicalStringify",
+        [
+          {
+            "k": "héllo—ω"
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "{\"k\":\"héllo—ω\"}"
+      }
+    },
+    {
+      "id": "normalize-identity",
+      "call": [
+        "normalize",
+        [
+          {
+            "b": 2,
+            "a": 1
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "value",
+        "value": {
+          "a": 1,
+          "b": 2
+        }
+      }
+    },
+    {
+      "id": "throws-unsupported-value",
+      "call": [
+        "canonicalStringify",
+        [
+          {
+            "$build": "nan"
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "throws",
+        "errorName": "CanonicalJsonError"
+      }
+    },
+    {
+      "id": "throws-infinity",
+      "call": [
+        "canonicalStringify",
+        [
+          {
+            "$build": "infinity"
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "throws",
+        "errorName": "CanonicalJsonError"
+      }
+    },
+    {
+      "id": "throws-circular",
+      "call": [
+        "canonicalStringify",
+        [
+          {
+            "$build": "circular"
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "throws",
+        "errorName": "CanonicalJsonError"
+      }
+    },
+    {
+      "id": "throws-nonplain",
+      "call": [
+        "canonicalStringify",
+        [
+          {
+            "$build": "map"
+          }
+        ]
+      ],
+      "expect": {
+        "kind": "throws",
+        "errorName": "CanonicalJsonError"
+      }
+    },
+    {
+      "id": "throws-depth",
+      "call": [
+        "canonicalStringify",
+        [
+          [
+            [
+              [
+                [
+                  [
+                    [
+                      [
+                        [
+                          [
+                            [
+                              [
+                                [
+                                  [
+                                    [
+                                      [
+                                        [
+                                          [
+                                            [
+                                              [
+                                                [
+                                                  [
+                                                    [
+                                                      [
+                                                        [
+                                                          [
+                                                            [
+                                                              [
+                                                                [
+                                                                  [
+                                                                    [
+                                                                      [
+                                                                        [
+                                                                          [
+                                                                            [
+                                                                              [
+                                                                                [
+                                                                                  [
+                                                                                    [
+                                                                                      [
+                                                                                        [
+                                                                                          1
+                                                                                        ]
+                                                                                      ]
+                                                                                    ]
+                                                                                  ]
+                                                                                ]
+                                                                              ]
+                                                                            ]
+                                                                          ]
+                                                                        ]
+                                                                      ]
+                                                                    ]
+                                                                  ]
+                                                                ]
+                                                              ]
+                                                            ]
+                                                          ]
+                                                        ]
+                                                      ]
+                                                    ]
+                                                  ]
+                                                ]
+                                              ]
+                                            ]
+                                          ]
+                                        ]
+                                      ]
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ],
+      "expect": {
+        "kind": "throws",
+        "errorName": "CanonicalJsonError"
+      }
+    },
+    {
+      "id": "format-constant",
+      "call": [
+        "CANONICAL_JSON_FORMAT",
+        []
+      ],
+      "expect": {
+        "kind": "value",
+        "value": "CJSON1"
+      }
+    },
+    {
+      "id": "limits-present",
+      "call": [
+        "CANONICAL_JSON_LIMITS",
+        []
+      ],
+      "expect": {
+        "kind": "shape",
+        "requiredKeys": [
+          "MAX_DEPTH",
+          "MAX_NODES",
+          "MAX_STRING_BYTES",
+          "MAX_VALUE_BYTES"
+        ]
+      }
+    }
+  ]
+}

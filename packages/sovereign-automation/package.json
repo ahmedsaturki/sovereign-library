@@ -1,0 +1,59 @@
+{
+  "name": "@sovereign/automation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Unified, dependency-free browser automation product composed from Sovereign cubes.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "sideEffects": false,
+  "bin": {
+    "sovereign-automation": "./bin/cli.js"
+  },
+  "imports": {
+    "#browser": "@sovereign/browser",
+    "#browser-interactions": "@sovereign/browser-interactions",
+    "#browser-assertions": "@sovereign/browser-assertions",
+    "#browser-network-interception": "@sovereign/browser-network-interception",
+    "#browser-tab-manager": "@sovereign/browser-tab-manager",
+    "#browser-visual-testing": "@sovereign/browser-visual-testing",
+    "#browser-recorder": "@sovereign/browser-recorder"
+  },
+  "dependencies": {
+    "@sovereign/browser": "0.1.0",
+    "@sovereign/browser-interactions": "0.1.0",
+    "@sovereign/browser-assertions": "0.1.0",
+    "@sovereign/browser-network-interception": "0.1.0",
+    "@sovereign/browser-tab-manager": "0.1.0",
+    "@sovereign/browser-visual-testing": "0.1.0",
+    "@sovereign/browser-recorder": "0.1.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "bin/cli.js",
+    "src/index.js",
+    "dist/index.d.ts",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "package.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmedsaturki/sovereign-library.git",
+    "directory": "packages/sovereign-automation"
+  },
+  "homepage": "https://github.com/ahmedsaturki/sovereign-library",
+  "bugs": {
+    "url": "https://github.com/ahmedsaturki/sovereign-library/issues"
+  }
+}

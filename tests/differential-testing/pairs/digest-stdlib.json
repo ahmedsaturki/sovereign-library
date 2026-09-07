@@ -1,0 +1,7 @@
+{
+  "name": "digest-stdlib",
+  "left": "node:crypto.createHash('sha256')",
+  "right": "cubes/digest/src/index.js",
+  "fixtures": "fixtures/digest.json",
+  "invariant": "sha256(left(input)) == right(input) for all bytes inputs"
+}
