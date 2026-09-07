@@ -189,8 +189,6 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          # Add Android SDK tools to PATH for this step
-          export PATH="C:\Android\android-sdk\emulator:C:\Android\android-sdk\platform-tools:C:\Android\android-sdk\cmdline-tools\16.0\bin:$PATH"
           AVD_HOME="$RUNNER_TEMP/android-avd"
           rm -rf "$AVD_HOME"
           mkdir -p "$AVD_HOME"
@@ -203,9 +201,9 @@ jobs:
             --device "pixel_2" \
             --force
 
-          # Start emulator with verbose logging to see what's happening
+          # Start emulator with verbose logging - use full path
           echo "Starting emulator with verbose logging..."
-          nohup emulator \
+          nohup "C:\Android\android-sdk\emulator\emulator.exe" \
             -avd sovereign-android-api34 \
             -no-window \
             -no-audio \
@@ -221,7 +219,7 @@ jobs:
 
           # Wait for device with extended timeout and progress
           echo "Waiting for adb device (timeout 600s)..."
-          if ! timeout 600 adb wait-for-device; then
+          if ! timeout 600 "C:\Android\android-sdk\platform-tools\adb.exe" wait-for-device; then
             echo "===== EMULATOR LOG (due to timeout waiting for device) ====="
             tail -n 500 /tmp/sovereign-emulator.log || true
             exit 1
@@ -231,18 +229,18 @@ jobs:
           # Wait for boot with progress logging
           echo "Waiting for boot completion..."
           for i in $(seq 1 300); do
-            boot=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            boot=$("C:\Android\android-sdk\platform-tools\adb.exe" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
             if [ "$boot" = "1" ]; then
               echo "Boot completed at attempt $i"
               break
             fi
             if [ $((i % 30)) -eq 0 ]; then
               echo "  ... still waiting (attempt $i/300)"
-              adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' | xargs -I{} echo "  boot_completed={}"
+              "C:\Android\android-sdk\platform-tools\adb.exe" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' | xargs -I{} echo "  boot_completed={}"
             fi
             sleep 2
           done
-          adb shell getprop sys.boot_completed | tr -d '\r' | grep -q '^1$'
+          "C:\Android\android-sdk\platform-tools\adb.exe" shell getprop sys.boot_completed | tr -d '\r' | grep -q '^1$'
           if [ $? -ne 0 ]; then
             echo "===== EMULATOR LOG (due to timeout waiting for boot) ====="
             tail -n 500 /tmp/sovereign-emulator.log || true
@@ -251,19 +249,19 @@ jobs:
           echo "Boot verified"
 
           # Disable animations
-          adb shell settings put global window_animation_scale 0
-          adb shell settings put global transition_animation_scale 0
-          adb shell settings put global animator_duration_scale 0
+          "C:\Android\android-sdk\platform-tools\adb.exe" shell settings put global window_animation_scale 0
+          "C:\Android\android-sdk\platform-tools\adb.exe" shell settings put global transition_animation_scale 0
+          "C:\Android\android-sdk\platform-tools\adb.exe" shell settings put global animator_duration_scale 0
 
           # Install test APK
           echo "Installing test APK..."
           ./gradlew :safe-path-resolver:installDebugAndroidTest --no-daemon --console=plain
 
           # Verify instrumentation target
-          INSTRUMENTATION="$(adb shell pm list instrumentation | tr -d '\r' | sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' | grep '/androidx.test.runner.AndroidJUnitRunner' | head -1)"
+          INSTRUMENTATION=$("C:\Android\android-sdk\platform-tools\adb.exe" shell pm list instrumentation | tr -d '\r' | sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' | grep '/androidx.test.runner.AndroidJUnitRunner' | head -1)
           test -n "$INSTRUMENTATION"
           echo "Instrumentation target: $INSTRUMENTATION"
-          adb shell pm list instrumentation
+          "C:\Android\android-sdk\platform-tools\adb.exe" shell pm list instrumentation
 
           TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
 
@@ -271,7 +269,7 @@ jobs:
             local method="$1"
             echo "===== START $method ====="
             set +e
-            timeout --preserve-status 3m adb shell am instrument -w -r \
+            timeout --preserve-status 3m "C:\Android\android-sdk\platform-tools\adb.exe" shell am instrument -w -r \
               -e class "$TEST_CLASS#$method" \
               "$INSTRUMENTATION"
             local status=$?
@@ -279,14 +277,14 @@ jobs:
             echo "===== END $method status=$status ====="
             if [ "$status" -ne 0 ]; then
               echo "===== ADB DEVICES ====="
-              adb devices -l || true
+              "C:\Android\android-sdk\platform-tools\adb.exe" devices -l || true
               echo "===== PACKAGE/INSTRUMENTATION ====="
-              adb shell pm list packages || true
-              adb shell pm list instrumentation || true
+              "C:\Android\android-sdk\platform-tools\adb.exe" shell pm list packages || true
+              "C:\Android\android-sdk\platform-tools\adb.exe" shell pm list instrumentation || true
               echo "===== EMULATOR LOG ====="
               tail -n 500 /tmp/sovereign-emulator.log || true
               echo "===== LOGCAT ====="
-              adb logcat -d -t 500 || true
+              "C:\Android\android-sdk\platform-tools\adb.exe" logcat -d -t 500 || true
               return "$status"
             fi
           }
