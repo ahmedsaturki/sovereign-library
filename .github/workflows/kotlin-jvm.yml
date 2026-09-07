@@ -7,7 +7,6 @@ on:
       - "ecosystems/kotlin/**"
       - ".github/workflows/kotlin-jvm.yml"
       - "contracts/conformance/**"
-      - ".github/workflows/security-pipeline.yml"
   pull_request:
     branches: [main, "feat/**"]
     paths:
@@ -18,11 +17,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: kotlin-jvm-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   kotlin-jvm:
     name: Kotlin/JVM ${{ matrix.os }} / JDK 17
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -33,20 +36,27 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          persist-credentials: false
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Assert exact source revision
+        shell: bash
+        run: |
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          echo "Expected source revision: $expected"
+          echo "Actual source revision:   $actual"
+          test "$actual" = "$expected"
 
       - name: Set up JDK 17
         uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
         with:
           distribution: temurin
           java-version: "17"
-          cache: gradle
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@da187c8e6ffbd3802e00f2477aa5a822b25f2dda # v4.4.4
         with:
           gradle-version: wrapper
-          cache-read-only: ${{ github.event_name == 'pull_request' }}
 
       - name: Validate wrapper
         run: gradle wrapper --version
@@ -59,10 +69,8 @@ jobs:
 
       - name: Verify reproducible archives
         shell: bash
-        env:
-          SOURCE_DATE_EPOCH: "1735689600"
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
           rm -rf safe-path-resolver/build runtime-capability-inspector/build conformance/build
           gradle jar --no-daemon --console=plain
           mkdir -p /tmp/oot1 && rm -f /tmp/oot1/* \
@@ -86,12 +94,3 @@ jobs:
             ecosystems/kotlin/safe-path-resolver/build/libs/*.jar
             ecosystems/kotlin/runtime-capability-inspector/build/libs/*.jar
           if-no-files-found: error
-          retention-days: 30
-
-      - name: Upload SBOM (SPDX, ubuntu only)
-        if: matrix.os == 'ubuntu-latest' && always()
-        uses: anchore/sbom-action@2bf69e2d2a4a47fc6a5d4ec627ecbce6e9f9f9f9
-        with:
-          format: spdx-json
-          artifact-name: kotlin-jvm-sbom.spdx.json
-        continue-on-error: true
