@@ -1,0 +1,32 @@
+# deploy/chaos/litmus-experiments/pod-kill.yaml
+#
+# Litmus pod-kill chaos experiment for the Sovereign deployment.
+# Apply only after authorization per AGENTS.md / GOVERNANCE.md.
+#
+# Usage:
+#   kubectl apply -f deploy/chaos/litmus-experiments/pod-kill.yaml
+#   kubectl wait --for=condition=Completed \
+#     experimentengine/litmus/pod-kill --timeout=600s
+#
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: sovereign-pod-kill
+  namespace: litmus
+spec:
+  appinfo:
+    appns: default
+    applabel: "app=sovereign"
+    appkind: deployment
+  chaosServiceAccount: litmus-admin
+  experiments:
+    - name: pod-delete
+      spec:
+        components:
+          env:
+            - name: TOTAL_CHAOS_DURATION
+              value: "60"
+            - name: CHAOS_INTERVAL
+              value: "10"
+            - name: FORCE
+              value: "false"

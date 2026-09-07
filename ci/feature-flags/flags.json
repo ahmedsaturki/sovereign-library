@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "Phase-2 feature-flag definitions consumed by scripts/feature-flags.mjs. Each flag has a default and a list of ordered rules; first-match wins. Rules are evaluated against the SOVEREIGN_ENV, SOVEREIGN_PHASE, SOVEREIGN_CUBE, and GITHUB_EVENT_NAME environment variables.",
+  "flags": [
+    {
+      "key": "phase2_release_engineering",
+      "default": false,
+      "rules": [
+        { "when": { "env": "prod", "phase": "phase2" }, "value": true },
+        { "when": { "phase": "phase2" }, "value": true }
+      ]
+    },
+    {
+      "key": "phase2_canary_rollouts",
+      "default": false,
+      "rules": [
+        { "when": { "env": "prod", "phase": "phase2" }, "value": true }
+      ]
+    },
+    {
+      "key": "phase2_chaos_probes",
+      "default": true,
+      "rules": [
+        { "when": { "phase": "phase2" }, "value": true }
+      ]
+    },
+    {
+      "key": "phase2_loadtest_k6",
+      "default": false,
+      "rules": [
+        { "when": { "env": "prod", "phase": "phase2" }, "value": true }
+      ]
+    },
+    {
+      "key": "phase2_fossa_license_scan",
+      "default": true,
+      "rules": []
+    },
+    {
+      "key": "phase2_image_signing",
+      "default": false,
+      "rules": [
+        { "when": { "phase": "phase2" }, "value": true }
+      ]
+    },
+    {
+      "key": "phase2_dependabot_auto_merge",
+      "default": true,
+      "rules": [
+        { "when": { "phase": "phase2" }, "value": true }
+      ]
+    }
+  ]
+}

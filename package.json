@@ -44,6 +44,7 @@
     "test:artifact-admission-gate": "node --test --test-timeout=10000 cubes/artifact-admission-gate/test/index.test.js",
     "test:safe-path-resolver-containment-boundary": "node --test --test-timeout=10000 cubes/safe-path-resolver-containment-boundary/test/index.test.js",
     "test:browser": "node --test --test-timeout=30000 cubes/browser/test/smoke.test.js",
-    "verify": "npm run check && npm test && npm run test:browser"
+    "test:phase2": "node --test --test-timeout=10000 tests/phase2/api-version.test.mjs tests/phase2/feature-flags.test.mjs tests/phase2/migrate.test.mjs tests/phase2/deploy-plan.test.mjs tests/phase2/rollback.test.mjs tests/phase2/changelog.test.mjs tests/phase2/perf-compare.test.mjs tests/phase2/generate-sbom.test.mjs",
+    "verify": "npm run check && npm test && npm run test:browser && npm run test:phase2"
   }
 }

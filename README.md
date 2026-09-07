@@ -159,17 +159,32 @@ docs/         architecture, governance, research, release evidence
 
 ## Current hardening wave
 
-The `feat/continuity-hardening` branch carries the supply-chain
-hardening wave (Sept 2026). It pins every GitHub Actions reference to
-a commit SHA, adds a top-level `permissions: { contents: read }` to
-every workflow, introduces a dedicated `security-pipeline.yml`
-covering SBOM, Trivy, Safety, gitleaks, actionlint, cosign reachability,
-and conformance-vector SHA-256 pinning, wires cosign keyless signing
-and SLSA Level-3 provenance into the authorized-release workflow, and
-fixes two Kotlin compile errors that had blocked the Android SPR1 cube
-from advancing. See `docs/HARDENING_FINDINGS_V1.0.md`,
-`docs/SECURITY_AUDIT_V1.0.md`, and `docs/DEPLOYMENT_RUNBOOK_V1.0.md`
-for the authoritative record.
+Two waves are active on `feat/continuity-hardening`:
+
+- **Phase-1 — supply-chain hardening (Sept 2026).** Pins every GitHub
+  Actions reference to a commit SHA, adds a top-level `permissions:
+  { contents: read }` to every workflow, introduces a dedicated
+  `security-pipeline.yml` covering SBOM, Trivy, Safety, gitleaks,
+  actionlint, cosign reachability, and conformance-vector SHA-256
+  pinning, wires cosign keyless signing and SLSA Level-3 provenance
+  into the authorized-release workflow, and fixes two Kotlin compile
+  errors that had blocked the Android SPR1 cube from advancing. See
+  `docs/HARDENING_FINDINGS_V1.0.md`, `docs/SECURITY_AUDIT_V1.0.md`,
+  and `docs/DEPLOYMENT_RUNBOOK_V1.0.md`.
+
+- **Phase-2 — release-engineering hardening (Sept 2026).** Twenty
+  enterprise capabilities layered on Phase-1: multi-region CI matrix,
+  E2E (BrowserStack / SauceLabs) opt-in, performance regression
+  detection, dependabot auto-merge bot (gated on semver deltas and
+  frozen-cube denylist), release-notes + changelog automation, DB
+  migration tooling, API versioning contract, backward-compatibility
+  diffing, LaunchDarkly-style feature flags, canary / progressive /
+  blue-green deploy plans, deterministic rollback plans, hermetic
+  chaos engineering probes, k6 + Locust load testing, FOSSA license
+  compliance, SBOM-per-release + cosign image-signing, OWASP ZAP DAST
+  skeleton. Every script uses Node 24 stdlib only — no new
+  dependencies. See `docs/PHASE2_HARDENING.md` for the full inventory
+  and run evidence.
 
 ## License
 

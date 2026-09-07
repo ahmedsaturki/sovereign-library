@@ -29,3 +29,9 @@ android-sdk/
 *.iml
 .idea/
 captures/
+
+# Phase-2 evidence — generated at runtime by scripts/*.mjs
+.hermes/
+
+# Phase-2 scripts that occasionally leave behind scratch files
+.tests-tmp/

@@ -1,0 +1,79 @@
+# Dependabot configuration — Sovereign Library
+#
+# Tracks both ecosystems (Node 24+ packages and GitHub Actions) on a weekly
+# cadence. The Phase-2 auto-merge bot (see .github/dependabot-auto-merge.yml)
+# only promotes PRs whose CI is green AND whose version bump is a non-major
+# semver delta. Major bumps require explicit human review (the SECURITY.md
+# escalation policy governs backports of fixes).
+#
+# SemVer contract for @sovereign/* packages:
+#   0.x  -> 0.y   : minor version bumps are MINOR public-API changes; require
+#                   human review (we currently sit at 0.1).
+#   0.x  -> 0.x.N : patch version bumps are PATCH-only public-API changes;
+#                   safe to auto-merge after CI green.
+#   1.x+ -> 1.y   : MINOR public-API additions; human review.
+#   1.x  -> 1.x.N : PATCH public-API compatible; auto-merge candidate.
+#   *    -> x+1   : MAJOR public-API breaking; NEVER auto-merged.
+
+Version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 8
+    labels:
+      - "dependencies"
+      - "phase-2/auto-merge-candidate"
+    # Ignore the root manifest's own dep entries because the root package.json
+    # is the workspace descriptor; per-package manifests live in
+    # packages/<name>/package.json and are independently versioned.
+    ignore:
+      - dependency-name: "*"
+        # The dependency graph for packages/<name>/*.json is tracked per dir.
+        # Root-level deps are intentionally pinned via the existing
+        # prepare-authorized-release-artifacts workflow.
+    # Group all patch/minor updates for a single human-visible PR per group.
+    groups:
+      runtime-patch:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+      dev-tools:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "ci/dependabot"
+      - "phase-2/auto-merge-candidate"
+    groups:
+      actions-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "pip"
+    directory: "/python"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:30"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python-ports"
+      - "phase-2/auto-merge-candidate"
+    groups:
+      python-patch:
+        update-types: ["minor", "patch"]

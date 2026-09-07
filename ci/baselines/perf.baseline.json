@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "Pinned performance baseline consumed by scripts/perf-compare.mjs. The thresholds are intentionally loose (1.20x p95) so that the FIRST PR that adds this file is green; tighten in subsequent PRs.",
+  "benches": [
+    { "label": "digest.sha256", "p95_ms": 0.05 },
+    { "label": "canonical-json.stringify", "p95_ms": 0.50 },
+    { "label": "safe-path.resolve", "p95_ms": 0.10 },
+    { "label": "result.Ok", "p95_ms": 0.01 }
+  ]
+}
