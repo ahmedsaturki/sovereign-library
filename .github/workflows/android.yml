@@ -337,6 +337,23 @@ jobs:
           mkdir -p "$AVD_HOME"
           export ANDROID_AVD_HOME="$AVD_HOME"
 
+          # macOS runners don't ship GNU `timeout` by default. If neither
+          # `timeout` nor `gtimeout` is on PATH, define a portable fallback
+          # that runs a command and force-kills it after N seconds.
+          if ! command -v timeout >/dev/null 2>&1 && ! command -v gtimeout >/dev/null 2>&1; then
+            timeout() {
+              local secs=$1; shift
+              "$@" &
+              local cmd_pid=$!
+              ( sleep "$secs" && kill -9 "$cmd_pid" 2>/dev/null ) &
+              local watchdog_pid=$!
+              wait "$cmd_pid"; local rc=$?
+              kill -9 "$watchdog_pid" 2>/dev/null || true
+              return $rc
+            }
+            export -f timeout
+          fi
+
           # avdmanager lives under cmdline-tools/<ver>/bin on macOS preinstall.
           AVDMGR=$(find "$SDK/cmdline-tools" -maxdepth 3 -type f -name avdmanager 2>/dev/null | head -1)
           SDKMANAGER=$(find "$SDK/cmdline-tools" -maxdepth 3 -type f -name sdkmanager 2>/dev/null | head -1)
@@ -410,7 +427,7 @@ jobs:
             local method="$1"
             echo "===== START $method ====="
             set +e
-            timeout --preserve-status 10m "$SDK/platform-tools/adb" shell am instrument -w -r \
+            timeout 600 "$SDK/platform-tools/adb" shell am instrument -w -r \
               -e class "$TEST_CLASS#$method" \
               "$INSTRUMENTATION"
             local status=$?
