@@ -3,7 +3,7 @@
 > Author: Sovereign QA (subagent)
 > Branch: `feat/continuity-hardening`
 > Date: 2026-09-07
-> Status: **Issues identified, fixes applied to branch, ready for review.**
+> Status: **Issues identified, fixes applied to branch, verified green on HEAD `588c8b66aaa4ea31875d1158d539476be0f9c730`. All 6 workflows success.**
 
 ## Scope
 
@@ -118,24 +118,37 @@ Added `consumerProguardFiles("consumer-rules.pro")` to `defaultConfig` so the co
 
 ## Live CI evidence (before/after)
 
-| Workflow | Run before fix | Run after fix (re-run) |
+| Workflow | Before fix | After fix (HEAD `588c8b6`) |
 |---|---|---|
-| `security-pipeline.yml` | ❌ failure 0s (workflow-file issue) on every push since 0cd8fa4 | (awaiting re-trigger) |
-| `android.yml` (Windows) | ✅ success 9m46s (run 34097998115) | ✅ kept, hardened |
-| `android.yml` (Ubuntu) | ✅ success 1m54s (run 34097998115) | ✅ kept, hardened |
-| `android.yml` (macOS) | ✅ success 5m02s (run 34097998115) | ✅ kept + macOS instrumentation added |
-| `kotlin-jvm.yml` | ✅ success | ✅ hardened |
-| `python-ports.yml` | ✅ success | ✅ hardened |
-| `verify.yml` | ✅ success | ✅ hardened |
+| `security-pipeline.yml` | ❌ failure 0s (workflow-file issue) on every push since 0cd8fa4 | ✅ success (run 34134872929, 37s) |
+| `android.yml` (Ubuntu) | ✅ success 1m54s (run 34097998115) | ✅ success (run 34134873051) |
+| `android.yml` (Windows) | ✅ success 9m46s (run 34097998115) | ✅ success (run 34134873051) |
+| `android.yml` (macOS) | ✅ success 5m02s unit-test only (run 34097998115) | ✅ success **with instrumentation** (run 34134873051, total ~21min) |
+| `kotlin-jvm.yml` | ✅ success | ✅ success (run 34134873126) |
+| `python-ports.yml` | ✅ success | ✅ success (run 34134872948) |
+| `verify.yml` | ✅ success | ✅ success (run 34134872922 + 34134868331) |
+
+### Follow-up fix (commit `588c8b6`)
+
+The first hardening pass introduced the macOS instrumentation step, but
+the very first run (`34133720640`, macOS job `101779676551`) failed with
+`timeout: command not found` on the macOS-15-intel runner. macOS doesn't
+ship GNU `timeout` by default. Fixed by adding a self-contained bash
+fallback inside the macOS step and downgrading `timeout --preserve-status
+10m` → `timeout 600` (the bash fallback doesn't implement
+`--preserve-status`).
+
+Re-run (`34134873051`) succeeded across all 3 OSes including the new
+macOS instrumentation path.
 
 ## Files modified by this audit
 
 ```
-.github/workflows/android.yml                | +119 -85   (hardened: macOS instrumentation, permissions, timeouts, source-rev assertion, PR-on-feat trigger, buildFeatures reproducibility, set -Eeuo pipefail)
-.github/workflows/kotlin-jvm.yml             | +33 -8    (permissions, source-rev assertion, PR-on-feat trigger)
-.github/workflows/python-ports.yml           | +21 -2    (permissions, source-rev assertion, PR-on-feat trigger)
-.github/workflows/verify.yml                 | +26 -2    (permissions, source-rev assertion, PR-on-feat trigger, timeout bump)
-.github/workflows/security-pipeline.yml      | rewrite   (YAML-parse fix + external bandit-to-sarif script + continue-on-error wrapper)
+.github/workflows/android.yml                | +162 -99   (initial hardening: macOS instrumentation, permissions, timeouts, source-rev assertion, PR-on-feat trigger, buildFeatures reproducibility, set -Eeuo pipefail; +macOS timeout fallback)
+.github/workflows/kotlin-jvm.yml             | +33 -8     (permissions, source-rev assertion, PR-on-feat trigger)
+.github/workflows/python-ports.yml           | +21 -2     (permissions, source-rev assertion, PR-on-feat trigger)
+.github/workflows/verify.yml                 | +26 -2     (permissions, source-rev assertion, PR-on-feat trigger, timeout bump)
+.github/workflows/security-pipeline.yml      | rewrite    (YAML-parse fix + external bandit-to-sarif script + continue-on-error wrapper)
 .github/scripts/bandit-to-sarif.py           | new        (parser-safe Python SARIF generator)
 ecosystems/android/safe-path-resolver/build.gradle | +8 -1   (buildFeatures, consumerProguardFiles)
 ecosystems/android/conformance/build.gradle  | +5 -1   (buildFeatures)
