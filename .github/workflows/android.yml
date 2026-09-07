@@ -81,6 +81,13 @@ jobs:
           "$SDK/platform-tools/adb" version
           test -n "$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d -print -quit)"
 
+      - name: Add Windows SDK tools to PATH (before avdmanager)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          echo "C:\Android\android-sdk\tools" >> $GITHUB_PATH
+          echo "C:\Android\android-sdk\tools\bin" >> $GITHUB_PATH
+
       - name: Install Android emulator image (x86_64 for Windows) - use full path to sdkmanager
         if: matrix.os == 'windows-latest'
         shell: bash
