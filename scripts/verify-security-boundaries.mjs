@@ -10,7 +10,6 @@ const EXECUTION_RULES = [
   { id: 'new-function', pattern: /\bnew\s+Function\s*\(/g, message: 'dynamic Function construction is forbidden' },
   { id: 'function-constructor', pattern: /(?<![\w$])Function\s*\(/g, message: 'Function() construction is forbidden' },
   { id: 'vm-script', pattern: /\bvm\.Script\b|\bvm\.(?:runInThisContext|runInNewContext|runInContext)\s*\(/g, message: 'dynamic vm execution is forbidden' },
-  { id: 'child-process-exec', pattern: /(?:\bchild_process\s*\.\s*)?(?<!\.)\b(?:exec|execSync)\s*\(/g, message: 'shell-oriented child_process exec is forbidden' },
 ];
 
 function walk(dir) {
@@ -40,6 +39,57 @@ function reportMatches(file, text) {
       });
     }
   }
+
+  // Only flag shell-oriented exec/execSync when the source explicitly
+  // addresses Node's child_process module. Generic `exec(...)` methods
+  // are valid for other APIs (for example SQLite's DatabaseSync.exec),
+  // and must not be treated as shell execution.
+  const childProcessPatterns = [
+    /\b(?:node:)?child_process\s*\.\s*(?:exec|execSync)\s*\(/g,
+    /\brequire\(\s*['"](?:node:)?child_process['"]\s*\)\s*\.\s*(?:exec|execSync)\s*\(/g,
+  ];
+
+  const importedAliases = new Set();
+  const importRe = /import\s*\{([^}]+)\}\s*from\s*['"](?:node:)?child_process['"]/g;
+  let importMatch;
+  while ((importMatch = importRe.exec(text)) !== null) {
+    for (const specifier of importMatch[1].split(',')) {
+      const parts = specifier.trim().split(/\s+as\s+/i);
+      const imported = parts[0]?.trim();
+      const local = parts[1]?.trim() || imported;
+      if (imported === 'exec' || imported === 'execSync') importedAliases.add(local);
+    }
+  }
+
+  const requireRe = /(?:const|let|var)\s*\{([^}]+)\}\s*=\s*require\(\s*['"](?:node:)?child_process['"]\s*\)/g;
+  let requireMatch;
+  while ((requireMatch = requireRe.exec(text)) !== null) {
+    for (const specifier of requireMatch[1].split(',')) {
+      const parts = specifier.trim().split(/\s*:\s*/);
+      const imported = parts[0]?.trim();
+      const local = parts[1]?.trim() || imported;
+      if (imported === 'exec' || imported === 'execSync') importedAliases.add(local);
+    }
+  }
+
+  for (const alias of importedAliases) {
+    childProcessPatterns.push(new RegExp(`\\b${alias.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\s*\\(`, 'g'));
+  }
+
+  for (const pattern of childProcessPatterns) {
+    pattern.lastIndex = 0;
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      const line = text.slice(0, match.index).split(/\r?\n/).length;
+      violations.push({
+        file: relative(ROOT, file),
+        line,
+        rule: 'child-process-exec',
+        message: 'shell-oriented child_process exec is forbidden',
+        source: lines[line - 1]?.trim() ?? '',
+      });
+    }
+  }
 }
 
 const scanRoots = [resolve(ROOT, 'scripts'), resolve(ROOT, 'cubes')];
@@ -48,7 +98,6 @@ for (const root of scanRoots) {
   for (const file of walk(root)) {
     if (resolve(file) === SELF) continue;
     if (root.endsWith('cubes')) {
-      const sourceMarker = `${resolve(ROOT, 'cubes')}${process.platform === 'win32' ? '\\' : '/'}\n`;
       const normalized = file.replaceAll('\\', '/');
       if (!normalized.startsWith(resolve(ROOT, 'cubes').replaceAll('\\', '/') + '/') || !normalized.includes('/src/')) continue;
       if (!file.endsWith('.js') && !file.endsWith('.mjs')) continue;
