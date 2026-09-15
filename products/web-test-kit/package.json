@@ -8,10 +8,10 @@
     "node": ">=24"
   },
   "imports": {
-    "#browser": "@sovereign/browser",
-    "#browser-interactions": "@sovereign/browser-interactions",
-    "#browser-assertions": "@sovereign/browser-assertions",
-    "#browser-recorder": "@sovereign/browser-recorder"
+    "#browser": "../../cubes/browser/src/index.js",
+    "#browser-interactions": "../../cubes/browser-interactions/src/index.js",
+    "#browser-assertions": "../../cubes/browser-assertions/src/index.js",
+    "#browser-recorder": "../../cubes/browser-recorder/src/index.js"
   },
   "scripts": {
     "check": "node --check src/index.js",
