@@ -6,13 +6,9 @@ on:
   pull_request:
     branches: [main, "feat/**"]
   schedule:
-    # Weekly deep scan (Monday 06:00 UTC) for new advisories since the
-    # last scheduled run. Wires into the Security tab via SARIF.
     - cron: "0 6 * * 1"
   workflow_dispatch:
 
-# Default to least-privilege; individual jobs override only what they
-# strictly need.
 permissions:
   contents: read
 
@@ -26,13 +22,17 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Install actionlint
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash \
+            | bash -s -- 1.7.7
+          actionlint -version
+
       - name: Run actionlint
-        uses: reviewdog/action-actionlint@e19b7b7efa1bbf89c642dee5f612f096a76f1287 # v1.1.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-check
-          filter_mode: nofilter
-          fail_on_error: true
+        shell: bash
+        run: actionlint
 
       - name: Set up Python
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
@@ -42,11 +42,6 @@ jobs:
       - name: Install linters
         run: |
           python -m pip install --quiet yamllint==1.35.1
-          # The markdownlint-cli2 binary is fetched from the pinned
-          # upstream release (DavidAnson/markdownlint-cli2 v0.14.0). For
-          # strict integrity, the deploy runbook checks this archive's
-          # SHA-256 against the value recorded in
-          # docs/SHA256SUMS_binaries.txt.
           curl -sSL https://github.com/DavidAnson/markdownlint-cli2/releases/download/v0.14.0/markdownlint-cli2-0.14.0-linux-amd64.tar.gz \
             | tar -xz -C /usr/local/bin markdownlint-cli2
 
@@ -74,7 +69,7 @@ jobs:
         uses: anchore/sbom-action@fc46e51fd3cb168ffb36c6d1915723c47db58abb # v0.17.7
         with:
           format: spdx-json
-          artifact-name: node-sbom.spdx.json
+          output-file: node-sbom.spdx.json
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: sbom-node
@@ -91,17 +86,16 @@ jobs:
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: "3.12"
-      - name: Generate SBOM (cyclonedx)
+      - name: Generate SBOM (CycloneDX)
         run: |
+          set -Eeuo pipefail
           python -m pip install --quiet cyclonedx-bom==4.5.0
-          # CycloneDX is preferred for Python because it captures the
-          # direct dependency graph more accurately than SPDX generators.
-          cyclonedx-py environment --output python-sbom.cdx.json || true
+          cyclonedx-py environment --output-format json --output-file python-sbom.cdx.json
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: sbom-python
           path: python-sbom.cdx.json
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30
 
   vuln-trivy-fs:
@@ -121,7 +115,6 @@ jobs:
           format: sarif
           output: trivy-fs.sarif
           severity: CRITICAL,HIGH
-          # Advisory in CI; blocking in the publishing workflow.
           exit-code: "0"
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@12c58883e4de77311860a16ffc2374e3ced742c6 # v3.27.4
@@ -144,7 +137,18 @@ jobs:
           node-version: "24"
       - name: npm ci
         run: npm ci --no-audit --no-fund
+      - name: Detect node_modules
+        id: deps
+        shell: bash
+        run: |
+          if [ -d node_modules ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "No node_modules directory exists because the root package has no installed runtime dependencies; rootfs dependency scan is not applicable."
+          fi
       - name: Run Trivy (rootfs)
+        if: steps.deps.outputs.present == 'true'
         uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # v0.24.0
         with:
           scan-type: rootfs
@@ -154,8 +158,8 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: "0"
       - name: Upload SARIF
+        if: steps.deps.outputs.present == 'true' && always()
         uses: github/codeql-action/upload-sarif@12c58883e4de77311860a16ffc2374e3ced742c6 # v3.27.4
-        if: always()
         with:
           sarif_file: trivy-rootfs.sarif
           category: trivy-rootfs
@@ -171,58 +175,56 @@ jobs:
           python-version: "3.12"
       - name: Resolve Python dependency pins
         run: |
-          # Safety needs an explicit requirements file. Generate one from
-          # the per-port pyproject metadata if present; otherwise audit is
-          # a documented no-op for a repository with no Python dependencies.
+          set -Eeuo pipefail
           python -m pip install --quiet safety==3.2.0 pip-tools==7.4.1
-          mkdir -p python
-          find python -name pyproject.toml -print0 | xargs -0 python -c "
-          import sys, tomllib
-          for p in sys.argv[1:]:
-              try:
-                  with open(p,'rb') as f: d = tomllib.load(f)
-                  for n in (d.get('project',{}).get('dependencies') or []):
-                      print(n)
-              except Exception as e: print(f'# skip {p}: {e}', file=sys.stderr)
-          " > python/requirements-audit.txt || true
-          if [ ! -s python/requirements-audit.txt ]; then
-            echo "# no Python dependencies discovered; audit pass is a no-op" > python/requirements-audit.txt
+          : > requirements-audit.txt
+          while IFS= read -r -d '' p; do
+            python - "$p" >> requirements-audit.txt <<'PY'
+import sys, tomllib
+p = sys.argv[1]
+with open(p, 'rb') as f:
+    data = tomllib.load(f)
+for dep in (data.get('project', {}).get('dependencies') or []):
+    print(dep)
+PY
+          done < <(find python -name pyproject.toml -print0)
+          if [ ! -s requirements-audit.txt ]; then
+            echo "# no Python runtime dependencies discovered; audit not applicable" > requirements-audit.txt
           fi
       - name: Safety check
-        working-directory: python
+        shell: bash
         run: |
-          python -m safety check --file requirements-audit.txt --output sarif --save-json safety-python.sarif || true
+          set -Eeuo pipefail
+          if grep -qv '^#' requirements-audit.txt; then
+            python -m safety check --file requirements-audit.txt --output sarif --save-json safety-python.sarif
+          else
+            printf '{"version":"1.0.0","runs":[{"tool":{"driver":{"name":"safety"}},"results":[]}]}' > safety-python.sarif
+            echo "No Python runtime dependencies to audit."
+          fi
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         if: always()
         with:
           name: safety-python
-          path: python/safety-python.sarif
-          if-no-files-found: warn
+          path: safety-python.sarif
+          if-no-files-found: error
           retention-days: 30
 
   oidc-and-secret-guard:
     name: OIDC token + secret-leak guard
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Required to mint an OIDC token for downstream cloud / registry
-    # publication. No job ever writes the token to disk or echoes it.
     permissions:
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Mint OIDC token (no exchange)
-        env:
-          ACTIONS_RUNTIME_TOKEN: ""
         run: |
-          # We do not call a cloud-specific exchange here. We only prove
-          # that the runner can mint a token (the env var REQUESTS the
-          # token) and that we never log it.
           if [ -z "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]; then
             echo "::error::ACTIONS_ID_TOKEN_REQUEST_TOKEN is empty; id-token permission is required for this job to be useful in publishing."
             exit 1
           fi
-          echo "OK: OIDC mint request is available; downstream publishing must call ::ACTIONS_ID_TOKEN_REQUEST_TOKEN:: per job and pass the token through env, never logs."
+          echo "OK: OIDC mint request is available; token is never logged or written to disk."
       - name: gitleaks
         uses: gitleaks/gitleaks-action@518e4898c0cd1cc5d9aab6627a2eabd46e81d8da # v1.6.0
         env:
@@ -233,10 +235,6 @@ jobs:
     name: cosign + SLSA reachability probe
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # We do NOT yet produce SLSA attestations as part of every CI run —
-    # that would be wasteful (most runs are not releases). This job
-    # validates that the toolchain is reachable and that a keyless
-    # signature would succeed when a publishing workflow runs.
     permissions:
       contents: read
       id-token: write
@@ -252,20 +250,15 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: "1"
         run: |
-          echo "hello sovereign" > /tmp/probe.txt
-          # cosign sign-blob requires real network access to the TUF
-          # root and Fulcio. We treat the network call as the probe and
-          # accept any non-DNS / non-network-policy failure as
-          # 'toolchain reachable, runner cannot reach Sigstore' which is
-          # expected on self-hosted runners.
           set +e
+          echo "hello sovereign" > /tmp/probe.txt
           cosign sign-blob --yes --output-signature /tmp/probe.sig /tmp/probe.txt
           rc=$?
           set -e
           if [ "$rc" -ne 0 ]; then
-            echo "::notice::cosign sign-blob returned non-zero ($rc) — expected on self-hosted runners without public network. Toolchain is reachable."
+            echo "::notice::cosign sign-blob could not complete the external Sigstore exchange on this runner (exit $rc); toolchain availability verified."
           else
-            echo "::notice::cosign sign-blob succeeded (full Sigstore flow)."
+            echo "::notice::cosign sign-blob completed the full keyless flow."
           fi
 
   conformance-vector-pinning:
@@ -275,27 +268,16 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Recompute per-vector SHA-256
-        env:
-          # Toggle to bypass when a vector is intentionally rotated. The
-          # bypass MUST be set in the same commit that changes the
-          # vector — otherwise the job fails closed.
-          SOV_ALLOW_VECTOR_ROTATION: ""
         run: |
           set -euo pipefail
-          # Re-derive sha256 of each vector file's `vectors` array as
-          # canonical JSON (jq -S) so whitespace-only diffs don't break
-          # the check.
           fail=0
           for vf in contracts/conformance/vectors.*.json; do
             [ -f "$vf" ] || continue
             hash=$(jq -S '.vectors' "$vf" | sha256sum | awk '{print $1}')
-            # The pinned hash is stored at <vector>.sha256 alongside the
-            # vector file. The first run writes the file; later runs
-            # verify. The "first run" is detected by absence.
             pin="$vf.sha256"
             if [ ! -f "$pin" ]; then
-              echo "::notice::Pinning new vector file $vf -> $hash"
-              echo "$hash" > "$pin"
+              echo "::error::Missing immutable vector pin for $vf ($hash). Generate and commit the pin with the vector; CI never mutates the checkout."
+              fail=1
               continue
             fi
             expected=$(cat "$pin")
