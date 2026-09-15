@@ -141,8 +141,17 @@ jobs:
           JAVA
           SEP=$(java -XshowSettings:properties -version 2>&1 | tr -d '\r' | awk -F'= ' '/path.separator =/{print $2; exit}')
           test -n "$SEP"
-          javac -cp "$TMP_DIR/classes.jar${SEP}$STDLIB" "$TMP_DIR/Consumer.java"
-          java -cp "$TMP_DIR${SEP}$TMP_DIR/classes.jar${SEP}$STDLIB" Consumer
+          if [ "${RUNNER_OS:-}" = "Windows" ]; then
+            JAVA_TMP=$(cygpath -w "$TMP_DIR")
+            JAVA_CLASSES=$(cygpath -w "$TMP_DIR/classes.jar")
+            JAVA_STDLIB=$(cygpath -w "$STDLIB")
+            JAVA_CONSUMER=$(cygpath -w "$TMP_DIR/Consumer.java")
+            javac -cp "$JAVA_CLASSES;$JAVA_STDLIB" "$JAVA_CONSUMER"
+            java -cp "$JAVA_TMP;$JAVA_CLASSES;$JAVA_STDLIB" Consumer
+          else
+            javac -cp "$TMP_DIR/classes.jar${SEP}$STDLIB" "$TMP_DIR/Consumer.java"
+            java -cp "$TMP_DIR${SEP}$TMP_DIR/classes.jar${SEP}$STDLIB" Consumer
+          fi
 
       - name: Verify reproducible AAR
         shell: bash
@@ -278,6 +287,11 @@ jobs:
             --package "system-images;android-34;google_apis;x86_64" \
             --device "pixel_2" \
             --force
+          EMULATOR_ACCEL_ARGS=()
+          if [ ! -r /dev/kvm ] || [ ! -w /dev/kvm ]; then
+            EMULATOR_ACCEL_ARGS=(-accel off)
+            echo "KVM unavailable; running the x86_64 emulator without hardware acceleration."
+          fi
           nohup "$EMULATOR" \
             -avd sovereign-android-api34-ubuntu \
             -no-window \
@@ -287,6 +301,7 @@ jobs:
             -no-snapshot-save \
             -wipe-data \
             -gpu swiftshader_indirect \
+            "${EMULATOR_ACCEL_ARGS[@]}" \
             >"$RUNNER_TEMP/sovereign-emulator-ubuntu.log" 2>&1 &
           EMULATOR_PID=$!
           wait_for_adb_device() {
