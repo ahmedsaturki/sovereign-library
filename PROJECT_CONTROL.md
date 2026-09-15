@@ -118,19 +118,19 @@ Current milestone:
 
 Immediate next task:
 
-**Reconcile the live control/roadmap records to the exact verified HEAD, resolve the outstanding `130 references` discrepancy from repository evidence, then authorize exactly one next Cube/task.**
+**Resolve the outstanding `130 references` discrepancy from repository evidence, then select and explicitly authorize exactly one next Cube/task from the authoritative project records.**
 
 The Browser/Product Readiness Wave and the current Python native-port inventory remain completed historical qualification layers; do not redo them without a demonstrated regression.
 
 ## Current repository state — live control plane
 
 - Current branch: `feat/continuity-hardening`
-- Current HEAD: `eb09c30a0619484be02ff27f270b865c53006508`
+- Current HEAD before this documentation reconciliation: `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`
 - PR #125: **OPEN / UNMERGED**
 - Base: `main`
 - Publication status: **NOT PERFORMED**
 - Force-push: **NOT USED**
-- Current source of truth: live GitHub branch ref, not an embedded historical SHA in older sections of this file.
+- Current source of truth: live GitHub branch ref; embedded SHAs are historical or explicitly labeled evidence.
 
 ### Recent hardening commits on the live branch
 
@@ -152,29 +152,30 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 - `10494f0190b88211926a836c09a305743ccba5ca` — made the `signal-storm` chaos probe portable and enforced full probe-count completion.
 - `86b6c792adea2c22ef8ce6bc17f28b8899a725ca` — synchronized `PR125-CURRENT-STATUS.md` to the verified current-head CI state.
 - `eb09c30a0619484be02ff27f270b865c53006508` — documentation/control-plane reconciliation after fresh exact-head CI qualification.
+- `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e` — documentation-only reconciliation establishing the verified pre-control-plane-update CI state recorded below.
 
-### Current CI evidence
+### Verified CI evidence for pre-reconciliation HEAD `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`
 
-Fresh workflows for exact HEAD `eb09c30a0619484be02ff27f270b865c53006508` are terminal-successful:
+The following PR-triggered workflows for exact HEAD `52f7752` completed successfully:
 
-- `verify` #1199 — SUCCESS
-- `python-ports` #162 — SUCCESS
-- `kotlin-jvm` #152 — SUCCESS
-- `phase3` #73 — SUCCESS
-- `release-engineering` #66 — SUCCESS
-- `android` #210 — SUCCESS
+- `verify` #1201 — SUCCESS
+- `python-ports` #163 — SUCCESS
+- `kotlin-jvm` #153 — SUCCESS
+- `phase3` #75 — SUCCESS
+- `release-engineering` #68 — SUCCESS
+- `android` #211 — SUCCESS
 
-Android #210 specifically completed successfully on Windows and macOS Android instrumentation, and the mandatory Ubuntu Android instrumentation gate completed successfully. The release-engineering wave also completed successfully, including the portable `signal-storm` chaos probe. Verify completed its package, security, publication-guard, conformance, and real-browser smoke gates successfully.
+Android #211 completed successfully on Windows and macOS instrumentation and on the mandatory Ubuntu Android instrumentation gate. The release-engineering run also completed successfully, including the hardened portable `signal-storm` chaos probe.
 
-The current live HEAD is `eb09c30a…`; these terminal-successful workflows are the authoritative current-head evidence for the present branch state.
+A separate `security-pipeline` run #69 for `52f7752` ended with failure but exposed **zero jobs and zero artifacts**. It is therefore recorded as an orchestration/trigger anomaly with no code-failure evidence; it is not treated as a successful security run and was not blindly retried.
 
-### Android status
+This documentation reconciliation itself creates a new HEAD and therefore requires its own fresh exact-head CI qualification before being treated as the final verified documentation head.
 
-**QUALIFIED ON THE CURRENT EXACT HEAD.**
+### Android status for `52f7752`
 
-For exact HEAD `eb09c30a0619484be02ff27f270b865c53006508`, native Android build, AAR package verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate all passed in `android` #210.
+**QUALIFIED.**
 
-This supersedes the prior implementation-head Android evidence from #207 for current-state purposes, while #207 remains historical evidence.
+For exact HEAD `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`, native Android build, AAR package verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate all passed in `android` #211.
 
 ### Python ports inventory
 
@@ -201,7 +202,7 @@ No current status, readiness count, or task selection may use `130 references` a
 
 Earlier feature-branch documentation recorded older heads and older CI runs. Those statements are retained as historical source/CI evidence and must not override the live branch ref above.
 
-The older reconciliation records reported older exact heads and an Android infrastructure timeout. Those records are superseded by the current exact-head Android #210 evidence above.
+The older reconciliation records reported older exact heads and an Android infrastructure timeout. Those records are superseded by the verified `52f7752` Android #211 evidence above.
 
 The older `PRE_RELEASE` wording remains only as historical evidence from the earlier reconciliation phase.
 
