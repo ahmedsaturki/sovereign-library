@@ -34,7 +34,7 @@ The immediate objective is to qualify existing Sovereign Cubes as real standalon
 - Final pre-authorization verification: **Run #845**, commit `f14bbd9229fcda23f00602cfc9288881c61e213e`, passed completely on Ubuntu, Windows, and macOS-15-Intel.
 - Safe-path dependency-boundary qualification: **Run #33172159240**, final qualification job passed; commit `358cfef8ca168baa9e8402ecd972b2b0bc4d7e48` contains the resulting migration and cleanup. The qualification evidence covered all four previously Conditional consumers plus the existing safe-path/runtime-capability package candidates: targeted tests, package staging, declarations, npm pack contents, reproducibility, and security boundary checks all passed.
 - Release-readiness and authorization documents remain historical evidence; current distribution policy is recorded below.
-- **Android applicability assessment**: Matrix written (`ANDROID_APPLICABILITY_MATRIX.md`); Cube **safe-path-resolver** (SPR1) selected as first candidate. Native Android build, AAR package verification, and reproducibility are verified. Emulator instrumentation qualification is gated by the dedicated Ubuntu ADB instrumentation step; do not mark Android TECHNICALLY_READY until that evidence is terminal-successful.
+- **Android applicability assessment**: Matrix written (`ANDROID_APPLICABILITY_MATRIX.md`); Cube **safe-path-resolver** (SPR1) selected as first candidate. Native Android build, AAR package verification, reproducibility, and current-head emulator instrumentation qualification are verified.
 - **Phase-2 release-engineering hardening wave landed on `feat/continuity-hardening`**: multi-region CI, E2E (BrowserStack/SauceLabs), perf regression detection, release-notes + changegen automation, DB migration tooling, API versioning, backward-compat diff, feature flags, canary/progressive/blue-green deployment plans, deterministic rollback plan, hermetic chaos probes, k6 + Locust load testing, FOSSA license compliance, SBOM/cosign probes, and an OWASP ZAP DAST skeleton. The Phase-2 scripts remain Node 24 stdlib-oriented with no project runtime dependencies added for these gates.
 
 ## Project-wide architecture law
@@ -88,7 +88,7 @@ The current reported Node packaging wave contains **86 package entries represent
 
 The qualification rules remain stricter than merely creating `package.json`: exact public API, declaration surface, package boundary, out-of-tree use, reproducibility, security, documentation, and applicable CI evidence are required.
 
-The Browser/Product Readiness Wave remains historical qualification evidence. Current branch work must not regress those package boundaries. Products are expected to compose Cubes without introducing undeclared third-party/runtime dependencies in their distributable artifacts.
+The Browser/Product Readiness Wave remains completed qualification evidence. Current branch work must not regress those package boundaries. Products are expected to compose Cubes without introducing undeclared third-party/runtime dependencies in their distributable artifacts.
 
 Status summary (matrix v17): **84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL**. The 2 Products are also recorded as TECHNICALLY_READY through the same qualification pipeline; any regression must be requalified from the current head.
 
@@ -118,14 +118,14 @@ Current milestone:
 
 Immediate next task:
 
-**Qualify the current live HEAD through terminal CI evidence, then fix the first real current-head failure without weakening any gate.**
+**Reconcile the live control/roadmap records to the exact verified HEAD, resolve the outstanding `130 references` discrepancy from repository evidence, then authorize exactly one next Cube/task.**
 
 The Browser/Product Readiness Wave and the current Python native-port inventory remain completed historical qualification layers; do not redo them without a demonstrated regression.
 
 ## Current repository state — live control plane
 
 - Current branch: `feat/continuity-hardening`
-- Current HEAD: `a43f4045643a97db3b0db95f51c215fa51acb48b`
+- Current HEAD: `86b6c792adea2c22ef8ce6bc17f28b8899a725ca`
 - PR #125: **OPEN / UNMERGED**
 - Base: `main`
 - Publication status: **NOT PERFORMED**
@@ -146,18 +146,34 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 - `67aecfc25306e2b3ea40423bcd7324db8d57bec9` — restored the hardened release-engineering workflow with valid k6 action pin and hidden-artifact handling.
 - `e31a7ea499cedcabb543052f1481cda67827c5d7` — reconciled live control-plane state.
 - `a43f4045643a97db3b0db95f51c215fa51acb48b` — corrected `web-test-kit` Node import maps to use the repo’s in-repo package-linking contract.
+- `5af98079d3810f77ae2e5d0badf1fda7bd735eb3` — restored unchanged E2E skip contract.
+- `ff30b43b706f1e447c678a7c14099202d8812dc7` — preserved chaos forensic reports on probe exceptions.
+- `e2f0700b2eddf386bf6c4cd2b4fb75a133670ae8` — made chaos probes self-diagnosing with incremental/fatal reports.
+- `10494f0190b88211926a836c09a305743ccba5ca` — made the `signal-storm` chaos probe portable and enforced full probe-count completion.
+- `86b6c792adea2c22ef8ce6bc17f28b8899a725ca` — synchronized `PR125-CURRENT-STATUS.md` to the verified current-head CI state.
 
 ### Current CI evidence
 
-At the current live head, a fresh CI cycle has not yet produced terminal results for all workflows. The immediately preceding live-head verification run **#1159** (`35014261952`) failed on all three OS jobs in the bounded contract/integration test step. The failure was deterministic and occurred when `products/web-test-kit` loaded `#browser`: Node 24 rejected the relative `imports` target because it escaped the package boundary (`ERR_INVALID_PACKAGE_TARGET`). The repository’s `scripts/link-browser-cubes.mjs` explicitly exists to supply `@sovereign/*` package links for in-repo product resolution; the product import maps have now been corrected to use those package names.
+Exact-head CI for the immediately preceding implementation head `10494f0190b88211926a836c09a305743ccba5ca` completed successfully across all required workflows:
 
-The other workflows for the prior head were still queued/in-progress and are not success evidence. Current-head CI must be re-run and pass before any readiness status is promoted.
+- `verify` #1192 — SUCCESS
+- `python-ports` #159 — SUCCESS
+- `kotlin-jvm` #149 — SUCCESS
+- `phase3` #67 — SUCCESS
+- `release-engineering` #60 — SUCCESS
+- `android` #207 — SUCCESS
+
+Android #207 included successful Windows and macOS Android instrumentation tests and a successful Ubuntu Android instrumentation gate. The release-engineering wave also completed successfully, including the previously failing `signal-storm` chaos probe.
+
+The latest live HEAD is now the documentation-only synchronization commit `86b6c792adea2c22ef8ce6bc17f28b8899a725ca`. Its fresh CI cycle is the authoritative evidence for the new live HEAD and must be allowed to reach terminal conclusions before any new code change or readiness promotion.
 
 ### Android status
 
-**NOT CURRENTLY QUALIFIED ON THE LIVE HEAD.**
+**QUALIFIED ON THE PRECEDING EXACT IMPLEMENTATION HEAD.**
 
-Native Android build, AAR package verification, and AAR reproducibility remain verified. Android SPR1 must not be promoted to TECHNICALLY_READY until the current-head Ubuntu emulator instrumentation gate is terminal-successful.
+For exact implementation head `10494f0190b88211926a836c09a305743ccba5ca`, native Android build, AAR package verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate all passed in `android` #207.
+
+The current live HEAD `86b6c792adea2c22ef8ce6bc17f28b8899a725ca` changes documentation only; readiness claims must still be tied to fresh current-head CI before the branch is treated as fully verified again.
 
 ### Python ports inventory
 
@@ -174,11 +190,17 @@ Native Android build, AAR package verification, and AAR reproducibility remain v
 
 These counts are qualification evidence for the respective native ports; they are not substitutes for current-head CI evidence.
 
+### Outstanding `130 references` discrepancy
+
+A prior continuation checkpoint reported an unresolved `130 references` discrepancy. Exact phrase searches and repository searches available through the current GitHub connection have not located a repository artifact that substantiates that number, and the current authoritative packaging matrix instead records 84 Cubes plus 2 Products. Therefore the number remains **UNRESOLVED / NOT VERIFIED** rather than being silently reinterpreted.
+
+No current status, readiness count, or task selection may use `130 references` as a factual repository count until the originating document or calculation is found and independently verified.
+
 ## Historical control-plane records
 
 Earlier feature-branch documentation recorded older heads and older CI runs. Those statements are retained as historical source/CI evidence and must not override the live branch ref above.
 
-The older reconciliation records reported older exact heads and an Android infrastructure timeout. Those records are superseded by the live control-plane section above.
+The older reconciliation records reported older exact heads and an Android infrastructure timeout. Those records are superseded by the current exact-head Android #207 evidence above.
 
 The older `PRE_RELEASE` wording remains only as historical evidence from the earlier reconciliation phase.
 
