@@ -125,7 +125,7 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 ## Current repository state — live control plane
 
 - Current branch: `feat/continuity-hardening`
-- Current HEAD: `86b6c792adea2c22ef8ce6bc17f28b8899a725ca`
+- Current HEAD: `eb09c30a0619484be02ff27f270b865c53006508`
 - PR #125: **OPEN / UNMERGED**
 - Base: `main`
 - Publication status: **NOT PERFORMED**
@@ -151,29 +151,30 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 - `e2f0700b2eddf386bf6c4cd2b4fb75a133670ae8` — made chaos probes self-diagnosing with incremental/fatal reports.
 - `10494f0190b88211926a836c09a305743ccba5ca` — made the `signal-storm` chaos probe portable and enforced full probe-count completion.
 - `86b6c792adea2c22ef8ce6bc17f28b8899a725ca` — synchronized `PR125-CURRENT-STATUS.md` to the verified current-head CI state.
+- `eb09c30a0619484be02ff27f270b865c53006508` — documentation/control-plane reconciliation after fresh exact-head CI qualification.
 
 ### Current CI evidence
 
-Exact-head CI for the immediately preceding implementation head `10494f0190b88211926a836c09a305743ccba5ca` completed successfully across all required workflows:
+Fresh workflows for exact HEAD `eb09c30a0619484be02ff27f270b865c53006508` are terminal-successful:
 
-- `verify` #1192 — SUCCESS
-- `python-ports` #159 — SUCCESS
-- `kotlin-jvm` #149 — SUCCESS
-- `phase3` #67 — SUCCESS
-- `release-engineering` #60 — SUCCESS
-- `android` #207 — SUCCESS
+- `verify` #1199 — SUCCESS
+- `python-ports` #162 — SUCCESS
+- `kotlin-jvm` #152 — SUCCESS
+- `phase3` #73 — SUCCESS
+- `release-engineering` #66 — SUCCESS
+- `android` #210 — SUCCESS
 
-Android #207 included successful Windows and macOS Android instrumentation tests and a successful Ubuntu Android instrumentation gate. The release-engineering wave also completed successfully, including the previously failing `signal-storm` chaos probe.
+Android #210 specifically completed successfully on Windows and macOS Android instrumentation, and the mandatory Ubuntu Android instrumentation gate completed successfully. The release-engineering wave also completed successfully, including the portable `signal-storm` chaos probe. Verify completed its package, security, publication-guard, conformance, and real-browser smoke gates successfully.
 
-The latest live HEAD is now the documentation-only synchronization commit `86b6c792adea2c22ef8ce6bc17f28b8899a725ca`. Its fresh CI cycle is the authoritative evidence for the new live HEAD and must be allowed to reach terminal conclusions before any new code change or readiness promotion.
+The current live HEAD is `eb09c30a…`; these terminal-successful workflows are the authoritative current-head evidence for the present branch state.
 
 ### Android status
 
-**QUALIFIED ON THE PRECEDING EXACT IMPLEMENTATION HEAD.**
+**QUALIFIED ON THE CURRENT EXACT HEAD.**
 
-For exact implementation head `10494f0190b88211926a836c09a305743ccba5ca`, native Android build, AAR package verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate all passed in `android` #207.
+For exact HEAD `eb09c30a0619484be02ff27f270b865c53006508`, native Android build, AAR package verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate all passed in `android` #210.
 
-The current live HEAD `86b6c792adea2c22ef8ce6bc17f28b8899a725ca` changes documentation only; readiness claims must still be tied to fresh current-head CI before the branch is treated as fully verified again.
+This supersedes the prior implementation-head Android evidence from #207 for current-state purposes, while #207 remains historical evidence.
 
 ### Python ports inventory
 
@@ -200,7 +201,7 @@ No current status, readiness count, or task selection may use `130 references` a
 
 Earlier feature-branch documentation recorded older heads and older CI runs. Those statements are retained as historical source/CI evidence and must not override the live branch ref above.
 
-The older reconciliation records reported older exact heads and an Android infrastructure timeout. Those records are superseded by the current exact-head Android #207 evidence above.
+The older reconciliation records reported older exact heads and an Android infrastructure timeout. Those records are superseded by the current exact-head Android #210 evidence above.
 
 The older `PRE_RELEASE` wording remains only as historical evidence from the earlier reconciliation phase.
 
