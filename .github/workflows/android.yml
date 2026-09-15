@@ -80,17 +80,31 @@ jobs:
           echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
           echo "$SDK/platform-tools" >> "$GITHUB_PATH"
           echo "$SDK/emulator" >> "$GITHUB_PATH"
-          echo "$SDK/cmdline-tools/16.0/bin" >> "$GITHUB_PATH"
-          sdkmanager --sdk_root="$SDK" --install \
+
+          SDKMANAGER=$(find "$SDK/cmdline-tools" -type f \( -name sdkmanager -o -name sdkmanager.bat \) -print -quit 2>/dev/null || true)
+          test -n "$SDKMANAGER"
+          echo "Using sdkmanager: $SDKMANAGER"
+
+          run_sdkmanager() {
+            if [[ "$SDKMANAGER" == *.bat ]]; then
+              cmd.exe /d /c call "$SDKMANAGER" "$@"
+            else
+              "$SDKMANAGER" "$@"
+            fi
+          }
+
+          run_sdkmanager --sdk_root="$SDK" --install \
             "platform-tools" \
             "platforms;android-34" \
             "build-tools;34.0.0"
+
           if [ "${{ matrix.os }}" != "ubuntu-latest" ]; then
-            sdkmanager --sdk_root="$SDK" --install \
+            run_sdkmanager --sdk_root="$SDK" --install \
               "emulator" \
               "system-images;android-34;google_apis;x86_64"
           fi
-          yes | sdkmanager --sdk_root="$SDK" --licenses >/dev/null || true
+
+          yes | run_sdkmanager --sdk_root="$SDK" --licenses >/dev/null || true
           test -d "$SDK/platforms/android-34"
           test -d "$SDK/build-tools/34.0.0"
           test -f "$SDK/platform-tools/adb" || test -f "$SDK/platform-tools/adb.exe"
