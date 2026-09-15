@@ -35,7 +35,7 @@ The immediate objective is to qualify existing Sovereign Cubes as real standalon
 - Safe-path dependency-boundary qualification: **Run #33172159240**, final qualification job passed; commit `358cfef8ca168baa9e8402ecd972b2b0bc4d7e48` contains the resulting migration and cleanup. The qualification evidence covered all four previously Conditional consumers plus the existing safe-path/runtime-capability package candidates: targeted tests, package staging, declarations, npm pack contents, reproducibility, and security boundary checks all passed.
 - Release-readiness and authorization documents remain historical evidence; current distribution policy is recorded below.
 - **Android applicability assessment**: Matrix written (`ANDROID_APPLICABILITY_MATRIX.md`); Cube **safe-path-resolver** (SPR1) selected as first candidate. Native Android build, AAR package verification, and reproducibility are verified. Emulator instrumentation qualification is gated by the dedicated Ubuntu ADB instrumentation step; do not mark Android TECHNICALLY_READY until that evidence is terminal-successful.
-- **Phase-2 release-engineering hardening wave landed on `feat/continuity-hardening`**: 20 enterprise capabilities wired in — multi-region CI, E2E (BrowserStack/SauceLabs), perf regression detection, dependabot auto-merge bot, release-notes + changegen automation, DB migration tooling (SQLite in-memory default), API versioning contract, backward-compat diff, feature flags (LaunchDarkly-compatible schema), canary / progressive / blue-green deployment plans, deterministic rollback plan, hermetic chaos engineering probes (process-kill, network-failure, disk-full, clock-jump, signal-storm), load testing (k6 + Locust), FOSSA license compliance, SBOM-per-release + cosign image-signing, OWASP ZAP DAST skeleton. Every script uses Node 24 stdlib only; no new dependencies. `npm run test:phase2` exercises 14 unit tests (all green). `npm run verify` includes Phase-2 tests as the final gate. See `docs/PHASE2_HARDENING.md` for full inventory and run evidence.
+- **Phase-2 release-engineering hardening wave landed on `feat/continuity-hardening`**: multi-region CI, E2E (BrowserStack/SauceLabs), perf regression detection, release-notes + changegen automation, DB migration tooling, API versioning, backward-compat diff, feature flags, canary/progressive/blue-green deployment plans, deterministic rollback plan, hermetic chaos probes, k6 + Locust load testing, FOSSA license compliance, SBOM/cosign probes, and an OWASP ZAP DAST skeleton. The Phase-2 scripts remain Node 24 stdlib-oriented with no project runtime dependencies added for these gates.
 
 ## Project-wide architecture law
 
@@ -66,16 +66,9 @@ An internal dependency is allowed only when it is explicit, versioned, resolvabl
 
 GitHub remains the canonical source, persistent project memory, release-evidence home, and default distribution channel.
 
-Distribution is intentionally free-by-default. Additional ecosystem registries are **optional and deferred by release wave**, not permanently prohibited. A registry may be enabled for a release only when it is genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly selected for that release wave.
+Distribution is intentionally free-by-default. Additional ecosystem registries are optional and deferred by release wave, not permanently prohibited. A registry may be enabled for a release only when it is genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly selected for that release wave.
 
-Canonical GitHub mechanisms:
-
-- Git repository/source;
-- Git tags;
-- GitHub Releases;
-- GitHub Release assets;
-- checksums/integrity records;
-- documentation and examples.
+Canonical GitHub mechanisms include the Git repository/source, tags, GitHub Releases, release assets, checksums/integrity records, and documentation/examples.
 
 Optional free ecosystem mechanisms may include npm, PyPI, Maven-compatible registries/Maven Central, GitHub Packages, JSR, or other appropriate services, subject to current terms/limits and a deliberate release decision. No paid registry or mandatory third-party service is required.
 
@@ -95,14 +88,9 @@ The current reported Node packaging wave contains **86 package entries represent
 
 The qualification rules remain stricter than merely creating `package.json`: exact public API, declaration surface, package boundary, out-of-tree use, reproducibility, security, documentation, and applicable CI evidence are required.
 
-The 7 browser/integration Cubes and 2 Products completed the Browser/Product Readiness Wave (2026-08-28): each now has a `packages/<name>/` staging dir with `files` allowlist + generated `dist/index.d.ts`, a `scripts/package-catalog.json` entry with exact `expected` exports, and out-of-tree import verification. The Products use explicit `@sovereign/*` runtime dependency boundaries (no `../../../cubes/...` monorepo coupling in the published artifact). Real-browser smoke tests against Chromium pass locally and in CI.
+The Browser/Product Readiness Wave remains historical qualification evidence. Current branch work must not regress those package boundaries. Products are expected to compose Cubes without introducing undeclared third-party/runtime dependencies in their distributable artifacts.
 
-Status summary (matrix v17): 84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL. The 2 Products are also TECHNICALLY_READY via the same pipeline.
-
-Remaining categories include:
-
-- The four previously Conditional safe-path-resolver consumers now use explicit @sovereign/safe-path-resolver dependency boundaries and qualify as TECHNICALLY_READY;
-- future native Python/Kotlin/Android implementations only where justified by the authoritative contract and practical value.
+Status summary (matrix v17): **84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL**. The 2 Products are also recorded as TECHNICALLY_READY through the same qualification pipeline; any regression must be requalified from the current head.
 
 ## Continuity and non-destructive evolution
 
@@ -130,37 +118,61 @@ Current milestone:
 
 Immediate next task:
 
-**Reconcile and qualify the current live HEAD `2423f39e17e4cbaec41818140fdd9cc99fc9fb05` through terminal CI evidence, then fix the first real current-head failure. Do not treat queued/pending/historical results as success or failure.**
+**Qualify the current live HEAD through terminal CI evidence, then fix the first real current-head failure without weakening any gate.**
 
 The Browser/Product Readiness Wave and the current Python native-port inventory remain completed historical qualification layers; do not redo them without a demonstrated regression.
 
 ## Current repository state — live control plane
 
 - Current branch: `feat/continuity-hardening`
-- Current HEAD: `2423f39e17e4cbaec41818140fdd9cc99fc9fb05`
+- Current HEAD: `67aecfc25306e2b3ea40423bcd7324db8d57bec9`
 - PR #125: **OPEN / UNMERGED**
 - Base: `main`
 - Publication status: **NOT PERFORMED**
+- Force-push: **NOT USED**
 - Current source of truth: live GitHub branch ref, not an embedded historical SHA in older sections of this file.
 
 ### Recent hardening commits on the live branch
 
 - `f107c340c84c0fd98a09e9f6b9f397284ffa1559` — Windows Android SDK batch-tool invocation hardening.
 - `beabe589dd025327c78049d0b5d411db14090cd5` — security-pipeline Python-manifest discovery correction.
-- `a3e1515152eb7fa9e120705c55e1176bb123f751` — release-engineering workflow evaluation hardening and secret-guard correction.
-- `2423f39e17e4cbaec41818140fdd9cc99fc9fb05` — manual authorized-release workflow corrected to use valid GitHub artifact attestation instead of a reusable workflow invoked as a step.
+- `a3e1515152eb7fa9e120705c55e1176bb123f751` — release-engineering workflow evaluation/secret-guard hardening.
+- `2423f39e17e4cbaec41818140fdd9cc99fc9fb05` — authorized-release attestation workflow corrected to use valid artifact attestation.
+- `57dd07942c2cea99ee6dee1978536af12a787ab6` — Ubuntu Android instrumentation gate restored.
+- `4fc87a446d0533739a7a95f8910196a5cf2421e3` — portable Android emulator/ADB watchdogs and AAR diagnostics.
+- `1342a5d3b877aac1abce5eef5d7188fa8965fd0d` — web-test-kit product wiring made repository-local and dependency-free.
+- `6c39b6a6224dde892177ab4d2d9d900e92555c60` — sovereign-automation product wiring made repository-local and dependency-free.
+- `7bd5e6dd95121a160604e6ad0cf28f387c8b58c3` — replaced the structurally broken release-engineering workflow tree entry.
+- `67aecfc25306e2b3ea40423bcd7324db8d57bec9` — restored the hardened release-engineering workflow with valid k6 action pin and hidden-artifact handling.
 
 ### Current CI evidence
 
-- The current HEAD `2423f39e17e4cbaec41818140fdd9cc99fc9fb05` has a fresh **phase3 hardening aggregator** check queued (run `35011284960`). Terminal success is not yet established.
-- The preceding live-head `a3e1515152eb7fa9e120705c55e1176bb123f751` successfully instantiated the rewritten **release-engineering** workflow. Its tag-only jobs were correctly skipped on a branch push, while the non-tag jobs were created; terminal completion of those jobs is not yet evidence for the current HEAD.
-- Historical CI results for `a55e31...`, `cac209c...`, or older SHAs remain historical and must not be used as current-head proof.
+At the current live head, fresh workflows have been triggered and are not all terminal yet:
+
+- `release-engineering` run **#24** (`35013973758`) — pending at the last inspection.
+- `phase3` run **#31** (`35013973707`) — in progress at the last inspection.
+- `kotlin-jvm` run **#132** (`35013973592`) — queued at the last inspection.
+- `python-ports` run **#142** (`35013973643`) — in progress at the last inspection.
+- `verify` run **#1153** (`35013973664`) — in progress at the last inspection.
+- `android` run **#188** (`35013973619`) — in progress/queued matrix at the last inspection.
+
+These states are **not success evidence**. The previous live-head Android run `#184` (`35011466900`) recorded three actionable failures that were addressed in subsequent commits:
+
+1. Ubuntu Android: ADB never exposed a `device` during the old `wait-for-device` timeout. This was a gate/environment timeout, not a failing instrumentation assertion.
+2. macOS Android: the old gate invoked GNU `timeout`, which is not present by default on the runner.
+3. Windows Android: the out-of-tree AAR probe could not resolve `SafePathResolverAndroidKt` from the selected artifact; the new workflow now selects the exact AAR and explicitly checks the expected class before compiling the consumer.
+
+The previous Phase-2 release run also exposed and was acted upon:
+
+- Multi-region verification failed on the Product `@sovereign/web-test-kit` because its local imports pointed at undeclared package names (`@sovereign/browser`) with no installed package workspace. The product package wiring is now explicit repository-local composition, preserving its dependency-free runtime contract.
+- Chaos artifact upload failed because the generated report lived under `.hermes/`; the new workflow explicitly enables hidden-file inclusion for those uploads.
+- k6 setup failed before job execution because the referenced `grafana/setup-k6-action` commit did not exist. The workflow now pins the current verified `v1.2.1` commit.
 
 ### Android status
 
 **NOT CURRENTLY QUALIFIED ON THE LIVE HEAD.**
 
-The previous Ubuntu emulator timeout remains historical evidence. The Android workflow has since been hardened for current Windows SDK command-line tool behavior, but Android SPR1 must not be promoted to TECHNICALLY_READY until a terminal-successful current-head emulator instrumentation result exists.
+Native Android build, AAR package verification, and AAR reproducibility remain verified. Android SPR1 must not be promoted to TECHNICALLY_READY until the current-head Ubuntu emulator instrumentation gate is terminal-successful.
 
 ### Python ports inventory
 
@@ -181,7 +193,7 @@ These counts are qualification evidence for the respective native ports; they ar
 
 Earlier feature-branch documentation recorded older heads and older CI runs. Those statements are retained as historical source/CI evidence and must not override the live branch ref above.
 
-The 2026-09-01 reconciliation record reported older exact heads and an Android infrastructure timeout. That record is superseded by the live control-plane section above.
+The older reconciliation records reported older exact heads and an Android infrastructure timeout. Those records are superseded by the live control-plane section above.
 
 The older `PRE_RELEASE` wording remains only as historical evidence from the earlier reconciliation phase.
 
@@ -192,4 +204,5 @@ The older `PRE_RELEASE` wording remains only as historical evidence from the ear
 - No credential or 2FA guard has been bypassed.
 - No Android emulator requirement has been removed.
 - No tests may be weakened merely to obtain green CI.
+- No force-push is authorized.
 - Historical contradictory wording must not override the live control-plane state above.
