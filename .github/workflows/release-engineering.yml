@@ -127,7 +127,7 @@ jobs:
         shell: bash
         run: node scripts/e2e-cloud.mjs --provider saucelabs --out "$PHASE2_OUTPUT_DIR/e2e-saucelabs.json"
       - name: E2E skipped (no provider credentials)
-        if: ${{ env.BROWSERSTACK_USERNAME == '' && env.SAUCE_USERNAME == '' }}
+        if: ${{ env.BROWSERSTACK_USERNAME == '' && env.BROWSERSTACK_ACCESS_KEY == '' && env.SAUCE_USERNAME == '' && env.SAUCE_ACCESS_KEY == '' }}
         shell: bash
         run: |
           mkdir -p "$PHASE2_OUTPUT_DIR"
@@ -155,13 +155,13 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          node scripts/chaos.mjs --suite ci/chaos/suite.json --out "$PHASE2_OUTPUT_DIR/chaos.json"
+          node scripts/chaos.mjs --suite ci/chaos/suite.json --out chaos.json
+          test -s chaos.json
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         if: always()
         with:
           name: chaos
-          path: ${{ env.PHASE2_OUTPUT_DIR }}/chaos.json
-          include-hidden-files: true
+          path: chaos.json
           if-no-files-found: error
           retention-days: 14
 
