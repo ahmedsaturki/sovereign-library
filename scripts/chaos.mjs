@@ -171,7 +171,18 @@ async function main() {
       report.summary.skipped++;
       continue;
     }
-    const r = await fn();
+
+    let r;
+    try {
+      r = await fn();
+    } catch (e) {
+      r = {
+        ok: false,
+        error: String(e?.stack ?? e?.message ?? e),
+        exception: true,
+      };
+    }
+
     const status = r.ok ? 'ok' : (r.skipped ? 'skipped' : 'failed');
     report.probes.push({name, status, ...r});
     report.summary.total++;
