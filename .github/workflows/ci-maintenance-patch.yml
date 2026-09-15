@@ -17,8 +17,10 @@ jobs:
           ref: feat/continuity-hardening
           fetch-depth: 0
       - name: Apply portability fixes
-        shell: python
-        run: python scripts/ci-maintenance-patch.py
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python scripts/ci-maintenance-patch.py
       - name: Verify patch
         shell: bash
         run: |
