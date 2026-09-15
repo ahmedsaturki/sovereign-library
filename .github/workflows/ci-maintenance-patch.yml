@@ -6,150 +6,33 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 jobs:
   patch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check out branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: feat/continuity-hardening
           fetch-depth: 0
-          persist-credentials: true
       - name: Apply portability fixes
         shell: python
-        run: |
-          from pathlib import Path
-
-          release = Path('.github/workflows/release-engineering.yml')
-          text = release.read_text(encoding='utf-8')
-          old = '''      - name: Chaos probe suite
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          node scripts/chaos.mjs --suite ci/chaos/suite.json --out "$PHASE2_OUTPUT_DIR/chaos.json"
-      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-        if: always()
-        with:
-          name: chaos
-          path: ${{ env.PHASE2_OUTPUT_DIR }}/chaos.json
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 14
-'''
-          new = '''      - name: Chaos probe suite
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          node scripts/chaos.mjs --suite ci/chaos/suite.json --out "$PHASE2_OUTPUT_DIR/chaos.json"
-          test -s "$PHASE2_OUTPUT_DIR/chaos.json"
-          cp "$PHASE2_OUTPUT_DIR/chaos.json" "$GITHUB_WORKSPACE/chaos.json"
-          test -s "$GITHUB_WORKSPACE/chaos.json"
-      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-        if: always()
-        with:
-          name: chaos
-          path: chaos.json
-          if-no-files-found: error
-          retention-days: 14
-'''
-          if old not in text:
-              raise SystemExit('RELEASE_CHAOS_TARGET_NOT_FOUND')
-          release.write_text(text.replace(old, new, 1), encoding='utf-8')
-
-          android = Path('.github/workflows/android.yml')
-          text = android.read_text(encoding='utf-8')
-          old = '''          SEP=$(java -XshowSettings:properties -version 2>&1 | tr -d '\\r' | awk -F'= ' '/path.separator =/{print $2; exit}')
-          test -n "$SEP"
-          javac -cp "$TMP_DIR/classes.jar${SEP}$STDLIB" "$TMP_DIR/Consumer.java"
-          java -cp "$TMP_DIR${SEP}$TMP_DIR/classes.jar${SEP}$STDLIB" Consumer
-'''
-          new = '''          if [ "${RUNNER_OS:-}" = "Windows" ]; then
-            JAVA_TMP=$(cygpath -w "$TMP_DIR")
-            JAVA_CLASSES=$(cygpath -w "$TMP_DIR/classes.jar")
-            JAVA_STDLIB=$(cygpath -w "$STDLIB")
-            JAVA_CONSUMER=$(cygpath -w "$TMP_DIR/Consumer.java")
-            javac -cp "$JAVA_CLASSES;$JAVA_STDLIB" "$JAVA_CONSUMER"
-            java -cp "$JAVA_TMP;$JAVA_CLASSES;$JAVA_STDLIB" Consumer
-          else
-            SEP=$(java -XshowSettings:properties -version 2>&1 | tr -d '\\r' | awk -F'= ' '/path.separator =/{print $2; exit}')
-            test -n "$SEP"
-            javac -cp "$TMP_DIR/classes.jar${SEP}$STDLIB" "$TMP_DIR/Consumer.java"
-            java -cp "$TMP_DIR${SEP}$TMP_DIR/classes.jar${SEP}$STDLIB" Consumer
-          fi
-'''
-          if old not in text:
-              raise SystemExit('ANDROID_AAR_TARGET_NOT_FOUND')
-          text = text.replace(old, new, 1)
-
-          old = '''          run_sdkmanager --sdk_root="$SDK" --install \\
-            "platform-tools" \\
-            "platforms;android-34" \\
-            "build-tools;34.0.0" \\
-            "emulator" \\
-            "system-images;android-34;google_apis;x86_64"
-'''
-          new = '''          run_sdkmanager --sdk_root="$SDK" --install \\
-            "platform-tools" \\
-            "platforms;android-34" \\
-            "build-tools;34.0.0" \\
-            "emulator" \\
-            "system-images;android-34;google_apis;x86_64" \\
-            "system-images;android-34;google_apis;arm64-v8a"
-'''
-          if old not in text:
-              raise SystemExit('ANDROID_SDK_IMAGE_TARGET_NOT_FOUND')
-          text = text.replace(old, new, 1)
-
-          old = '''          "$AVDMGR" create avd \\
-            --name sovereign-android-api34-ubuntu \\
-            --package "system-images;android-34;google_apis;x86_64" \\
-            --device "pixel_2" \\
-            --force
-'''
-          new = '''          SYSTEM_IMAGE="system-images;android-34;google_apis;x86_64"
-          if [ ! -r /dev/kvm ] || [ ! -w /dev/kvm ]; then
-            SYSTEM_IMAGE="system-images;android-34;google_apis;arm64-v8a"
-            echo "KVM unavailable; using API-34 ARM64 system image."
-          fi
-          "$AVDMGR" create avd \\
-            --name sovereign-android-api34-ubuntu \\
-            --package "$SYSTEM_IMAGE" \\
-            --device "pixel_2" \\
-            --force
-'''
-          if old not in text:
-              raise SystemExit('ANDROID_UBUNTU_AVD_TARGET_NOT_FOUND')
-          android.write_text(text.replace(old, new, 1), encoding='utf-8')
-
-          cleanup = Path('.github/workflows/ci-maintenance-patch.yml')
-          cleanup.unlink(missing_ok=True)
-      - name: Verify, commit, and push
+        run: python scripts/ci-maintenance-patch.py
+      - name: Verify patch
         shell: bash
         run: |
           set -Eeuo pipefail
           git diff --check
           git status --short
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/release-engineering.yml .github/workflows/android.yml .github/workflows/ci-maintenance-patch.yml
-          test -n "$(git diff --cached --name-only)"
-          git commit -m "fix(ci): harden chaos artifact and Android runner portability"
-          git push origin HEAD:feat/continuity-hardening
-      - name: Dispatch fresh verification
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Commit and push patch
         shell: bash
         run: |
           set -Eeuo pipefail
-          API="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows"
-          for workflow in verify.yml release-engineering.yml android.yml phase3.yml python-ports.yml kotlin-jvm.yml; do
-            curl --fail --silent --show-error \
-              -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer $GH_TOKEN" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              "$API/$workflow/dispatches" \
-              -d '{"ref":"feat/continuity-hardening"}'
-          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/release-engineering.yml .github/workflows/android.yml scripts/ci-maintenance-patch.py .github/workflows/ci-maintenance-patch.yml
+          git commit -m "fix(ci): harden chaos artifact and Android runner portability"
+          git rm scripts/ci-maintenance-patch.py .github/workflows/ci-maintenance-patch.yml
+          git commit --amend --no-edit
+          git push origin HEAD:feat/continuity-hardening
