@@ -87,7 +87,7 @@ jobs:
 
           run_sdkmanager() {
             if [[ "$SDKMANAGER" == *.bat ]]; then
-              cmd.exe /d /c call "$SDKMANAGER" "$@"
+              "$SDKMANAGER" "$@"
             else
               "$SDKMANAGER" "$@"
             fi
