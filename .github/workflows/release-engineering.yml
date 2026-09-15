@@ -45,6 +45,9 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node }}
+      - name: Link browser cubes for in-repo Product resolution
+        run: node scripts/link-browser-cubes.mjs
+        shell: bash
       - name: Record region marker
         shell: bash
         run: |
