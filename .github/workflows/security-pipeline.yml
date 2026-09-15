@@ -31,6 +31,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-check
+          filter_mode: nofilter
+          fail_on_error: true
 
       - name: Set up Python
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
@@ -168,14 +170,12 @@ jobs:
         with:
           python-version: "3.12"
       - name: Resolve Python dependency pins
-        working-directory: python
         run: |
           # Safety needs an explicit requirements file. Generate one from
-          # the per-port pyproject / setup metadata if present; otherwise
-          # generate a minimal lock with pip-compile-like behaviour.
+          # the per-port pyproject metadata if present; otherwise audit is
+          # a documented no-op for a repository with no Python dependencies.
           python -m pip install --quiet safety==3.2.0 pip-tools==7.4.1
-          # Discover every pyproject.toml under python/ and emit a
-          # consolidated requirements.txt for the audit.
+          mkdir -p python
           find python -name pyproject.toml -print0 | xargs -0 python -c "
           import sys, tomllib
           for p in sys.argv[1:]:
