@@ -18,9 +18,6 @@
 // `deploy/chaos/` which provides runbooks for Litmus / Chaos Mesh — the
 // runbooks are triggered manually and never from CI on a self-hosted
 // runner, per AGENTS.md.
-//
-// Usage:
-//   node scripts/chaos.mjs --suite ci/chaos/suite.json --out .hermes/phase2/chaos.json
 
 import {readFileSync, writeFileSync, mkdirSync} from 'node:fs';
 import {resolve, dirname} from 'node:path';
@@ -50,10 +47,6 @@ async function probeProcessKill() {
 
 async function probeNetworkFailure() {
   const t0 = Date.now();
-  // 192.0.2.0/24 is TEST-NET-1 (RFC 5737) — guaranteed not to route.
-  // Use a high port that's also explicitly closed. On Windows the OS
-  // doesn't always reject the connection synchronously, so we listen
-  // for both 'error' and a short timeout window.
   const net = await import('node:net');
   const host = '192.0.2.1';
   const port = 81;
@@ -79,12 +72,10 @@ async function probeNetworkFailure() {
 
 async function probeDiskFull() {
   const t0 = Date.now();
-  // Open a 64MB buffer; doubling it 30 times should OOM eventually. We
-  // bound the test to a short number of iterations to keep CI fast.
   const buffers = [];
   try {
     for (let i = 0; i < 30; i++) {
-      buffers.push(Buffer.alloc(2 * 1024 * 1024)); // 2 MiB chunks
+      buffers.push(Buffer.alloc(2 * 1024 * 1024));
     }
     return {ok: true, ms: Date.now() - t0, detail: 'bounded allocation succeeded'};
   } catch (e) {
@@ -96,9 +87,6 @@ async function probeDiskFull() {
 
 async function probeClockJump() {
   const t0 = Date.now();
-  // We can't manipulate the OS clock from userspace portably, so we
-  // simulate the *contract*: a deadline callback whose deadline is in
-  // the past must be rejected synchronously by Sovereign cubes.
   try {
     const {DeadlineTimer} = await import('../cubes/timeout-deadline/src/index.js');
     const past = Date.now() - 1000;
@@ -114,14 +102,9 @@ async function probeClockJump() {
 
 async function probeSignalStorm() {
   const t0 = Date.now();
-  // Signal-storm is only meaningful on POSIX systems. On Windows the
-  // Node child_process layer does not implement SIGUSR1/SIGUSR2, so we
-  // mark the probe as skipped rather than failing.
   if (process.platform === 'win32') {
     return {ok: true, ms: 0, skipped: true, detail: 'signal-storm skipped on Windows (SIGUSR1/SIGUSR2 unavailable)'};
   }
-  // Verify that a child process receiving SIGUSR1 in a loop remains
-  // stable (no exit, no uncaught).
   try {
     const cp = await import('node:child_process');
     const child = cp.spawn(process.execPath, ['-e', `
@@ -164,14 +147,21 @@ async function main() {
     probes: [],
   };
 
+  const writeReport = () => {
+    writeFileSync(outPath, JSON.stringify(report, null, 2) + '\n', 'utf8');
+  };
+
   for (const name of suite.probes ?? []) {
     const fn = PROBES[name];
     if (!fn) {
       report.probes.push({name, status: 'unknown'});
       report.summary.skipped++;
+      process.stdout.write(`chaos:${name}:skipped:unknown\n`);
+      writeReport();
       continue;
     }
 
+    process.stdout.write(`chaos:${name}:start\n`);
     let r;
     try {
       r = await fn();
@@ -189,11 +179,23 @@ async function main() {
     if (status === 'ok') report.summary.ok++;
     else if (status === 'skipped') report.summary.skipped++;
     else report.summary.failed++;
+    process.stdout.write(`chaos:${name}:end:${status}:${JSON.stringify(r)}\n`);
+    writeReport();
   }
 
-  writeFileSync(outPath, JSON.stringify(report, null, 2) + '\n', 'utf8');
+  writeReport();
   process.stdout.write(`chaos: ok=${report.summary.ok} failed=${report.summary.failed} skipped=${report.summary.skipped}\n`);
   if (report.summary.failed > 0) process.exitCode = 1;
 }
 
-main();
+main().catch(e => {
+  const outPath = resolve(REPO_ROOT, parseArgs(process.argv.slice(2)).out ?? '.hermes/phase2/chaos.json');
+  mkdirSync(dirname(outPath), {recursive: true});
+  writeFileSync(outPath, JSON.stringify({
+    schemaVersion: '1.0.0',
+    fatal: true,
+    error: String(e?.stack ?? e?.message ?? e),
+  }, null, 2) + '\n', 'utf8');
+  process.stderr.write(`chaos:fatal:${String(e?.stack ?? e?.message ?? e)}\n`);
+  process.exitCode = 1;
+});
