@@ -125,7 +125,7 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 ## Current repository state — live control plane
 
 - Current branch: `feat/continuity-hardening`
-- Current HEAD: `67aecfc25306e2b3ea40423bcd7324db8d57bec9`
+- Current HEAD: `a43f4045643a97db3b0db95f51c215fa51acb48b`
 - PR #125: **OPEN / UNMERGED**
 - Base: `main`
 - Publication status: **NOT PERFORMED**
@@ -136,37 +136,22 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 
 - `f107c340c84c0fd98a09e9f6b9f397284ffa1559` — Windows Android SDK batch-tool invocation hardening.
 - `beabe589dd025327c78049d0b5d411db14090cd5` — security-pipeline Python-manifest discovery correction.
-- `a3e1515152eb7fa9e120705c55e1176bb123f751` — release-engineering workflow evaluation/secret-guard hardening.
+- `a3e1515152eb7fa9e1207055c55e1176bb123f751` — release-engineering workflow evaluation/secret-guard hardening.
 - `2423f39e17e4cbaec41818140fdd9cc99fc9fb05` — authorized-release attestation workflow corrected to use valid artifact attestation.
 - `57dd07942c2cea99ee6dee1978536af12a787ab6` — Ubuntu Android instrumentation gate restored.
 - `4fc87a446d0533739a7a95f8910196a5cf2421e3` — portable Android emulator/ADB watchdogs and AAR diagnostics.
-- `1342a5d3b877aac1abce5eef5d7188fa8965fd0d` — web-test-kit product wiring made repository-local and dependency-free.
-- `6c39b6a6224dde892177ab4d2d9d900e92555c60` — sovereign-automation product wiring made repository-local and dependency-free.
+- `1342a5d3b877aac1abce5eef5d7188fa8965fd0d` — web-test-kit product wiring first hardened.
+- `6c39b6a6224dde892177ab4d2d9d900e92555c60` — sovereign-automation product wiring first hardened.
 - `7bd5e6dd95121a160604e6ad0cf28f387c8b58c3` — replaced the structurally broken release-engineering workflow tree entry.
 - `67aecfc25306e2b3ea40423bcd7324db8d57bec9` — restored the hardened release-engineering workflow with valid k6 action pin and hidden-artifact handling.
+- `e31a7ea499cedcabb543052f1481cda67827c5d7` — reconciled live control-plane state.
+- `a43f4045643a97db3b0db95f51c215fa51acb48b` — corrected `web-test-kit` Node import maps to use the repo’s in-repo package-linking contract.
 
 ### Current CI evidence
 
-At the current live head, fresh workflows have been triggered and are not all terminal yet:
+At the current live head, a fresh CI cycle has not yet produced terminal results for all workflows. The immediately preceding live-head verification run **#1159** (`35014261952`) failed on all three OS jobs in the bounded contract/integration test step. The failure was deterministic and occurred when `products/web-test-kit` loaded `#browser`: Node 24 rejected the relative `imports` target because it escaped the package boundary (`ERR_INVALID_PACKAGE_TARGET`). The repository’s `scripts/link-browser-cubes.mjs` explicitly exists to supply `@sovereign/*` package links for in-repo product resolution; the product import maps have now been corrected to use those package names.
 
-- `release-engineering` run **#24** (`35013973758`) — pending at the last inspection.
-- `phase3` run **#31** (`35013973707`) — in progress at the last inspection.
-- `kotlin-jvm` run **#132** (`35013973592`) — queued at the last inspection.
-- `python-ports` run **#142** (`35013973643`) — in progress at the last inspection.
-- `verify` run **#1153** (`35013973664`) — in progress at the last inspection.
-- `android` run **#188** (`35013973619`) — in progress/queued matrix at the last inspection.
-
-These states are **not success evidence**. The previous live-head Android run `#184` (`35011466900`) recorded three actionable failures that were addressed in subsequent commits:
-
-1. Ubuntu Android: ADB never exposed a `device` during the old `wait-for-device` timeout. This was a gate/environment timeout, not a failing instrumentation assertion.
-2. macOS Android: the old gate invoked GNU `timeout`, which is not present by default on the runner.
-3. Windows Android: the out-of-tree AAR probe could not resolve `SafePathResolverAndroidKt` from the selected artifact; the new workflow now selects the exact AAR and explicitly checks the expected class before compiling the consumer.
-
-The previous Phase-2 release run also exposed and was acted upon:
-
-- Multi-region verification failed on the Product `@sovereign/web-test-kit` because its local imports pointed at undeclared package names (`@sovereign/browser`) with no installed package workspace. The product package wiring is now explicit repository-local composition, preserving its dependency-free runtime contract.
-- Chaos artifact upload failed because the generated report lived under `.hermes/`; the new workflow explicitly enables hidden-file inclusion for those uploads.
-- k6 setup failed before job execution because the referenced `grafana/setup-k6-action` commit did not exist. The workflow now pins the current verified `v1.2.1` commit.
+The other workflows for the prior head were still queued/in-progress and are not success evidence. Current-head CI must be re-run and pass before any readiness status is promoted.
 
 ### Android status
 
