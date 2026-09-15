@@ -29,11 +29,11 @@ The multi-ecosystem model is:
 
 Target ecosystems:
 
-- Node.js / JavaScript → npm as an optional ecosystem registry; GitHub is canonical
-- Python → PyPI as an optional ecosystem registry for suitable general-purpose Cubes; GitHub is canonical
-- Kotlin / JVM → Maven-compatible distribution as an optional ecosystem registry; GitHub is canonical
-- Android → first-class Kotlin/Android target
-- iOS / Apple platforms → future native Swift-facing and/or KMP-based distribution where justified
+- Node.js / JavaScript -> npm as an optional ecosystem registry; GitHub is canonical
+- Python -> PyPI as an optional ecosystem registry for suitable general-purpose Cubes; GitHub is canonical
+- Kotlin / JVM -> Maven-compatible distribution as an optional ecosystem registry; GitHub is canonical
+- Android -> first-class Kotlin/Android target
+- iOS / Apple platforms -> future native Swift-facing and/or KMP-based distribution where justified
 
 Not every Cube must support every ecosystem. Support is determined by applicability and value.
 
@@ -76,12 +76,15 @@ The frozen first-batch candidates are documented in `docs/PUBLIC_API_BOUNDARY_V0
 
 Run #809 passed on Ubuntu, Windows, and macOS-15-Intel with exact generated public-surface checks for Safe Path Resolver and Runtime Capability Inspector.
 
-### In Progress: Android Applicability Assessment
+### Completed: Android Applicability Assessment
 
-The Android applicability matrix (ANDROID_APPLICABILITY_MATRIX.md) has been written. safe-path-resolver (SPR1) has been selected as the first native Android Cube. SDK installation is in progress; AAR build + out-of-tree verification pending. Cube classified IN_PROGRESS until SDK + emulator evidence.
+The Android applicability matrix (`ANDROID_APPLICABILITY_MATRIX.md`) was written, `safe-path-resolver` (SPR1) was selected as the first native Android Cube, and the current implementation-head Android qualification is complete. Native Android build, AAR package verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate all passed in `android` #207 for implementation HEAD `10494f0190b88211926a836c09a305743ccba5ca`.
+
+The former SDK/emulator `IN_PROGRESS` wording is historical and must not be interpreted as current state.
+
 ### Completed: Package Contract / Tooling
 
-`docs/PACKAGE_CONTRACT_V0.1.md` is frozen. The two pilot packages are implemented with isolated manifests, exact `exports`, generated declarations, tarball boundaries, and npm pack verification.
+`docs/PACKAGE_CONTRACT_V0.1.md` is frozen. The pilot packages are implemented with isolated manifests, exact `exports`, generated declarations, tarball boundaries, and npm pack verification.
 
 ### Completed: Reproducible Packaging / Security
 
@@ -142,30 +145,55 @@ Current status:
 
 The following historical state is preserved for auditability. It described an earlier phase in which publication was treated as the immediate task and the environment prerequisite was specifically npm authentication/ownership. That state is no longer the current project policy.
 
-**Technical readiness and human release authorization are complete.** The current task in that historical phase was to complete publication of the two authorized candidates.
-
-Historical publication status was **blocked by the environment prerequisite** recorded in `docs/release/AUTHORIZATION_PACKAGE_STATUS-V0.1.json`: the authorized environment must provide valid npm authentication and verified `@sovereign` ownership. No agent may invent credentials, commit tokens, modify `publishConfig` to bypass the guard, or silently change the authorized source.
-
 Historical controlled path:
 
 `FINAL CLEAN VERIFY -> TAG/RELEASE -> PUBLISH -> POST-PUBLISH VERIFY -> FREEZE -> UPDATE CONTROL PLANE`
 
 The historical record remains preserved and must not be interpreted as a current requirement to publish to npm.
 
-## Future product direction
+## Current reconciliation — post-Python / Browser / Android native waves
 
-## Current reconciliation — post-Python native wave
+The first native Python wave is complete for the SPR1 and RCI1 contract families, with current inventory evidence extended through validation, URL, retry, and circuit-breaker ports. The shared language-neutral conformance vectors and runners are implemented and CI-enforced.
 
-The first native Python wave is now complete for the SPR1 and RCI1 contract families. The shared language-neutral conformance vectors and runners are implemented and CI-enforced; native Python implementations pass the same contract vectors and their native test suites across the supported CI matrix.
+The Browser/Product Readiness Wave is complete qualification evidence, not an active unfinished phase. The authoritative qualification matrix records **84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL** with 2 Products TECHNICALLY_READY separately.
 
-The **Browser/Product wave is the current active technical layer**. It is **not completed yet**. The authoritative qualification matrix currently records the seven Browser integration Cubes as `PRE_RELEASE`, with no package contracts independently satisfied yet. Therefore this roadmap must not claim Browser/Product release or completion prematurely.
+The Android applicability/qualification wave is also complete for the first selected Android Cube on the exact implementation head cited above. The mandatory Ubuntu Android instrumentation gate passed, along with Windows and macOS instrumentation on that implementation head.
 
-The next eligible sequence is:
+The current active layer is **Library Distribution Expansion / reconciliation and next-Cube selection**. No registry publication is currently being executed.
 
-`BROWSER CORE -> ASSERTIONS -> INTERACTIONS -> NETWORK -> RECORDER -> TAB MANAGER -> VISUAL TESTING -> PRODUCTS`
+## Current live execution state
 
-with per-Cube package contracts, out-of-tree verification, reproducibility, security, cross-platform evidence, and real-browser evidence where applicable.
+- Live branch: `feat/continuity-hardening`.
+- PR #125: OPEN / UNMERGED.
+- The live branch ref is authoritative for the current HEAD; historical SHAs inside older roadmap sections are not current state.
+- The latest implementation-head qualification evidence is `10494f0190b88211926a836c09a305743ccba5ca`, on which verify #1192, python-ports #159, kotlin-jvm #149, phase3 #67, release-engineering #60, and android #207 all completed successfully.
+- Subsequent commits are documentation-only reconciliation commits. They require their own fresh CI evidence before being treated as the fully verified release/reconciliation head.
 
-Kotlin/JVM, Android, and Apple-native waves remain future layers after the Browser/Product wave and after applicability/conformance criteria are satisfied. No fake ports are to be created.
+## One-current-task rule
 
-This reconciliation is additive and preserves the historical roadmap above; it only anchors the current execution sequence to repository evidence.
+Exactly one active milestone and one immediate next task are allowed.
+
+### Active milestone
+
+**LIBRARY DISTRIBUTION EXPANSION — RECONCILIATION / NEXT-CUBE SELECTION**
+
+### Immediate next task
+
+**Resolve the outstanding `130 references` discrepancy from repository evidence, reconcile the live control plane to the final documentation HEAD, then select exactly one explicitly authorized next Cube/task from the authoritative project records.**
+
+The `130 references` number is currently **UNRESOLVED / NOT VERIFIED**. Searches performed against the repository have not established an originating artifact or calculation for that count. It must not be converted into a package/Cube count by assumption.
+
+## Governance locks
+
+- No automatic merge of PR #125.
+- No external publication without explicit release authorization.
+- No credential, 2FA, or publication guard bypass.
+- No emulator requirement removal.
+- No test weakening to obtain green CI.
+- No force-push.
+- No historical-state rewrite merely to make current state look cleaner.
+- Queued, cancelled, partial, or stale CI does not qualify a current HEAD.
+
+## Historical reconciliation note
+
+Earlier roadmap sections intentionally remain as historical audit records where they document phases that were genuinely true at the time. When a current section conflicts with a historical section, the current section and live branch evidence take precedence for execution; historical sections remain read-only evidence of prior state.
