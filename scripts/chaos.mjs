@@ -107,18 +107,20 @@ async function probeSignalStorm() {
   }
   try {
     const cp = await import('node:child_process');
-    const child = cp.spawn(process.execPath, ['-e', `
-      process.on('SIGUSR1', () => {});
-      process.on('SIGUSR2', () => {});
-      setInterval(() => {}, 1000);
-    `]);
+    const child = cp.spawn('/bin/sh', ['-c', 'trap ":" USR1 USR2; while :; do sleep 1; done']);
+    const exit = new Promise(resolve => child.once('exit', (code, signal) => resolve({code, signal})));
+    await sleep(50);
     for (let i = 0; i < 5; i++) {
       child.kill('SIGUSR1');
+      child.kill('SIGUSR2');
       await sleep(10);
     }
     child.kill('SIGKILL');
-    await new Promise(res => child.once('exit', res));
-    return {ok: true, ms: Date.now() - t0, detail: 'signal storm tolerated'};
+    const result = await exit;
+    if (result.signal !== 'SIGKILL' && result.code !== null) {
+      return {ok: false, ms: Date.now() - t0, detail: 'signal storm child exited before forced termination', exitCode: result.code, exitSignal: result.signal};
+    }
+    return {ok: true, ms: Date.now() - t0, detail: 'signal storm tolerated by signal-safe helper'};
   } catch (e) {
     return {ok: false, error: String(e.message ?? e)};
   }
@@ -185,6 +187,7 @@ async function main() {
 
   writeReport();
   process.stdout.write(`chaos: ok=${report.summary.ok} failed=${report.summary.failed} skipped=${report.summary.skipped}\n`);
+  if (report.summary.total !== (suite.probes ?? []).length) process.exitCode = 1;
   if (report.summary.failed > 0) process.exitCode = 1;
 }
 
