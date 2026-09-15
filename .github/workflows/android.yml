@@ -58,10 +58,6 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      # v3 of setup-android attempted to install the obsolete `tools` SDK
-      # package and failed on current Google repositories. v4 is pinned and
-      # receives an empty package list; required packages are installed
-      # explicitly below so the workflow stays fail-closed and deterministic.
       - name: Set up Android SDK
         uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
         with:
@@ -86,11 +82,7 @@ jobs:
           echo "Using sdkmanager: $SDKMANAGER"
 
           run_sdkmanager() {
-            if [[ "$SDKMANAGER" == *.bat ]]; then
-              "$SDKMANAGER" "$@"
-            else
-              "$SDKMANAGER" "$@"
-            fi
+            "$SDKMANAGER" "$@"
           }
 
           run_sdkmanager --sdk_root="$SDK" --install \
@@ -98,7 +90,14 @@ jobs:
             "platforms;android-34" \
             "build-tools;34.0.0"
 
-          if [ "${{ matrix.os }}" != "ubuntu-latest" ]; then
+          # Ubuntu is the canonical Android instrumentation gate. Keep the
+          # emulator/system image install on the same matrix cell so the gate
+          # exercises the same runner and SDK that qualification depends on.
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            run_sdkmanager --sdk_root="$SDK" --install \
+              "emulator" \
+              "system-images;android-34;google_apis;x86_64"
+          else
             run_sdkmanager --sdk_root="$SDK" --install \
               "emulator" \
               "system-images;android-34;google_apis;x86_64"
@@ -224,6 +223,60 @@ jobs:
             timeout 600 "$ADB" shell am instrument -w -r -e class "$TEST_CLASS#$method" "$INSTRUMENTATION"
           done
           echo "ANDROID_EMULATOR_INSTRUMENTATION_OK"
+
+      - name: Run Ubuntu Android instrumentation gate
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME}}"
+          AVD_HOME="$RUNNER_TEMP/android-avd-ubuntu"
+          rm -rf "$AVD_HOME"
+          mkdir -p "$AVD_HOME"
+          export ANDROID_AVD_HOME="$AVD_HOME"
+          AVDMGR=$(find "$SDK/cmdline-tools" -maxdepth 3 -type f -name avdmanager -print -quit)
+          EMULATOR=$(find "$SDK/emulator" -maxdepth 1 -type f -name emulator -print -quit)
+          ADB=$(find "$SDK/platform-tools" -maxdepth 1 -type f -name adb -print -quit)
+          test -n "$AVDMGR"
+          test -n "$EMULATOR"
+          test -n "$ADB"
+          "$AVDMGR" create avd \
+            --name sovereign-android-api34-ubuntu \
+            --package "system-images;android-34;google_apis;x86_64" \
+            --device "pixel_2" \
+            --force
+          nohup "$EMULATOR" \
+            -avd sovereign-android-api34-ubuntu \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot-load \
+            -no-snapshot-save \
+            -wipe-data \
+            -gpu swiftshader_indirect \
+            >"$RUNNER_TEMP/sovereign-emulator-ubuntu.log" 2>&1 &
+          timeout 900 "$ADB" wait-for-device
+          boot_ok=0
+          for _ in $(seq 1 450); do
+            boot=$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            if [ "$boot" = "1" ]; then boot_ok=1; break; fi
+            sleep 2
+          done
+          if [ "$boot_ok" != "1" ]; then
+            tail -n 500 "$RUNNER_TEMP/sovereign-emulator-ubuntu.log" || true
+            exit 1
+          fi
+          "$ADB" shell settings put global window_animation_scale 0
+          "$ADB" shell settings put global transition_animation_scale 0
+          "$ADB" shell settings put global animator_duration_scale 0
+          ./gradlew :safe-path-resolver:installDebugAndroidTest --no-daemon --console=plain
+          INSTRUMENTATION=$("$ADB" shell pm list instrumentation | tr -d '\r' | sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' | grep '/androidx.test.runner.AndroidJUnitRunner' | head -1)
+          test -n "$INSTRUMENTATION"
+          TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
+          for method in normalize_and_contain_on_art traversal_escape_is_blocked_on_art serializer_is_deterministic_on_art; do
+            timeout 900 "$ADB" shell am instrument -w -r -e class "$TEST_CLASS#$method" "$INSTRUMENTATION"
+          done
+          echo "ANDROID_UBUNTU_ADB_INSTRUMENTATION_OK"
 
       - name: Upload AAR artifact
         if: matrix.os == 'ubuntu-latest'
