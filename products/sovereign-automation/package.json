@@ -11,13 +11,13 @@
     "sovereign-automation": "./bin/cli.js"
   },
   "imports": {
-    "#browser": "@sovereign/browser",
-    "#browser-interactions": "@sovereign/browser-interactions",
-    "#browser-assertions": "@sovereign/browser-assertions",
-    "#browser-network-interception": "@sovereign/browser-network-interception",
-    "#browser-tab-manager": "@sovereign/browser-tab-manager",
-    "#browser-visual-testing": "@sovereign/browser-visual-testing",
-    "#browser-recorder": "@sovereign/browser-recorder"
+    "#browser": "../../cubes/browser/src/index.js",
+    "#browser-interactions": "../../cubes/browser-interactions/src/index.js",
+    "#browser-assertions": "../../cubes/browser-assertions/src/index.js",
+    "#browser-network-interception": "../../cubes/browser-network-interception/src/index.js",
+    "#browser-tab-manager": "../../cubes/browser-tab-manager/src/index.js",
+    "#browser-visual-testing": "../../cubes/browser-visual-testing/src/index.js",
+    "#browser-recorder": "../../cubes/browser-recorder/src/index.js"
   },
   "scripts": {
     "check": "node --check src/index.js && node --check bin/cli.js",
