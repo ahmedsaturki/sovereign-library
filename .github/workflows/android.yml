@@ -88,20 +88,9 @@ jobs:
           run_sdkmanager --sdk_root="$SDK" --install \
             "platform-tools" \
             "platforms;android-34" \
-            "build-tools;34.0.0"
-
-          # Ubuntu is the canonical Android instrumentation gate. Keep the
-          # emulator/system image install on the same matrix cell so the gate
-          # exercises the same runner and SDK that qualification depends on.
-          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            run_sdkmanager --sdk_root="$SDK" --install \
-              "emulator" \
-              "system-images;android-34;google_apis;x86_64"
-          else
-            run_sdkmanager --sdk_root="$SDK" --install \
-              "emulator" \
-              "system-images;android-34;google_apis;x86_64"
-          fi
+            "build-tools;34.0.0" \
+            "emulator" \
+            "system-images;android-34;google_apis;x86_64"
 
           yes | run_sdkmanager --sdk_root="$SDK" --licenses >/dev/null || true
           test -d "$SDK/platforms/android-34"
@@ -125,11 +114,13 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          AAR=$(find safe-path-resolver/build/outputs/aar -name '*.aar' | head -1)
+          AAR=$(find safe-path-resolver/build/outputs/aar -name 'safe-path-resolver-*.aar' -print -quit)
           test -n "$AAR"
           TMP_DIR=$(mktemp -d)
           trap 'rm -rf "$TMP_DIR"' EXIT
           unzip -q "$AAR" classes.jar -d "$TMP_DIR"
+          echo "AAR=$AAR"
+          jar tf "$TMP_DIR/classes.jar" | grep -F 'org/sovereign/safePathResolver/android/SafePathResolverAndroidKt.class'
           CACHE_ROOT="${GRADLE_USER_HOME:-$HOME/.gradle}"
           STDLIB=$(find "$CACHE_ROOT" -path '*/org.jetbrains.kotlin/kotlin-stdlib/*/kotlin-stdlib-*.jar' -print -quit 2>/dev/null || true)
           if [ -z "$STDLIB" ]; then
@@ -201,15 +192,57 @@ jobs:
             -wipe-data \
             -gpu swiftshader_indirect \
             >"$RUNNER_TEMP/sovereign-emulator.log" 2>&1 &
-          timeout 600 "$ADB" wait-for-device
+          EMULATOR_PID=$!
+          wait_for_adb_device() {
+            local limit_seconds="$1"
+            local deadline=$((SECONDS + limit_seconds))
+            "$ADB" start-server >/dev/null 2>&1 || true
+            while [ "$SECONDS" -lt "$deadline" ]; do
+              state=$("$ADB" get-state 2>/dev/null || true)
+              if [ "$state" = "device" ]; then return 0; fi
+              if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+                echo "Android emulator exited before an adb device became available"
+                tail -n 500 "$RUNNER_TEMP/sovereign-emulator.log" || true
+                return 1
+              fi
+              sleep 2
+            done
+            echo "Timed out waiting for adb device"
+            tail -n 500 "$RUNNER_TEMP/sovereign-emulator.log" || true
+            "$ADB" devices -l || true
+            return 1
+          }
+          run_bounded() {
+            local limit_seconds="$1"
+            shift
+            "$@" &
+            local pid=$!
+            local deadline=$((SECONDS + limit_seconds))
+            while kill -0 "$pid" 2>/dev/null; do
+              if [ "$SECONDS" -ge "$deadline" ]; then
+                echo "Command timed out after ${limit_seconds}s: $*"
+                kill "$pid" 2>/dev/null || true
+                wait "$pid" 2>/dev/null || true
+                return 124
+              fi
+              sleep 1
+            done
+            wait "$pid"
+          }
+          wait_for_adb_device 600
           boot_ok=0
           for _ in $(seq 1 300); do
             boot=$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
             if [ "$boot" = "1" ]; then boot_ok=1; break; fi
+            if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+              tail -n 500 "$RUNNER_TEMP/sovereign-emulator.log" || true
+              exit 1
+            fi
             sleep 2
           done
           if [ "$boot_ok" != "1" ]; then
             tail -n 500 "$RUNNER_TEMP/sovereign-emulator.log" || true
+            "$ADB" devices -l || true
             exit 1
           fi
           "$ADB" shell settings put global window_animation_scale 0
@@ -220,7 +253,7 @@ jobs:
           test -n "$INSTRUMENTATION"
           TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
           for method in normalize_and_contain_on_art traversal_escape_is_blocked_on_art serializer_is_deterministic_on_art; do
-            timeout 600 "$ADB" shell am instrument -w -r -e class "$TEST_CLASS#$method" "$INSTRUMENTATION"
+            run_bounded 600 "$ADB" shell am instrument -w -r -e class "$TEST_CLASS#$method" "$INSTRUMENTATION"
           done
           echo "ANDROID_EMULATOR_INSTRUMENTATION_OK"
 
@@ -255,15 +288,57 @@ jobs:
             -wipe-data \
             -gpu swiftshader_indirect \
             >"$RUNNER_TEMP/sovereign-emulator-ubuntu.log" 2>&1 &
-          timeout 900 "$ADB" wait-for-device
+          EMULATOR_PID=$!
+          wait_for_adb_device() {
+            local limit_seconds="$1"
+            local deadline=$((SECONDS + limit_seconds))
+            "$ADB" start-server >/dev/null 2>&1 || true
+            while [ "$SECONDS" -lt "$deadline" ]; do
+              state=$("$ADB" get-state 2>/dev/null || true)
+              if [ "$state" = "device" ]; then return 0; fi
+              if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+                echo "Android emulator exited before an adb device became available"
+                tail -n 500 "$RUNNER_TEMP/sovereign-emulator-ubuntu.log" || true
+                return 1
+              fi
+              sleep 2
+            done
+            echo "Timed out waiting for adb device"
+            tail -n 500 "$RUNNER_TEMP/sovereign-emulator-ubuntu.log" || true
+            "$ADB" devices -l || true
+            return 1
+          }
+          run_bounded() {
+            local limit_seconds="$1"
+            shift
+            "$@" &
+            local pid=$!
+            local deadline=$((SECONDS + limit_seconds))
+            while kill -0 "$pid" 2>/dev/null; do
+              if [ "$SECONDS" -ge "$deadline" ]; then
+                echo "Command timed out after ${limit_seconds}s: $*"
+                kill "$pid" 2>/dev/null || true
+                wait "$pid" 2>/dev/null || true
+                return 124
+              fi
+              sleep 1
+            done
+            wait "$pid"
+          }
+          wait_for_adb_device 900
           boot_ok=0
           for _ in $(seq 1 450); do
             boot=$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
             if [ "$boot" = "1" ]; then boot_ok=1; break; fi
+            if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+              tail -n 500 "$RUNNER_TEMP/sovereign-emulator-ubuntu.log" || true
+              exit 1
+            fi
             sleep 2
           done
           if [ "$boot_ok" != "1" ]; then
             tail -n 500 "$RUNNER_TEMP/sovereign-emulator-ubuntu.log" || true
+            "$ADB" devices -l || true
             exit 1
           fi
           "$ADB" shell settings put global window_animation_scale 0
@@ -274,7 +349,7 @@ jobs:
           test -n "$INSTRUMENTATION"
           TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
           for method in normalize_and_contain_on_art traversal_escape_is_blocked_on_art serializer_is_deterministic_on_art; do
-            timeout 900 "$ADB" shell am instrument -w -r -e class "$TEST_CLASS#$method" "$INSTRUMENTATION"
+            run_bounded 900 "$ADB" shell am instrument -w -r -e class "$TEST_CLASS#$method" "$INSTRUMENTATION"
           done
           echo "ANDROID_UBUNTU_ADB_INSTRUMENTATION_OK"
 
