@@ -130,125 +130,66 @@ Current milestone:
 
 Immediate next task:
 
-**Browser/Product Readiness Wave COMPLETED (2026-08-28): the 7 browser/integration Cubes + 2 Products are qualified (TECHNICALLY_READY) — each with manifest, generated declaration surface, explicit dependency boundary, out-of-tree execution, reproducible packaging, security-boundary verification, cross-platform behavior, and real-browser/product evidence all verified and persisted. A `verify.yml` fix links browser cubes into `node_modules/@sovereign/*` for in-repo Product test resolution (the same closure the published artifact injects).
+**Reconcile and qualify the current live HEAD `2423f39e17e4cbaec41818140fdd9cc99fc9fb05` through terminal CI evidence, then fix the first real current-head failure. Do not treat queued/pending/historical results as success or failure.**
 
-Python second wave COMPLETED (2026-08-28): seven native ports now conformant and wired into `python-ports.yml` — sovereign_retry (RTRY1: 20/20 pytest + pytest-asyncio CI wiring), canonical-json (CJSON1: 15/15 vector conformance + 13 pytest), result (RES1: 17 pytest), digest (DIG1: 16/16 vector conformance + 14 pytest), cache (CACH1: 15 pytest), plus the earlier SPR1 (7/7) and RCI1 (9/9). All verified on Python 3.9 + 3.12. The `python-ports.yml` was updated to install `pytest pytest-asyncio` for retry test support; the matrix was adjusted to drop the Python 3.9 / windows-latest cell (setup-python archive-extraction infra failure — not a code defect); 3.9 coverage kept on ubuntu + macos, Windows covered by 3.12.
+The Browser/Product Readiness Wave and the current Python native-port inventory remain completed historical qualification layers; do not redo them without a demonstrated regression.
 
-## Current repository state
-
-- Latest released cube: **Application Lifecycle / Graceful Shutdown Coordinator v0.1**
-- Release PR: **#104**, merged
-- Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
-- Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
+## Current repository state — live control plane
 
 - Current branch: `feat/continuity-hardening`
-- Current HEAD: 36a913ba61771972d0dabc345c7643eedd51655e
+- Current HEAD: `2423f39e17e4cbaec41818140fdd9cc99fc9fb05`
 - PR #125: **OPEN / UNMERGED**
+- Base: `main`
 - Publication status: **NOT PERFORMED**
+- Current source of truth: live GitHub branch ref, not an embedded historical SHA in older sections of this file.
 
-- Python ports inventory:
-  - sovereign_safe_path_resolver (SPR1): 7/7 ✓
-  - sovereign_runtime_capability_inspector (RCI1): 9/9 ✓
-  - sovereign_canonical_json (CJSON1): 15/15 ✓
-  - sovereign_result (RES1): 17/17 ✓
-  - sovereign_digest (DIG1): 16/16 ✓
-  - sovereign_cache (CACH1): 15/15 ✓
-  - sovereign_validation (SVAL1): 18/18 ✓
-  - sovereign_url (SURL1): 8/8 ✓
-  - sovereign_retry (RTRY1): 20/20 ✓
-  - sovereign_circuit_breaker (RCBR1): 10/10 ✓
+### Recent hardening commits on the live branch
 
-- Retry status: **TECHNICALLY_READY** (20/20 tests pass, RangeError fixed → ValueError, FakeClock timeout determinism implemented, FakeClock delay determinism implemented, pytest-asyncio CI wiring corrected)
-- Circuit Breaker status: **TECHNICALLY_READY** (10/10 tests pass, deterministic FakeClock semantics verified)
-- URL status: **TECHNICALLY_READY** (8/8 tests pass, no current-head regression evidence)
-- Validation status: **TECHNICALLY_READY** (18/18 tests pass, no current-head regression evidence)
+- `f107c340c84c0fd98a09e9f6b9f397284ffa1559` — Windows Android SDK batch-tool invocation hardening.
+- `beabe589dd025327c78049d0b5d411db14090cd5` — security-pipeline Python-manifest discovery correction.
+- `a3e1515152eb7fa9e120705c55e1176bb123f751` — release-engineering workflow evaluation hardening and secret-guard correction.
+- `2423f39e17e4cbaec41818140fdd9cc99fc9fb05` — manual authorized-release workflow corrected to use valid GitHub artifact attestation instead of a reusable workflow invoked as a step.
 
-- Current CI state:
-- python-ports: **SUCCESS** (run 33536475992, HEAD 36a913b...)
-  - android: **IN_PROGRESS** (run 33519674705, HEAD `cac209c5...`)
-  - verify: **SUCCESS** (run 33519674709, HEAD `cac209c5...`)
-  - kotlin-jvm: **SUCCESS** (run 33519674738, HEAD `cac209c5...`)
+### Current CI evidence
 
-- Android status: **BLOCKED** (external infrastructure failure in ubuntu-latest emulator setup - documented but not a code defect; Windows/macOS emulators functional)
-
-- Effective next task: **None** - all currently authorized Cubes are TECHNICALLY_READY. Awaiting next authorized Cube selection from governance.
-
-The old `PRE_RELEASE` wording remains only as historical evidence from the earlier reconciliation phase.
-
-## Current control-plane reconciliation — superseded historical record
-
-Earlier feature-branch documentation recorded `7dbf4def...` and `aa8d0eb` as reconciliation baselines. Those statements are historical source/CI evidence and are not the current branch tip. The current branch state is determined from GitHub HEAD and the authoritative current-state section below.
-
-## CURRENT AUTHORITATIVE STATE — 2026-09-01
-
-### Completed distribution/readiness layers
-
-- Browser/Product Readiness Wave: **COMPLETED**.
-- Browser integration Cubes: **7/7 TECHNICALLY_READY**.
-- Products: **2/2 TECHNICALLY_READY**.
-- Qualification matrix v17: **84/84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL**.
-Python native ports currently qualified in the current expansion sequence: SPR1, RCI1, canonical-json, result, digest, cache, validation, url, retry, and circuit-breaker.
-
-### Python validation
-
-`sovereign_validation` was already structurally correct at:
-
-`python/sovereign_validation/src/sovereign_validation/__init__.py`
-
-No relocation was required. Existing native tests and the dedicated Python CI verify that package on Python 3.9 and 3.12.
-
-### Python URL
-
-`sovereign_url` was added as a native, standard-library-only Python port of the authoritative Node URL / Query / Encoding contract.
-
-Current qualification evidence:
-
-- Python 3.9 / Ubuntu: **PASS**
-- Python 3.9 / macOS-15-Intel: **PASS**
-- Python 3.12 / Ubuntu: **PASS**
-- Python 3.12 / macOS-15-Intel: **PASS**
-- native tests and syntax checks: **PASS**
-
-### Browser verification hardening
-
-The Linux Chromium CDP smoke harness was corrected to use the actual Chromium executable directly rather than an additional shell wrapper. The smoke test still requires real Chromium/CDP and remains fail-closed.
-
-### Android CI hardening
-
-Android macOS SDK setup now validates the runner's preinstalled SDK instead of relying on network downloads that previously failed against `dl.google.com`.
-
-Ubuntu emulator instrumentation now uses an explicit headless AVD + ADB instrumentation path with a bounded test command and diagnostic log capture. This is an infrastructure/test-harness hardening change; the emulator result must still be terminal-successful before Android SPR1 is marked TECHNICALLY_READY.
-
-### Current exact branch state
-
-The latest feature-branch HEAD must always be read from GitHub. At the time of this update, PR #125 points to:
-
-`a55e31da575cba0b65b1ed1a6d3b08fb74293cf5`
-
-The latest workflow-only Browser verification commit is `40b7dfc...`; the Android CI hardening commit immediately beneath it is `f4ba6139...`; the Python URL implementation/fix chain is beneath that; and the current Python circuit-breaker implementation/test/CI wiring is the newest native-Python layer.
-
-Do not mix workflow evidence with source evidence from an unrelated SHA.
-
-### Current CI state
-
-- python-ports: **SUCCESS** (run 33540205250, HEAD a55e31d...)
-- verify: **SUCCESS** (run 33540205475, HEAD a55e31d...)
-- kotlin-jvm: **SUCCESS** (run 33540205376, HEAD a55e31d...)
-- android: **CANCELLED** (run 33540205357, HEAD a55e31d...) due to timeout in instrumentation step (see details below)
+- The current HEAD `2423f39e17e4cbaec41818140fdd9cc99fc9fb05` has a fresh **phase3 hardening aggregator** check queued (run `35011284960`). Terminal success is not yet established.
+- The preceding live-head `a3e1515152eb7fa9e120705c55e1176bb123f751` successfully instantiated the rewritten **release-engineering** workflow. Its tag-only jobs were correctly skipped on a branch push, while the non-tag jobs were created; terminal completion of those jobs is not yet evidence for the current HEAD.
+- Historical CI results for `a55e31...`, `cac209c...`, or older SHAs remain historical and must not be used as current-head proof.
 
 ### Android status
 
-**INFRASTRUCTURE TIMEOUT** - The Ubuntu emulator instrumentation step was cancelled after exceeding the 15-minute timeout. Logs show the instrumentation command started at 17:54:29 and was cancelled at 18:47:39 (53 minutes total elapsed, indicating the test execution itself took longer than the allotted 15 minutes). This appears to be an infrastructure issue (emulator slowness or test execution delay) rather than a code defect, as the test itself is trivial and passes on Windows/macOS emulators. No test weakening or assertion removal is warranted.
+**NOT CURRENTLY QUALIFIED ON THE LIVE HEAD.**
 
-### Effective next task
+The previous Ubuntu emulator timeout remains historical evidence. The Android workflow has since been hardened for current Windows SDK command-line tool behavior, but Android SPR1 must not be promoted to TECHNICALLY_READY until a terminal-successful current-head emulator instrumentation result exists.
 
-Increase the timeout in the Android workflow to allow more time for emulator instrumentation, then retrigger the workflow to see if the test passes with additional time. If it passes, Android SPR1 can be marked TECHNICALLY_READY. If it fails again, further investigation is needed.
+### Python ports inventory
 
-### Governance locks
+- sovereign_safe_path_resolver (SPR1): 7/7 ✓
+- sovereign_runtime_capability_inspector (RCI1): 9/9 ✓
+- sovereign_canonical_json (CJSON1): 15/15 ✓
+- sovereign_result (RES1): 17/17 ✓
+- sovereign_digest (DIG1): 16/16 ✓
+- sovereign_cache (CACH1): 15/15 ✓
+- sovereign_validation (SVAL1): 18/18 ✓
+- sovereign_url (SURL1): 8/8 ✓
+- sovereign_retry (RTRY1): 20/20 ✓
+- sovereign_circuit_breaker (RCBR1): 10/10 ✓
+
+These counts are qualification evidence for the respective native ports; they are not substitutes for current-head CI evidence.
+
+## Historical control-plane records
+
+Earlier feature-branch documentation recorded older heads and older CI runs. Those statements are retained as historical source/CI evidence and must not override the live branch ref above.
+
+The 2026-09-01 reconciliation record reported older exact heads and an Android infrastructure timeout. That record is superseded by the live control-plane section above.
+
+The older `PRE_RELEASE` wording remains only as historical evidence from the earlier reconciliation phase.
+
+## Governance locks
 
 - PR #125 remains **OPEN / UNMERGED**.
 - No external package publication has been performed.
 - No credential or 2FA guard has been bypassed.
 - No Android emulator requirement has been removed.
 - No tests may be weakened merely to obtain green CI.
-- Historical contradictory wording must not override this current-state section.
+- Historical contradictory wording must not override the live control-plane state above.
