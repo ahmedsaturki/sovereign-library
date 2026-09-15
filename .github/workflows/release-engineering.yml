@@ -127,7 +127,7 @@ jobs:
         shell: bash
         run: node scripts/e2e-cloud.mjs --provider saucelabs --out "$PHASE2_OUTPUT_DIR/e2e-saucelabs.json"
       - name: E2E skipped (no provider credentials)
-        if: ${{ env.BROWSERSTACK_USERNAME == '' && env.BROWSERSTACK_ACCESS_KEY == '' && env.SAUCE_USERNAME == '' && env.SAUCE_ACCESS_KEY == '' }}
+        if: ${{ env.BROWSERSTACK_USERNAME == '' && env.SAUCE_USERNAME == '' }}
         shell: bash
         run: |
           mkdir -p "$PHASE2_OUTPUT_DIR"
