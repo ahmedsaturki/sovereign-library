@@ -12,13 +12,15 @@ That live ref is the only authoritative current HEAD. Historical SHA references 
 - PR: `#125`
 - Base: `main`
 - PR state: OPEN / UNMERGED
-- Current HEAD: `896e960fb9937f0e3a2291379f8d0a76ced3e135`
+- Current HEAD: `948665823470c9683fb61bb1012fc82393af6fae`
 - GitHub Releases: EXISTING releases are present in the repository; these must be distinguished from publication to external package registries.
 - External package-registry publication (npm/PyPI/Maven/etc.): NOT VERIFIED AS PERFORMED BY THE CURRENT WORKFLOW / CURRENT CONTINUATION
 
 ## Live exact-head CI qualification — 2026-09-16
 
-Fresh workflows for exact HEAD `896e960fb9937f0e3a2291379f8d0a76ced3e135` are terminal-successful:
+Fresh workflows for exact HEAD `948665823470c9683fb61bb1012fc82393af6fae` are not yet terminal-successful. They are expected to trigger from this documentation commit; no qualification claim is made until exact-head runs complete.
+
+The immediately preceding exact HEAD `896e960fb9937f0e3a2291379f8d0a76ced3e135` had terminal-successful results across all six required workflows:
 
 - `verify` #1209 — SUCCESS
 - `python-ports` #167 — SUCCESS
@@ -26,8 +28,6 @@ Fresh workflows for exact HEAD `896e960fb9937f0e3a2291379f8d0a76ced3e135` are te
 - `phase3` #83 — SUCCESS
 - `release-engineering` #76 — SUCCESS
 - `android` #215 — SUCCESS
-
-Android #215 completed successfully on Windows and macOS instrumentation and on the mandatory Ubuntu Android instrumentation gate. The Ubuntu job also uploaded `android-aars` successfully.
 
 ## Completed implementation / qualification layers
 
@@ -39,14 +39,14 @@ Android #215 completed successfully on Windows and macOS instrumentation and on 
 - Retry uses FakeClock-driven timeout and backoff timing for deterministic tests.
 - Python CI installs `pytest pytest-asyncio`.
 - Browser Chromium/CDP smoke remains fail-closed.
-- Android instrumentation remains a real qualification gate and is verified on the current HEAD.
-- Chaos `signal-storm` probe portability/hardening remains preserved and has passed the current release-engineering gate.
+- Android instrumentation remains a real qualification gate and was verified on the preceding exact HEAD.
+- Chaos `signal-storm` probe portability/hardening remains preserved and passed the preceding release-engineering gate.
 
 ## Qualification matrix
 
 The authoritative packaging matrix remains v17: 84 Cubes are recorded as `TECHNICALLY_READY`, with 0 `PRE_RELEASE` and 0 `CONDITIONAL`; the two Products are recorded separately as technically ready in the package catalog.
 
-Current-head CI above is fresh evidence that the live branch did not regress those qualification layers. Readiness claims remain tied to the applicable Cube and evidence; CI success does not retroactively rewrite historical qualification records.
+Readiness claims remain tied to the applicable Cube and exact evidence; CI success does not retroactively rewrite historical qualification records.
 
 ## Resolved historical `130 references` discrepancy
 
