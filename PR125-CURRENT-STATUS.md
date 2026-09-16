@@ -12,22 +12,24 @@ That live ref is the only authoritative current HEAD. Historical SHA references 
 - PR: `#125`
 - Base: `main`
 - PR state: OPEN / UNMERGED
-- Current HEAD: `948665823470c9683fb61bb1012fc82393af6fae`
+- Current HEAD: `d51aedd8fc8251887d6e5ed7abb255ff4c1706f6`
 - GitHub Releases: EXISTING releases are present in the repository; these must be distinguished from publication to external package registries.
-- External package-registry publication (npm/PyPI/Maven/etc.): NOT VERIFIED AS PERFORMED BY THE CURRENT WORKFLOW / CURRENT CONTINUATION
+- External package-registry publication (npm/PyPI/Maven/etc.): NO VERIFIED CURRENT EVIDENCE OF PUBLICATION BY THIS CONTINUATION
 
 ## Live exact-head CI qualification — 2026-09-16
 
-Fresh workflows for exact HEAD `948665823470c9683fb61bb1012fc82393af6fae` are not yet terminal-successful. They are expected to trigger from this documentation commit; no qualification claim is made until exact-head runs complete.
+Fresh workflows for exact HEAD `d51aedd8fc8251887d6e5ed7abb255ff4c1706f6` are terminal-successful across all six required workflows:
 
-The immediately preceding exact HEAD `896e960fb9937f0e3a2291379f8d0a76ced3e135` had terminal-successful results across all six required workflows:
+- `verify` #1213 — SUCCESS
+- `python-ports` #169 — SUCCESS
+- `kotlin-jvm` #159 — SUCCESS
+- `phase3` #87 — SUCCESS
+- `release-engineering` #80 — SUCCESS
+- `android` #217 — SUCCESS
 
-- `verify` #1209 — SUCCESS
-- `python-ports` #167 — SUCCESS
-- `kotlin-jvm` #157 — SUCCESS
-- `phase3` #83 — SUCCESS
-- `release-engineering` #76 — SUCCESS
-- `android` #215 — SUCCESS
+Android #217 reached success after a job-only rerun. Attempt 1 failed only in the Ubuntu Android instrumentation path during `installDebugAndroidTest` after the emulator ran without KVM and ddmlib reported `ShellCommandUnresponsiveException` / `Unknown API Level`. The rerun used the same source revision with no code changes and completed the mandatory Ubuntu instrumentation gate successfully.
+
+The successful Android run uploaded artifact `android-aars` (artifact id `10466543207`, sha256 `86e663c3642e416ea7bf06abc985f0b76ff014a38cec233344ba238797d30385`).
 
 ## Completed implementation / qualification layers
 
@@ -39,8 +41,8 @@ The immediately preceding exact HEAD `896e960fb9937f0e3a2291379f8d0a76ced3e135` 
 - Retry uses FakeClock-driven timeout and backoff timing for deterministic tests.
 - Python CI installs `pytest pytest-asyncio`.
 - Browser Chromium/CDP smoke remains fail-closed.
-- Android instrumentation remains a real qualification gate and was verified on the preceding exact HEAD.
-- Chaos `signal-storm` probe portability/hardening remains preserved and passed the preceding release-engineering gate.
+- Android instrumentation remains a real qualification gate and is verified on the current exact HEAD.
+- Chaos `signal-storm` probe portability/hardening remains preserved and passed the current release-engineering gate.
 
 ## Qualification matrix
 
@@ -54,12 +56,17 @@ The previously reported `130 references` count has been reconciled against the r
 
 ## Distribution / release-state reconciliation
 
-The repository currently contains published GitHub Release objects, including the first-batch releases for `safe-path-resolver` and `runtime-capability-inspector`. These are repository/GitHub distribution events and are distinct from publication to external package registries such as npm, PyPI, or Maven.
+The repository currently contains published GitHub Release objects, including the first-batch releases for `safe-path-resolver` and `runtime-capability-inspector`, plus existing releases for other qualified Cubes. These are repository/GitHub distribution events and are distinct from publication to external package registries such as npm, PyPI, or Maven.
+
+Verified first-batch GitHub Releases include:
+
+- `v0.1.0-safe-path-resolver` with asset `sovereign-safe-path-resolver-0.1.0.tgz`.
+- `v0.1.0-runtime-capability-inspector` with asset `sovereign-runtime-capability-inspector-0.1.0.tgz`.
 
 The current continuation must therefore use these separate facts:
 
 1. GitHub Releases EXIST and are directly observable in the repository release history.
-2. No current continuation evidence establishes a new external registry publication performed by the present workflow.
+2. No verified current continuation evidence establishes publication to npm, PyPI, or Maven Central.
 3. A new release/tag/publication must not be created merely because a Cube is technically ready; explicit release controls still apply.
 
 ## Required continuation
