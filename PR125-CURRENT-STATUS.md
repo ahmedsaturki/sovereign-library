@@ -12,21 +12,22 @@ That live ref is the only authoritative current HEAD. Historical SHA references 
 - PR: `#125`
 - Base: `main`
 - PR state: OPEN / UNMERGED
-- Publication: NOT PERFORMED
-- Current HEAD: `2eae8229c38a0deed37ce0b40f72773f4c42d0ce`
+- Current HEAD: `896e960fb9937f0e3a2291379f8d0a76ced3e135`
+- GitHub Releases: EXISTING releases are present in the repository; these must be distinguished from publication to external package registries.
+- External package-registry publication (npm/PyPI/Maven/etc.): NOT VERIFIED AS PERFORMED BY THE CURRENT WORKFLOW / CURRENT CONTINUATION
 
 ## Live exact-head CI qualification — 2026-09-16
 
-Fresh workflows for exact HEAD `2eae8229c38a0deed37ce0b40f72773f4c42d0ce` are terminal-successful:
+Fresh workflows for exact HEAD `896e960fb9937f0e3a2291379f8d0a76ced3e135` are terminal-successful:
 
-- `verify` #1207 — SUCCESS
-- `python-ports` #166 — SUCCESS
-- `kotlin-jvm` #156 — SUCCESS
-- `phase3` #81 — SUCCESS
-- `release-engineering` #74 — SUCCESS
-- `android` #214 — SUCCESS
+- `verify` #1209 — SUCCESS
+- `python-ports` #167 — SUCCESS
+- `kotlin-jvm` #157 — SUCCESS
+- `phase3` #83 — SUCCESS
+- `release-engineering` #76 — SUCCESS
+- `android` #215 — SUCCESS
 
-Android #214 completed successfully on Windows and macOS instrumentation and on the mandatory Ubuntu Android instrumentation gate. The Ubuntu job also uploaded the Android AAR artifact successfully.
+Android #215 completed successfully on Windows and macOS instrumentation and on the mandatory Ubuntu Android instrumentation gate. The Ubuntu job also uploaded `android-aars` successfully.
 
 ## Completed implementation / qualification layers
 
@@ -38,7 +39,7 @@ Android #214 completed successfully on Windows and macOS instrumentation and on 
 - Retry uses FakeClock-driven timeout and backoff timing for deterministic tests.
 - Python CI installs `pytest pytest-asyncio`.
 - Browser Chromium/CDP smoke remains fail-closed.
-- Android instrumentation remains a real qualification gate and is now verified on the current HEAD.
+- Android instrumentation remains a real qualification gate and is verified on the current HEAD.
 - Chaos `signal-storm` probe portability/hardening remains preserved and has passed the current release-engineering gate.
 
 ## Qualification matrix
@@ -49,19 +50,29 @@ Current-head CI above is fresh evidence that the live branch did not regress tho
 
 ## Resolved historical `130 references` discrepancy
 
-The previously reported `130 references` count has been reconciled against the repository control plane and historical records. No reproducible repository calculation or artifact substantiates that number. It is therefore retained only as historical checkpoint context and is **not** a current Cube/package/reference count and must not be used as authorization input.
+The previously reported `130 references` count has been reconciled against the repository control plane and historical records. No reproducible repository calculation or artifact substantiates that number. It is retained only as historical checkpoint context and is not a current Cube/package/reference count and must not be used as authorization input.
+
+## Distribution / release-state reconciliation
+
+The repository currently contains published GitHub Release objects, including the first-batch releases for `safe-path-resolver` and `runtime-capability-inspector`. These are repository/GitHub distribution events and are distinct from publication to external package registries such as npm, PyPI, or Maven.
+
+The current continuation must therefore use these separate facts:
+
+1. GitHub Releases EXIST and are directly observable in the repository release history.
+2. No current continuation evidence establishes a new external registry publication performed by the present workflow.
+3. A new release/tag/publication must not be created merely because a Cube is technically ready; explicit release controls still apply.
 
 ## Required continuation
 
 1. Preserve the exact live HEAD and current terminal CI evidence.
-2. Keep `PROJECT_CONTROL.md` and `ROADMAP.md` aligned with the live ref; their embedded historical SHAs remain historical evidence only.
+2. Keep control-plane and status documents aligned with the live ref; embedded historical SHAs remain historical evidence only.
 3. Determine exactly one next authorized Cube/task from the authoritative roadmap/control records.
 4. Continue through `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE PREP -> FREEZE -> NEXT CUBE` without redoing completed qualification waves.
 
 ## Governance
 
 - Do not merge PR #125 automatically.
-- Do not publish externally without explicit release authorization.
+- Do not create a new release or publish to an external registry without explicit release authorization.
 - Do not weaken or remove emulator requirements.
 - Do not bypass 2FA/publication guards.
 - Do not rewrite or destroy historical evidence.
