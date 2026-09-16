@@ -12,22 +12,47 @@ That live ref is the only authoritative current HEAD. Historical SHA references 
 - PR: `#125`
 - Base: `main`
 - PR state: OPEN / UNMERGED
-- Current HEAD: `babfdccfb579010261d54cfa05ec51b5a0a6b559`
-- GitHub Releases: EXISTING releases are present in the repository; these must be distinguished from publication to external package registries.
+- Current verified HEAD: `fe72485340b4a64b5b32fc39faf032db3a2ae349`
+- GitHub Releases: EXISTING releases are present in the repository; these are distinct from publication to external package registries.
 - External package-registry publication (npm/PyPI/Maven/etc.): NO VERIFIED CURRENT EVIDENCE OF PUBLICATION BY THIS CONTINUATION
 
 ## Live exact-head CI qualification — 2026-09-17
 
-Fresh workflows for exact HEAD `babfdccfb579010261d54cfa05ec51b5a0a6b559` are terminal-successful across all six required workflows:
+Fresh workflows for exact HEAD `fe72485340b4a64b5b32fc39faf032db3a2ae349` are terminal-successful across all six required workflows:
 
-- `verify` #1215 — SUCCESS
-- `python-ports` #170 — SUCCESS
-- `kotlin-jvm` #160 — SUCCESS
-- `phase3` #89 — SUCCESS
-- `release-engineering` #82 — SUCCESS
-- `android` #218 — SUCCESS
+- `verify` #1219 — SUCCESS
+- `python-ports` #172 — SUCCESS
+- `kotlin-jvm` #162 — SUCCESS
+- `phase3` #93 — SUCCESS
+- `release-engineering` #86 — SUCCESS
+- `android` #221 — SUCCESS
 
-Android #218 completed the Windows and macOS instrumentation paths and the mandatory Ubuntu Android instrumentation gate; the Ubuntu job completed its AAR artifact upload.
+All six runs checked out the exact `fe72485340b4a64b5b32fc39faf032db3a2ae349` revision where applicable and completed successfully.
+
+## Android hardening qualification
+
+Android #221 completed successfully on all three matrix platforms:
+
+- Windows instrumentation — SUCCESS
+- macOS-15-Intel instrumentation — SUCCESS
+- mandatory Ubuntu Android instrumentation gate — SUCCESS
+
+The Ubuntu job also completed the AAR upload successfully.
+
+Artifact evidence:
+
+- Artifact: `android-aars`
+- Artifact ID: `10472677320`
+- Size: `24463` bytes
+- Upload ZIP digest: `sha256:00c1259e5ac3379cbcff376f7e1facbf2e69372b38611d141747cf9e63f319b0`
+
+The prior Windows Android failure was:
+
+`com.android.ddmlib.InstallException: Unknown failure: cmd: Can't find service: package`
+
+The hardening added bounded Android Package Manager readiness probing plus a bounded instrumentation-install command. On the fresh run, Windows `installDebugAndroidTest` completed successfully (`Installed on 1 device.`), followed by successful instrumentation tests. This is a verified infrastructure hardening result, not a test bypass.
+
+Ubuntu also demonstrated successful package-service readiness, bounded APK installation, and execution of the required Android device tests.
 
 ## Completed implementation / qualification layers
 
@@ -54,38 +79,32 @@ The previously reported `130 references` count has been reconciled against the r
 
 ## Distribution / release-state reconciliation
 
-The repository currently contains published GitHub Release objects, including the first-batch releases for `safe-path-resolver` and `runtime-capability-inspector`, plus existing releases for other qualified Cubes. These are repository/GitHub distribution events and are distinct from publication to external package registries such as npm, PyPI, or Maven.
+The repository currently contains GitHub Release objects, including first-batch releases for `safe-path-resolver` and `runtime-capability-inspector`, plus other historical releases. These GitHub release events are distinct from publication to external package registries such as npm, PyPI, or Maven.
 
-Verified first-batch GitHub Releases include:
-
-- `v0.1.0-safe-path-resolver` with asset `sovereign-safe-path-resolver-0.1.0.tgz`.
-- `v0.1.0-runtime-capability-inspector` with asset `sovereign-runtime-capability-inspector-0.1.0.tgz`.
-
-The current continuation must therefore use these separate facts:
-
-1. GitHub Releases EXIST and are directly observable in the repository release history.
-2. No verified current continuation evidence establishes publication to npm, PyPI, or Maven Central.
-3. A new release/tag/publication must not be created merely because a Cube is technically ready; explicit release controls still apply.
+Issue #110 explicitly records these two first-batch packages as authorized in principle while publication remains deferred by the project owner's current policy. No external registry publication is performed by this continuation merely because CI is green.
 
 ## Current governance gate
 
-- No currently open authoritative project record provides a new explicit Cube/task authorization beyond the historical first-batch release authorization in issue #110.
+- PR #125 remains OPEN / UNMERGED.
+- No currently open authoritative record provides a new explicit Cube/task authorization beyond the existing first-batch release authorization in issue #110.
 - Issue #109 remains a parked hardening task and is not the active milestone.
-- PR #111 remains open/unmerged and does not constitute a new Cube authorization.
-- PR #125 remains the active continuity/distribution workstream and must not be merged automatically.
+- PR #111 remains open/unmerged and its existing scope does not establish a new authorization for a separate current milestone.
+- No external publication is authorized by this checkpoint.
 
 ## Required continuation
 
-1. Preserve the exact live HEAD and current terminal CI evidence.
+1. Preserve the exact live HEAD and terminal CI evidence.
 2. Keep control-plane and status documents aligned with the live ref; embedded historical SHAs remain historical evidence only.
-3. Determine exactly one next authorized Cube/task from the authoritative roadmap/control records.
+3. Select exactly one next authorized Cube/task from the authoritative roadmap/control records when authorization exists.
 4. Continue through `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE PREP -> FREEZE -> NEXT CUBE` without redoing completed qualification waves.
+5. Do not merge PR #125 automatically.
 
-## Governance
+## Governance locks
 
-- Do not merge PR #125 automatically.
-- Do not create a new release or publish to an external registry without explicit release authorization.
-- Do not weaken or remove emulator requirements.
-- Do not bypass 2FA/publication guards.
-- Do not rewrite or destroy historical evidence.
-- Do not treat queued, cancelled, or partial CI as qualification evidence.
+- No merge or auto-merge of PR #125.
+- No new release/tag merely because CI is green.
+- No external registry publication without explicit release-wave authorization.
+- No credential or 2FA guard bypass.
+- No weakening or removal of Android/emulator requirements.
+- No force-push or history rewrite.
+- Do not treat queued, cancelled, partial, or historical CI as current qualification evidence.
