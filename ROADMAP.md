@@ -164,10 +164,13 @@ The current active layer is **Library Distribution Expansion / reconciliation an
 ## Current live execution state
 
 - Live branch: `feat/continuity-hardening`.
+- Live HEAD: `c581ffe7405baf95523b4ce290a7ed5375c8c69e`.
 - PR #125: OPEN / UNMERGED.
-- The live branch ref is authoritative for the current HEAD; historical SHAs inside older roadmap sections are not current state.
-- The latest implementation-head qualification evidence is `10494f0190b88211926a836c09a305743ccba5ca`, on which verify #1192, python-ports #159, kotlin-jvm #149, phase3 #67, release-engineering #60, and android #207 all completed successfully.
-- Subsequent commits are documentation-only reconciliation commits. They require their own fresh CI evidence before being treated as the fully verified release/reconciliation head.
+- The live branch ref is authoritative for current state; historical SHAs inside older roadmap sections are not current state.
+- Fresh exact-head CI for `c581ffe` completed successfully across `verify` #1205, `python-ports` #165, `kotlin-jvm` #155, `phase3` #79, `release-engineering` #72, and `android` #213.
+- Android #213 passed native AAR build, out-of-tree AAR verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate.
+- Verify #1205 passed syntax, bounded contract/integration checks, declaration pilot, package tooling, reproducible packaging, security boundary verification, publication guard, conformance, and real browser smoke across Ubuntu, Windows, and macOS-15-Intel.
+- These runs are the current exact-head qualification evidence for `c581ffe`; any subsequent commit requires its own fresh verification.
 
 ## One-current-task rule
 
@@ -179,14 +182,14 @@ Exactly one active milestone and one immediate next task are allowed.
 
 ### Immediate next task
 
-**Resolve the outstanding `130 references` discrepancy from repository evidence, reconcile the live control plane to the final documentation HEAD, then select exactly one explicitly authorized next Cube/task from the authoritative project records.**
+**Select exactly one explicitly authorized next Cube/task from the authoritative project records and execute it through `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE PREP -> FREEZE`, without redoing completed qualification waves.**
 
-The `130 references` number is currently **UNRESOLVED / NOT VERIFIED**. Searches performed against the repository have not established an originating artifact or calculation for that count. It must not be converted into a package/Cube count by assumption.
+The historical `130 references` statement has been investigated and is **RESOLVED AS REPOSITORY-UNVERIFIABLE HISTORICAL CONTEXT**. No repository-verifiable artifact or reproducible calculation substantiates that number. It MUST NOT be used as a Cube/package/readiness/export count, release-selection basis, or authorization input.
 
 ## Governance locks
 
 - No automatic merge of PR #125.
-- No external publication without explicit release authorization.
+- No external publication without explicit release authorization for that release wave.
 - No credential, 2FA, or publication guard bypass.
 - No emulator requirement removal.
 - No test weakening to obtain green CI.
