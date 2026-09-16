@@ -12,24 +12,22 @@ That live ref is the only authoritative current HEAD. Historical SHA references 
 - PR: `#125`
 - Base: `main`
 - PR state: OPEN / UNMERGED
-- Current HEAD: `d51aedd8fc8251887d6e5ed7abb255ff4c1706f6`
+- Current HEAD: `babfdccfb579010261d54cfa05ec51b5a0a6b559`
 - GitHub Releases: EXISTING releases are present in the repository; these must be distinguished from publication to external package registries.
 - External package-registry publication (npm/PyPI/Maven/etc.): NO VERIFIED CURRENT EVIDENCE OF PUBLICATION BY THIS CONTINUATION
 
-## Live exact-head CI qualification — 2026-09-16
+## Live exact-head CI qualification — 2026-09-17
 
-Fresh workflows for exact HEAD `d51aedd8fc8251887d6e5ed7abb255ff4c1706f6` are terminal-successful across all six required workflows:
+Fresh workflows for exact HEAD `babfdccfb579010261d54cfa05ec51b5a0a6b559` are terminal-successful across all six required workflows:
 
-- `verify` #1213 — SUCCESS
-- `python-ports` #169 — SUCCESS
-- `kotlin-jvm` #159 — SUCCESS
-- `phase3` #87 — SUCCESS
-- `release-engineering` #80 — SUCCESS
-- `android` #217 — SUCCESS
+- `verify` #1215 — SUCCESS
+- `python-ports` #170 — SUCCESS
+- `kotlin-jvm` #160 — SUCCESS
+- `phase3` #89 — SUCCESS
+- `release-engineering` #82 — SUCCESS
+- `android` #218 — SUCCESS
 
-Android #217 reached success after a job-only rerun. Attempt 1 failed only in the Ubuntu Android instrumentation path during `installDebugAndroidTest` after the emulator ran without KVM and ddmlib reported `ShellCommandUnresponsiveException` / `Unknown API Level`. The rerun used the same source revision with no code changes and completed the mandatory Ubuntu instrumentation gate successfully.
-
-The successful Android run uploaded artifact `android-aars` (artifact id `10466543207`, sha256 `86e663c3642e416ea7bf06abc985f0b76ff014a38cec233344ba238797d30385`).
+Android #218 completed the Windows and macOS instrumentation paths and the mandatory Ubuntu Android instrumentation gate; the Ubuntu job completed its AAR artifact upload.
 
 ## Completed implementation / qualification layers
 
@@ -68,6 +66,13 @@ The current continuation must therefore use these separate facts:
 1. GitHub Releases EXIST and are directly observable in the repository release history.
 2. No verified current continuation evidence establishes publication to npm, PyPI, or Maven Central.
 3. A new release/tag/publication must not be created merely because a Cube is technically ready; explicit release controls still apply.
+
+## Current governance gate
+
+- No currently open authoritative project record provides a new explicit Cube/task authorization beyond the historical first-batch release authorization in issue #110.
+- Issue #109 remains a parked hardening task and is not the active milestone.
+- PR #111 remains open/unmerged and does not constitute a new Cube authorization.
+- PR #125 remains the active continuity/distribution workstream and must not be merged automatically.
 
 ## Required continuation
 
