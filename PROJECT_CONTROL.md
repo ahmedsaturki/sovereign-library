@@ -19,7 +19,7 @@ The immediate objective is to qualify existing Sovereign Cubes as real standalon
 - Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
 - Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
 - Process Supervisor / Managed Child Lifecycle v0.1 remains **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
-- Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0df16265b6c6897812c56ca2`.
+- Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
 - Safe File Quarantine / Delete v0.1 remains **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
 - Bounded File Content Reader / Safe Content Access v0.1 remains **FROZEN** at `f8db5a309aef655aec86051587bdf12d34f3dd20`.
 - Filesystem Permission / Ownership Descriptor v0.1 remains **FROZEN** at `69028a66b3827ecfee4a70f2460998dd333f02e0`.
@@ -118,7 +118,7 @@ Current milestone:
 
 Immediate next task:
 
-**Resolve the outstanding `130 references` discrepancy from repository evidence, then select and explicitly authorize exactly one next Cube/task from the authoritative project records.**
+**Select and explicitly authorize exactly one next Cube/task from the authoritative project records, then execute its qualification without redoing completed waves.**
 
 The Browser/Product Readiness Wave and the current Python native-port inventory remain completed historical qualification layers; do not redo them without a demonstrated regression.
 
@@ -192,11 +192,15 @@ For exact HEAD `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`, native Android build,
 
 These counts are qualification evidence for the respective native ports; they are not substitutes for current-head CI evidence.
 
-### Outstanding `130 references` discrepancy
+### Resolved historical `130 references` discrepancy
 
-A prior continuation checkpoint reported an unresolved `130 references` discrepancy. Exact phrase searches and repository searches available through the current GitHub connection have not located a repository artifact that substantiates that number, and the current authoritative packaging matrix instead records 84 Cubes plus 2 Products. Therefore the number remains **UNRESOLVED / NOT VERIFIED** rather than being silently reinterpreted.
+A prior continuation checkpoint introduced an unresolved `130 references` statement without a repository-verifiable calculation. Commit `61ac3c256f44a098560c8e0c6f1d4f26b271f5c7` is the first repository commit that records the statement, and its text attributes the number to a **prior continuation checkpoint** rather than to a repository artifact or generated count. Subsequent reconciliations (`eb09c30a0619484be02ff27f270b865c53006508`, `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`, and `bf490540dcbff65ab01004517c01ca3fb9d1e9fd`) preserve that historical statement but add no independent provenance.
 
-No current status, readiness count, or task selection may use `130 references` as a factual repository count until the originating document or calculation is found and independently verified.
+Repository evidence was checked against the authoritative control plane, roadmap, memory schema/checkpoints, qualification matrix, package catalog, historical inventory, authorization snapshot, release records, PR timeline, commit lineage, and available code-search results. No reproducible repository calculation or artifact substantiates `130 references`. The number therefore has **no verified repository meaning** and is retained solely as historical checkpoint context.
+
+**Operational resolution:** `130 references` is **RESOLVED AS REPOSITORY-UNVERIFIABLE HISTORICAL CONTEXT**. It is not a current repository count and MUST NOT be used for Cube count, package count, readiness count, export count, release selection, or task authorization.
+
+The authoritative current packaging figures remain **84 Cubes + 2 Products = 86 package entries**, and matrix v17 remains **84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL**.
 
 ## Historical control-plane records
 
