@@ -161,51 +161,24 @@ The Android applicability/qualification wave is also complete for the first sele
 
 The current active layer is **Library Distribution Expansion / reconciliation and next-Cube selection**. No registry publication is currently being executed.
 
-## Current exact-head CI evidence — `461bf5a9d902ee24482ab9f84d16abcf70e3898f`
+## Historical exact-head qualification snapshot
 
-- `verify` #1225 — SUCCESS (macOS timing-only attempt rerun successfully)
-- `python-ports` #175 — SUCCESS
-- `kotlin-jvm` #165 — SUCCESS
-- `phase3` #99 — SUCCESS
-- `release-engineering` #92 — SUCCESS
-- `android` #224 — SUCCESS
+The immediately preceding documentation/control-plane head was qualified successfully across the required CI workflows:
+
+- `verify` #1227 — SUCCESS
+- `python-ports` #176 — SUCCESS
+- `kotlin-jvm` #166 — SUCCESS
+- `phase3` #101 — SUCCESS
+- `release-engineering` #94 — SUCCESS
+- `android` #225 — SUCCESS
+
+These run numbers are historical qualification evidence for the predecessor documentation head. Current state must be read from the live branch ref and the GitHub checks attached to PR #125.
 
 ## Current live execution state
 
 - Live branch: `feat/continuity-hardening`.
-- Live HEAD: `461bf5a9d902ee24482ab9f84d16abcf70e3898f`.
+- Live HEAD: **authoritative from `refs/heads/feat/continuity-hardening`**; this roadmap intentionally does not embed a mutable current SHA.
 - PR #125: OPEN / UNMERGED.
-- The live branch ref is authoritative for current state; historical SHAs inside older roadmap sections are not current state.
-- Fresh exact-head CI for `461bf5a9` completed successfully across `verify` #1225, `python-ports` #175, `kotlin-jvm` #165, `phase3` #99, `release-engineering` #92, and `android` #224.
-- Android #224 passed native AAR build, out-of-tree AAR verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate.
-- Verify #1225 passed syntax, bounded contract/integration checks, declaration pilot, package tooling, reproducible packaging, security boundary verification, publication guard, conformance, and real browser smoke across Ubuntu, Windows, and macOS-15-Intel; one macOS attempt failed only on a 1ms timing assertion and the failed job was rerun successfully.
-- These runs are the current exact-head qualification evidence for `c581ffe`; any subsequent commit requires its own fresh verification.
-
-## One-current-task rule
-
-Exactly one active milestone and one immediate next task are allowed.
-
-### Active milestone
-
-**LIBRARY DISTRIBUTION EXPANSION — RECONCILIATION / NEXT-CUBE SELECTION**
-
-### Immediate next task
-
-**Select exactly one explicitly authorized next Cube/task from the authoritative project records and execute it through `SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE PREP -> FREEZE`, without redoing completed qualification waves.**
-
-The historical `130 references` statement has been investigated and is **RESOLVED AS REPOSITORY-UNVERIFIABLE HISTORICAL CONTEXT**. No repository-verifiable artifact or reproducible calculation substantiates that number. It MUST NOT be used as a Cube/package/readiness/export count, release-selection basis, or authorization input.
-
-## Governance locks
-
-- No automatic merge of PR #125.
-- No external publication without explicit release authorization for that release wave.
-- No credential, 2FA, or publication guard bypass.
-- No emulator requirement removal.
-- No test weakening to obtain green CI.
-- No force-push.
-- No historical-state rewrite merely to make current state look cleaner.
-- Queued, cancelled, partial, or stale CI does not qualify a current HEAD.
-
-## Historical reconciliation note
-
-Earlier roadmap sections intentionally remain as historical audit records where they document phases that were genuinely true at the time. When a current section conflicts with a historical section, the current section and live branch evidence take precedence for execution; historical sections remain read-only evidence of prior state.
+- Current exact-head qualification: use the terminal GitHub checks attached to the live branch/PR; queued, cancelled, partial, stale, or historical runs do not qualify current state.
+- No external registry publication is being executed.
+- The active project layer remains **Library Distribution Expansion / reconciliation and next-Cube selection**.
