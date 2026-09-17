@@ -125,15 +125,33 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 ## Current repository state — live control plane
 
 - Current branch: `feat/continuity-hardening`
-- Current HEAD before this documentation reconciliation: `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`
+- Current verified HEAD: `1ebde90c7a93046cc161d408d98b9927328d2363`
 - PR #125: **OPEN / UNMERGED**
 - Base: `main`
 - Publication status: **NOT PERFORMED**
 - Force-push: **NOT USED**
-- Current source of truth: live GitHub branch ref; embedded SHAs are historical or explicitly labeled evidence.
+- Current source of truth: live GitHub branch ref; embedded historical SHAs are preserved as historical evidence.
+
+### Verified exact-head CI evidence — `1ebde90c7a93046cc161d408d98b9927328d2363`
+
+The six required PR workflows for the current verified head completed successfully:
+
+- `verify` #1221 — SUCCESS
+- `python-ports` #173 — SUCCESS
+- `kotlin-jvm` #163 — SUCCESS
+- `phase3` #95 — SUCCESS
+- `release-engineering` #88 — SUCCESS
+- `android` #222 — SUCCESS
+
+Android #222 completed successfully on Windows, macOS-15-Intel, and the mandatory Ubuntu Android instrumentation gate. The Ubuntu job also completed the AAR artifact upload.
+
+Artifact evidence from the preceding Android hardening qualification remains recorded in `PR125-CURRENT-STATUS.md`: artifact `android-aars`, ID `10472677320`, size `24463` bytes, upload ZIP digest `sha256:00c1259e5ac3379cbcff376f7e1facbf2e69372b38611d141747cf9e63f319b0`.
+
+The preceding Android hardening commit `fe72485340b4a64b5b32fc39faf032db3a2ae349` added bounded Android Package Manager readiness probing and bounded instrumentation-install execution. That hardening was then exercised successfully by Android #221 and preserved through the documentation reconciliation head above.
 
 ### Recent hardening commits on the live branch
 
+- `fe72485340b4a64b5b32fc39faf032db3a2ae349` — Android Package Manager service readiness and bounded instrumentation-install hardening; exact-head CI all six required workflows passed in #1219/#172/#162/#93/#86/#221.
 - `f107c340c84c0fd98a09e9f6b9f397284ffa1559` — Windows Android SDK batch-tool invocation hardening.
 - `beabe589dd025327c78049d0b5d411db14090cd5` — security-pipeline Python-manifest discovery correction.
 - `a3e1515152eb7fa9e1207055c55e1176bb123f751` — release-engineering workflow evaluation/secret-guard hardening.
@@ -150,13 +168,13 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 - `ff30b43b706f1e447c678a7c14099202d8812dc7` — preserved chaos forensic reports on probe exceptions.
 - `e2f0700b2eddf386bf6c4cd2b4fb75a133670ae8` — made chaos probes self-diagnosing with incremental/fatal reports.
 - `10494f0190b88211926a836c09a305743ccba5ca` — made the `signal-storm` chaos probe portable and enforced full probe-count completion.
-- `86b6c792adea2c22ef8ce6bc17f28b8899a725ca` — synchronized `PR125-CURRENT-STATUS.md` to the verified current-head CI state.
+- `86b6c792adea2c22ef8ce6bc17f28b8899a725ca` — synchronized `PR125-CURRENT-STATUS.md` to a verified current-head CI state.
 - `eb09c30a0619484be02ff27f270b865c53006508` — documentation/control-plane reconciliation after fresh exact-head CI qualification.
-- `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e` — documentation-only reconciliation establishing the verified pre-control-plane-update CI state recorded below.
+- `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e` — documentation-only reconciliation establishing the verified pre-control-plane-update CI state.
 
-### Verified CI evidence for pre-reconciliation HEAD `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`
+### Historical CI evidence retained below
 
-The following PR-triggered workflows for exact HEAD `52f7752` completed successfully:
+The following exact-head evidence for `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e` remains historical:
 
 - `verify` #1201 — SUCCESS
 - `python-ports` #163 — SUCCESS
@@ -167,15 +185,13 @@ The following PR-triggered workflows for exact HEAD `52f7752` completed successf
 
 Android #211 completed successfully on Windows and macOS instrumentation and on the mandatory Ubuntu Android instrumentation gate. The release-engineering run also completed successfully, including the hardened portable `signal-storm` chaos probe.
 
-A separate `security-pipeline` run #69 for `52f7752` ended with failure but exposed **zero jobs and zero artifacts**. It is therefore recorded as an orchestration/trigger anomaly with no code-failure evidence; it is not treated as a successful security run and was not blindly retried.
+A separate `security-pipeline` run #69 for `52f7752` ended with failure but exposed **zero jobs and zero artifacts**. It remains recorded as a historical orchestration/trigger anomaly with no code-failure evidence; it is not treated as a successful security run.
 
-This documentation reconciliation itself creates a new HEAD and therefore requires its own fresh exact-head CI qualification before being treated as the final verified documentation head.
+### Android status history
 
-### Android status for `52f7752`
+For exact HEAD `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`, Android build, AAR package verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate all passed in `android` #211.
 
-**QUALIFIED.**
-
-For exact HEAD `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`, native Android build, AAR package verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate all passed in `android` #211.
+The later Android hardening at `fe72485340b4a64b5b32fc39faf032db3a2ae349` addressed the previously observed Windows Package Manager service race, and Android #221 then completed successfully across the matrix.
 
 ### Python ports inventory
 
@@ -194,9 +210,9 @@ These counts are qualification evidence for the respective native ports; they ar
 
 ### Resolved historical `130 references` discrepancy
 
-A prior continuation checkpoint introduced an unresolved `130 references` statement without a repository-verifiable calculation. Commit `61ac3c256f44a098560c8e0c6f1d4f26b271f5c7` is the first repository commit that records the statement, and its text attributes the number to a **prior continuation checkpoint** rather than to a repository artifact or generated count. Subsequent reconciliations (`eb09c30a0619484be02ff27f270b865c53006508`, `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`, and `bf490540dcbff65ab01004517c01ca3fb9d1e9fd`) preserve that historical statement but add no independent provenance.
+A prior continuation checkpoint introduced an unresolved `130 references` statement without a repository-verifiable calculation. Commit `61ac3c256f44a098560c8e0c6f1d4f26b271f5c7` is the first repository commit that records the statement, and its text attributes the number to a **prior continuation checkpoint** rather than to a repository artifact or generated count. Subsequent reconciliations preserve that historical statement but add no independent provenance.
 
-Repository evidence was checked against the authoritative control plane, roadmap, memory schema/checkpoints, qualification matrix, package catalog, historical inventory, authorization snapshot, release records, PR timeline, commit lineage, and available code-search results. No reproducible repository calculation or artifact substantiates `130 references`. The number therefore has **no verified repository meaning** and is retained solely as historical checkpoint context.
+Repository evidence was checked against the authoritative control plane, roadmap, memory schema/checkpoints, qualification matrix, package catalog, historical inventory, authorization snapshot, release records, PR timeline, commit lineage, and available code-search results. No reproducible repository calculation or artifact substantiates `130 references`.
 
 **Operational resolution:** `130 references` is **RESOLVED AS REPOSITORY-UNVERIFIABLE HISTORICAL CONTEXT**. It is not a current repository count and MUST NOT be used for Cube count, package count, readiness count, export count, release selection, or task authorization.
 
@@ -204,18 +220,29 @@ The authoritative current packaging figures remain **84 Cubes + 2 Products = 86 
 
 ## Historical control-plane records
 
-Earlier feature-branch documentation recorded older heads and older CI runs. Those statements are retained as historical source/CI evidence and must not override the live branch ref above.
+Earlier feature-branch documentation recorded older heads and older CI runs. Those statements are retained as historical source/CI evidence and do not override the live branch ref above.
 
-The older reconciliation records reported older exact heads and an Android infrastructure timeout. Those records are superseded by the verified `52f7752` Android #211 evidence above.
+The older reconciliation records that reported an Android infrastructure timeout are superseded by the successful Android qualification at `fe724853` / #221 and the current documentation-head qualification at #222.
 
 The older `PRE_RELEASE` wording remains only as historical evidence from the earlier reconciliation phase.
 
-## Governance locks
+## Current governance gate
 
 - PR #125 remains **OPEN / UNMERGED**.
-- No external package publication has been performed.
-- No credential or 2FA guard has been bypassed.
-- No Android emulator requirement has been removed.
-- No tests may be weakened merely to obtain green CI.
-- No force-push is authorized.
-- Historical contradictory wording must not override the live control-plane state above.
+- Issue #110 remains the only currently observed explicit release authorization, and it is limited to the first two package candidates; publication is deferred by the recorded project decision.
+- Issue #109 remains a parked hardening task and is not the active milestone.
+- PR #111 remains open/unmerged and does not establish a new authorization for a separate current milestone.
+- No external package publication has been performed by this continuation.
+
+No new Cube/task may be selected merely because the repository is technically ready. The next Cube/task remains governance-gated until an authoritative project record explicitly authorizes it.
+
+## Governance locks
+
+- PR #125 must not be merged automatically.
+- No new release/tag may be created merely because CI is green.
+- No external registry publication without explicit release-wave authorization.
+- No credential or 2FA guard bypass.
+- No weakening or removal of Android/emulator requirements.
+- No tests weakened merely to obtain green CI.
+- No force-push or history rewrite.
+- Do not treat queued, cancelled, partial, stale, or historical CI as current qualification evidence.
