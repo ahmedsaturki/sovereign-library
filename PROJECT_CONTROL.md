@@ -132,24 +132,26 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 - Force-push: **NOT USED**
 - Current source of truth: live GitHub branch ref; embedded historical SHAs are preserved as historical evidence.
 
-### Verified exact-head CI evidence — `1ebde90c7a93046cc161d408d98b9927328d2363`
+### Verified exact-head CI evidence — `461bf5a9d902ee24482ab9f84d16abcf70e3898f`
 
 The six required PR workflows for the current verified head completed successfully:
 
-- `verify` #1221 — SUCCESS
-- `python-ports` #173 — SUCCESS
-- `kotlin-jvm` #163 — SUCCESS
-- `phase3` #95 — SUCCESS
-- `release-engineering` #88 — SUCCESS
-- `android` #222 — SUCCESS
+- `verify` #1225 — SUCCESS (macOS timing-only attempt rerun successfully)
+- `python-ports` #175 — SUCCESS
+- `kotlin-jvm` #165 — SUCCESS
+- `phase3` #99 — SUCCESS
+- `release-engineering` #92 — SUCCESS
+- `android` #224 — SUCCESS
 
 Android #222 completed successfully on Windows, macOS-15-Intel, and the mandatory Ubuntu Android instrumentation gate. The Ubuntu job also completed the AAR artifact upload.
 
 Artifact evidence from the preceding Android hardening qualification remains recorded in `PR125-CURRENT-STATUS.md`: artifact `android-aars`, ID `10472677320`, size `24463` bytes, upload ZIP digest `sha256:00c1259e5ac3379cbcff376f7e1facbf2e69372b38611d141747cf9e63f319b0`.
 
-The preceding Android hardening commit `fe72485340b4a64b5b32fc39faf032db3a2ae349` added bounded Android Package Manager readiness probing and bounded instrumentation-install execution. That hardening was then exercised successfully by Android #221 and preserved through the documentation reconciliation head above.
+The preceding Android hardening commit `fe72485340b4a64b5b32fc39faf032db3a2ae349` added bounded Android Package Manager readiness probing and bounded instrumentation-install execution. That hardening was exercised successfully by Android #221 and again by the current Android #224 matrix.
 
 ### Recent hardening commits on the live branch
+
+- `461bf5a9d902ee24482ab9f84d16abcf70e3898f` — reconciled roadmap release-history wording after verifying existing GitHub Release objects; exact-head CI #1225/#175/#165/#99/#92/#224 passed.
 
 - `fe72485340b4a64b5b32fc39faf032db3a2ae349` — Android Package Manager service readiness and bounded instrumentation-install hardening; exact-head CI all six required workflows passed in #1219/#172/#162/#93/#86/#221.
 - `f107c340c84c0fd98a09e9f6b9f397284ffa1559` — Windows Android SDK batch-tool invocation hardening.

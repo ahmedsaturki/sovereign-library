@@ -12,26 +12,31 @@ That live ref is the only authoritative current HEAD. Historical SHA references 
 - PR: `#125`
 - Base: `main`
 - PR state: OPEN / UNMERGED
-- Current verified HEAD: `fe72485340b4a64b5b32fc39faf032db3a2ae349`
+- Current verified HEAD: `461bf5a9d902ee24482ab9f84d16abcf70e3898f`
 - GitHub Releases: EXISTING releases are present in the repository; these are distinct from publication to external package registries.
 - External package-registry publication (npm/PyPI/Maven/etc.): NO VERIFIED CURRENT EVIDENCE OF PUBLICATION BY THIS CONTINUATION
 
 ## Live exact-head CI qualification — 2026-09-17
 
-Fresh workflows for exact HEAD `fe72485340b4a64b5b32fc39faf032db3a2ae349` are terminal-successful across all six required workflows:
+Fresh workflows for exact HEAD `461bf5a9d902ee24482ab9f84d16abcf70e3898f` are terminal-successful across all six required workflows:
 
-- `verify` #1219 — SUCCESS
-- `python-ports` #172 — SUCCESS
-- `kotlin-jvm` #162 — SUCCESS
-- `phase3` #93 — SUCCESS
-- `release-engineering` #86 — SUCCESS
-- `android` #221 — SUCCESS
+- `verify` #1225 — SUCCESS (macOS timing-only attempt rerun successfully)
+- `python-ports` #175 — SUCCESS
+- `kotlin-jvm` #165 — SUCCESS
+- `phase3` #99 — SUCCESS
+- `release-engineering` #92 — SUCCESS
+- `android` #224 — SUCCESS
 
 All six runs checked out the exact `fe72485340b4a64b5b32fc39faf032db3a2ae349` revision where applicable and completed successfully.
 
 ## Android hardening qualification
 
-Android #221 completed successfully on all three matrix platforms:
+### Previous exact-head evidence
+
+The preceding implementation hardening head `fe72485340b4a64b5b32fc39faf032db3a2ae349` was qualified by Android #221; the full current documentation head is now qualified by Android #224.
+
+
+Android #224 completed successfully on all three matrix platforms:
 
 - Windows instrumentation — SUCCESS
 - macOS-15-Intel instrumentation — SUCCESS
@@ -50,9 +55,9 @@ The prior Windows Android failure was:
 
 `com.android.ddmlib.InstallException: Unknown failure: cmd: Can't find service: package`
 
-The hardening added bounded Android Package Manager readiness probing plus a bounded instrumentation-install command. On the fresh run, Windows `installDebugAndroidTest` completed successfully (`Installed on 1 device.`), followed by successful instrumentation tests. This is a verified infrastructure hardening result, not a test bypass.
+The hardening added bounded Android Package Manager readiness probing plus a bounded instrumentation-install command. In the current Android #224 run, Windows and macOS instrumentation completed successfully and the mandatory Ubuntu gate completed successfully. This is a verified infrastructure hardening result, not a test bypass.
 
-Ubuntu also demonstrated successful package-service readiness, bounded APK installation, and execution of the required Android device tests.
+Ubuntu again demonstrated package-service readiness, bounded APK installation, and execution of the required Android device tests.
 
 ## Completed implementation / qualification layers
 

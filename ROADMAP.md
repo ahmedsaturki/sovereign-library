@@ -161,15 +161,24 @@ The Android applicability/qualification wave is also complete for the first sele
 
 The current active layer is **Library Distribution Expansion / reconciliation and next-Cube selection**. No registry publication is currently being executed.
 
+## Current exact-head CI evidence — `461bf5a9d902ee24482ab9f84d16abcf70e3898f`
+
+- `verify` #1225 — SUCCESS (macOS timing-only attempt rerun successfully)
+- `python-ports` #175 — SUCCESS
+- `kotlin-jvm` #165 — SUCCESS
+- `phase3` #99 — SUCCESS
+- `release-engineering` #92 — SUCCESS
+- `android` #224 — SUCCESS
+
 ## Current live execution state
 
 - Live branch: `feat/continuity-hardening`.
-- Live HEAD: `c581ffe7405baf95523b4ce290a7ed5375c8c69e`.
+- Live HEAD: `461bf5a9d902ee24482ab9f84d16abcf70e3898f`.
 - PR #125: OPEN / UNMERGED.
 - The live branch ref is authoritative for current state; historical SHAs inside older roadmap sections are not current state.
-- Fresh exact-head CI for `c581ffe` completed successfully across `verify` #1205, `python-ports` #165, `kotlin-jvm` #155, `phase3` #79, `release-engineering` #72, and `android` #213.
-- Android #213 passed native AAR build, out-of-tree AAR verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate.
-- Verify #1205 passed syntax, bounded contract/integration checks, declaration pilot, package tooling, reproducible packaging, security boundary verification, publication guard, conformance, and real browser smoke across Ubuntu, Windows, and macOS-15-Intel.
+- Fresh exact-head CI for `461bf5a9` completed successfully across `verify` #1225, `python-ports` #175, `kotlin-jvm` #165, `phase3` #99, `release-engineering` #92, and `android` #224.
+- Android #224 passed native AAR build, out-of-tree AAR verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate.
+- Verify #1225 passed syntax, bounded contract/integration checks, declaration pilot, package tooling, reproducible packaging, security boundary verification, publication guard, conformance, and real browser smoke across Ubuntu, Windows, and macOS-15-Intel; one macOS attempt failed only on a 1ms timing assertion and the failed job was rerun successfully.
 - These runs are the current exact-head qualification evidence for `c581ffe`; any subsequent commit requires its own fresh verification.
 
 ## One-current-task rule
