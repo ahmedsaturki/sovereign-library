@@ -125,29 +125,26 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 ## Current repository state — live control plane
 
 - Current branch: `feat/continuity-hardening`
-- Current verified HEAD: `1ebde90c7a93046cc161d408d98b9927328d2363`
+- Live HEAD: **authoritative from `refs/heads/feat/continuity-hardening`**; this control file intentionally does not embed a mutable current SHA.
 - PR #125: **OPEN / UNMERGED**
 - Base: `main`
 - Publication status: **NOT PERFORMED**
 - Force-push: **NOT USED**
 - Current source of truth: live GitHub branch ref; embedded historical SHAs are preserved as historical evidence.
 
-### Verified exact-head CI evidence — `461bf5a9d902ee24482ab9f84d16abcf70e3898f`
+### Exact-head CI evidence policy
 
-The six required PR workflows for the current verified head completed successfully:
+The current exact-head qualification is represented by the GitHub checks attached to PR #125 and the live branch ref. This control file intentionally avoids embedding a mutable “current HEAD” SHA so documentation commits cannot create a self-invalidating control-plane loop.
 
-- `verify` #1225 — SUCCESS (macOS timing-only attempt rerun successfully)
-- `python-ports` #175 — SUCCESS
-- `kotlin-jvm` #165 — SUCCESS
-- `phase3` #99 — SUCCESS
-- `release-engineering` #92 — SUCCESS
-- `android` #224 — SUCCESS
+The latest completed qualification snapshot immediately preceding this ref-stability update was:
+- `verify` #1227 — SUCCESS (macOS timing-only attempt rerun successfully)
+- `python-ports` #176 — SUCCESS
+- `kotlin-jvm` #166 — SUCCESS
+- `phase3` #101 — SUCCESS
+- `release-engineering` #94 — SUCCESS
+- `android` #225 — SUCCESS
 
-Android #222 completed successfully on Windows, macOS-15-Intel, and the mandatory Ubuntu Android instrumentation gate. The Ubuntu job also completed the AAR artifact upload.
-
-Artifact evidence from the preceding Android hardening qualification remains recorded in `PR125-CURRENT-STATUS.md`: artifact `android-aars`, ID `10472677320`, size `24463` bytes, upload ZIP digest `sha256:00c1259e5ac3379cbcff376f7e1facbf2e69372b38611d141747cf9e63f319b0`.
-
-The preceding Android hardening commit `fe72485340b4a64b5b32fc39faf032db3a2ae349` added bounded Android Package Manager readiness probing and bounded instrumentation-install execution. That hardening was exercised successfully by Android #221 and again by the current Android #224 matrix.
+That snapshot is historical evidence for the preceding `ed64a662` head. For current state, use the live branch ref plus its attached GitHub checks.
 
 ### Recent hardening commits on the live branch
 
@@ -224,7 +221,7 @@ The authoritative current packaging figures remain **84 Cubes + 2 Products = 86 
 
 Earlier feature-branch documentation recorded older heads and older CI runs. Those statements are retained as historical source/CI evidence and do not override the live branch ref above.
 
-The older reconciliation records that reported an Android infrastructure timeout are superseded by the successful Android qualification at `fe724853` / #221 and the current documentation-head qualification at #222.
+The older reconciliation records that reported an Android infrastructure timeout are superseded by the successful Android qualification at `fe724853` / #221 and later documentation-head qualifications, including #225.
 
 The older `PRE_RELEASE` wording remains only as historical evidence from the earlier reconciliation phase.
 

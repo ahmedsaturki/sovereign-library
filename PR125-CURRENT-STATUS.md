@@ -12,13 +12,13 @@ That live ref is the only authoritative current HEAD. Historical SHA references 
 - PR: `#125`
 - Base: `main`
 - PR state: OPEN / UNMERGED
-- Current verified HEAD: `461bf5a9d902ee24482ab9f84d16abcf70e3898f`
+- Current live HEAD: **authoritative from the live branch ref**; this checkpoint intentionally does not embed a mutable current SHA.
 - GitHub Releases: EXISTING releases are present in the repository; these are distinct from publication to external package registries.
 - External package-registry publication (npm/PyPI/Maven/etc.): NO VERIFIED CURRENT EVIDENCE OF PUBLICATION BY THIS CONTINUATION
 
-## Live exact-head CI qualification — 2026-09-17
+## Historical exact-head qualification snapshot — immediately preceding ref-stability update
 
-Fresh workflows for exact HEAD `461bf5a9d902ee24482ab9f84d16abcf70e3898f` are terminal-successful across all six required workflows:
+The immediately preceding documentation/reconciliation head was terminal-successful across all six required workflows:
 
 - `verify` #1225 — SUCCESS (macOS timing-only attempt rerun successfully)
 - `python-ports` #175 — SUCCESS
@@ -27,13 +27,13 @@ Fresh workflows for exact HEAD `461bf5a9d902ee24482ab9f84d16abcf70e3898f` are te
 - `release-engineering` #92 — SUCCESS
 - `android` #224 — SUCCESS
 
-All six runs checked out the exact `fe72485340b4a64b5b32fc39faf032db3a2ae349` revision where applicable and completed successfully.
+These run numbers are historical evidence for the predecessor checkpoint; current state is the live branch ref plus its attached GitHub checks.
 
 ## Android hardening qualification
 
 ### Previous exact-head evidence
 
-The preceding implementation hardening head `fe72485340b4a64b5b32fc39faf032db3a2ae349` was qualified by Android #221; the full current documentation head is now qualified by Android #224.
+The preceding implementation hardening head `fe72485340b4a64b5b32fc39faf032db3a2ae349` was qualified by Android #221; later documentation-head qualifications, including #225, preserved that hardening.
 
 
 Android #224 completed successfully on all three matrix platforms:
