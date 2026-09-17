@@ -138,7 +138,7 @@ Current status:
 - no Maven Central publication;
 - no external registry is required for project distribution;
 - GitHub Release artifacts are the default release path;
-- the first authorized candidates remain `TECHNICALLY_READY / AUTHORIZED / NOT YET GITHUB-RELEASED`;
+- GitHub Release objects for the first two authorized candidates already exist in repository release history; external package-registry publication remains deferred/unverified, and release authorization remains a separate control;
 - existing eligible Cubes continue through the standalone-library qualification wave.
 
 ### Historical: First Public Batch Publication — SUPERSEDED
