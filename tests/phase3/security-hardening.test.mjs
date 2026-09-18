@@ -54,3 +54,14 @@ test('CVE watch rejects path-bearing package identifiers', () => {
   ]);
   assert.notEqual(result.status, 0);
 });
+
+
+test('mutation runner does not accept shell-like test target input', () => {
+  const result = runNode([
+    'scripts/mutate.mjs',
+    '--target', 'cubes/retry',
+    '--test', 'tests/phase3/security-hardening.test.mjs; touch SHOULD_NOT_EXIST',
+  ]);
+  assert.notEqual(result.status, 0);
+  assert.equal(existsSync(join(ROOT, 'SHOULD_NOT_EXIST')), false);
+});
