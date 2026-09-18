@@ -35,7 +35,6 @@ These run numbers are historical evidence for the predecessor checkpoint; curren
 
 The preceding implementation hardening head `fe72485340b4a64b5b32fc39faf032db3a2ae349` was qualified by Android #221; later documentation-head qualifications, including #225, preserved that hardening.
 
-
 Android #224 completed successfully on all three matrix platforms:
 
 - Windows instrumentation — SUCCESS
