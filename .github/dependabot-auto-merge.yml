@@ -41,19 +41,14 @@ jobs:
           import sys
 
           body = sys.argv[1] if len(sys.argv) > 1 else ""
-          versions = [
-              tuple(map(int, m))
-              for m in re.findall(
+          updates = [
+              tuple(map(int, match))
+              for match in re.findall(
                   r"\bfrom\s+v?(\d+)\.(\d+)\.(\d+)\s+to\s+v?(\d+)\.(\d+)\.(\d+)\b",
                   body,
                   re.IGNORECASE,
               )
           ]
-
-          updates = []
-          for i in range(0, len(versions), 2):
-              if i + 1 < len(versions):
-                  updates.append((*versions[i], *versions[i + 1]))
 
           eligible = bool(updates) and all(
               t_major == f_major
