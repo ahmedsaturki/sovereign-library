@@ -64,7 +64,7 @@ jobs:
         run: yamllint -c .yamllint.yml .
 
       - name: markdownlint
-        run: npx --yes markdownlint-cli2@0.23.2 "**/*.md"
+        run: npx --yes markdownlint-cli2@0.23.2 --config .markdownlint-cli2.yaml "**/*.md"
 
   sbom-node:
     name: Node SBOM (SPDX)
