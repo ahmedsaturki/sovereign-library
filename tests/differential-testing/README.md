@@ -27,7 +27,7 @@ Each pair is defined as a small fixture file under `pairs/`.
 
 ## How to run
 
-```
+```bash
 node scripts/differential.mjs --out .hermes/phase3/differential
 ```
 
