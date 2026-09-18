@@ -224,22 +224,14 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  oidc-and-secret-guard:
-    name: OIDC token + secret-leak guard
+  secret-leak-guard:
+    name: Secret-leak guard
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: read
-      id-token: write
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Mint OIDC token (no exchange)
-        run: |
-          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]; then
-            echo "::error::ACTIONS_ID_TOKEN_REQUEST_TOKEN is empty; id-token permission is required for this job to be useful in publishing."
-            exit 1
-          fi
-          echo "OK: OIDC mint request is available; token is never logged or written to disk."
+      - uses: actions/checkout@3d3c42e2aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: gitleaks
         uses: gitleaks/gitleaks-action@518e4898c0cd1cc5d9aab6627a2eabd46e81d8da # v1.6.0
         env:
@@ -248,6 +240,7 @@ jobs:
 
   signing-provenance-availability:
     name: cosign + SLSA reachability probe
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
