@@ -44,7 +44,7 @@ cube opts into individual resource access via a manifest.
 
 ## Run evidence
 
-```
+```bash
 node scripts/zero-trust-check.mjs --out .hermes/phase3/zero-trust
 ```
 
