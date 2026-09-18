@@ -57,7 +57,7 @@ Future controlled path:
 
 ## Branch governance
 
-- PR #111 remains OPEN / UNMERGED / PARKED until explicitly reclassified.
+- PR #111 is CLOSED / PARKED; it does not authorize a new milestone.
 - Do not merge it as a side effect of unrelated work.
 - Do not push directly to `main` for substantive changes; use a reviewed PR.
 - Never force-push a shared branch.
