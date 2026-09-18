@@ -23,6 +23,7 @@ Classification: **HIGH / MEDIUM / LOW / NOT_APPLICABLE**.
 ## Candidates
 
 ### safe-path-resolver (SPR1)
+
 - **Android value: HIGH.** Path containment is a first-class mobile security concern
   (deep-link/URI handling, exported component path injection, file-provider scoping).
 - **Mobile/offline/security: HIGH.** Pure-lexical, no network, deterministic.
@@ -39,6 +40,7 @@ Classification: **HIGH / MEDIUM / LOW / NOT_APPLICABLE**.
 - **Classified: HIGH** → selected as the first Android Cube.
 
 ### runtime-capability-inspector (RCI1)
+
 - **Android value: MEDIUM-HIGH.** Android runtime capability gating is useful
   (min SDK, ABI/architecture, memory class, CPU).
 - **Native API availability: PARTIAL.** `arch`/`cpuCount`/`memoryBytes` exist on Android
@@ -52,23 +54,27 @@ Classification: **HIGH / MEDIUM / LOW / NOT_APPLICABLE**.
   deliberate Android snapshot mapping, not a 1:1 copy).
 
 ### canonical-json (CJSON1)
+
 - **Android value: MEDIUM.** Useful as a deterministic serialization primitive inside
   other Android Cubes.
 - **Native API availability: N/A** (pure algorithm).
 - **Classified: MEDIUM** → candidate, but lower independent user-facing value than SPR1.
 
 ### digest (DIG1)
+
 - **Android value: MEDIUM.** `MessageDigest` (SHA-256 etc.) is fully available via
   `java.security` on Android; no mapping needed.
 - **Classified: MEDIUM** → good later candidate, but not the first (less security-critical
   alone than path containment).
 
 ### validation / result / url / cache
+
 - **Android value: LOW-MEDIUM.** All are pure-logic, portable, and useful as internal
   building blocks, but none carries the standalone security weight of SPR1 on mobile.
 - **Classified: LOW-MEDIUM** → deferred.
 
 ### Browser/integration Cubes
+
 - **NOT_APPLICABLE** to native Android Kotlin (they are Chromium/CDP-bound and already
   PRE_RELEASE on the web platform).
 
@@ -80,7 +86,7 @@ Rationale (evidence-based):
 1. Highest standalone Android *security* value (path containment / traversal defense).
 2. Zero platform-API dependency → no semantic drift, no artificial mapping, faithful
    conformance to the existing canonical vectors.
-3. Smallest, lowest-risk proof-of-architecture for the new `ecosystems/android` layer.
+1. Smallest, lowest-risk proof-of-architecture for the new `ecosystems/android` layer.
 4. Reuses the verified Kotlin/JVM algorithm and the shared conformance infrastructure.
 
 RCI1 is the strong **second** candidate but is deferred until a deliberate,
