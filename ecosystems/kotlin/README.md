@@ -4,20 +4,24 @@ Standalone, dependency-free "cubes" for the JVM, written in Kotlin against the
 language-neutral Sovereign Library contracts. Each cube is independently usable.
 
 ## Modules
+
 - `safe-path-resolver` (SPR1) — containment-boundary path resolution.
 - `runtime-capability-inspector` (RCI1) — runtime capability requirements evaluation.
 - `conformance` — shared JUnit runner that executes the canonical language-neutral
   conformance vectors (`contracts/conformance/vectors.*.json`).
 
 ## Requirements
+
 - JDK 17 (toolchain pinned in `build.gradle.kts`).
 - Gradle 8.9 wrapper (no install required).
 
 ## Build, test, conformance
+
 ```bash
 ./gradlew test --no-daemon     # runs unit tests + 9/9 RCI1 + 7/7 SPR1 conformance
 ./gradlew jar  --no-daemon     # builds reproducible JVM artifacts
-```
+
+```text
 
 ## Contract fidelity
 - SPR1 status enum: `contained | outside | limit` (matches canonical Node).
