@@ -38,6 +38,16 @@ jobs:
             security/threat-modeling/reports
           if-no-files-found: ignore
 
+      - name: Validate workflow definitions
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          curl -fsSL --retry 3             -o "$tmp/actionlint.tar.gz"             "https://github.com/rhysd/actionlint/releases/download/1.7.7/actionlint_1.7.7_linux_x86_64.tar.gz"
+          tar -xzf "$tmp/actionlint.tar.gz" -C "$tmp"
+          "$tmp/actionlint" -color .github/workflows/*.yml
+
       - name: Static-analysis SARIF
         if: always()
         run: node scripts/static-analyse.mjs --out .hermes/phase3/static || true
