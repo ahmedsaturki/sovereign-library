@@ -18,7 +18,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: python-ports-${{ github.event.pull_request.number || github.ref }}
+  group: python-ports-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
