@@ -108,6 +108,7 @@ jobs:
 
   e2e-cloud:
     name: E2E (BrowserStack + SauceLabs)
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -171,6 +172,7 @@ jobs:
 
   load-k6:
     name: Load test (k6)
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -230,6 +232,7 @@ jobs:
 
   fossa-license:
     name: FOSSA license compliance
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -240,7 +243,7 @@ jobs:
           persist-credentials: false
       - name: FOSSA analyze + push
         if: ${{ env.FOSSA_API_KEY != '' }}
-        uses: fossas/fossa-action@main
+        uses: fossas/fossa-action@29693cc50323968e039056be419b32989fc5880c # v2.0.0
         with:
           args: --config .fossa.yml
       - name: FOSSA skipped (no API key)
