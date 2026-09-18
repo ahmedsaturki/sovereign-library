@@ -7,7 +7,7 @@ are candidates for multi-ecosystem native ports (Python / Kotlin-JVM / Android /
 
 Per the Sovereign directives, every suitable cube follows:
 
-```
+```text
 ONE AUTHORITATIVE CONTRACT
   -> NATIVE IMPLEMENTATION PER ECOSYSTEM
   -> CONFORMANCE
@@ -79,5 +79,5 @@ CI runs both canonical suites on every push/PR via `.github/workflows/verify.yml
 - DO update `value`/`pick` expectations only when the canonical Node behavior intentionally changes
   and the change is reviewed — never to make a weak port pass.
 - DO NOT create fake ports: a native implementation is added only with real contract + applicability
-  + tests + measurable conformance.
+  - tests + measurable conformance.
 - DO extend this directory as more cubes become port candidates.
