@@ -124,17 +124,17 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 
 ## Current repository state — live control plane
 
-- Current branch: `feat/continuity-hardening`
-- Live HEAD: **authoritative from `refs/heads/feat/continuity-hardening`**; this control file intentionally does not embed a mutable current SHA.
-- PR #125: **OPEN / UNMERGED**
+- Current branch: `main`
+- Live HEAD: **246846357ce4cdcad5c8b9f89b42d763c382c2cd** (squash merge of PR #125 on 2026-09-18).
+- PR #125: **MERGED / CLOSED** on 2026-09-18.
 - Base: `main`
 - Publication status: **NOT PERFORMED**
 - Force-push: **NOT USED**
 - Current source of truth: live GitHub branch ref; embedded historical SHAs are preserved as historical evidence.
 
-### Exact-head CI evidence policy
+### Post-merge qualification policy
 
-The current exact-head qualification is represented by the GitHub checks attached to PR #125 and the live branch ref. This control file intentionally avoids embedding a mutable “current HEAD” SHA so documentation commits cannot create a self-invalidating control-plane loop.
+PR #125 was fully qualified on its exact feature-branch HEAD before merge. The resulting squash merge is now `main` history; future qualification evidence must be attached to the new main HEAD rather than the former PR branch. This control file intentionally avoids embedding a mutable “current HEAD” SHA so documentation commits cannot create a self-invalidating control-plane loop.
 
 The latest completed qualification snapshot immediately preceding this ref-stability update was:
 - `verify` #1227 — SUCCESS (macOS timing-only attempt rerun successfully)
@@ -227,7 +227,7 @@ The older `PRE_RELEASE` wording remains only as historical evidence from the ear
 
 ## Current governance gate
 
-- PR #125 remains **OPEN / UNMERGED**.
+- PR #125 is **MERGED / CLOSED** as `246846357ce4cdcad5c8b9f89b42d763c382c2cd`.
 - Issue #110 remains the only currently observed explicit release authorization, and it is limited to the first two package candidates; publication is deferred by the recorded project decision.
 - Issue #109 remains a parked hardening task and is not the active milestone.
 - PR #111 remains open/unmerged and does not establish a new authorization for a separate current milestone.
