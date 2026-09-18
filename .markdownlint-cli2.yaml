@@ -11,6 +11,8 @@ config:
   MD013: false   # line-length — long URLs and architecture tables
   MD024:        # no-duplicate-heading — keep on, but allow sibling headings
     siblings_only: true
+  MD029: false   # governance docs intentionally preserve numbered procedure/roadmap sequences across sections
+  MD007: false   # runbooks use 3-space indentation for ordered-list command blocks
   MD033: false   # no-inline-html — governance docs use <br> etc.
   MD041: false   # first-line-h1 — checked manually because some files
                  # start with a YAML frontmatter
