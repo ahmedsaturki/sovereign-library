@@ -146,11 +146,12 @@ them here so the next wave can address them.
 
 | Workflow supply-chain lint (actionlint) | 0 errors | 0 errors (this wave, locally) |
 
-| Markdown lint | 0 errors | informational only (markdownlint-cli2 disabled in pre-commit defaults to avoid blocking on doc drift) |
+| Markdown lint | 0 errors | enforced by security-pipeline with repo-specific governance exceptions |
 
 ## How to reproduce
 
 4. Local lint pass:
+
    ```bash
    pip install yamllint
    yamllint -c .yamllint.yml .
@@ -165,6 +166,7 @@ them here so the next wave can address them.
    ```
 
 5. Local Kotlin test pass:
+
    ```bash
    cd ecosystems/android
    ./gradlew test
