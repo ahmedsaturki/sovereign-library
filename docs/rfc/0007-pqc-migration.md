@@ -18,27 +18,27 @@ threat. NIST has standardised ML-KEM (FIPS 203) and ML-DSA (FIPS
 
 ## Detailed Design
 
-- 2026-Q3 — Phase-3 introduces the hybrid stack (`node:crypto`
++ 2026-Q3 — Phase-3 introduces the hybrid stack (`node:crypto`
   24.x).
-- 2026-Q4 — Default for outbound; opt-in for inbound.
-- 2027-Q1 — Default for inbound.
-- 2027-Q4 — Hybrid mandatory.
-- 2028-Q4 — Pure PQ allowed; X25519 fallback removed.
++ 2026-Q4 — Default for outbound; opt-in for inbound.
++ 2027-Q1 — Default for inbound.
++ 2027-Q4 — Hybrid mandatory.
++ 2028-Q4 — Pure PQ allowed; X25519 fallback removed.
 
 ## Drawbacks
 
-- Larger TLS handshake sizes (~1 KB per connection).
-- Compatibility with browsers that haven't shipped PQ.
++ Larger TLS handshake sizes (~1 KB per connection).
++ Compatibility with browsers that haven't shipped PQ.
 
 ## Alternatives
 
-- Wait for FIPS final (rejected).
++ Wait for FIPS final (rejected).
 
 ## Open Questions
 
-- What is the fallback if a peer's PQ suite is broken mid-migration?
++ What is the fallback if a peer's PQ suite is broken mid-migration?
 
 ## References
 
-- `security/post-quantum/README.md`
-- ADR-0006
++ `security/post-quantum/README.md`
++ ADR-0006
