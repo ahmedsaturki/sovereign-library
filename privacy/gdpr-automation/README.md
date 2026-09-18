@@ -50,7 +50,8 @@ its root. Example:
     "request_body": "non-personal"
   }
 }
-```
+
+```text
 
 `scripts/gdpr-scan.mjs` walks the tree, ensures every cube with
 personal data has the automation wired in, and emits a transcript.
@@ -58,5 +59,7 @@ personal data has the automation wired in, and emits a transcript.
 ## Run
 
 ```
+
 node scripts/gdpr-automation.mjs --out .hermes/phase3/gdpr
-```
+
+```text
