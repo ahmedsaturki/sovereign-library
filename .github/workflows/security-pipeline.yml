@@ -26,8 +26,13 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash \
-            | bash -s -- 1.7.7
+          version="1.7.12"
+          archive="actionlint_${version}_linux_amd64.tar.gz"
+          url="https://github.com/rhysd/actionlint/releases/download/v${version}/${archive}"
+          curl -fsSL "${url}" -o /tmp/"${archive}"
+          printf '%s  %s\n' "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8" /tmp/"${archive}" | sha256sum -c -
+          tar -xzf /tmp/"${archive}" -C /tmp
+          install -m 0755 /tmp/actionlint /usr/local/bin/actionlint
           actionlint -version
 
       - name: Run actionlint
