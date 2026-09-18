@@ -18,7 +18,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: kotlin-jvm-${{ github.event.pull_request.number || github.ref }}
+  group: kotlin-jvm-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
