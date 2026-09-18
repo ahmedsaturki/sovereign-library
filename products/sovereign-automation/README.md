@@ -23,7 +23,8 @@ try {
   const report = sa.net.snapshot();
   await sa.recorder.saveScript();   // write the recorded steps to disk
 } finally { await sa.close(); }
-```
+
+```text
 
 ## Composed from cubes
 
@@ -41,9 +42,11 @@ try {
 ## CLI
 
 ```
+
 npx @sovereign/automation test <spec-file>
 npx @sovereign/automation record --out recorded.json
-```
+
+```text
 
 ## Definition of done (v0.1)
 
