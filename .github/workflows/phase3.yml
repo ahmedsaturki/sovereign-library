@@ -13,6 +13,10 @@ permissions:
   actions: read
   security-events: write
 
+concurrency:
+  group: phase3-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   phase3:
     name: phase3 hardening aggregator
