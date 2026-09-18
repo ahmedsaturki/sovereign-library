@@ -156,7 +156,8 @@ them here so the next wave can address them.
    pip install yamllint
    yamllint -c .yamllint.yml .
 
-   ```text
+   ```
+
 2. CI full pass (push to `feat/continuity-hardening` and watch
    the GitHub Actions UI; all six workflows should turn green).
 3. Local Kotlin compile pass (requires JDK 17 + Android SDK):
@@ -171,7 +172,8 @@ them here so the next wave can address them.
    cd ecosystems/android
    ./gradlew test
 
-   ```text
+   ```
+
 5. Conformance runner (Android JVM-hosted):
    ```bash
    cd ecosystems/android
