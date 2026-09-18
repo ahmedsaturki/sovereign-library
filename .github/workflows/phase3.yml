@@ -10,6 +10,8 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  actions: read
+  security-events: write
 
 jobs:
   phase3:
@@ -17,9 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
 
@@ -28,7 +30,7 @@ jobs:
 
       - name: Upload transcripts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: phase3-transcripts
           path: |
@@ -41,11 +43,11 @@ jobs:
         run: node scripts/static-analyse.mjs --out .hermes/phase3/static || true
 
       - name: CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@d8073367669608af8fbcc5f63dd0a0d52bb90cff # v4
         with:
           languages: javascript
           config-file: tests/static-analysis/codeql/codeql-config.yml
 
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@d8073367669608af8fbcc5f63dd0a0d52bb90cff # v4
         with:
           category: "/language:javascript"
