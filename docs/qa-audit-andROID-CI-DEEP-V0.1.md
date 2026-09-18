@@ -76,9 +76,9 @@ The "Verify reproducible AAR" step removes `safe-path-resolver/build` between tw
 `ecosystems/android/gradle/wrapper/` and `ecosystems/kotlin/gradle/wrapper/` only contain `gradle-wrapper.properties` — no `gradle-wrapper.jar`. Without the jar, `./gradlew` cannot bootstrap on a fresh checkout. The `gradle/actions/setup-gradle@v4` action (configured in every workflow) auto-fetches the jar from the `distributionUrl` and reports `All Gradle Wrapper jars are valid` — confirmed via `gh run view 34097998115` (08:00Z on 2026-09-07). This is acceptable for CI but bad for local reproducibility.
 
 **Recommendation:** Commit the canonical `gradle-wrapper.jar` matching the pinned Gradle 8.9 wrapper SHA. **Not done in this audit** because:
-1. CI is currently green with the setup-gradle action.
-2. Adding a 60 KB binary changes a different operational surface and the task scope is CI.
-3. The action's `validate-wrappers: true` setting means any future jar mismatch will fail loud.
+6. CI is currently green with the setup-gradle action.
+7. Adding a 60 KB binary changes a different operational surface and the task scope is CI.
+8. The action's `validate-wrappers: true` setting means any future jar mismatch will fail loud.
 
 Documented here for follow-up.
 
@@ -143,7 +143,7 @@ macOS instrumentation path.
 
 ## Files modified by this audit
 
-```
+```text
 .github/workflows/android.yml                | +162 -99   (initial hardening: macOS instrumentation, permissions, timeouts, source-rev assertion, PR-on-feat trigger, buildFeatures reproducibility, set -Eeuo pipefail; +macOS timeout fallback)
 .github/workflows/kotlin-jvm.yml             | +33 -8     (permissions, source-rev assertion, PR-on-feat trigger)
 .github/workflows/python-ports.yml           | +21 -2     (permissions, source-rev assertion, PR-on-feat trigger)
@@ -169,7 +169,7 @@ docs/qa-audit-andROID-CI-DEEP-V0.1.md       | this file
 
 ## Next steps
 
-1. **Re-trigger `security-pipeline.yml` after merge** to confirm the YAML-parse fix produces `success`.
-2. **Re-trigger `android.yml` on a merge** to confirm macOS instrumentation path works end-to-end (Windows + macOS both green).
-3. (Future) Commit `gradle-wrapper.jar` to remove the implicit dependency on `gradle/actions/setup-gradle@v4` for local development.
-4. (Future) Promote Android `safe-path-resolver` from TECHNICALLY_READY-candidate to TECHNICALLY_READY once two consecutive green runs cover both Windows + macOS instrumentation.
+9. **Re-trigger `security-pipeline.yml` after merge** to confirm the YAML-parse fix produces `success`.
+10. **Re-trigger `android.yml` on a merge** to confirm macOS instrumentation path works end-to-end (Windows + macOS both green).
+11. (Future) Commit `gradle-wrapper.jar` to remove the implicit dependency on `gradle/actions/setup-gradle@v4` for local development.
+12. (Future) Promote Android `safe-path-resolver` from TECHNICALLY_READY-candidate to TECHNICALLY_READY once two consecutive green runs cover both Windows + macOS instrumentation.
