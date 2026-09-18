@@ -1,5 +1,9 @@
 name: security-pipeline
 
+concurrency:
+  group: security-pipeline-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main, "feat/**"]
