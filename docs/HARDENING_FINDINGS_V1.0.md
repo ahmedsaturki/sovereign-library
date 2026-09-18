@@ -89,9 +89,11 @@ scanning workflow that fails the build if any likely credential is committed.
    same defect: `filter { ... }` is missing its closing paren and the
    `return` statement is incomplete. **Syntax error.**
 6. **Lines 156, 158, 159, 160, 161** — use of `?` as a binary operator:
+
    ```kotlin
    "absolute" -> "/${normalizedRoot.root.rest.joinToString("/")}/${candidatePath.absolute ? candidatePath.path : candidatePath.segments.joinToString("/")}"
    ```
+
    Kotlin has no ternary `? :`; this is Java syntax. The code as written
    will fail to compile with `Expecting an element`. It must be replaced
    with `if (...) ... else ...`.
