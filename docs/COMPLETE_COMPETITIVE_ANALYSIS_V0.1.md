@@ -16,6 +16,7 @@ This analysis examines every cube against market competitors to identify strengt
 ### Foundational Infrastructure Cubes
 
 #### 1. Filesystem & Safe Path Operations (8 cubes)
+
 | Cube | Purpose | Key Competitors | Competitive Edge |
 |------|---------|----------------|-----------------|
 | **safe-path-resolver-containment-boundary** | Path normalization, resolution, containment | Node.js built-ins, path, upath | Containment boundary enforcement |
@@ -34,6 +35,7 @@ This analysis examines every cube against market competitors to identify strengt
 - **Opportunity**: Position as "secure filesystem primitives for critical systems"
 
 #### 2. Locking & Concurrency (3 cubes)
+
 | Cube | Purpose | Key Competitors | Competitive Edge |
 |------|---------|----------------|-----------------|
 | **file-lease-advisory-lock** | Advisory file locking | proper-lockfile, js-sha1 | Recovery journal integration |
@@ -51,6 +53,7 @@ This analysis examines every cube against market competitors to identify strengt
 ### Runtime & Execution Management
 
 #### 3. Process Management (2 cubes)
+
 | Cube | Purpose | Key Competitors | Competitive Edge |
 |------|---------|----------------|-----------------|
 | **application-lifecycle** | Graceful shutdown coordination | Node.js signal handlers | Multi-participant, deadline-bounded shutdown |
@@ -65,6 +68,7 @@ This analysis examines every cube against market competitors to identify strengt
 - **Gap**: No distributed process management (intentionally)
 
 #### 4. Worker Management (2 cubes)
+
 | Cube | Purpose | Key Competitors | Competitive Edge |
 |------|---------|----------------|-----------------|
 | **worker-pool** | Worker thread pools | workerpool, poolifier | Deterministic error propagation |
@@ -80,6 +84,7 @@ This analysis examines every cube against market competitors to identify strengt
 ---
 
 ### Data Processing & Serialization (10 cubes)
+
 | Cube | Purpose | Key Competitors | Competitive Edge |
 |------|---------|----------------|-----------------|
 | **canonical-json** | Canonical JSON serialization | json-stable-stringify, fast-json-stable-stringify | Spec-compliant, deterministic keys |
@@ -103,6 +108,7 @@ This analysis examines every cube against market competitors to identify strengt
 ---
 
 ### Networking & Communication (8 cubes)
+
 | Cube | Purpose | Key Competitors | Competitive Edge |
 |------|---------|----------------|-----------------|
 | **browser** | Chrome DevTools Protocol automation | puppeteer, playwright, selenium | Zero-deps, direct CDP |
@@ -124,6 +130,7 @@ This analysis examines every cube against market competitors to identify strengt
 ---
 
 ### Security & Crypto (5 cubes)
+
 | Cube | Purpose | Key Competitors | Competitive Edge |
 |------|---------|----------------|-----------------|
 | **policy-capability-security** | Capability-based security | oso, casbin, opa | Embedded, zero-deps |
@@ -141,6 +148,7 @@ This analysis examines every cube against market competitors to identify strengt
 ---
 
 ### Artifact & Package Management (14 cubes)
+
 | Cube | Purpose | Key Competitors | Competitive Edge |
 |------|---------|----------------|-----------------|
 | **artifact-bundle** | Bundle format + verification | tar, zip, npm | Reproducible bundle verification |
@@ -168,6 +176,7 @@ This analysis examines every cube against market competitors to identify strengt
 ---
 
 ### Infrastructure & Utilities (8 cubes)
+
 | Cube | Purpose | Key Competitors | Competitive Edge |
 |------|---------|----------------|-----------------|
 | **host-identity-environment-fingerprint** | Environment fingerprinting | node:os, os-name | Privacy-first, deterministic |
@@ -189,6 +198,7 @@ This analysis examines every cube against market competitors to identify strengt
 ---
 
 ### Application Runtime Layers (3 cubes)
+
 | Cube | Purpose | Key Competitors | Competitive Edge |
 |------|---------|----------------|-----------------|
 | **agent-runtime** | LLM agent runtime | autogen, langchain, crewai | Bounded execution, deterministic |
@@ -235,6 +245,7 @@ This analysis examines every cube against market competitors to identify strengt
 ## Strategic Positioning
 
 ### Core Philosophy
+
 > **"Building reliable software requires reliable primitives."**
 
 Sovereign Library doesn't compete with full frameworks. It provides the **reliable, minimal, zero-dependency primitives** that frameworks are built on.
@@ -264,11 +275,13 @@ Sovereign Library doesn't compete with full frameworks. It provides the **reliab
 ## Recommendations
 
 ### Immediate Priority: Package Release Authorization
+
 The PROJECT_CONTROL.md indicates the immediate task is obtaining release authorization for:
 1. `@sovereign/safe-path-resolver` v0.1.0
 2. `@sovereign/runtime-capability-inspector` v0.1.0
 
 ### Next Cube: Test Runner for Browser Cube
+
 After browser cube stabilization, create a **deterministic test runner cube** that:
 - Uses worker-pool cube for parallel execution
 - Uses timeout-deadline cube for test timeouts
@@ -277,12 +290,14 @@ After browser cube stabilization, create a **deterministic test runner cube** th
 - Uses browser cube for browser automation tests
 
 ### Long-term: Ecosystem Integration Points
+
 1. **Sovereign CLI Tool** - Composed from cli + config + logger cubes
 2. **Sovereign Package Manager** - Built on artifact-* cubes
 3. **Sovereign Agent Framework** - Composition of agent-runtime + browser + workflow cubes
 
 ### Go-to-Market Strategy
-1. **Developer-first**: Focus on npm package quality and zero-dependency marketing
-2. **Security-first messaging**: Emphasize safe-by-default primitives
-3. **Deterministic reliability**: Highlight reproducible builds and tests
+
+3. **Developer-first**: Focus on npm package quality and zero-dependency marketing
+4. **Security-first messaging**: Emphasize safe-by-default primitives
+5. **Deterministic reliability**: Highlight reproducible builds and tests
 4. **Modular composition**: Showcase cube composability in examples
