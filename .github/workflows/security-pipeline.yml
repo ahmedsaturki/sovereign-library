@@ -51,17 +51,20 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install linters
+      - name: Install yamllint
         run: |
           python -m pip install --quiet yamllint==1.35.1
-          curl -sSL https://github.com/DavidAnson/markdownlint-cli2/releases/download/v0.14.0/markdownlint-cli2-0.14.0-linux-amd64.tar.gz \
-            | tar -xz -C /usr/local/bin markdownlint-cli2
+
+      - name: Set up Node for Markdown lint
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
 
       - name: yamllint
         run: yamllint -c .yamllint.yml .
 
       - name: markdownlint
-        run: markdownlint-cli2 "**/*.md"
+        run: npx --yes markdownlint-cli2@0.23.2 "**/*.md"
 
   sbom-node:
     name: Node SBOM (SPDX)
