@@ -1,0 +1,28 @@
+name: isolated-actionlint
+
+on:
+  push:
+    branches:
+      - feat/continuity-hardening
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install actionlint
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.12
+          ./actionlint -version
+
+      - name: Lint security pipeline
+        shell: bash
+        run: ./actionlint .github/workflows/security-pipeline.yml
