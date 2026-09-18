@@ -26,7 +26,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ahmedsaturki/sovereign-library.git",
+    "url": "git+https://github.com/ahmedsaturki/sovereign-library.git",
     "directory": "packages/safe-path-resolver"
   },
   "homepage": "https://github.com/ahmedsaturki/sovereign-library",

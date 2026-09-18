@@ -1,0 +1,13 @@
+cube: release-verification-harness
+version: 0.1
+last_review: 2026-09-07
+business_objective: "Verify that a release manifest has not been tampered."
+threats:
+  - id: "PASTA-RVH-1"
+    description: "Replay of an old (revoked) manifest"
+    likelihood: "low"
+    impact: "high"
+    risk: "medium"
+    mitigation: "Manifest carries monotonic nonce; replay rejected"
+    status: "mitigated"
+residual_risk: "low"

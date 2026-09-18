@@ -4,9 +4,13 @@
 
 This file is the anti-drift control for the repository. It keeps development finite, visible, and recoverable.
 
+**Agent entry:** every autonomous agent must read `AGENTS.md` first, then this file. The permanent architecture contract is `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md`, and the project-wide knowledge map is `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md`.
+
 ## Current mission
 
-**Phase 0 — First Public Package Batch / Release Authorization Readiness** after freezing **Application Lifecycle / Graceful Shutdown Coordinator v0.1**.
+**LIBRARY DISTRIBUTION EXPANSION — ACTIVE (GitHub-first / free multi-channel optional)**
+
+The immediate objective is to qualify existing Sovereign Cubes as real standalone libraries without deleting, replacing, or destabilizing completed work, while preparing free, reproducible distribution channels for later release waves.
 
 ## Current repository state
 
@@ -15,7 +19,7 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
 - Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
 - Process Supervisor / Managed Child Lifecycle v0.1 remains **FROZEN** at `881435f121d09099b9b263fa906f0968c42e4539`.
-- Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0df16265b6c6897812c56ca2`.
+- Filesystem Recovery Journal / Operation Ledger v0.1 remains **FROZEN** at `7c197ce5e2d78b0dfaa36565b6c6897812c56ca2`.
 - Safe File Quarantine / Delete v0.1 remains **FROZEN** at `699d4181f0775af93b62d78f47fb00de42ec346e`.
 - Bounded File Content Reader / Safe Content Access v0.1 remains **FROZEN** at `f8db5a309aef655aec86051587bdf12d34f3dd20`.
 - Filesystem Permission / Ownership Descriptor v0.1 remains **FROZEN** at `69028a66b3827ecfee4a70f2460998dd333f02e0`.
@@ -28,74 +32,216 @@ This file is the anti-drift control for the repository. It keeps development fin
 - Package tooling, reproducibility, and security verification: **DONE / VERIFIED** by **Run #835**, passed on Ubuntu, Windows, and macOS-15-Intel.
 - Publication guard implementation: merged in commit `91ff69c40c72b62e97d6e1e07a83f87397acacdc` and wired into CI at `9e2ca35668e5ad2923a8c6c6c4992483a07b181d`.
 - Final pre-authorization verification: **Run #845**, commit `f14bbd9229fcda23f00602cfc9288881c61e213e`, passed completely on Ubuntu, Windows, and macOS-15-Intel.
-- Release-readiness evidence is frozen in `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`.
-- Release authorization packet is frozen in `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`.
-- No public package publication is authorized yet.
+- Safe-path dependency-boundary qualification: **Run #33172159240**, final qualification job passed; commit `358cfef8ca168baa9e8402ecd972b2b0bc4d7e48` contains the resulting migration and cleanup. The qualification evidence covered all four previously Conditional consumers plus the existing safe-path/runtime-capability package candidates: targeted tests, package staging, declarations, npm pack contents, reproducibility, and security boundary checks all passed.
+- Release-readiness and authorization documents remain historical evidence; current distribution policy is recorded below.
+- **Android applicability assessment**: Matrix written (`ANDROID_APPLICABILITY_MATRIX.md`); Cube **safe-path-resolver** (SPR1) selected as first candidate. Native Android build, AAR package verification, reproducibility, and current-head emulator instrumentation qualification are verified.
+- **Phase-2 release-engineering hardening wave landed on `feat/continuity-hardening`**: multi-region CI, E2E (BrowserStack/SauceLabs), perf regression detection, release-notes + changegen automation, DB migration tooling, API versioning, backward-compat diff, feature flags, canary/progressive/blue-green deployment plans, deterministic rollback plan, hermetic chaos probes, k6 + Locust load testing, FOSSA license compliance, SBOM/cosign probes, and an OWASP ZAP DAST skeleton. The Phase-2 scripts remain Node 24 stdlib-oriented with no project runtime dependencies added for these gates.
+
+## Project-wide architecture law
+
+The repository-wide independence and ecosystem model is governed by:
+
+- `docs/SOVEREIGN_ARCHITECTURE_CONSTITUTION_V1.0.md`
+- `docs/SOVEREIGN_PROJECT_KNOWLEDGE_BASE_V1.0.md`
+- `docs/SOVEREIGN_ECOSYSTEM_CONTRACT_V0.1.json`
+- `GOVERNANCE.md`
+
+The permanent principle is:
+
+**INDEPENDENT CUBES -> EXPLICIT COMPOSITION -> REAL PRODUCTS**
+
+A suitable Cube is intended to be independently usable, testable, packageable, distributable, versioned, secure, deterministic within contract, failure/recovery hardened, cross-platform where applicable, and replaceable without requiring the whole repository.
+
+Sovereign is not Node-only. The ecosystem target is:
+
+`ONE AUTHORITATIVE CONTRACT -> NATIVE IMPLEMENTATION PER ECOSYSTEM -> CONFORMANCE -> INDEPENDENT DISTRIBUTION`
+
+Target ecosystems include Node.js, Python, Kotlin/JVM, Android, and future iOS/Apple platforms where a Cube is applicable and valuable. These are implementation/distribution targets, not a claim that every Cube already has every port.
+
+An internal dependency is allowed only when it is explicit, versioned, resolvable in the distributed artifact, tested, and consistent with the Cube contract. Monorepo-relative runtime coupling must not leak into released packages.
+
+## Current distribution policy
+
+**GITHUB-FIRST / FREE-MULTI-CHANNEL-OPTIONAL.**
+
+GitHub remains the canonical source, persistent project memory, release-evidence home, and default distribution channel.
+
+Distribution is intentionally free-by-default. Additional ecosystem registries are optional and deferred by release wave, not permanently prohibited. A registry may be enabled for a release only when it is genuinely free for the intended workload, technically appropriate, secure, reproducible, and explicitly selected for that release wave.
+
+Canonical GitHub mechanisms include the Git repository/source, tags, GitHub Releases, release assets, checksums/integrity records, and documentation/examples.
+
+Optional free ecosystem mechanisms may include npm, PyPI, Maven-compatible registries/Maven Central, GitHub Packages, JSR, or other appropriate services, subject to current terms/limits and a deliberate release decision. No paid registry or mandatory third-party service is required.
+
+No external publication should be attempted merely because a package is technically ready. Release timing and channel selection remain explicit controls.
+
+Historical wording that prohibited external registries absolutely is superseded by this policy and remains preserved as history in governance/release records.
+
+## Current packaging wave
+
+Existing suitable Cubes are being qualified as genuine standalone libraries.
+
+Current package catalog: `scripts/package-catalog.json`.
+
+Current qualification matrix: `docs/release/PACKAGE_QUALIFICATION_MATRIX-V0.1.md`.
+
+The current reported Node packaging wave contains **86 package entries representing 84 unique Cube sources + 2 Products**, with the known distinction that `safe-path-resolver` is the package identity for the `safe-path-resolver-containment-boundary` source Cube.
+
+The qualification rules remain stricter than merely creating `package.json`: exact public API, declaration surface, package boundary, out-of-tree use, reproducibility, security, documentation, and applicable CI evidence are required.
+
+The Browser/Product Readiness Wave remains completed qualification evidence. Current branch work must not regress those package boundaries. Products are expected to compose Cubes without introducing undeclared third-party/runtime dependencies in their distributable artifacts.
+
+Status summary (matrix v17): **84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL**. The 2 Products are also recorded as TECHNICALLY_READY through the same qualification pipeline; any regression must be requalified from the current head.
+
+## Continuity and non-destructive evolution
+
+GitHub is the durable project memory.
+
+Meaningful work is complete only after:
+
+`CHANGE -> TEST -> DOCUMENT -> COMMIT -> PUSH -> VERIFY REMOTE`
+
+The default evolution policy is additive:
+
+`ADD -> EXTEND -> HARDEN -> IMPROVE -> SUPERSEDE -> DEPRECATE -> ARCHIVE -> DEFER`
+
+Do not silently delete or replace working functionality, contracts, tests, packages, history, or architecture merely because a newer approach exists.
+
+Historical failures remain historical evidence. Current state must be updated separately rather than rewriting history.
 
 ## The one-current-task rule
 
 At any moment there is exactly **one active milestone** and **one immediate next task**.
 
-Everything else is parked in `ROADMAP.md` or an issue. New ideas do not enter the current task unless required for its gate.
+Current milestone:
 
-## Current milestone
+**LIBRARY DISTRIBUTION EXPANSION — ACTIVE**
 
-**PHASE-0-RELEASE-AUTHORIZATION-READY**
+Immediate next task:
 
-### Immediate next task
+**Select and explicitly authorize exactly one next Cube/task from the authoritative project records, then execute its qualification without redoing completed waves.**
 
-Obtain the explicit release-authorization decision for the two verified candidates: `@sovereign/safe-path-resolver` v0.1.0 and `@sovereign/runtime-capability-inspector` v0.1.0. Until that decision exists, do not publish, create/reserve an npm organization, configure npm tokens, add registry automation, or announce a public release.
+The Browser/Product Readiness Wave and the current Python native-port inventory remain completed historical qualification layers; do not redo them without a demonstrated regression.
 
-### Completed Phase 0 gates
+## Current repository state — live control plane
 
-1. Inventory & Classification — **DONE / FROZEN** in PR #105.
-2. License decision and repository licensing artifacts — **DONE / FROZEN** in PR #106; Apache-2.0 is authoritative on `main`.
-3. Public API boundary freeze — **DONE / VERIFIED**; Run #782 passed on Ubuntu, Windows, and macOS-15-Intel.
-4. Type/declaration strategy without a full rewrite — **DONE / VERIFIED**; Run #809 passed on Ubuntu, Windows, and macOS-15-Intel.
-5. Package contract — **DONE / VERIFIED**; PR #108 merged at `b7b8f985058fb4a13e73cf255dd6fdf7508da5bd`; Run #812 passed on Ubuntu, Windows, and macOS-15-Intel.
-6. Package tooling implementation — **DONE / VERIFIED**.
-7. Reproducible `npm pack` and security verification — **DONE / VERIFIED** by Run #835.
-8. Publication guard — **DONE / WIRED / VERIFIED** by Run #845 on all supported platforms.
-9. Release-readiness record — **DONE / FROZEN**.
-10. Release authorization packet — **DONE / FROZEN**.
+- Current branch: `feat/continuity-hardening`
+- Live HEAD: **authoritative from `refs/heads/feat/continuity-hardening`**; this control file intentionally does not embed a mutable current SHA.
+- PR #125: **OPEN / UNMERGED**
+- Base: `main`
+- Publication status: **NOT PERFORMED**
+- Force-push: **NOT USED**
+- Current source of truth: live GitHub branch ref; embedded historical SHAs are preserved as historical evidence.
 
-## Governing release records
+### Exact-head CI evidence policy
 
-- `docs/PUBLIC_PACKAGE_RELEASE_READINESS_V0.1.md`
-- `docs/PUBLIC_PACKAGE_RELEASE_AUTHORIZATION_PACKET_V0.1.md`
+The current exact-head qualification is represented by the GitHub checks attached to PR #125 and the live branch ref. This control file intentionally avoids embedding a mutable “current HEAD” SHA so documentation commits cannot create a self-invalidating control-plane loop.
 
-## Declaration strategy artifact
+The latest completed qualification snapshot immediately preceding this ref-stability update was:
+- `verify` #1227 — SUCCESS (macOS timing-only attempt rerun successfully)
+- `python-ports` #176 — SUCCESS
+- `kotlin-jvm` #166 — SUCCESS
+- `phase3` #101 — SUCCESS
+- `release-engineering` #94 — SUCCESS
+- `android` #225 — SUCCESS
 
-`docs/DECLARATION_STRATEGY_V0.1.md` is the governing decision record.
+That snapshot is historical evidence for the preceding `ed64a662` head. For current state, use the live branch ref plus its attached GitHub checks.
 
-The repository remains JavaScript-first. Public declarations are produced incrementally from JSDoc with no TypeScript runtime dependency and no full source rewrite.
+### Recent hardening commits on the live branch
 
-## Release sequence
+- `461bf5a9d902ee24482ab9f84d16abcf70e3898f` — reconciled roadmap release-history wording after verifying existing GitHub Release objects; exact-head CI #1225/#175/#165/#99/#92/#224 passed.
 
-Cube work follows:
+- `fe72485340b4a64b5b32fc39faf032db3a2ae349` — Android Package Manager service readiness and bounded instrumentation-install hardening; exact-head CI all six required workflows passed in #1219/#172/#162/#93/#86/#221.
+- `f107c340c84c0fd98a09e9f6b9f397284ffa1559` — Windows Android SDK batch-tool invocation hardening.
+- `beabe589dd025327c78049d0b5d411db14090cd5` — security-pipeline Python-manifest discovery correction.
+- `a3e1515152eb7fa9e1207055c55e1176bb123f751` — release-engineering workflow evaluation/secret-guard hardening.
+- `2423f39e17e4cbaec41818140fdd9cc99fc9fb05` — authorized-release attestation workflow corrected to use valid artifact attestation.
+- `57dd07942c2cea99ee6dee1978536af12a787ab6` — Ubuntu Android instrumentation gate restored.
+- `4fc87a446d0533739a7a95f8910196a5cf2421e3` — portable Android emulator/ADB watchdogs and AAR diagnostics.
+- `1342a5d3b877aac1abce5eef5d7188fa8965fd0d` — web-test-kit product wiring first hardened.
+- `6c39b6a6224dde892177ab4d2d9d900e92555c60` — sovereign-automation product wiring first hardened.
+- `7bd5e6dd95121a160604e6ad0cf28f387c8b58c3` — replaced the structurally broken release-engineering workflow tree entry.
+- `67aecfc25306e2b3ea40423bcd7324db8d57bec9` — restored the hardened release-engineering workflow with valid k6 action pin and hidden-artifact handling.
+- `e31a7ea499cedcabb543052f1481cda67827c5d7` — reconciled live control-plane state.
+- `a43f4045643a97db3b0db95f51c215fa51acb48b` — corrected `web-test-kit` Node import maps to use the repo’s in-repo package-linking contract.
+- `5af98079d3810f77ae2e5d0badf1fda7bd735eb3` — restored unchanged E2E skip contract.
+- `ff30b43b706f1e447c678a7c14099202d8812dc7` — preserved chaos forensic reports on probe exceptions.
+- `e2f0700b2eddf386bf6c4cd2b4fb75a133670ae8` — made chaos probes self-diagnosing with incremental/fatal reports.
+- `10494f0190b88211926a836c09a305743ccba5ca` — made the `signal-storm` chaos probe portable and enforced full probe-count completion.
+- `86b6c792adea2c22ef8ce6bc17f28b8899a725ca` — synchronized `PR125-CURRENT-STATUS.md` to a verified current-head CI state.
+- `eb09c30a0619484be02ff27f270b865c53006508` — documentation/control-plane reconciliation after fresh exact-head CI qualification.
+- `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e` — documentation-only reconciliation establishing the verified pre-control-plane-update CI state.
 
-`SPEC -> IMPLEMENT -> TEST -> FIX -> VERIFY -> RELEASE -> FREEZE -> NEXT CUBE`
+### Historical CI evidence retained below
 
-Phase 0 readiness work is controlled by the same one-current-task discipline; it does not authorize parallel Cube implementation.
+The following exact-head evidence for `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e` remains historical:
 
-The public package release path is:
+- `verify` #1201 — SUCCESS
+- `python-ports` #163 — SUCCESS
+- `kotlin-jvm` #153 — SUCCESS
+- `phase3` #75 — SUCCESS
+- `release-engineering` #68 — SUCCESS
+- `android` #211 — SUCCESS
 
-`READY -> EXPLICIT AUTHORIZATION -> FINAL CLEAN VERIFY -> TAG/RELEASE -> PUBLISH -> POST-PUBLISH VERIFY -> FREEZE`
+Android #211 completed successfully on Windows and macOS instrumentation and on the mandatory Ubuntu Android instrumentation gate. The release-engineering run also completed successfully, including the hardened portable `signal-storm` chaos probe.
 
-## Definition of done
+A separate `security-pipeline` run #69 for `52f7752` ended with failure but exposed **zero jobs and zero artifacts**. It remains recorded as a historical orchestration/trigger anomaly with no code-failure evidence; it is not treated as a successful security run.
 
-A Phase 0 task is DONE only when its decision artifact is reproducible, CI-verified, documented, and merged to `main` with the control plane advanced to exactly one next task.
+### Android status history
 
-## Anti-loop rules
+For exact HEAD `52f7752ee8eb7b9ac0dd9e5198206ee194757e0e`, Android build, AAR package verification, reproducibility, Windows/macOS instrumentation, and the mandatory Ubuntu Android instrumentation gate all passed in `android` #211.
 
-- Do not redesign the whole architecture during readiness work.
-- Do not add dependencies merely to solve a local problem without a recorded decision.
-- Do not start a second Cube while a Phase 0 task is active.
-- Do not turn a technically complete cube into a public package without API/package/security/release-authorization gates.
-- Do not call a package production-ready from source inspection alone.
-- Do not treat CI success as publication authorization.
-- Park out-of-scope work and continue.
+The later Android hardening at `fe72485340b4a64b5b32fc39faf032db3a2ae349` addressed the previously observed Windows Package Manager service race, and Android #221 then completed successfully across the matrix.
 
-## Recovery rule
+### Python ports inventory
 
-If work is interrupted, read this file first, then `ROADMAP.md`, then the latest Git commit. Resume from the listed immediate next task; do not restart from memory.
+- sovereign_safe_path_resolver (SPR1): 7/7 ✓
+- sovereign_runtime_capability_inspector (RCI1): 9/9 ✓
+- sovereign_canonical_json (CJSON1): 15/15 ✓
+- sovereign_result (RES1): 17/17 ✓
+- sovereign_digest (DIG1): 16/16 ✓
+- sovereign_cache (CACH1): 15/15 ✓
+- sovereign_validation (SVAL1): 18/18 ✓
+- sovereign_url (SURL1): 8/8 ✓
+- sovereign_retry (RTRY1): 20/20 ✓
+- sovereign_circuit_breaker (RCBR1): 10/10 ✓
+
+These counts are qualification evidence for the respective native ports; they are not substitutes for current-head CI evidence.
+
+### Resolved historical `130 references` discrepancy
+
+A prior continuation checkpoint introduced an unresolved `130 references` statement without a repository-verifiable calculation. Commit `61ac3c256f44a098560c8e0c6f1d4f26b271f5c7` is the first repository commit that records the statement, and its text attributes the number to a **prior continuation checkpoint** rather than to a repository artifact or generated count. Subsequent reconciliations preserve that historical statement but add no independent provenance.
+
+Repository evidence was checked against the authoritative control plane, roadmap, memory schema/checkpoints, qualification matrix, package catalog, historical inventory, authorization snapshot, release records, PR timeline, commit lineage, and available code-search results. No reproducible repository calculation or artifact substantiates `130 references`.
+
+**Operational resolution:** `130 references` is **RESOLVED AS REPOSITORY-UNVERIFIABLE HISTORICAL CONTEXT**. It is not a current repository count and MUST NOT be used for Cube count, package count, readiness count, export count, release selection, or task authorization.
+
+The authoritative current packaging figures remain **84 Cubes + 2 Products = 86 package entries**, and matrix v17 remains **84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL**.
+
+## Historical control-plane records
+
+Earlier feature-branch documentation recorded older heads and older CI runs. Those statements are retained as historical source/CI evidence and do not override the live branch ref above.
+
+The older reconciliation records that reported an Android infrastructure timeout are superseded by the successful Android qualification at `fe724853` / #221 and later documentation-head qualifications, including #225.
+
+The older `PRE_RELEASE` wording remains only as historical evidence from the earlier reconciliation phase.
+
+## Current governance gate
+
+- PR #125 remains **OPEN / UNMERGED**.
+- Issue #110 remains the only currently observed explicit release authorization, and it is limited to the first two package candidates; publication is deferred by the recorded project decision.
+- Issue #109 remains a parked hardening task and is not the active milestone.
+- PR #111 remains open/unmerged and does not establish a new authorization for a separate current milestone.
+- No external package publication has been performed by this continuation.
+
+No new Cube/task may be selected merely because the repository is technically ready. The next Cube/task remains governance-gated until an authoritative project record explicitly authorizes it.
+
+## Governance locks
+
+- PR #125 must not be merged automatically.
+- No new release/tag may be created merely because CI is green.
+- No external registry publication without explicit release-wave authorization.
+- No credential or 2FA guard bypass.
+- No weakening or removal of Android/emulator requirements.
+- No tests weakened merely to obtain green CI.
+- No force-push or history rewrite.
+- Do not treat queued, cancelled, partial, stale, or historical CI as current qualification evidence.

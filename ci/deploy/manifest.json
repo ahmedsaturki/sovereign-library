@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "Deployment manifest consumed by scripts/deploy-plan.mjs and scripts/rollback.mjs. The values here are illustrative — Sovereign Library's canonical distribution is GitHub Releases (per GOVERNANCE.md); deployment manifests describe downstream usage.",
+  "service": "sovereign-library",
+  "releaseTag": "v0.1.0",
+  "previousTag": "v0.0.99",
+  "imageRepository": "ghcr.io/ahmedsaturki/sovereign-library",
+  "imageTag": "v0.1.0",
+  "regions": ["us-east", "eu-west", "asia-southeast"],
+  "canary": {
+    "initialPercent": 1,
+    "rampPercent": [1, 10, 50, 100],
+    "holdSeconds": [60, 300, 600, 0]
+  },
+  "blueGreen": {
+    "blueColor": "blue",
+    "greenColor": "green",
+    "switchLabel": "sovereign-rollout"
+  },
+  "featureFlags": {
+    "phase2_canary_rollouts": true
+  },
+  "rollback": {
+    "freezeTraffic": "kubectl patch svc sovereign --type merge -p '{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"sovereign/canary-weight\":\"0\"}}}}}'",
+    "rollbackImage": "kubectl set image deploy/sovereign sovereign=PREVIOUS_TAG"
+  }
+}

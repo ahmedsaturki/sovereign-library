@@ -1,0 +1,7 @@
+cube: bounded-file-content-reader-safe-content-access
+version: 0.1
+last_review: 2026-09-07
+threats:
+  - name: "D — Denial of Service: large file exhausts memory"
+    mitigation: "MAX_BYTES limit; reader streams in chunks"
+    status: "mitigated"

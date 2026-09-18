@@ -5,6 +5,7 @@
 Standalone deterministic local execution engine for small task graphs.
 
 ### Guarantees
+
 - Task definitions are normalized and never mutated by the engine.
 - Dependencies are validated, cycles are rejected, and ready tasks execute in deterministic id order.
 - Every task has explicit lifecycle state: `pending`, `running`, `succeeded`, `failed`, `cancelled`, `timed_out`, or `skipped`.

@@ -1,0 +1,17 @@
+name: "Sovereign Library CodeQL"
+
+# Paths to scan
+paths:
+  - cubes
+  - products
+  - scripts
+  - tests
+
+# Queries to apply. We use security-and-quality extended.
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+
+# Disable default auto-build — Sovereign cubes are bundled by
+# node:test, not by `npm run build`.
+disable-default-queries: false

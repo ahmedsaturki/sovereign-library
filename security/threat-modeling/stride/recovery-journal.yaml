@@ -1,0 +1,10 @@
+cube: filesystem-recovery-journal
+version: 0.1
+last_review: 2026-09-07
+threats:
+  - name: "I — Information Disclosure: journal reveals plaintext"
+    mitigation: "journal supports at-rest encryption (optional, opt-in)"
+    status: "mitigated"
+  - name: "T — Tampering: replay yields different state"
+    mitigation: "Replay idempotence proven in formal-verification/tla/RecoveryJournal.tla"
+    status: "mitigated"

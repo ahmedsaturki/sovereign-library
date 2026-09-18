@@ -1,0 +1,12 @@
+{
+  "allowed_clients": [
+    { "client": "openssl-3.5+", "supports_pqc": true },
+    { "client": "go-1.24+", "supports_pqc": true },
+    { "client": "node-24+", "supports_pqc": true },
+    { "client": "tls-library-2024+", "supports_pqc": true }
+  ],
+  "legacy_clients_allowed": [
+    { "client": "java-8", "supports_pqc": false, "expires": "2027-Q4" },
+    { "client": "go-1.20", "supports_pqc": false, "expires": "2027-Q4" }
+  ]
+}

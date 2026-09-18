@@ -1,0 +1,12 @@
+{
+  "ipfs": {
+    "gateway": "https://ipfs.io",
+    "pinning_service": "https://pinata.cloud",
+    "offline_browser_fallback": "https://cf-ipfs.com"
+  },
+  "content_cids": {
+    "manifest_root": "QmSovereignManifestRoot",
+    "signature_root": "QmSovereignSignatureRoot",
+    "policy_root": "QmSovereignPolicyRoot"
+  }
+}

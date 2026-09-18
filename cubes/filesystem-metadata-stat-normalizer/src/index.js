@@ -2,7 +2,7 @@ import { lstat, stat, readlink } from 'node:fs/promises';
 import { platform } from 'node:os';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { dirname, resolve as resolvePath } from 'node:path';
-import { resolveContained } from '../../safe-path-resolver-containment-boundary/src/index.js';
+import { resolveContained } from '#safe-path-resolver';
 
 const MAX_PATH = 32 * 1024;
 const MAX_TARGET = 16 * 1024;

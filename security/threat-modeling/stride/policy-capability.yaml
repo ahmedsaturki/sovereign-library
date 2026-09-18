@@ -1,0 +1,22 @@
+cube: policy-capability-security
+version: 0.1
+last_review: 2026-09-07
+threats:
+  - name: "S — Spoofing: capability requested under wrong principal"
+    mitigation: "principal id is signed (OIDC JWT or mTLS peer cert)"
+    status: "mitigated"
+  - name: "T — Tampering: policy file modified after deployment"
+    mitigation: "policy file integrity-checked at load; signed digest"
+    status: "mitigated"
+  - name: "R — Repudiation: capability grant without audit"
+    mitigation: "every decision logged with principal and outcome"
+    status: "mitigated"
+  - name: "I — Information Disclosure: deny reason leaks internal state"
+    mitigation: "deny error is opaque; reason stored in operator log"
+    status: "mitigated"
+  - name: "D — Denial of Service: policy evaluation slow"
+    mitigation: "policy is a closed-form tree; O(depth) per request"
+    status: "mitigated"
+  - name: "E — Elevation of Privilege: deny-default cap allowed"
+    mitigation: "deny-default invariant verified in Coq"
+    status: "mitigated"

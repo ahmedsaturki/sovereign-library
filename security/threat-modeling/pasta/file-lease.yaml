@@ -1,0 +1,14 @@
+cube: file-lease-advisory-lock
+version: 0.1
+last_review: '2026-09-07'
+reviewer: '@sovereign/fellow-engineer'
+business_objective: 'Mutual exclusion of file access across holders.'
+threats:
+  - id: 'PASTA-FL-1'
+    description: 'Two holders both claim the same lease'
+    likelihood: 'low'
+    impact: 'high'
+    risk: 'medium'
+    mitigation: 'Formal proof in formal-verification/tla/FileLease.tla'
+    status: 'mitigated'
+residual_risk: 'low'

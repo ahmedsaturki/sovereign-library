@@ -1,0 +1,14 @@
+{
+  "name": "@sovereign/browser-interactions",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone, dependency-free browser interaction layer (locators, auto-wait, input simulation) for the Sovereign Browser Cube",
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "main": "./src/index.js",
+  "exports": { ".": "./src/index.js" },
+  "scripts": {
+    "check": "node --check src/index.js",
+    "test": "node --test test/index.test.js"
+  }
+}

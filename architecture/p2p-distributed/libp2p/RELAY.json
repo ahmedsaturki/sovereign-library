@@ -1,0 +1,6 @@
+{
+  "relays": [
+    { "id": "12D3KooWRelay0", "addresses": ["/ip4/relay.sovereign.example/tcp/4001"], "tls_pinning": "required" },
+    { "id": "12D3KooWRelay1", "addresses": ["/ip4/relay-eu.sovereign.example/tcp/4001"], "tls_pinning": "required" }
+  ]
+}

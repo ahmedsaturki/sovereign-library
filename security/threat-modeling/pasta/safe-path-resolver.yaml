@@ -1,0 +1,50 @@
+cube: safe-path-resolver
+version: 0.1
+last_review: '2026-09-07'
+reviewer: '@sovereign/fellow-engineer'
+business_objective:
+  - "Resolve user-supplied paths under a fixed root."
+  - "Reject any path that escapes the root."
+  - "Never leak path information to untrusted callers."
+technical_scope:
+  - "cubes/safe-path-resolver-containment-boundary/src/index.js"
+  - "specs/safe-path-resolver-containment-boundary-v0.1.md"
+application_decomposition:
+  - component: "resolve(root, candidate)"
+    inputs: 'string, string'
+    outputs: 'OK | LIMIT_EXCEEDED | CONTAINMENT_VIOLATION'
+  - component: 'validatePlain(options)'
+    inputs: 'object'
+    outputs: 'OK | CAPABILITY_RESULT_INVALID | CIRCULAR_INPUT | ACCESSOR_INPUT'
+threat_analysis:
+  attacker_profiles:
+    - profile: 'Internal operator (trusted but fallible)'
+      capability: 'high'
+      motive: 'Misuse, accidental breach'
+    - profile: 'External user (untrusted)'
+      capability: 'low to medium'
+      motive: 'Path traversal, escalation'
+    - profile: 'Supply-chain attacker (compromised dependency)'
+      capability: 'high'
+      motive: 'Code execution via dependency injection'
+  threats:
+    - id: 'PASTA-SPR-1'
+      description: "Attacker passes '../etc/passwd' as candidate"
+      likelihood: 'high'
+      impact: 'high'
+      risk: 'high'
+      mitigation: 'Containment check rejects escape'
+      status: 'mitigated'
+    - id: 'PASTA-SPR-2'
+      description: 'Attacker probes for symlink races'
+      likelihood: 'medium'
+      impact: 'medium'
+      risk: 'medium'
+      mitigation: 'MAX_SYMLINK_DEPTH + realpath'
+      status: 'mitigated'
+vulnerability_analysis:
+  - 'static-analyse: rule sov-005 covers path.join(path) usage'
+  - 'fuzz-testing: harness/safe-path-resolver.harness.mjs'
+risk_analysis:
+  residual_risk: 'low'
+  rationale: 'Containment invariant is formally verified (TLA+).'

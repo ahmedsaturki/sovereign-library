@@ -1,0 +1,67 @@
+name: phase3
+
+on:
+  push:
+    branches: [feat/continuity-hardening, main]
+  pull_request:
+    branches: [feat/continuity-hardening, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+  security-events: write
+
+concurrency:
+  group: phase3-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phase3:
+    name: phase3 hardening aggregator
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      - name: Phase-3 hardening summary
+        run: node scripts/phase3-summary.mjs --out .hermes/phase3
+
+      - name: Upload transcripts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: phase3-transcripts
+          path: |
+            .hermes/phase3
+            security/threat-modeling/reports
+          if-no-files-found: ignore
+
+      - name: Validate workflow definitions
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          curl -fsSL --retry 3             -o "$tmp/actionlint.tar.gz"             "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz"
+          tar -xzf "$tmp/actionlint.tar.gz" -C "$tmp"
+          "$tmp/actionlint" -color .github/workflows/*.yml
+
+      - name: Static-analysis SARIF
+        if: always()
+        run: node scripts/static-analyse.mjs --out .hermes/phase3/static || true
+
+      - name: CodeQL
+        uses: github/codeql-action/init@d8073367669608af8fbcc5f63dd0a0d52bb90cff # v4
+        with:
+          languages: javascript
+          config-file: tests/static-analysis/codeql/codeql-config.yml
+
+      - uses: github/codeql-action/analyze@d8073367669608af8fbcc5f63dd0a0d52bb90cff # v4
+        with:
+          category: "/language:javascript"

@@ -1,0 +1,52 @@
+{
+  "contract": "safe-path-resolver",
+  "format": "SPR1",
+  "version": "0.1.0",
+  "package": "@sovereign/safe-path-resolver",
+  "derivedFrom": "packages/safe-path-resolver/src/index.js (canonical Node implementation)",
+  "derivedAt": "2026-08-28",
+  "notes": "Canonical vectors are grounded in real execution of the Node implementation. A native port (Python/Kotlin/JVM/Android) MUST satisfy every vector exactly. Expected outputs are facts, not guesses.",
+  "vectors": [
+    {
+      "id": "resolveContained-relative",
+      "call": ["resolveContained", ["/a", "b/c"]],
+      "expect": { "kind": "value", "value": "/a/b/c" }
+    },
+    {
+      "id": "isContained-true",
+      "call": ["isContained", ["/a/b/c", "/a"]],
+      "expect": {
+        "kind": "value",
+        "value": { "format": "SPR1", "status": "contained", "path": "/a/b/c", "root": "/a", "reason": "segment-contained" }
+      }
+    },
+    {
+      "id": "normalizePath-dotdot",
+      "call": ["normalizePath", ["a/./b/../c"]],
+      "expect": { "kind": "value", "value": "a/c" }
+    },
+    {
+      "id": "resolveContained-traversal-blocked",
+      "call": ["resolveContained", ["/a", "../etc/passwd"]],
+      "expect": { "kind": "throws", "errorName": "SafePathResolverError" }
+    },
+    {
+      "id": "resolveContained-absolute-escape-blocked",
+      "call": ["resolveContained", ["/a", "/etc/passwd"]],
+      "expect": { "kind": "throws", "errorName": "SafePathResolverError" }
+    },
+    {
+      "id": "format-constant",
+      "call": ["SAFE_PATH_RESOLVER_FORMAT", []],
+      "expect": { "kind": "value", "value": "SPR1" }
+    },
+    {
+      "id": "limits-present",
+      "call": ["SAFE_PATH_RESOLVER_LIMITS", []],
+      "expect": {
+        "kind": "shape",
+        "requiredKeys": ["MAX_PATH", "MAX_SEGMENTS", "MAX_SYMLINK_DEPTH", "MAX_SERIALIZED"]
+      }
+    }
+  ]
+}

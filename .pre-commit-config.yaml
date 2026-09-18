@@ -1,0 +1,68 @@
+# Pre-commit configuration — checked into the repo root.
+#
+# Run locally with:
+#   pip install pre-commit
+#   pre-commit install
+#   pre-commit run --all-files
+#
+# CI mirrors the most important hooks (actionlint, yamllint, gitleaks) so
+# a missing local install never blocks a real hardening merge. The hook
+# set is intentionally small: anything not in this file is left to the
+# human reviewer.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+        # yamllint does the deep pass; this hook only ensures the file
+        # parses at all so a broken YAML fails fast.
+        args: [--allow-multiple-documents]
+        files: '\.(yml|yaml)$'
+      - id: check-json
+        files: '\.(json|jsonl)$'
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=512]
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-c, .yamllint.yml]
+        files: '\.(yml|yaml)$'
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: 1.7.7
+    hooks:
+      - id: actionlint
+        # Only run on the GitHub Actions workflow files.
+        files: '.github/workflows/.*\.(yml|yaml)$'
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli2
+    rev: v0.14.0
+    hooks:
+      - id: markdownlint-cli2
+        # Project convention is one H1 + free-form body. Disable the
+        # strict MD041 / MD013 / MD033 rules for the first pass.
+        args: [--config, .markdownlint-cli2.yaml]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.0
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/shellcheck-py/shellcheck
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        # Sovereign deliberately mixes bash and pwsh. Only target the
+        # embedded shell scripts in workflows, not platform-specific
+        # scripts/ entries.
+        files: '^.github/workflows/.*\.(yml|yaml)$'

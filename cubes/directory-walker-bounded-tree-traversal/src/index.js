@@ -1,7 +1,7 @@
 import { readdir, lstat, realpath } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { resolveContained } from '../../safe-path-resolver-containment-boundary/src/index.js';
+import { resolveContained } from '#safe-path-resolver';
 
 const MAX_PATH = 32 * 1024;
 const MAX_NAME = 8 * 1024;

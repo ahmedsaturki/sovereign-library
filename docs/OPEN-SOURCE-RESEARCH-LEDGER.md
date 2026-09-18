@@ -13,26 +13,33 @@ Purpose: study successful open-source projects and production patterns without t
 ## Browser research
 
 ### gsd-browser
+
 Native Rust browser automation over Chrome DevTools Protocol. Useful patterns: persistent daemon lifecycle, structured JSON/CLI envelopes, snapshots, ref-based actions, assertions, visual diffs, recordings, and explicit health/daemon commands. License: MIT OR Apache-2.0. Reference: https://github.com/gsd-build/gsd-browser
 
 ### cdp-browser
+
 Lightweight CDP CLI without Puppeteer. Useful patterns: tab navigation, JavaScript evaluation, screenshots, interactive element picking, console/network observation, platform executable discovery, and native WebSocket support. License: MIT. Reference: https://github.com/sids/cdp-browser
 
 ### Public Browser
+
 Direct-CDP browser automation emphasizing accessibility-tree references, cached snapshots, multi-tab operation, and token-efficient structured interaction. Useful patterns: stable refs, snapshot invalidation/refresh, local-only operation, and regression coverage. License: MIT. Reference: https://github.com/Silbercue/public-browser
 
 ### microsoft/vscode-cdp
+
 Typed CDP connection patterns and extensible domain modeling. Useful lesson: keep protocol transport, connection lifecycle, domain contracts, and custom domains separable. License: MIT. Reference: https://github.com/microsoft/vscode-cdp
 
 ### browser-cdp
+
 Real-browser/CDP operational ideas, including installed-browser discovery and profile-aware operation. Use only as behavioral reference; avoid adopting its automation-detection/evasion claims as a design goal. License: MIT. Reference: https://github.com/dpaluy/browser-cdp
 
 ## HTTP research
 
 ### nodejs/undici
+
 High-performance HTTP/1.1 implementation written from scratch for Node.js. Useful lessons: connection management, pooling, pipelining, benchmarks, and performance testing. We do not import it into the HTTP Cube. Reference: https://github.com/nodejs/undici
 
 ### sindresorhus/got
+
 Mature HTTP client with detailed request/response ergonomics, JSON helpers, streams, redirect handling, plugins, and comparison material. Useful as a behavior/reference matrix. License: MIT. Reference: https://github.com/sindresorhus/got
 
 ## Current Sovereign extraction priorities

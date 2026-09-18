@@ -1,0 +1,415 @@
+name: android
+
+on:
+  push:
+    branches: [main, "feat/**"]
+    paths:
+      - "ecosystems/android/**"
+      - ".github/workflows/android.yml"
+      - "contracts/conformance/**"
+      - ".github/scripts/**"
+  pull_request:
+    branches: [main, "feat/**"]
+    paths:
+      - "ecosystems/android/**"
+      - "contracts/conformance/**"
+      - ".github/scripts/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android ${{ matrix.os }} / AGP 8.5 / JDK 17
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15-intel]
+    defaults:
+      run:
+        working-directory: ecosystems/android
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Assert exact source revision
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          echo "Expected source revision: $expected"
+          echo "Actual source revision:   $actual"
+          test "$actual" = "$expected"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+        with:
+          cmdline-tools-version: 12266719
+          packages: ""
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: false
+
+      - name: Configure Android SDK packages
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME}}"
+          test -d "$SDK"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "$SDK/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK/emulator" >> "$GITHUB_PATH"
+
+          SDKMANAGER=$(find "$SDK/cmdline-tools" -type f \( -name sdkmanager -o -name sdkmanager.bat \) -print -quit 2>/dev/null || true)
+          test -n "$SDKMANAGER"
+          echo "Using sdkmanager: $SDKMANAGER"
+
+          run_sdkmanager() {
+            "$SDKMANAGER" "$@"
+          }
+
+          run_sdkmanager --sdk_root="$SDK" --install \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "emulator" \
+            "system-images;android-34;google_apis;x86_64"
+
+          yes | run_sdkmanager --sdk_root="$SDK" --licenses >/dev/null || true
+          test -d "$SDK/platforms/android-34"
+          test -d "$SDK/build-tools/34.0.0"
+          test -f "$SDK/platform-tools/adb" || test -f "$SDK/platform-tools/adb.exe"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@da187c8e6ffbd3802e00f2477aa5a822b25f2dda # v4.4.4
+        with:
+          gradle-version: wrapper
+
+      - name: Run unit tests + conformance (JVM-hosted)
+        shell: bash
+        run: ./gradlew test --no-daemon --console=plain
+
+      - name: Build Android library artifacts (AAR)
+        shell: bash
+        run: ./gradlew assembleRelease --no-daemon --console=plain
+
+      - name: Verify packaged AAR out-of-tree
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          AAR=$(find safe-path-resolver/build/outputs/aar -name 'safe-path-resolver-*.aar' -print -quit)
+          test -n "$AAR"
+          TMP_DIR=$(mktemp -d)
+          trap 'rm -rf "$TMP_DIR"' EXIT
+          unzip -q "$AAR" classes.jar -d "$TMP_DIR"
+          echo "AAR=$AAR"
+          jar tf "$TMP_DIR/classes.jar" | grep -F 'org/sovereign/safePathResolver/android/SafePathResolverAndroidKt.class'
+          CACHE_ROOT="${GRADLE_USER_HOME:-$HOME/.gradle}"
+          STDLIB=$(find "$CACHE_ROOT" -path '*/org.jetbrains.kotlin/kotlin-stdlib/*/kotlin-stdlib-*.jar' -print -quit 2>/dev/null || true)
+          if [ -z "$STDLIB" ]; then
+            STDLIB="$TMP_DIR/kotlin-stdlib-1.9.22.jar"
+            curl --fail --silent --show-error --location --retry 3 \
+              -o "$STDLIB" \
+              "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.9.22/kotlin-stdlib-1.9.22.jar"
+          fi
+          cat > "$TMP_DIR/Consumer.java" <<'JAVA'
+          import org.sovereign.safePathResolver.android.SafePathResolverAndroidKt;
+          public final class Consumer {
+              public static void main(String[] args) {
+                  String resolved = SafePathResolverAndroidKt.resolveContained("/consumer/root", "nested/./file.txt");
+                  if (!"/consumer/root/nested/file.txt".equals(resolved)) throw new AssertionError(resolved);
+                  System.out.println("OUT_OF_TREE_AAR_OK " + resolved);
+              }
+          }
+          JAVA
+          SEP=$(java -XshowSettings:properties -version 2>&1 | tr -d '\r' | awk -F'= ' '/path.separator =/{print $2; exit}')
+          test -n "$SEP"
+          if [ "${RUNNER_OS:-}" = "Windows" ]; then
+            JAVA_TMP=$(cygpath -w "$TMP_DIR")
+            JAVA_CLASSES=$(cygpath -w "$TMP_DIR/classes.jar")
+            JAVA_STDLIB=$(cygpath -w "$STDLIB")
+            JAVA_CONSUMER=$(cygpath -w "$TMP_DIR/Consumer.java")
+            javac -cp "$JAVA_CLASSES;$JAVA_STDLIB" "$JAVA_CONSUMER"
+            java -cp "$JAVA_TMP;$JAVA_CLASSES;$JAVA_STDLIB" Consumer
+          else
+            javac -cp "$TMP_DIR/classes.jar${SEP}$STDLIB" "$TMP_DIR/Consumer.java"
+            java -cp "$TMP_DIR${SEP}$TMP_DIR/classes.jar${SEP}$STDLIB" Consumer
+          fi
+
+      - name: Verify reproducible AAR
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          rm -rf safe-path-resolver/build
+          ./gradlew assembleRelease --no-daemon --console=plain
+          AAR1=$(find safe-path-resolver/build -name '*.aar' | head -1)
+          test -n "$AAR1"
+          SHA1=$(sha256sum "$AAR1" | awk '{print $1}')
+          rm -rf safe-path-resolver/build
+          ./gradlew assembleRelease --no-daemon --console=plain
+          AAR2=$(find safe-path-resolver/build -name '*.aar' | head -1)
+          test -n "$AAR2"
+          SHA2=$(sha256sum "$AAR2" | awk '{print $1}')
+          test "$SHA1" = "$SHA2"
+          echo "REPRODUCIBLE_AAR_OK $SHA1"
+
+      - name: Run Android instrumentation tests
+        if: matrix.os != 'ubuntu-latest'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME}}"
+          AVD_HOME="$RUNNER_TEMP/android-avd"
+          rm -rf "$AVD_HOME"
+          mkdir -p "$AVD_HOME"
+          export ANDROID_AVD_HOME="$AVD_HOME"
+          AVDMGR=$(find "$SDK/cmdline-tools" -maxdepth 3 -type f \( -name avdmanager -o -name avdmanager.bat \) -print -quit)
+          EMULATOR=$(find "$SDK/emulator" -maxdepth 1 -type f \( -name emulator -o -name emulator.exe \) -print -quit)
+          ADB=$(find "$SDK/platform-tools" -maxdepth 1 -type f \( -name adb -o -name adb.exe \) -print -quit)
+          test -n "$AVDMGR"
+          test -n "$EMULATOR"
+          test -n "$ADB"
+          "$AVDMGR" create avd \
+            --name sovereign-android-api34 \
+            --package "system-images;android-34;google_apis;x86_64" \
+            --device "pixel_2" \
+            --force
+          nohup "$EMULATOR" \
+            -avd sovereign-android-api34 \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot-load \
+            -no-snapshot-save \
+            -wipe-data \
+            -gpu swiftshader_indirect \
+            >"$RUNNER_TEMP/sovereign-emulator.log" 2>&1 &
+          EMULATOR_PID=$!
+          wait_for_adb_device() {
+            local limit_seconds="$1"
+            local deadline=$((SECONDS + limit_seconds))
+            "$ADB" start-server >/dev/null 2>&1 || true
+            while [ "$SECONDS" -lt "$deadline" ]; do
+              state=$("$ADB" get-state 2>/dev/null || true)
+              if [ "$state" = "device" ]; then return 0; fi
+              if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+                echo "Android emulator exited before an adb device became available"
+                tail -n 500 "$RUNNER_TEMP/sovereign-emulator.log" || true
+                return 1
+              fi
+              sleep 2
+            done
+            echo "Timed out waiting for adb device"
+            tail -n 500 "$RUNNER_TEMP/sovereign-emulator.log" || true
+            "$ADB" devices -l || true
+            return 1
+          }
+          run_bounded() {
+            local limit_seconds="$1"
+            shift
+            "$@" &
+            local pid=$!
+            local deadline=$((SECONDS + limit_seconds))
+            while kill -0 "$pid" 2>/dev/null; do
+              if [ "$SECONDS" -ge "$deadline" ]; then
+                echo "Command timed out after ${limit_seconds}s: $*"
+                kill "$pid" 2>/dev/null || true
+                wait "$pid" 2>/dev/null || true
+                return 124
+              fi
+              sleep 1
+            done
+            wait "$pid"
+          }
+          wait_for_adb_device 600
+          boot_ok=0
+          for _ in $(seq 1 300); do
+            boot=$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            if [ "$boot" = "1" ]; then boot_ok=1; break; fi
+            if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+              tail -n 500 "$RUNNER_TEMP/sovereign-emulator.log" || true
+              exit 1
+            fi
+            sleep 2
+          done
+          if [ "$boot_ok" != "1" ]; then
+            tail -n 500 "$RUNNER_TEMP/sovereign-emulator.log" || true
+            "$ADB" devices -l || true
+            exit 1
+          fi
+          package_service_ok=0
+          for _ in $(seq 1 60); do
+            if "$ADB" shell pm path android >/dev/null 2>&1; then package_service_ok=1; break; fi
+            sleep 2
+          done
+          if [ "$package_service_ok" != "1" ]; then
+            echo "Timed out waiting for Android Package Manager service readiness"
+            "$ADB" shell getprop sys.boot_completed || true
+            "$ADB" shell cmd package path android || true
+            "$ADB" devices -l || true
+            tail -n 500 "$RUNNER_TEMP/sovereign-emulator.log" || true
+            exit 1
+          fi
+          run_bounded 60 "$ADB" shell settings put global window_animation_scale 0
+          run_bounded 60 "$ADB" shell settings put global transition_animation_scale 0
+          run_bounded 60 "$ADB" shell settings put global animator_duration_scale 0
+          run_bounded 900 ./gradlew :safe-path-resolver:installDebugAndroidTest --no-daemon --console=plain
+          INSTRUMENTATION=$(
+            run_bounded 120 "$ADB" shell pm list instrumentation |
+              tr -d '\r' |
+              sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' |
+              grep '/androidx.test.runner.AndroidJUnitRunner' |
+              head -1
+          )
+          test -n "$INSTRUMENTATION"
+          TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
+          for method in normalize_and_contain_on_art traversal_escape_is_blocked_on_art serializer_is_deterministic_on_art; do
+            run_bounded 600 "$ADB" shell am instrument -w -r -e class "$TEST_CLASS#$method" "$INSTRUMENTATION"
+          done
+          echo "ANDROID_EMULATOR_INSTRUMENTATION_OK"
+
+      - name: Run Ubuntu Android instrumentation gate
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME}}"
+          AVD_HOME="$RUNNER_TEMP/android-avd-ubuntu"
+          rm -rf "$AVD_HOME"
+          mkdir -p "$AVD_HOME"
+          export ANDROID_AVD_HOME="$AVD_HOME"
+          AVDMGR=$(find "$SDK/cmdline-tools" -maxdepth 3 -type f -name avdmanager -print -quit)
+          EMULATOR=$(find "$SDK/emulator" -maxdepth 1 -type f -name emulator -print -quit)
+          ADB=$(find "$SDK/platform-tools" -maxdepth 1 -type f -name adb -print -quit)
+          test -n "$AVDMGR"
+          test -n "$EMULATOR"
+          test -n "$ADB"
+          "$AVDMGR" create avd \
+            --name sovereign-android-api34-ubuntu \
+            --package "system-images;android-34;google_apis;x86_64" \
+            --device "pixel_2" \
+            --force
+          EMULATOR_ACCEL_ARGS=()
+          if [ ! -r /dev/kvm ] || [ ! -w /dev/kvm ]; then
+            EMULATOR_ACCEL_ARGS=(-accel off)
+            echo "KVM unavailable; running the x86_64 emulator without hardware acceleration."
+          fi
+          nohup "$EMULATOR" \
+            -avd sovereign-android-api34-ubuntu \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot-load \
+            -no-snapshot-save \
+            -wipe-data \
+            -gpu swiftshader_indirect \
+            "${EMULATOR_ACCEL_ARGS[@]}" \
+            >"$RUNNER_TEMP/sovereign-emulator-ubuntu.log" 2>&1 &
+          EMULATOR_PID=$!
+          wait_for_adb_device() {
+            local limit_seconds="$1"
+            local deadline=$((SECONDS + limit_seconds))
+            "$ADB" start-server >/dev/null 2>&1 || true
+            while [ "$SECONDS" -lt "$deadline" ]; do
+              state=$("$ADB" get-state 2>/dev/null || true)
+              if [ "$state" = "device" ]; then return 0; fi
+              if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+                echo "Android emulator exited before an adb device became available"
+                tail -n 500 "$RUNNER_TEMP/sovereign-emulator-ubuntu.log" || true
+                return 1
+              fi
+              sleep 2
+            done
+            echo "Timed out waiting for adb device"
+            tail -n 500 "$RUNNER_TEMP/sovereign-emulator-ubuntu.log" || true
+            "$ADB" devices -l || true
+            return 1
+          }
+          run_bounded() {
+            local limit_seconds="$1"
+            shift
+            "$@" &
+            local pid=$!
+            local deadline=$((SECONDS + limit_seconds))
+            while kill -0 "$pid" 2>/dev/null; do
+              if [ "$SECONDS" -ge "$deadline" ]; then
+                echo "Command timed out after ${limit_seconds}s: $*"
+                kill "$pid" 2>/dev/null || true
+                wait "$pid" 2>/dev/null || true
+                return 124
+              fi
+              sleep 1
+            done
+            wait "$pid"
+          }
+          wait_for_adb_device 900
+          boot_ok=0
+          for _ in $(seq 1 450); do
+            boot=$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            if [ "$boot" = "1" ]; then boot_ok=1; break; fi
+            if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+              tail -n 500 "$RUNNER_TEMP/sovereign-emulator-ubuntu.log" || true
+              exit 1
+            fi
+            sleep 2
+          done
+          if [ "$boot_ok" != "1" ]; then
+            tail -n 500 "$RUNNER_TEMP/sovereign-emulator-ubuntu.log" || true
+            "$ADB" devices -l || true
+            exit 1
+          fi
+          package_service_ok=0
+          for _ in $(seq 1 60); do
+            if "$ADB" shell pm path android >/dev/null 2>&1; then package_service_ok=1; break; fi
+            sleep 2
+          done
+          if [ "$package_service_ok" != "1" ]; then
+            echo "Timed out waiting for Android Package Manager service readiness"
+            "$ADB" shell getprop sys.boot_completed || true
+            "$ADB" shell cmd package path android || true
+            "$ADB" devices -l || true
+            tail -n 500 "$RUNNER_TEMP/sovereign-emulator-ubuntu.log" || true
+            exit 1
+          fi
+          run_bounded 60 "$ADB" shell settings put global window_animation_scale 0
+          run_bounded 60 "$ADB" shell settings put global transition_animation_scale 0
+          run_bounded 60 "$ADB" shell settings put global animator_duration_scale 0
+          run_bounded 900 ./gradlew :safe-path-resolver:installDebugAndroidTest --no-daemon --console=plain
+          INSTRUMENTATION=$(
+            run_bounded 120 "$ADB" shell pm list instrumentation |
+              tr -d '\r' |
+              sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' |
+              grep '/androidx.test.runner.AndroidJUnitRunner' |
+              head -1
+          )
+          test -n "$INSTRUMENTATION"
+          TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
+          for method in normalize_and_contain_on_art traversal_escape_is_blocked_on_art serializer_is_deterministic_on_art; do
+            run_bounded 900 "$ADB" shell am instrument -w -r -e class "$TEST_CLASS#$method" "$INSTRUMENTATION"
+          done
+          echo "ANDROID_UBUNTU_ADB_INSTRUMENTATION_OK"
+
+      - name: Upload AAR artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: android-aars
+          path: ecosystems/android/safe-path-resolver/build/outputs/aar/*.aar
+          if-no-files-found: error
+          retention-days: 30

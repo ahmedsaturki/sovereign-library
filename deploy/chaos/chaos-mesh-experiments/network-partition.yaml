@@ -1,0 +1,22 @@
+# deploy/chaos/chaos-mesh-experiments/network-partition.yaml
+#
+# Chaos Mesh network-partition experiment.
+# Apply only after authorization per AGENTS.md / GOVERNANCE.md.
+#
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: sovereign-network-partition
+  namespace: chaos-mesh
+spec:
+  action: partition
+  mode: all
+  selector:
+    namespaces:
+      - default
+    labelSelectors:
+      app: sovereign
+  direction: both
+  duration: "30s"
+  scheduler:
+    cron: "@every 1h"

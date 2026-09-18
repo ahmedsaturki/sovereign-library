@@ -1,0 +1,8 @@
+{
+  "bootstrap": [
+    { "id": "12D3KooWSovereign0", "addresses": ["/ip4/127.0.0.1/tcp/4001"] },
+    { "id": "12D3KooWSovereign1", "addresses": ["/ip4/127.0.0.1/tcp/4002"] },
+    { "id": "12D3KooWSovereign2", "addresses": ["/ip4/127.0.0.1/tcp/4003"] }
+  ],
+  "protocol_version": "0.1.0"
+}

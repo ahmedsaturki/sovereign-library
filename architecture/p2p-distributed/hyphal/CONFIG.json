@@ -1,0 +1,11 @@
+{
+  "overlay": "hyphal",
+  "topic": "sovereign-library/v0.1",
+  "fanout": 3,
+  "ttl_ms": 5000,
+  "convergence_test": {
+    "node_count": 3,
+    "max_convergence_seconds": 5,
+    "expected": "all_nodes_agree_within_5s"
+  }
+}

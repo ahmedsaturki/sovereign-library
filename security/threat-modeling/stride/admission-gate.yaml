@@ -1,0 +1,7 @@
+cube: artifact-admission-gate
+version: 0.1
+last_review: 2026-09-07
+threats:
+  - name: "T — Tampering: artifact content replaced"
+    mitigation: "content-addressed storage; SHA-256 verification"
+    status: "mitigated"

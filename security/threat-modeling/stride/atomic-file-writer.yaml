@@ -1,0 +1,10 @@
+cube: atomic-file-writer-safe-replace
+version: 0.1
+last_review: 2026-09-07
+threats:
+  - name: "T — Tampering: partial write visible to reader"
+    mitigation: "rename(2) atomic on POSIX; on Windows uses MoveFileExW"
+    status: "mitigated"
+  - name: "D — Denial of Service: rename fails leaving stale temp"
+    mitigation: "temp file cleanup on failure; bounded retry"
+    status: "mitigated"

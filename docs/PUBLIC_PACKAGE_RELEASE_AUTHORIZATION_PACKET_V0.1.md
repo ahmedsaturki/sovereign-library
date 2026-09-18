@@ -69,3 +69,16 @@ Once explicit authorization exists, the next controlled sequence is:
 `AUTHORIZED -> FINAL CLEAN VERIFY -> TAG/RELEASE -> PUBLISH -> POST-PUBLISH VERIFY -> FREEZE`
 
 No publication action is embedded in this packet.
+
+## Current preparation state (as of `c4272f0`, Run #862)
+
+- Source HEAD at preparation: `c4272f0f71d8e5d33bbd764feb9d63d787cf3f3b` (PR #111, `feat/browser-interactions-assertions-webtestkit`).
+- Latest CI at preparation: **Run #862 `completed success`** on Ubuntu, Windows, and macOS-15-Intel.
+- Both candidates verified packageable: manifests present and contract-correct; `package-stage.mjs` generates `src/index.js` + `dist/index.d.ts` and asserts the exact public export surface; `npm pack` produces a 6-file tarball (LICENSE, NOTICE, README.md, package.json, src/index.js, dist/index.d.ts) with no repo leakage.
+- Publication guard still fails closed (no publish command, no registry credential, no publishConfig, root package private).
+- Machine-readable status: `docs/release/AUTHORIZATION_PACKAGE_STATUS-V0.1.json` (`authorized: false`).
+- Release runbook: `docs/release/RELEASE-RUNBOOK-V0.1.md`.
+
+The Phase-0 historical baseline (`f14bbd9229fcda23f00602cfc9288881c61e213e`, Runs #835/#837/#845) above remains valid historical evidence; the section above records the current preparation snapshot.
+
+**Status unchanged: READY — WAITING FOR EXPLICIT RELEASE AUTHORIZATION.**

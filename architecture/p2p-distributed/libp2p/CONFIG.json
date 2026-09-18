@@ -1,0 +1,24 @@
+{
+  "mode": "hybrid",
+  "transports": ["tcp", "quic", "ws", "webrtc"],
+  "discovery": ["mdns", "kad-dht", "bootstrap-list"],
+  "gossip": {
+    "protocol": "hyphal/gossip/0.1.0",
+    "fanout": 3,
+    "interval_ms": 1000
+  },
+  "content_addressing": {
+    "default": "sha256",
+    "alternative": "blake3"
+  },
+  "conflict_resolution": {
+    "default": "last-writer-wins-monotonic",
+    "per_cube_overrides": {
+      "safe-path-resolver": "immutable",
+      "file-lease-advisory-lock": "or-set",
+      "atomic-file-writer": "immutable",
+      "canonical-json": "immutable",
+      "release-verification-harness": "or-set-nonces"
+    }
+  }
+}

@@ -7,6 +7,7 @@ Freeze the first public-package candidate surface before package tooling. Only s
 ## Candidate packages
 
 ### 1. Safe Path Resolver / Containment Boundary
+
 - `SafePathResolverError`
 - `normalizePath`
 - `resolvePath`
@@ -20,6 +21,7 @@ Freeze the first public-package candidate surface before package tooling. Only s
 - `SAFE_PATH_RESOLVER_LIMITS`
 
 ### 2. Glob / Path Matcher
+
 - `GlobPathMatcherError`
 - `compileGlob`
 - `normalizeCandidatePath`
@@ -31,6 +33,7 @@ Freeze the first public-package candidate surface before package tooling. Only s
 - `GLOB_PATH_MATCHER_LIMITS`
 
 ### 3. Filesystem Watcher / Change Stream
+
 - `FilesystemWatcherError`
 - `createWatcher`
 - `FILESYSTEM_WATCHER_FORMAT`
@@ -40,6 +43,7 @@ Freeze the first public-package candidate surface before package tooling. Only s
 `createWatcher()` returns the public capability surface `{ start, next, close, stats }`.
 
 ### 4. File Lease / Advisory Lock
+
 - `FileLeaseError`
 - `acquireLease`
 - `serializeLeaseRecord`
@@ -50,12 +54,14 @@ Freeze the first public-package candidate surface before package tooling. Only s
 `acquireLease()` returns a public lease object with `renew` and `release` methods.
 
 ### 5. Atomic File Writer / Safe Replace
+
 - `AtomicFileWriterError`
 - `writeFileAtomic`
 - `ATOMIC_FILE_WRITER_FORMAT`
 - `ATOMIC_FILE_WRITER_DURABILITY`
 
 ### 6. Ephemeral Workspace / Scratch Directory
+
 - `WorkspaceError`
 - `createWorkspace`
 - `recoverWorkspace`
@@ -67,6 +73,7 @@ Freeze the first public-package candidate surface before package tooling. Only s
 `createWorkspace()` returns the public instance methods `path`, `cleanup`, and `isExpired`.
 
 ### 7. Directory Snapshot / Tree Manifest
+
 Verified candidates:
 - `DirectorySnapshotError`
 - `snapshotDirectory`
@@ -75,6 +82,7 @@ Verified candidates:
 No additional symbol is promoted to public API until explicitly verified and added here.
 
 ### 8. Runtime Capability Inspector
+
 - `RuntimeCapabilityError`
 - `inspectRuntime`
 - `evaluateRuntimeRequirements`

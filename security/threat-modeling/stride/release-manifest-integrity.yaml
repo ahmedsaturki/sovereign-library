@@ -1,0 +1,7 @@
+cube: release-manifest-integrity
+version: 0.1
+last_review: 2026-09-07
+threats:
+  - name: "T — Tampering: manifest bytes modified"
+    mitigation: "SHA-256 digest; cosign signature"
+    status: "mitigated"

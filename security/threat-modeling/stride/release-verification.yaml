@@ -1,0 +1,22 @@
+cube: release-verification-harness
+version: 0.1
+last_review: 2026-09-07
+threats:
+  - name: "S — Spoofing: forged release manifest"
+    mitigation: "manifest signed by release engineer; signature verified at load"
+    status: "mitigated"
+  - name: "T — Tampering: manifest modified after signing"
+    mitigation: "SHA-256 + cosign signature; tamper-evident"
+    status: "mitigated"
+  - name: "R — Repudiation: signed manifest denied by signer"
+    mitigation: "manifest carries timestamp + signer principal"
+    status: "mitigated"
+  - name: "I — Information Disclosure: manifest reveals customer names"
+    mitigation: "manifest scrubbed of PII before signing"
+    status: "mitigated"
+  - name: "D — Denial of Service: manifest verification too slow"
+    mitigation: "verification is O(manifest-size)"
+    status: "mitigated"
+  - name: "E — Elevation of Privilege: verifier accepts lower-trust manifest"
+    mitigation: "minimum signature threshold enforced"
+    status: "mitigated"

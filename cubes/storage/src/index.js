@@ -59,6 +59,9 @@ export class Storage {
     this.root = resolve(options.root);
     this.maxValueBytes = options.maxValueBytes ?? DEFAULT_MAX_VALUE_BYTES;
     if (!Number.isSafeInteger(this.maxValueBytes) || this.maxValueBytes <= 0) throw new StorageCubeError('INVALID_VALUE_LIMIT', 'maxValueBytes must be a positive safe integer');
+    // Capability injection: a clock keeps the cube deterministic and isolated
+    // from other tests that may mock the global timer/Date in the same process.
+    this._now = typeof options.now === 'function' ? options.now : () => Date.now();
   }
 
   async init() { await mkdir(this.root, { recursive: true }); return this; }
@@ -66,7 +69,7 @@ export class Storage {
   async set(namespace, key, value, options = {}) {
     validateName(namespace, 'namespace');
     validateName(key, 'key');
-    const json = encode({ version: 1, key, createdAt: Date.now(), expiresAt: options.ttlMs == null ? null : Date.now() + options.ttlMs, value }, this.maxValueBytes);
+    const json = encode({ version: 1, key, createdAt: this._now(), expiresAt: options.ttlMs == null ? null : this._now() + options.ttlMs, value }, this.maxValueBytes);
     if (options.ttlMs != null && (!Number.isSafeInteger(options.ttlMs) || options.ttlMs <= 0)) throw new StorageCubeError('INVALID_TTL', 'ttlMs must be a positive safe integer');
     await atomicWrite(fileFor(this.root, namespace, key), json);
     return true;
@@ -86,7 +89,7 @@ export class Storage {
     try { record = JSON.parse(raw); }
     catch (error) { throw new StorageCubeError('CORRUPT_RECORD', `Stored record for ${key} is invalid JSON`, { cause: error }); }
     if (!record || record.version !== 1 || record.key !== key) throw new StorageCubeError('CORRUPT_RECORD', `Stored record for ${key} is invalid`);
-    if (record.expiresAt != null && Date.now() >= record.expiresAt) { await rm(file, { force: true }); return undefined; }
+    if (record.expiresAt != null && this._now() >= record.expiresAt) { await rm(file, { force: true }); return undefined; }
     return record.value;
   }
 
@@ -102,7 +105,7 @@ export class Storage {
     catch (error) { if (error.code === 'ENOENT') return []; throw error; }
     return Promise.all(entries.filter(e => e.isFile() && e.name.endsWith('.json')).map(async e => {
       const file = join(dir, e.name);
-      try { const record = JSON.parse(await readFile(file, 'utf8')); if (record.expiresAt != null && Date.now() >= record.expiresAt) { await rm(file, { force: true }); return null; } return record.key; }
+      try { const record = JSON.parse(await readFile(file, 'utf8')); if (record.expiresAt != null && this._now() >= record.expiresAt) { await rm(file, { force: true }); return null; } return record.key; }
       catch { throw new StorageCubeError('CORRUPT_RECORD', `Stored record ${e.name} is invalid`); }
     })).then(values => values.filter(Boolean).sort());
   }

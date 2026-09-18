@@ -1,0 +1,90 @@
+name: prepare-authorized-release-artifacts
+
+on:
+  workflow_dispatch:
+
+# Manual-only release preparation. This workflow prepares, signs, verifies,
+# and attests artifacts; it does not publish to npm, PyPI, Maven Central,
+# GitHub Releases, or an external registry.
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+jobs:
+  prepare:
+    name: Prepare authorized v0.1 packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+
+      - name: Verify source contracts before packing
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          node scripts/verify-package-tooling.mjs
+          node scripts/verify-reproducible-package.mjs
+          node scripts/verify-security-boundaries.mjs
+
+      - name: Install cosign (Sigstore keyless signing)
+        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
+        with:
+          cosign-release: v2.4.1
+
+      - name: Build authorized release artifacts
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          SOV_OIDC_AUDIENCE="https://github.com/ahmedsaturki/sovereign-library" node scripts/prepare-authorized-release-artifacts.mjs
+          test -f .artifacts/authorized-release-v0.1/SHA256SUMS.txt
+          test -f .artifacts/authorized-release-v0.1/release-manifest.json
+
+      - name: Sign each release artifact with cosign
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          shopt -s nullglob
+          files=(.artifacts/authorized-release-v0.1/*.tgz)
+          test "${#files[@]}" -gt 0
+          for f in "${files[@]}"; do
+            echo "signing $f"
+            cosign sign-blob --yes --output-signature "${f}.sig" "$f"
+            cosign verify-blob \
+              --signature "${f}.sig" \
+              --certificate-identity-regexp 'https://github.com/ahmedsaturki/sovereign-library' \
+              --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+              "$f"
+          done
+
+      - name: Generate SLSA build provenance attestation
+        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        with:
+          subject-checksums: .artifacts/authorized-release-v0.1/SHA256SUMS.txt
+          show-summary: true
+
+      - name: Verify publication remains disabled
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          grep -q 'NOT_PUBLISHED' .artifacts/authorized-release-v0.1/release-manifest.json
+          echo "OK: release artifacts prepared, signed, and attested without publication."
+
+      - name: Upload prepared artifacts
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: sovereign-authorized-release-v0.1
+          path: .artifacts/authorized-release-v0.1/*
+          if-no-files-found: error
+          retention-days: 14

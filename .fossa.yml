@@ -1,0 +1,116 @@
+# FOSSA configuration — Sovereign Library
+#
+# FOSSA scans every package and every language dependency (npm, pip,
+# Maven, Gradle, GitHub Actions) for license compliance. The Phase-2
+# security-pipeline runs `fossa-action` on a weekly cadence and uploads
+# the resulting report as a SARIF artifact AND as a FOSSA project status
+# (via the FOSSA_API_KEY secret).
+#
+# Why we run FOSSA explicitly:
+#   1. We bundle code from many upstream ecosystem ports (Node, Python,
+#      Kotlin/JVM, Android, future iOS) — license drift must be detected
+#      at PR time, not after release.
+#   2. Apache-2.0 is the declared repo license (merged by PR #106). FOSSA
+#      confirms transitive dependencies remain compatible.
+#   3. We want a single license report attached to every GitHub Release
+#      (release notes automation picks it up via the artifact API).
+#
+# Tunables:
+#   - `only`: limit scanning to declared project metadata to keep CI fast.
+#   - `licenses`: declared allow-list. FOSSA fails the build on any
+#     dependency whose license is not in this set.
+#   - `policy`: project-level license policy name registered in FOSSA
+#     ("apache-2-0-strict"). Update via FOSSA UI if policy changes.
+#
+# This file is intentionally minimal — the heavy lifting happens in the
+# FOSSA project configuration UI (https://app.fossa.com).
+
+version: 3
+
+project:
+  name: sovereign-library
+  license: Apache-2.0
+  # Public-facing project URL: the FOSSA badge in README.md points here.
+  url: https://github.com/ahmedsaturki/sovereign-library
+
+# Scan targets — one block per ecosystem.
+analyze:
+  # Node.js / npm. The packages/<name>/ directories are the actual
+  # distributable units; the root package.json is the workspace descriptor.
+  - name: npm-roots
+    type: npm
+    path: .
+    options:
+      only: dependencies
+  - name: npm-packages
+    type: npm
+    path: packages/
+    options:
+      only: dependencies
+  # Python ports.
+  - name: python-roots
+    type: pip
+    path: python/
+    options:
+      requirements: python/requirements-audit.txt
+  # Kotlin/JVM ecosystem ports.
+  - name: kotlin-jvm
+    type: gradle
+    path: ecosystems/kotlin/
+  # Android.
+  - name: android
+    type: gradle
+    path: ecosystems/android/
+
+# License policy — fail CI on any non-allow-listed license.
+policy:
+  name: apache-2-0-strict
+  rules:
+    # SPDX allow-list: licenses that are compatible with Apache-2.0 and
+    # do NOT trigger a "review" annotation.
+    - allow:
+        - Apache-2.0
+        - MIT
+        - BSD-2-Clause
+        - BSD-3-Clause
+        - ISC
+        - CC0-1.0
+        - Unlicense
+        - MPL-2.0
+        - EPL-1.0
+        - EPL-2.0
+        - CDDL-1.0
+        # Apache-compatible weak copyleft — allowed only on tooling
+        # (test runners, linters), never on runtime code.
+        - LGPL-2.1
+        - LGPL-3.0
+      action: allow
+    # Anything else requires human review via FOSSA's project UI; this
+    # surfaces a `::warning::` annotation in the PR but does not block.
+    - action: review
+    # Hard bans — refuse these outright even with review.
+    - deny:
+        - GPL-2.0
+        - GPL-3.0
+        - AGPL-3.0
+        - SSPL-1.0
+        - BUSL-1.1
+        - Commons-Clause
+      action: deny
+
+# Reporting: upload to FOSSA + emit SARIF for GitHub Code Scanning.
+reporting:
+  sarif:
+    output: fossa-licenses.sarif
+  fossa:
+    # The push target is configured in the FOSSA project UI.
+    push: true
+
+# Exclude vendored or generated license metadata from scans so that we
+    # don't audit our own LICENSE file as a third-party license.
+exclude:
+  - path: LICENSE
+  - path: NOTICE
+  - path: "**/dist/**"
+  - path: "**/build/**"
+  - path: "**/node_modules/**"

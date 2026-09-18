@@ -1,0 +1,73 @@
+{
+  "contract": "runtime-capability-inspector",
+  "format": "RCI1",
+  "version": "0.1.0",
+  "package": "@sovereign/runtime-capability-inspector",
+  "derivedFrom": "packages/runtime-capability-inspector/src/index.js (canonical Node implementation)",
+  "derivedAt": "2026-08-28",
+  "notes": "Canonical vectors grounded in real execution of the Node implementation. inspectRuntime() inspects the current runtime; callers SHOULD pass an explicit `env` object for portability (the canonical vectors pass {PATH,PATHEXT}). A native port MUST satisfy every vector exactly.",
+  "vectors": [
+    {
+      "id": "inspect-shape",
+      "call": ["inspectRuntime", [{"env": {"PATH": "/usr/bin:/bin", "PATHEXT": ".EXE"}}]],
+      "expect": {
+        "kind": "shape",
+        "requiredKeys": ["format", "mode", "platform", "runtime", "resources", "environment"]
+      }
+    },
+    {
+      "id": "inspect-format",
+      "call": ["inspectRuntime", [{"env": {"PATH": "/usr/bin:/bin", "PATHEXT": ".EXE"}}]],
+      "expect": { "kind": "value", "pick": { "format": "RCI1", "mode": "runtime_capability_snapshot" } }
+    },
+    {
+      "id": "format-constant",
+      "call": ["RUNTIME_CAPABILITY_FORMAT", []],
+      "expect": { "kind": "value", "value": "RCI1" }
+    },
+    {
+      "id": "os-families-constant",
+      "call": ["RUNTIME_OS_FAMILIES", []],
+      "expect": {
+        "kind": "value",
+        "value": ["linux", "darwin", "win32", "freebsd", "openbsd", "sunos", "aix", "android", "other"]
+      }
+    },
+    {
+      "id": "architectures-constant",
+      "call": ["RUNTIME_ARCHITECTURES", []],
+      "expect": {
+        "kind": "value",
+        "value": ["x64", "arm64", "arm", "ia32", "ppc64", "ppc64le", "s390x", "riscv64", "loong64", "other"]
+      }
+    },
+    {
+      "id": "evaluate-pass",
+      "setup": { "call": ["inspectRuntime", [{"env": {"PATH": "/usr/bin:/bin", "PATHEXT": ".EXE"}}]] },
+      "call": ["evaluateRuntimeRequirements", ["$snapshot", {"os": ["$snapshot.platform.os"], "architectures": ["$snapshot.platform.architecture"]}]],
+      "expect": { "kind": "value", "value": { "format": "RCI1", "mode": "runtime_capability_verdict", "passed": true, "failures": [] } }
+    },
+    {
+      "id": "evaluate-unsupported-os-rejected",
+      "call": ["evaluateRuntimeRequirements", ["$snapshot", {"os": ["nonexistent-os"]}]],
+      "expect": { "kind": "throws", "errorName": "RuntimeCapabilityError" }
+    },
+    {
+      "id": "evaluate-cpu-too-low",
+      "setup": { "call": ["inspectRuntime", [{"env": {"PATH": "/usr/bin:/bin", "PATHEXT": ".EXE"}}]] },
+      "call": ["evaluateRuntimeRequirements", ["$snapshot", {"minCpuCount": 1000000000}]],
+      "expect": {
+        "kind": "value",
+        "pick": { "format": "RCI1", "mode": "runtime_capability_verdict", "passed": false },
+        "expectFailuresContains": { "code": "CPU_COUNT_TOO_LOW" }
+      }
+    },
+    {
+      "id": "serialize-roundtrip",
+      "setup": { "call": ["inspectRuntime", [{"env": {"PATH": "/usr/bin:/bin", "PATHEXT": ".EXE"}}]] },
+      "call": ["parseRuntimeReport", ["$serialized"]],
+      "serializeFirst": { "call": ["serializeRuntimeReport", ["$snapshot"]] },
+      "expect": { "kind": "value", "pick": { "format": "RCI1", "mode": "runtime_capability_snapshot" } }
+    }
+  ]
+}

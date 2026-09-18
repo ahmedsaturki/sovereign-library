@@ -1,0 +1,36 @@
+{
+  "name": "@sovereign/http-server",
+  "version": "0.1.0",
+  "description": "Sovereign http-server Cube (standalone).",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "src/index.js",
+    "dist/index.d.ts",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "package.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmedsaturki/sovereign-library.git",
+    "directory": "packages/http-server"
+  },
+  "homepage": "https://github.com/ahmedsaturki/sovereign-library",
+  "bugs": {
+    "url": "https://github.com/ahmedsaturki/sovereign-library/issues"
+  }
+}

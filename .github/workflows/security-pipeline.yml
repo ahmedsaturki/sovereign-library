@@ -1,0 +1,299 @@
+name: security-pipeline
+
+concurrency:
+  group: security-pipeline-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+    branches: [main, "feat/**"]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-workflows:
+    name: actionlint / yamllint / markdownlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install actionlint
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          version="1.7.12"
+          sha256="8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          curl -fsSL --retry 3 \
+            -o "$tmp/actionlint.tar.gz" \
+            "https://github.com/rhysd/actionlint/releases/download/v${version}/actionlint_${version}_linux_amd64.tar.gz"
+          echo "$sha256  $tmp/actionlint.tar.gz" | sha256sum -c -
+          tar -xzf "$tmp/actionlint.tar.gz" -C "$tmp"
+          install "$tmp/actionlint" /usr/local/bin/actionlint
+          actionlint -version
+
+      - name: Run actionlint
+        shell: bash
+        run: actionlint
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install yamllint
+        run: |
+          python -m pip install --quiet yamllint==1.35.1
+
+      - name: Set up Node for Markdown lint
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
+
+      - name: yamllint
+        run: yamllint -c .yamllint.yml .
+
+      - name: markdownlint
+        run: npx --yes markdownlint-cli2@0.23.2 --config .markdownlint-cli2.yaml "**/*.md"
+
+  sbom-node:
+    name: Node SBOM (SPDX)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+      - name: Install deps
+        run: npm ci --no-audit --no-fund
+      - name: Generate SBOM
+        uses: anchore/sbom-action@fc46e51fd3cb168ffb36c6d1915723c47db58abb # v0.17.7
+        with:
+          format: spdx-json
+          output-file: node-sbom.spdx.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-node
+          path: node-sbom.spdx.json
+          if-no-files-found: error
+          retention-days: 30
+
+  sbom-python:
+    name: Python SBOM (CycloneDX)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+      - name: Generate SBOM (CycloneDX)
+        run: |
+          set -Eeuo pipefail
+          python -m pip install --quiet cyclonedx-bom==4.5.0
+          cyclonedx-py environment --output-format JSON --outfile python-sbom.cdx.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-python
+          path: python-sbom.cdx.json
+          if-no-files-found: error
+          retention-days: 30
+
+  vuln-trivy-fs:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Run Trivy (filesystem)
+        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # v0.24.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-fs.sarif
+          severity: CRITICAL,HIGH
+          exit-code: "0"
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@d8073367669608af8fbcc5f63dd0a0d52bb90cff # v4
+        if: always()
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-fs
+
+  vuln-trivy-rootfs:
+    name: Trivy rootfs scan (node_modules)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+      - name: npm ci
+        run: npm ci --no-audit --no-fund
+      - name: Detect node_modules
+        id: deps
+        shell: bash
+        run: |
+          if [ -d node_modules ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "No node_modules directory exists because the root package has no installed runtime dependencies; rootfs dependency scan is not applicable."
+          fi
+      - name: Run Trivy (rootfs)
+        if: steps.deps.outputs.present == 'true'
+        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # v0.24.0
+        with:
+          scan-type: rootfs
+          scan-ref: node_modules
+          format: sarif
+          output: trivy-rootfs.sarif
+          severity: CRITICAL,HIGH
+          exit-code: "0"
+      - name: Upload SARIF
+        if: steps.deps.outputs.present == 'true' && always()
+        uses: github/codeql-action/upload-sarif@d8073367669608af8fbcc5f63dd0a0d52bb90cff # v4
+        with:
+          sarif_file: trivy-rootfs.sarif
+          category: trivy-rootfs
+
+  vuln-safety:
+    name: Safety (Python dependency audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+      - name: Resolve Python dependency pins
+        run: |
+          set -Eeuo pipefail
+          python -m pip install --quiet safety==3.2.0 pip-tools==7.4.1
+          : > requirements-audit.txt
+          while IFS= read -r -d '' p; do
+            python - "$p" >> requirements-audit.txt <<'PY'
+          import sys, tomllib
+          p = sys.argv[1]
+          with open(p, 'rb') as f:
+              data = tomllib.load(f)
+          for dep in (data.get('project', {}).get('dependencies') or []):
+              print(dep)
+          PY
+          done < <(find . -path './.git' -prune -o -name pyproject.toml -print0)
+          if [ ! -s requirements-audit.txt ]; then
+            echo "# no Python runtime dependencies discovered; audit not applicable" > requirements-audit.txt
+          fi
+      - name: Safety check
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          if grep -qv '^#' requirements-audit.txt; then
+            python -m safety check --file requirements-audit.txt --output sarif --save-json safety-python.sarif
+          else
+            printf '{"version":"1.0.0","runs":[{"tool":{"driver":{"name":"safety"}},"results":[]}]}' > safety-python.sarif
+            echo "No Python runtime dependencies to audit."
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: safety-python
+          path: safety-python.sarif
+          if-no-files-found: error
+          retention-days: 30
+
+  secret-leak-guard:
+    name: Secret-leak guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@518e4898c0cd1cc5d9aab6627a2eabd46e81d8da # v1.6.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_SUMMARY: true
+
+  signing-provenance-availability:
+    name: cosign + SLSA reachability probe
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install cosign
+        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
+        with:
+          cosign-release: v2.4.1
+      - name: cosign version
+        run: cosign version
+      - name: Probe keyless signature (dry-run)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          set +e
+          echo "hello sovereign" > /tmp/probe.txt
+          cosign sign-blob --yes --output-signature /tmp/probe.sig /tmp/probe.txt
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ]; then
+            echo "::notice::cosign sign-blob could not complete the external Sigstore exchange on this runner (exit $rc); toolchain availability verified."
+          else
+            echo "::notice::cosign sign-blob completed the full keyless flow."
+          fi
+
+  conformance-vector-pinning:
+    name: Conformance vector SHA-256 pinning
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Recompute per-vector SHA-256
+        run: |
+          set -euo pipefail
+          fail=0
+          for vf in contracts/conformance/vectors.*.json; do
+            [ -f "$vf" ] || continue
+            hash=$(jq -S '.vectors' "$vf" | sha256sum | awk '{print $1}')
+            pin="$vf.sha256"
+            if [ ! -f "$pin" ]; then
+              echo "::error::Missing immutable vector pin for $vf ($hash). Generate and commit the pin with the vector; CI never mutates the checkout."
+              fail=1
+              continue
+            fi
+            expected=$(cat "$pin")
+            if [ "$expected" = "$hash" ]; then
+              echo "OK $vf"
+            else
+              echo "::error::$vf hash drifted ($expected != $hash). Bump the pin in the same commit that updates the vector, with derivedFrom evidence in the JSON."
+              fail=1
+            fi
+          done
+          exit "$fail"

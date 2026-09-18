@@ -1,0 +1,27 @@
+cube: safe-path-resolver
+version: 0.1
+last_review: '2026-09-07'
+reviewer: '@sovereign/fellow-engineer'
+threats:
+  - name: "S - Spoofing: a caller passes root='/etc' but claims root='/data'"
+    mitigation: 'allow-list of canonicalised roots; reject unknown roots'
+    status: 'mitigated'
+    references: ["specs/safe-path-resolver-containment-boundary-v0.1.md"]
+  - name: "T - Tampering: candidate path contains '..' that escapes root"
+    mitigation: "path-segment resolver rejects any '..' that exits root"
+    status: 'mitigated'
+    references: ["formal-verification/tla/SafePath.tla"]
+  - name: "R - Repudiation: caller denies that resolve was invoked"
+    mitigation: 'audit log every resolve call to cubes/release-verification-harness'
+    status: 'mitigated'
+    references: ["cubes/release-verification-harness/"]
+  - name: "I - Information Disclosure: error messages reveal absolute paths"
+    mitigation: 'error code is opaque; detailed path is sent to operator log only'
+    status: 'mitigated'
+  - name: "D - Denial of Service: long paths cause CPU exhaustion"
+    mitigation: 'MAX_PATH and MAX_SEGMENTS limits in src/index.js'
+    status: 'mitigated'
+    references: ["cubes/safe-path-resolver-containment-boundary/src/index.js"]
+  - name: "E - Elevation of Privilege: symlink traversal bypasses containment"
+    mitigation: 'MAX_SYMLINK_DEPTH limit and realpath resolution before containment check'
+    status: 'mitigated'

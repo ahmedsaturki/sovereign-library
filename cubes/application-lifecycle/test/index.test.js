@@ -121,7 +121,8 @@ test('active cancellation stops admitting new participants', async () => {
 });
 
 test('late participant completion cannot mutate the terminal snapshot', async () => {
-  const lifecycle = createApplicationLifecycle({ defaultTimeoutMs: 5 });
+  const c = caps();
+  const lifecycle = createApplicationLifecycle({ defaultTimeoutMs: 5 }, c);
   let finish;
   lifecycle.register({ id: 'late' }, { close: () => new Promise((resolve) => { finish = resolve; }) });
   const result = await lifecycle.shutdown();

@@ -1,0 +1,7 @@
+{
+  "name": "canonical-json-vs-json-stringify",
+  "left": "cubes/canonical-json/src/index.js",
+  "right": "JSON.stringify (after recursive key-sort)",
+  "fixtures": "fixtures/canonical-json.json",
+  "invariant": "left(value) == right(value) for all object values"
+}

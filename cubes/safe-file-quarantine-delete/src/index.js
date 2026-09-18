@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { lstat as nativeLstat, stat as nativeStat, realpath as nativeRealpath, mkdir as nativeMkdir, rename as nativeRename, readFile as nativeReadFile, writeFile as nativeWriteFile, rm as nativeRm } from 'node:fs/promises';
-import { resolveContained } from '../../safe-path-resolver-containment-boundary/src/index.js';
+import { resolveContained } from '#safe-path-resolver';
 
 const FORMAT = 'SFQ1';
 const MAX_PATH = 32 * 1024;
