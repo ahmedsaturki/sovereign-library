@@ -176,9 +176,9 @@ These run numbers are historical qualification evidence for the predecessor docu
 
 ## Current live execution state
 
-- Live branch: `feat/continuity-hardening`.
-- Live HEAD: **246846357ce4cdcad5c8b9f89b42d763c382c2cd** (squash merge of PR #125 on 2026-09-18).
-- PR #125: OPEN / UNMERGED.
-- Current exact-head qualification: use the terminal GitHub checks attached to the live branch/PR; queued, cancelled, partial, stale, or historical runs do not qualify current state.
-- No external registry publication is being executed.
+- Live branch: `main`.
+- Live HEAD: **eb1a2e52f106f14b351e9575119413a19a15398a** (post-merge control-plane reconciliation commit on 2026-09-18).
+- PR #125: MERGED / CLOSED.
+- Current qualification policy: historical PR #125 exact-head evidence proves the merged continuity wave; current main changes must use their own terminal main/PR checks.
+- No external registry publication is being executed unless and until an explicit release authorization is recorded.
 - The active project layer remains **Library Distribution Expansion / reconciliation and next-Cube selection**.
