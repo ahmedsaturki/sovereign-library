@@ -21,7 +21,7 @@ cubes.
 
 ## How to run
 
-```
+```text
 # Build the C port + run KLEE
 bash scripts/symbolic-execute.sh \
   --target safe-path-resolver \
