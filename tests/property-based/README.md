@@ -42,7 +42,7 @@ Instead, the harness:
 
 ## How to run
 
-```
+```bash
 npm run test:property            # runs every *.prop.mjs with default 200 cases
 npm run test:property -- --cases 1000 --seed 0xC0FFEE
 ```
