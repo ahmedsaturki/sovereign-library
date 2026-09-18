@@ -5,11 +5,10 @@
 
 ## Business objective
 
-
 ## Technical scope
 
-
 ## Threats
+
 [
   {
     "name": "\"Resolve user-supplied paths under a fixed root.\""
@@ -60,4 +59,5 @@
 ]
 
 ## Residual risk
+
 unknown
