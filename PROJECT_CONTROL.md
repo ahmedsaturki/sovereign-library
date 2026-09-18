@@ -228,9 +228,9 @@ The older `PRE_RELEASE` wording remains only as historical evidence from the ear
 ## Current governance gate
 
 - PR #125 is **MERGED / CLOSED** as `246846357ce4cdcad5c8b9f89b42d763c382c2cd`.
-- Issue #110 remains the only currently observed explicit release authorization, and it is limited to the first two package candidates; publication is deferred by the recorded project decision.
+- Issue #110 is the recorded authorization for the first two package candidates; its publication-deferral decision remains part of the current control state.
 - Issue #109 remains a parked hardening task and is not the active milestone.
-- PR #111 remains open/unmerged and does not establish a new authorization for a separate current milestone.
+- PR #111 is closed/parked and does not establish a new authorization for a separate current milestone.
 - No external package publication has been performed by this continuation.
 
 No new Cube/task may be selected merely because the repository is technically ready. The next Cube/task remains governance-gated until an authoritative project record explicitly authorizes it.
