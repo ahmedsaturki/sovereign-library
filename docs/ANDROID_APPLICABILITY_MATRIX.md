@@ -86,7 +86,7 @@ Rationale (evidence-based):
 1. Highest standalone Android *security* value (path containment / traversal defense).
 2. Zero platform-API dependency → no semantic drift, no artificial mapping, faithful
    conformance to the existing canonical vectors.
-1. Smallest, lowest-risk proof-of-architecture for the new `ecosystems/android` layer.
+3. Smallest, lowest-risk proof-of-architecture for the new `ecosystems/android` layer.
 4. Reuses the verified Kotlin/JVM algorithm and the shared conformance infrastructure.
 
 RCI1 is the strong **second** candidate but is deferred until a deliberate,
