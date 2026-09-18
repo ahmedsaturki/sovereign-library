@@ -9,6 +9,7 @@ The uploaded `Omni-Agent-Core.zip` was reviewed as reference material only.
 ## Useful ideas to reimplement natively
 
 ### Execution
+
 - queueing with bounded concurrency
 - retry attempts with backoff
 - task state tracking
@@ -17,6 +18,7 @@ The uploaded `Omni-Agent-Core.zip` was reviewed as reference material only.
 - idle/shutdown lifecycle
 
 ### Data
+
 - normalization and cleaning
 - schema-aware validation
 - deterministic hashing
@@ -26,12 +28,14 @@ The uploaded `Omni-Agent-Core.zip` was reviewed as reference material only.
 - query/compact/export concepts
 
 ### Reporting
+
 - deterministic HTML report generation
 - statistics and summaries
 - safe serialization for cyclic objects
 - cleanup/retention concepts
 
 ### Operations
+
 - environment detection
 - health/readiness checks
 - explicit resource cleanup
