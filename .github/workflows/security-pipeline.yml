@@ -1,7 +1,7 @@
 name: security-pipeline
 
 concurrency:
-  group: security-pipeline-${{ github.ref }}
+  group: security-pipeline-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 on:
