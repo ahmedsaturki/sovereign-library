@@ -12,7 +12,7 @@ Browser Cube.
 
 The cube accepts a `session` object that satisfies exactly one method:
 
-```
+```text
 session.evaluate(expression: string, returnByValue?: boolean): Promise<any>
 ```
 
@@ -48,7 +48,8 @@ const page = new BrowserInteractions(session);
 const submit = page.locator(By.role('button', { name: 'Submit' }));
 await submit.waitForVisible({ timeoutMs: 5000 });
 await submit.click();
-```
+
+```text
 
 ## Definition of done
 
