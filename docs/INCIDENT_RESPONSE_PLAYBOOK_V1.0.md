@@ -30,18 +30,22 @@
 1. Open an incident channel: `gh issue create --label incident \
    --title "SEV-1: release integrity incident" --body "..."`.
 2. Mark the release as compromised via:
+
    ```bash
    gh release edit v0.1.0 --draft
    ```
+
    This hides the release from the GitHub Releases page but does
    not delete it (deletion is irreversible from the API; download
    URLs remain valid until the release is explicitly deleted).
 3. Stop any in-flight `prepare-authorized-release-artifacts` runs:
+
    ```bash
    gh run list --workflow=prepare-authorized-release-artifacts \
      --status=in_progress --json databaseId -q '.[] | .databaseId' \
      | xargs -r gh run cancel
    ```
+
 4. If npm / PyPI were already updated:
    - npm: `npm unpublish @sovereign/<cube>@0.1.0` (within 72 h)
    - PyPI: open a support ticket; do not try to push a "fixed"
