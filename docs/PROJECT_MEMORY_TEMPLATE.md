@@ -13,23 +13,23 @@ Use this template whenever a meaningful milestone is completed.
 
 ## What Changed
 
-- 
+-
 
 ## What Was Preserved
 
-- 
+-
 
 ## What Was Added
 
-- 
+-
 
 ## What Was Deferred
 
-- 
+-
 
 ## What Was Blocked
 
-- 
+-
 
 ## What Was Verified
 
@@ -49,11 +49,11 @@ Use this template whenever a meaningful milestone is completed.
 
 ## Current Official Task
 
-- 
+-
 
 ## Exactly One Next Task
 
-- 
+-
 
 ## Recovery Notes
 
