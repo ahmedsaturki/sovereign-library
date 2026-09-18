@@ -32,7 +32,7 @@ re-runs the test suite.
 
 ## How to run
 
-```
+```bash
 node scripts/mutate.mjs --target cubes/safe-path-resolver-containment-boundary \
   --out .hermes/phase3/mutation --operators flip-equality,flip-bool
 ```
