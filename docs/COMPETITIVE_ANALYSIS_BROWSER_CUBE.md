@@ -120,35 +120,41 @@ The Sovereign Browser Cube provides **standalone, zero-dependency browser automa
 ## Sovereign Browser Cube's Competitive Advantages
 
 ### 1. **Zero Runtime Dependencies**
+
 - Uses only Node.js standard library (`node:child_process`, `node:fs/promises`, `node:http`, `node:net`)
 - No third-party packages, no browser bundles
 - Bundle size: ~5KB vs 140MB+ for Puppeteer/Playwright
 - Perfect for containerized/CI environments
 
 ### 2. **Lightweight Installation**
+
 - No browser download required
 - Uses system-installed Chrome/Edge
 - Ideal for environments where browser is pre-installed
 - Faster setup in CI/CD pipelines
 
 ### 3. **Deterministic Error Handling**
+
 - Stable error codes (`INVALID_URL`, `CDP_TIMEOUT`, `BROWSER_NOT_FOUND`, etc.)
 - Retryable hints for automatic retry logic
 - Clear failure messages for debugging
 - Predictable behavior across platforms
 
 ### 4. **Robust Process Lifecycle Management**
+
 - Browser process cleanup on all exit paths
 - Handles crashes, hangs, and partial-starts
 - Zombie process prevention
 - Idempotent session shutdown
 
 ### 5. **Cross-Platform Native Support**
+
 - Explicit Windows/Linux/macOS/WSL browser discovery paths
 - No platform-specific configuration hacks
 - Native process management per platform
 
 ### 6. **Protocol-Level Simplicity**
+
 - Direct CDP WebSocket connection
 - No abstraction layers over the protocol
 - Easier to debug protocol-level issues
@@ -242,6 +248,7 @@ The Sovereign Browser Cube should position itself as:
 ## Additional Competitors: Emerging AI-Agent and Cloud-Based Tools
 
 ### 5. WebDriverIO
+
 **Strengths:**
 - Dual-protocol support (WebDriver + CDP)
 - Protocol-agnostic architecture
@@ -254,6 +261,7 @@ The Sovereign Browser Cube should position itself as:
 - Less opinionated than Cypress or Playwright
 
 ### 6. TestCafe
+
 **Strengths:**
 - No WebDriver required
 - Automatic waiting
@@ -266,6 +274,7 @@ The Sovereign Browser Cube should position itself as:
 - Less active development
 
 ### 7. AI Agent-Focused Tools (Stagehand, Browserbase)
+
 **Strengths:**
 - Purpose-built for AI agents
 - Accessibility snapshots instead of DOM inspection
@@ -279,6 +288,7 @@ The Sovereign Browser Cube should position itself as:
 - Not suitable for local/offline use
 
 ### 8. Go/Rust CDP Libraries (chromedp, Rod, Lightpanda)
+
 **Strengths:**
 - Zero dependencies (language-specific)
 - Extremely fast due to compiled languages
