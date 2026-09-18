@@ -24,8 +24,16 @@ function parseArgs(argv) {
   return out;
 }
 
+function safeFileComponent(value, label) {
+  if (typeof value !== 'string' || value.length === 0 || value.length > 128 || !/^[A-Za-z0-9._-]+$/u.test(value)) {
+    throw new Error(`${label} must be a bounded filename-safe identifier`);
+  }
+  return value;
+}
+
 const args = parseArgs(process.argv.slice(2));
-const subjectId = args.subject ?? 'u-001';
+const subjectId = safeFileComponent(args.subject ?? 'u-001', 'subject');
+
 const archive = {
   schema: 'gdpr-portability-v0.1',
   exported_at: new Date().toISOString(),
