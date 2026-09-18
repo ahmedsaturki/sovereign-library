@@ -161,6 +161,7 @@ them here so the next wave can address them.
 2. CI full pass (push to `feat/continuity-hardening` and watch
    the GitHub Actions UI; all six workflows should turn green).
 3. Local Kotlin compile pass (requires JDK 17 + Android SDK):
+
    ```bash
    cd ecosystems/android
    ./gradlew :safe-path-resolver:assembleRelease :conformance:assembleRelease
@@ -175,6 +176,7 @@ them here so the next wave can address them.
    ```
 
 5. Conformance runner (Android JVM-hosted):
+
    ```bash
    cd ecosystems/android
    ./gradlew :conformance:test
