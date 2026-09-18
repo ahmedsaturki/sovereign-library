@@ -55,7 +55,7 @@ every PR.
 
 ## Reproducing proofs
 
-```
+```text
 # All proofs
 npm run formal:verify -- --out .hermes/phase3/formal
 
