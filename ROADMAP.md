@@ -177,7 +177,7 @@ These run numbers are historical qualification evidence for the predecessor docu
 ## Current live execution state
 
 - Live branch: `feat/continuity-hardening`.
-- Live HEAD: **authoritative from `refs/heads/feat/continuity-hardening`**; this roadmap intentionally does not embed a mutable current SHA.
+- Live HEAD: **246846357ce4cdcad5c8b9f89b42d763c382c2cd** (squash merge of PR #125 on 2026-09-18).
 - PR #125: OPEN / UNMERGED.
 - Current exact-head qualification: use the terminal GitHub checks attached to the live branch/PR; queued, cancelled, partial, stale, or historical runs do not qualify current state.
 - No external registry publication is being executed.
