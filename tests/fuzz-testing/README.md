@@ -27,7 +27,7 @@ Sovereign cubes that consume external input are fuzz-tested:
 
 ## How to run
 
-```
+```text
 # stdlib fuzz runner
 node scripts/fuzz.mjs --target cubes/safe-path-resolver-containment-boundary \
   --out .hermes/phase3/fuzz --duration 30
