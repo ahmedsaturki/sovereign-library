@@ -41,7 +41,7 @@ a quantum computer is available.
 
 We use the IETF draft hybrid construction:
 
-```
+```text
 client_pubkey = concat(X25519_pubkey, ML-KEM-768_pubkey)
 shared_secret = concat(X25519_shared, ML-KEM-768_shared)
 derived_secret = HKDF-Expand(shared_secret, ...)
@@ -59,7 +59,7 @@ timeline.
 
 ## How to test
 
-```
+```text
 # Verify the libsodium binding loads
 node security/post-quantum/configs/check-pq.mjs
 
