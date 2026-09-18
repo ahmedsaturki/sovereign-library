@@ -143,7 +143,7 @@ Zero Trust, GDPR automation, and PQC readiness.
 
 ## Run evidence
 
-```
+```bash
 $ node scripts/formal-verify.mjs --out .hermes/phase3/formal
 formal-verify: 7 proofs checked, 0 failure(s)
 
