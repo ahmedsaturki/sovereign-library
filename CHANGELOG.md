@@ -7,11 +7,13 @@
 Twenty enterprise-grade capabilities layered on top of Phase-1 (supply-chain hardening, OIDC, SLSA, cosign). See `docs/PHASE2_HARDENING.md` for the full inventory and run evidence.
 
 #### Workflows
+
 - Added `.github/workflows/release-engineering.yml` (24 jobs across 7 capability areas).
 - Added `.github/dependabot-auto-merge.yml` gated by semver deltas, frozen-cube denylist, and required CI checks.
 - Added `.github/dependabot.yml` weekly bumps across npm, github-actions, pip; grouped for review surface reduction.
 
 #### Scripts (Node-24 stdlib only — no new dependencies)
+
 - `scripts/parse-args.mjs` — shared flag-aware argument parser.
 - `scripts/api-version.mjs` — semver contract evaluator (87/87 packages valid against current catalog).
 - `scripts/backward-compat.mjs` — git-diff export-surface comparison vs base ref.
@@ -28,20 +30,24 @@ Twenty enterprise-grade capabilities layered on top of Phase-1 (supply-chain har
 - `scripts/e2e-cloud.mjs` — BrowserStack / SauceLabs capability probe.
 
 #### Configuration
+
 - `ci/chaos/suite.json`, `ci/feature-flags/flags.json`, `ci/deploy/manifest.json`, `ci/baselines/perf.baseline.json`.
 - `ci/load/k6/smoke.js`, `ci/load/locustfile.py`.
 - `.fossa.yml` — Apache-2.0 strict allow-list; GPL-family, AGPL, SSPL, BUSL, Commons-Clause denied.
 - `migrations/sqlite/001-initial-schema.sql` + `.down.sql` — reference forward + reverse migration.
 
 #### Live-cluster chaos runbooks (operator-triggered only)
+
 - `deploy/chaos/README.md`, `runbook-pod-kill.md`, `runbook-network-partition.md`.
 - `deploy/chaos/litmus-experiments/pod-kill.yaml`, `deploy/chaos/chaos-mesh-experiments/network-partition.yaml`.
 
 #### Tests
+
 - `tests/phase2/*.test.mjs` — 14 unit tests for the new scripts. Wired via `npm run test:phase2` and included in `npm run verify`.
 - `package.json` gained `"test:phase2"` and an extended `"verify"` script. **No existing scripts were removed.**
 
 #### Documentation
+
 - `docs/PHASE2_HARDENING.md` — capability inventory + run evidence.
 - `docs/RELEASE_NOTES_TEMPLATE.md`, `CHANGELOG_TEMPLATE.md`.
 
