@@ -1,38 +1,21 @@
-# Dependabot auto-merge configuration.
+# Dependabot auto-merge policy — fail closed
 #
-# Policy: a dependabot PR MAY be auto-merged iff ALL of the following hold:
-#   1. Required CI is green (the per-ecosystem verify workflow + the
-#      security-pipeline workflow).
-#   2. The version bump is NOT a major semver delta (0.x -> 0.y where y>x+1
-#      is not auto-merged — only 0.x -> 0.x.N patch bumps).
-#   3. The PR carries the `phase-2/auto-merge-candidate` label (added by
-#      dependabot.yml itself).
-#   4. There is no `do-not-merge` / `hold` / `breaking` label and no
-#      unresolved review thread.
-#   5. The merged commit does not change `packages/<frozen-name>/**`
-#      (frozen cubes require an explicit authorization per AGENTS.md and
-#      GOVERNANCE.md).
+# This workflow is intentionally API-only. It never executes code from the
+# Dependabot PR, never checks out the PR branch, and never falls back to a
+# direct merge when native auto-merge is unavailable.
 #
-# Implementation strategy:
-#   - `auto-merge` job uses `gh pr merge --auto --squash` (or `--merge` if
-#     the repo disables squash) gated by the predicates above.
-#   - Major version bumps are detected by parsing the PR body (Dependabot
-#     prints `Updates <dep> from X to Y` and the diff itself) and by
-#     inspecting the diff against `packages/<name>/package.json` JSON.
-#   - The job is `pull_request_target` so it has `contents: write` to
-#     merge. It uses GitHub's native "auto-merge" API rather than a direct
-#     merge commit, so reviewers retain the ability to cancel.
+# A Dependabot PR is eligible only when ALL gates pass:
+#   1. author is dependabot[bot];
+#   2. at least one concrete semver change is detected from X to Y;
+#   3. every detected dependency update is PATCH-only (same major + minor,
+#      higher patch);
+#   4. required checks "verify" and "security-pipeline" are present and green;
+#   5. no hold/do-not-merge/breaking label is present;
+#   6. no unresolved review thread exists;
+#   7. no frozen Cube path is touched;
+#   8. the PR is not draft.
 #
-# Frozen cubes — explicit deny list. Auto-merge refuses ANY change to:
-#   - cubes/application-lifecycle/                  (FROZEN)
-#   - cubes/process-supervisor/                     (FROZEN)
-#   - cubes/filesystem-recovery-journal/            (FROZEN)
-#   - cubes/safe-file-quarantine-delete/            (FROZEN)
-#   - cubes/bounded-file-content-reader-safe-content-access/ (FROZEN)
-#   - cubes/filesystem-permission-ownership-descriptor-v0-1/ (FROZEN)
-#   - cubes/atomic-batch-file-transaction-safe-multi-file-commit/ (FROZEN)
-#   - cubes/file-lease-advisory-lock/               (FROZEN)
-# Each of these requires an explicit authorization per AGENTS.md.
+# Any uncertainty => STOP. No direct merge and no policy bypass.
 
 name: dependabot-auto-merge
 
@@ -43,7 +26,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  # No id-token: this workflow never publishes; it only merges dependabot PRs.
+  checks: read
+  issues: read
 
 concurrency:
   group: dependabot-auto-merge-${{ github.event.pull_request.number }}
@@ -51,54 +35,86 @@ concurrency:
 
 jobs:
   auto-merge:
-    name: Auto-merge safe dependabot PR
+    name: Auto-merge safe Dependabot patch
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    # Only operate on dependabot PRs. Any other author short-circuits to
-    # the unconditional `never-merge` conclusion.
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    timeout-minutes: 15
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.event.pull_request.draft == false
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
-
-      - name: Detect semver delta (major vs minor/patch)
-        id: delta
+      - name: Evaluate semver policy
+        id: semver
         shell: bash
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           set -euo pipefail
-          # Dependabot writes one or more lines like:
-          #   "Bumps @sovereign/filesystem from 0.1.0 to 0.2.0"
-          # We classify by parsing the `from` and `to` versions and applying
-          # standard semver rules.
-          major_bump=0
-          python - "$PR_BODY" <<'PY'
-          import re, sys, json
-          body = sys.argv[1]
-          pat = re.compile(r'from\s+(\d+)\.(\d+)\.(\d+)\s+to\s+(\d+)\.(\d+)\.(\d+)', re.IGNORECASE)
-          major = False
-          for m in pat.finditer(body):
-              f1,f2,f3, t1,t2,t3 = map(int, m.groups())
-              if t1 > f1:
-                  major = True
-          print(json.dumps({"major_bump": major}))
-          PY
-          # Persist to GITHUB_OUTPUT.
-          echo "major_bump=$(python -c 'import json,sys; print(json.load(open("/tmp/delta.json"))["major_bump"])' 2>/dev/null || echo 0)" >> "$GITHUB_OUTPUT"
-          # Persist via env var for the next step.
-          echo "MAJOR_BUMP=$major_bump" >> "$GITHUB_ENV"
+          python - "$PR_BODY" > /tmp/semver.json <<'PY'
+          import json
+          import re
+          import sys
 
-      - name: Detect frozen-cube touch
-        id: frozen
+          body = sys.argv[1] if len(sys.argv) > 1 else ""
+          pattern = re.compile(
+              r"\bfrom\s+v?(\d+)\.(\d+)\.(\d+)\s+to\s+v?(\d+)\.(\d+)\.(\d+)\b",
+              re.IGNORECASE,
+          )
+          changes = []
+          for match in pattern.finditer(body):
+              f1, f2, f3, t1, t2, t3 = map(int, match.groups())
+              changes.append((f1, f2, f3, t1, t2, t3))
+
+          if not changes:
+              print(json.dumps({"eligible": False, "reason": "no parseable semver update"}))
+              raise SystemExit(0)
+
+          patch_only = all(
+              t1 == f1 and t2 == f2 and t3 > f3
+              for f1, f2, f3, t1, t2, t3 in changes
+          )
+          reason = "patch-only semver updates" if patch_only else "non-patch semver update requires human review"
+          print(json.dumps({"eligible": patch_only, "reason": reason, "count": len(changes)}))
+          PY
+          eligible="$(python -c 'import json; print(str(json.load(open("/tmp/semver.json"))["eligible"]).lower())')"
+          reason="$(python -c 'import json; print(json.load(open("/tmp/semver.json"))["reason"])')"
+          echo "eligible=$eligible" >> "$GITHUB_OUTPUT"
+          echo "reason=$reason" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch changed paths and labels
+        id: metadata
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          # Use the GitHub API to fetch the diff and check whether any frozen
-          # path is touched. Fail closed if it is.
-          :
-          # The exact list lives in docs/PROJECT_CONTROL.md and AGENTS.md.
+          gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/files" --jq '.[].filename' > /tmp/touched.txt
+          gh api "repos/$REPO/issues/$PR_NUMBER" --jq '.labels[].name' | sort -u > /tmp/labels.txt
+          echo "touched_count=$(wc -l < /tmp/touched.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Evaluate governance policy
+        id: policy
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          SEMVER_ELIGIBLE: ${{ steps.semver.outputs.eligible }}
+          SEMVER_REASON: ${{ steps.semver.outputs.reason }}
+        run: |
+          set -euo pipefail
+
+          deny_labels=(
+            "do-not-merge"
+            "hold"
+            "breaking"
+          )
+          for label in "${deny_labels[@]}"; do
+            if grep -Fxq "$label" /tmp/labels.txt; then
+              echo "blocked: forbidden label $label"
+              exit 1
+            fi
+          done
+
           frozen_paths=(
             "cubes/application-lifecycle/"
             "cubes/process-supervisor/"
@@ -109,117 +125,88 @@ jobs:
             "cubes/atomic-batch-file-transaction-safe-multi-file-commit/"
             "cubes/file-lease-advisory-lock/"
           )
-          echo "FROZEN_PATHS=${frozen_paths[*]}" >> "$GITHUB_ENV"
-          # Note: the actual diff check is done in a follow-up step that uses
-          # `gh api repos/:owner/:repo/pulls/:n/files` to fetch touched paths.
+          for path_prefix in "${frozen_paths[@]}"; do
+            if grep -Fq "$path_prefix" /tmp/touched.txt; then
+              echo "blocked: frozen path touched: $path_prefix"
+              exit 1
+            fi
+          done
 
-      - name: Fetch touched paths
-        id: files
+          if [ "$SEMVER_ELIGIBLE" != "true" ]; then
+            echo "blocked: $SEMVER_REASON"
+            exit 1
+          fi
+
+          echo "policy=eligible" >> "$GITHUB_OUTPUT"
+
+      - name: Check unresolved review threads
+        id: reviews
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          query='query($owner:String!,$repo:String!,$number:Int!){repository(owner:$owner,name:$repo){pullRequest(number:$number){reviewThreads(first:100){nodes{isResolved}}}}}'
+          unresolved="$(gh api graphql             -f query="$query"             -F owner="$OWNER"             -F repo="$REPO_NAME"             -F number="$PR_NUMBER"             --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')"
+          if [ "$unresolved" -ne 0 ]; then
+            echo "blocked: $unresolved unresolved review thread(s)"
+            exit 1
+          fi
+          echo "unresolved=0" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for required CI
+        id: checks
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          required=("verify" "security-pipeline")
+          deadline=$(($(date +%s) + 600))
+
+          while [ "$(date +%s)" -lt "$deadline" ]; do
+            mapfile -t check_rows < <(
+              gh api "repos/$REPO/commits/$HEAD_SHA/check-runs?per_page=100"                 --jq '.check_runs[] | [.name, (.conclusion // ""), (.status // "")] | @tsv'
+            )
+
+            all_green=1
+            for required_name in "${required[@]}"; do
+              found=0
+              for row in "${check_rows[@]}"; do
+                IFS=$'\t' read -r name conclusion status <<< "$row"
+                if [ "$name" = "$required_name" ]; then
+                  found=1
+                  if [ "$status" != "completed" ] || [ "$conclusion" != "success" ]; then
+                    all_green=0
+                  fi
+                  break
+                fi
+              done
+              if [ "$found" -ne 1 ]; then
+                all_green=0
+              fi
+            done
+
+            if [ "$all_green" -eq 1 ]; then
+              echo "required_checks=green" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 20
+          done
+
+          echo "blocked: required CI did not reach green within 10 minutes"
+          exit 1
+
+      - name: Enable native GitHub auto-merge
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          # Pull the list of changed files via the GitHub REST API. The
-          # default branch protection lets dependabot PRs always show this.
-          gh api --paginate "repos/${{ github.repository }}/pulls/$PR_NUMBER/files" \
-            --jq '.[].filename' > /tmp/touched.txt
-          echo "TOUCHED_COUNT=$(wc -l < /tmp/touched.txt)" >> "$GITHUB_ENV"
-
-      - name: Evaluate policy
-        id: policy
-        shell: bash
-        env:
-          MAJOR_BUMP: ${{ env.MAJOR_BUMP }}
-        run: |
-          set -euo pipefail
-          if [ "${MAJOR_BUMP:-0}" = "1" ]; then
-            echo "decision=never-merge"
-            echo "reason=major semver bump; require human review"
-          else
-            # Frozen-path check
-            hit=0
-            for fp in $FROZEN_PATHS; do
-              if grep -F "$fp" /tmp/touched.txt >/dev/null 2>&1; then
-                hit=1
-                echo "::warning::dependabot PR touches frozen path: $fp"
-              fi
-            done
-            if [ "$hit" = "1" ]; then
-              echo "decision=never-merge"
-              echo "reason=touches a FROZEN cube; require explicit authorization"
-            else
-              echo "decision=merge"
-              echo "reason=patch/minor bump, no frozen path, eligible"
-            fi
-          fi
-          echo "DECISION=$(grep -E '^decision=' "$GITHUB_OUTPUT_FILE" 2>/dev/null | head -1 || echo '')"
-          # Redo via env to keep subsequent steps simple:
-          if grep -F "$fp" /tmp/touched.txt >/dev/null 2>&1; then
-            :
-          fi
-          echo "PHASE2_DECISION=$(if [ \"$MAJOR_BUMP\" = '1' ]; then echo never-merge; else echo merge; fi)" >> "$GITHUB_ENV"
-
-      - name: Wait for required CI checks
-        if: env.PHASE2_DECISION == 'merge'
-        uses: actions/github-script@ed597411d8f924056a46b1d2eaf6f173faec3a3a # v7.0.1
-        with:
-          script: |
-            const required = ['verify', 'security-pipeline'];
-            const sha = context.payload.pull_request.head.sha;
-            const { data: checks } = await github.rest.repos.listCommitChecksForRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: sha,
-              per_page: 100
-            });
-            const names = new Set(checks.map(c => c.name));
-            const missing = required.filter(r => !names.has(r));
-            if (missing.length) {
-              core.setFailed('Required checks not yet reported: ' + missing.join(', '));
-              return;
-            }
-            const failed = checks.filter(c => required.includes(c.name) && c.conclusion !== 'success');
-            if (failed.length) {
-              core.setFailed('Required checks did not succeed: ' + failed.map(c => c.name).join(', '));
-              return;
-            }
-
-      - name: Enable auto-merge
-        if: env.PHASE2_DECISION == 'merge'
-        uses: actions/github-script@ed597411d8f924056a46b1d2eaf6f173faec3a3a # v7.0.1
-        with:
-          script: |
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              auto_merge: true
-            }).catch(e => {
-              core.warning('auto_merge API may be unavailable in this repo; falling back to direct merge');
-              return github.rest.pulls.merge({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: context.payload.pull_request.number,
-                merge_method: 'squash'
-              });
-            });
-
-      - name: Notify (never-merge)
-        if: env.PHASE2_DECISION == 'never-merge'
-        uses: actions/github-script@ed597411d8f924056a46b1d2eaf6f173faec3a3a # v7.0.1
-        with:
-          script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: [
-                '🤖 **Phase-2 auto-merge bot — manual review required**',
-                '',
-                'Reason: `' + (process.env.REASON || 'policy gated') + '`',
-                '',
-                'A human reviewer must merge this PR. See SECURITY.md and AGENTS.md for the backport policy.'
-              ].join('\n')
-            });
+          gh pr merge "$PR_NUMBER" --auto --squash
