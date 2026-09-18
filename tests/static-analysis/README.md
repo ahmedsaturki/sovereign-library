@@ -31,7 +31,7 @@ Sovereign cubes are scanned by:
 
 ## Running
 
-```
+```text
 # CodeQL via Actions
 .github/workflows/codeql.yml
 
