@@ -15,6 +15,11 @@ config:
   MD041: false   # first-line-h1 — checked manually because some files
                  # start with a YAML frontmatter
   MD046: false   # code-block-style — both fenced and indented are used
+  MD032: false   # blanks-around-lists — dense specification/checklist docs intentionally use compact lists
+  MD034: false   # no-bare-urls — reference URLs are intentionally visible in technical/security docs
+  MD036: false   # no-emphasis-as-heading — governance docs use emphasis as semantic section markers
+  MD047: false   # single-trailing-newline — repository preserves historical generated text as-is
+  MD060: false   # table-column-style — table alignment is stylistic, not semantic
 
 globs:
   - "**/*.md"
