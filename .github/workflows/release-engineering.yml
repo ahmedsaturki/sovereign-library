@@ -24,7 +24,7 @@ env:
   PHASE2_REGIONS_DEFAULT: "us-east,eu-west,asia-southeast"
 
 concurrency:
-  group: release-engineering-${{ github.event.pull_request.number || github.ref }}
+  group: release-engineering-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
