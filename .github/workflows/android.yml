@@ -270,7 +270,13 @@ jobs:
           run_bounded 60 "$ADB" shell settings put global transition_animation_scale 0
           run_bounded 60 "$ADB" shell settings put global animator_duration_scale 0
           run_bounded 900 ./gradlew :safe-path-resolver:installDebugAndroidTest --no-daemon --console=plain
-          INSTRUMENTATION=$(run_bounded 120 "$ADB" shell pm list instrumentation | tr -d '\r' | sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' | grep '/androidx.test.runner.AndroidJUnitRunner' | head -1)
+          INSTRUMENTATION=$(
+            run_bounded 120 "$ADB" shell pm list instrumentation |
+              tr -d '\r' |
+              sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' |
+              grep '/androidx.test.runner.AndroidJUnitRunner' |
+              head -1
+          )
           test -n "$INSTRUMENTATION"
           TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
           for method in normalize_and_contain_on_art traversal_escape_is_blocked_on_art serializer_is_deterministic_on_art; do
@@ -385,7 +391,13 @@ jobs:
           run_bounded 60 "$ADB" shell settings put global transition_animation_scale 0
           run_bounded 60 "$ADB" shell settings put global animator_duration_scale 0
           run_bounded 900 ./gradlew :safe-path-resolver:installDebugAndroidTest --no-daemon --console=plain
-          INSTRUMENTATION=$(run_bounded 120 "$ADB" shell pm list instrumentation | tr -d '\r' | sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' | grep '/androidx.test.runner.AndroidJUnitRunner' | head -1)
+          INSTRUMENTATION=$(
+            run_bounded 120 "$ADB" shell pm list instrumentation |
+              tr -d '\r' |
+              sed -n 's/^instrumentation:\([^ ]*\).*/\1/p' |
+              grep '/androidx.test.runner.AndroidJUnitRunner' |
+              head -1
+          )
           test -n "$INSTRUMENTATION"
           TEST_CLASS="org.sovereign.safePathResolver.android.SafePathResolverAndroidDeviceTest"
           for method in normalize_and_contain_on_art traversal_escape_is_blocked_on_art serializer_is_deterministic_on_art; do
