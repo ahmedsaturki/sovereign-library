@@ -14,7 +14,7 @@ The immediate objective is to qualify existing Sovereign Cubes as real standalon
 
 ## Current repository state
 
-- Latest released cube: **Application Lifecycle / Graceful Shutdown Coordinator v0.1**
+- Primary frozen release baseline: **Application Lifecycle / Graceful Shutdown Coordinator v0.1**
 - Release PR: **#104**, merged
 - Release merge commit: `792f1f3f1d5d85fc3e75716f5dd3b365799f32c4`
 - Application Lifecycle / Graceful Shutdown Coordinator v0.1 is **FROZEN**.
@@ -59,6 +59,16 @@ Sovereign is not Node-only. The ecosystem target is:
 Target ecosystems include Node.js, Python, Kotlin/JVM, Android, and future iOS/Apple platforms where a Cube is applicable and valuable. These are implementation/distribution targets, not a claim that every Cube already has every port.
 
 An internal dependency is allowed only when it is explicit, versioned, resolvable in the distributed artifact, tested, and consistent with the Cube contract. Monorepo-relative runtime coupling must not leak into released packages.
+
+## GitHub release inventory — verified 2026-09-19
+
+The repository currently contains **74 published, non-draft, non-prerelease GitHub Release objects**.
+
+- **8** releases include uploaded `.tgz` package assets.
+- **66** releases contain no uploaded release asset; their Release object alone is not treated as package-distribution evidence.
+- The first two authorized candidates, `@sovereign/safe-path-resolver@0.1.0` and `@sovereign/runtime-capability-inspector@0.1.0`, both have published GitHub Releases with uploaded `.tgz` assets.
+- External ecosystem publication (for example npm/PyPI/Maven) remains a separate gate and is not implied by a GitHub Release.
+- Package readiness counts remain governed by the qualification matrix; release-object count is not a package-readiness count.
 
 ## Current distribution policy
 
