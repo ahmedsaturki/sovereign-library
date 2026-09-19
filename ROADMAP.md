@@ -182,7 +182,7 @@ GitHub currently reports 74 published non-draft, non-prerelease Release objects.
 ## Current live execution state
 
 - Live branch: `main`.
-- Live HEAD: **d13fc2be0f4b2462a7a6ba88f1ab279a90963f3c** (squash merge of PR #130 on 2026-09-19).
+Live HEAD: **e92bfbad885d9615c96d971a45b1487b17fe18a4** (squash merge of PR #131 on 2026-09-19).
 - PR #125: MERGED / CLOSED.
 - Current exact-head qualification: use the terminal GitHub checks attached to the live branch/PR; queued, cancelled, partial, stale, or historical runs do not qualify current state.
 - No external registry publication is being executed.
