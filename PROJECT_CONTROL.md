@@ -135,10 +135,10 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 ## Current repository state — live control plane
 
 - Current branch: `main`
-- Live HEAD: **246846357ce4cdcad5c8b9f89b42d763c382c2cd** (squash merge of PR #125 on 2026-09-18).
+- Live HEAD: **d13fc2be0f4b2462a7a6ba88f1ab279a90963f3c** (squash merge of PR #130 on 2026-09-19).
 - PR #125: **MERGED / CLOSED** on 2026-09-18.
 - Base: `main`
-- Publication status: **NOT PERFORMED**
+- External registry publication status: **NOT PERFORMED**; GitHub Release publication is represented by the verified inventory above.
 - Force-push: **NOT USED**
 - Current source of truth: live GitHub branch ref; embedded historical SHAs are preserved as historical evidence.
 

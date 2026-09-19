@@ -173,7 +173,7 @@ The immediately preceding documentation/control-plane head was qualified success
 - `release-engineering` #94 — SUCCESS
 - `android` #225 — SUCCESS
 
-These run numbers are historical qualification evidence for the predecessor documentation head. Current state must be read from the live branch ref and the GitHub checks attached to PR #125.
+These run numbers are historical qualification evidence for the predecessor documentation head. Current state must be read from the live `main` ref and its current post-merge checks; PR #125 evidence is historical.
 
 ## Verified release inventory snapshot (2026-09-19)
 
@@ -181,9 +181,9 @@ GitHub currently reports 74 published non-draft, non-prerelease Release objects.
 
 ## Current live execution state
 
-- Live branch: `feat/continuity-hardening`.
-- Live HEAD: **246846357ce4cdcad5c8b9f89b42d763c382c2cd** (squash merge of PR #125 on 2026-09-18).
-- PR #125: OPEN / UNMERGED.
+- Live branch: `main`.
+- Live HEAD: **d13fc2be0f4b2462a7a6ba88f1ab279a90963f3c** (squash merge of PR #130 on 2026-09-19).
+- PR #125: MERGED / CLOSED.
 - Current exact-head qualification: use the terminal GitHub checks attached to the live branch/PR; queued, cancelled, partial, stale, or historical runs do not qualify current state.
 - No external registry publication is being executed.
 - The active project layer remains **Library Distribution Expansion / reconciliation and next-Cube selection**.
