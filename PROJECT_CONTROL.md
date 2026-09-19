@@ -135,7 +135,7 @@ The Browser/Product Readiness Wave and the current Python native-port inventory 
 ## Current repository state — live control plane
 
 - Current branch: `main`
-- Live HEAD: **d13fc2be0f4b2462a7a6ba88f1ab279a90963f3c** (squash merge of PR #130 on 2026-09-19).
+- Live HEAD: **e92bfbad885d9615c96d971a45b1487b17fe18a4** (squash merge of PR #131 on 2026-09-19).
 - PR #125: **MERGED / CLOSED** on 2026-09-18.
 - Base: `main`
 - External registry publication status: **NOT PERFORMED**; GitHub Release publication is represented by the verified inventory above.
@@ -154,7 +154,7 @@ The latest completed qualification snapshot immediately preceding this ref-stabi
 - `release-engineering` #94 — SUCCESS
 - `android` #225 — SUCCESS
 
-That snapshot is historical evidence for the preceding `ed64a662` head. For current state, use the live branch ref plus its attached GitHub checks.
+That snapshot is historical evidence for the preceding `ed64a662` head. For current state, use the live `main` ref plus the current checks attached to the post-PR131 main epoch.
 
 ### Recent hardening commits on the live branch
 
@@ -240,7 +240,7 @@ The older `PRE_RELEASE` wording remains only as historical evidence from the ear
 - PR #125 is **MERGED / CLOSED** as `246846357ce4cdcad5c8b9f89b42d763c382c2cd`.
 - Issue #110 remains the only currently observed explicit release authorization, and it is limited to the first two package candidates; publication is deferred by the recorded project decision.
 - Issue #109 remains a parked hardening task and is not the active milestone.
-- PR #111 remains open/unmerged and does not establish a new authorization for a separate current milestone.
+- PR #111 is CLOSED / PARKED and does not establish a new authorization for a separate current milestone.
 - No external package publication has been performed by this continuation.
 
 No new Cube/task may be selected merely because the repository is technically ready. The next Cube/task remains governance-gated until an authoritative project record explicitly authorizes it.
