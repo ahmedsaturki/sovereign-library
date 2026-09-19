@@ -44,16 +44,18 @@ Current decision: `GITHUB CANONICAL + FREE REGISTRIES OPTIONAL`.
 
 ## Release state
 
-The first two candidates are authorized in principle but publication is deferred while the library-packaging wave continues:
+The first two candidates were authorized in principle and now have verified published GitHub Release objects with uploaded `.tgz` assets:
 
 - `@sovereign/safe-path-resolver@0.1.0`
 - `@sovereign/runtime-capability-inspector@0.1.0`
 
-They are not `RELEASED` until an actual GitHub release/artifact distribution event is created and verified.
+Their GitHub Release state is **PUBLISHED / ASSET-BACKED**. External ecosystem registry publication remains separate and has not been performed.
+
+Verified repository-wide release inventory on 2026-09-19: **74** published GitHub Release objects, of which **8** have uploaded `.tgz` assets and **66** have no uploaded release asset. A Release object without an artifact is not treated as complete package-distribution evidence.
 
 Future controlled path:
 
-`FINAL CLEAN VERIFY -> PACKAGE -> GITHUB RELEASE -> OPTIONAL FREE REGISTRY RELEASES -> POST-DISTRIBUTION VERIFY -> FREEZE`
+`FINAL CLEAN VERIFY -> PACKAGE -> GITHUB RELEASE -> ASSET VERIFY -> OPTIONAL FREE REGISTRY RELEASES -> POST-DISTRIBUTION VERIFY -> FREEZE`
 
 ## Branch governance
 

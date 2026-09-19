@@ -123,7 +123,7 @@ Result: 84 Cubes TECHNICALLY_READY, 0 PRE_RELEASE, 0 CONDITIONAL (matrix v17); 2
 
 ### Current: Library Distribution Expansion
 
-**Technical readiness and the initial human authorization decision are complete; publication is intentionally deferred while the library-packaging and ecosystem work continues.**
+**Technical readiness is complete for the qualified matrix. GitHub Release publication exists for a subset of candidates; external ecosystem registry publication remains intentionally separate and deferred.**
 
 Current distribution policy is:
 
@@ -138,10 +138,11 @@ Current status:
 - no Maven Central publication;
 - no external registry is required for project distribution;
 - GitHub Release artifacts are the default release path;
-- GitHub Release objects for the first two authorized candidates already exist in repository release history; external package-registry publication remains deferred/unverified, and release authorization remains a separate control;
+- GitHub Release objects for the first two authorized candidates exist and each has an uploaded `.tgz` asset; external package-registry publication remains deferred/unverified, and release authorization remains a separate control;
+- Verified release inventory on 2026-09-19: 74 published Release objects total, 8 with uploaded `.tgz` assets, 66 without assets; only asset-backed releases count as artifact-distribution evidence;
 - existing eligible Cubes continue through the standalone-library qualification wave.
 
-### Historical: First Public Batch Publication — SUPERSEDED
+### Historical: First Public Batch Registry Publication — SUPERSEDED
 
 The following historical state is preserved for auditability. It described an earlier phase in which publication was treated as the immediate task and the environment prerequisite was specifically npm authentication/ownership. That state is no longer the current project policy.
 
@@ -173,6 +174,10 @@ The immediately preceding documentation/control-plane head was qualified success
 - `android` #225 — SUCCESS
 
 These run numbers are historical qualification evidence for the predecessor documentation head. Current state must be read from the live branch ref and the GitHub checks attached to PR #125.
+
+## Verified release inventory snapshot (2026-09-19)
+
+GitHub currently reports 74 published non-draft, non-prerelease Release objects. Eight carry uploaded `.tgz` assets; the remaining 66 have no uploaded release asset and therefore are not treated as complete package-distribution events.
 
 ## Current live execution state
 
